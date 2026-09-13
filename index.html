@@ -1,29 +1,17 @@
-<!doctype html>
-<html lang="vi">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#77944C">
-  <title>JoTrip Lab</title>
-  <style>
-    :root { color-scheme: light; --green:#77944C; --yellow:#FCBC12; --ink:#183028; --paper:#F7F7F2; }
-    * { box-sizing:border-box; }
-    body { margin:0; min-height:100vh; display:grid; place-items:center; padding:24px; background:var(--paper); color:var(--ink); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
-    main { width:min(720px,100%); background:white; border:1px solid rgba(24,48,40,.1); border-radius:28px; padding:clamp(28px,6vw,56px); box-shadow:0 24px 70px rgba(24,48,40,.09); }
-    .mark { display:inline-flex; align-items:center; gap:10px; font-weight:800; letter-spacing:-.03em; font-size:clamp(28px,6vw,44px); }
-    .dot { width:.7em; height:.7em; border-radius:999px; background:var(--yellow); box-shadow:.48em 0 0 var(--green); margin-right:.48em; }
-    h1 { margin:42px 0 14px; font-size:clamp(38px,8vw,72px); line-height:.98; letter-spacing:-.055em; }
-    p { margin:0; max-width:52ch; color:#53635d; font-size:clamp(17px,2.5vw,20px); line-height:1.6; }
-    .status { display:flex; align-items:center; gap:10px; margin-top:34px; padding-top:24px; border-top:1px solid rgba(24,48,40,.1); font-weight:700; }
-    .pulse { width:10px; height:10px; border-radius:50%; background:var(--green); box-shadow:0 0 0 6px rgba(119,148,76,.14); }
-  </style>
-</head>
-<body>
-  <main>
-    <div class="mark"><span class="dot" aria-hidden="true"></span>JoTrip</div>
-    <h1>Lab is ready.</h1>
-    <p>Không gian thử nghiệm website, dashboard và các ý tưởng số của JoTrip. Trang này xác nhận GitHub đã sẵn sàng để kết nối với Vercel.</p>
-    <div class="status"><span class="pulse" aria-hidden="true"></span>GitHub pipeline connected</div>
-  </main>
-</body>
-</html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#03121b"><title>PHU QUOC: PIXEL ISLAND</title><link rel="stylesheet" href="/style.css"><style>
+/* production fallbacks + motion */
+.airportBg{background:linear-gradient(#5bb8e2 0 45%,#278caf 45% 58%,#8a8c84 58% 69%,#41774f 69%);overflow:hidden}.airportBg:before{content:"✈";position:absolute;left:18%;top:23%;font-size:clamp(70px,12vw,150px);color:#f7fbff;filter:drop-shadow(8px 8px #376b7d55);transform:rotate(-4deg);animation:planeFloat 5s ease-in-out infinite}.airportBg:after{content:"PQC";position:absolute;right:10%;bottom:17%;padding:12px 16px;background:#e9dfc4;color:#17384a;font-weight:1000;font-size:clamp(18px,3vw,38px);box-shadow:0 7px #756e5e}.runway{position:absolute;left:-10%;right:-10%;top:58%;height:11%;background:repeating-linear-gradient(90deg,#73766f 0 70px,#f4e9b4 70px 105px,#73766f 105px 210px);transform:skewY(-2deg);opacity:.95}@keyframes planeFloat{50%{transform:translate(18px,-6px) rotate(-3deg)}}
+.road{background-image:repeating-linear-gradient(90deg,#8f7960 0 45px,#6e5c48 45px 49px,#aa9376 49px 94px)!important;background-size:190px 100%!important}.fg{background-image:linear-gradient(90deg,#173e2b77,#345a3577 30%,#173e2b77 60%,#3e643d77)!important;background-size:320px 100%!important}.gameBg{background-position:center 52%!important}.sideBg{opacity:.82}.lane{box-shadow:none!important}.modal{backdrop-filter:blur(2px)}
+@media(max-width:680px){.airportBg:before{left:8%;top:25%;font-size:92px}.airportBg:after{right:7%;bottom:20%;font-size:20px}.runway{top:60%}}
+</style><script src="/preview/asset-map.js"></script><script src="/preview/asset-bg.js"></script><script src="/preview/asset-rides.js"></script><script src="/preview/asset-props.js"></script></head><body><div id="app">
+<section id="landing" class="view on"><div class="cloud top"></div><div class="cloud bottom"></div><div class="brand"><div class="pre">WELCOME TO</div><h1>PHU QUOC:<br><span>PIXEL ISLAND</span></h1><div class="sub">EXPLORE · DISCOVER · PLAY</div></div><img id="landingMap" class="heroMap" alt="Phu Quoc Island"><div class="landingBottom"><div class="tagline">One island. Many bad decisions.</div><button class="btn" onclick="show('airport')">ENTER THE ISLAND</button><div class="small" style="margin-top:9px">Play free · No download required</div></div></section>
+<section id="airport" class="view"><div id="airportBg" class="airportBg"><div class="runway"></div></div><div class="airportGlow"></div><div class="airportTitle"><div class="kicker">PHU QUOC INTERNATIONAL AIRPORT</div><h2>WELCOME TO THE ISLAND</h2></div><div class="dialog"><div class="name">KEN · LOCAL GUIDE</div><p>Welcome to Phu Quoc. Where would you like to go?</p><button class="btn" onclick="show('characters')">LET'S GO</button></div></section>
+<section id="characters" class="view"><div class="head"><div class="kicker">CHARACTER SELECT</div><h2>WHO ARE YOU TODAY?</h2><p>Your choice travels with you across the island.</p></div><div id="charGrid" class="charGrid"></div><div class="charFoot"><input id="playerName" class="nameInput" value="Traveler" maxlength="18" aria-label="Player name"><button class="btn" onclick="openMap()">OPEN THE MAP</button></div></section>
+<section id="map" class="view"><div class="mapTitle"><div class="kicker">PHU QUOC ISLAND MAP</div><h2 id="mapHello">WHERE TO NEXT?</h2><div class="mapMeta"><span>MAP PIECES <b>0/9</b></span><span>JO <b id="mapJo">0</b></span></div></div><div class="mapCanvas"><img id="mapImg" class="mapImg" alt="Phu Quoc map"><button class="pin sunset" onclick="openGame()">SUNSET TOWN · PLAY</button><button class="pin lock hon">HON THOM · LOCKED</button><button class="pin lock market">NIGHT MARKET · LOCKED</button><button class="pin lock north">NORTH · LOCKED</button></div></section>
+<section id="gameView" class="view"><div id="sideBg" class="sideBg"></div><div class="sideShade"></div><div id="lane" class="lane"><div id="gameBg" class="gameBg"></div><div class="gameShade"></div><div id="speed" class="speed"></div><div id="fg" class="fg"></div><div id="road" class="road"></div><div class="hud"><span id="score">SCORE 0</span><span id="jo">JO 0</span><span id="best">BEST 0</span></div><div id="level" class="level"><div class="where">SUNSET TOWN</div><h2>NO BRAKES</h2><div class="ctrl">TAP · CLICK · SPACE TO HOP</div></div><div id="shadow" class="shadow"></div><div id="player" class="player"></div><div id="ob" class="ob"></div><div id="coin" class="coin"></div><div id="toast" class="toast"></div><div id="helper" class="helper">EASY START · FIRST 10 ARE FRIENDLY</div><div id="tutorial" class="modal on"><div class="sheet"><div class="easy">VERY EASY START</div><h2>NO BRAKES</h2><p>The scooter keeps moving.<br><b>Tap once to hop.</b></p><p class="small">The first obstacle comes slowly. Your first mistake gets a warning instead of a crash.</p><button class="btn" onclick="startGame()">START RIDE</button><br><button class="btn alt" onclick="backMap()">BACK TO MAP</button></div></div><div id="over" class="modal"><div class="sheet"><div class="kicker">SUNSET TOWN</div><h2>OOPS!</h2><p id="result"></p><button class="btn" onclick="startGame()">RETRY</button><br><button class="btn alt" onclick="backMap()">BACK TO MAP</button></div></div></div></section>
+</div><script src="/app.js"></script><script>
+// Restore procedural layers after legacy app initialises optional asset slots.
+document.getElementById('airportBg').style.backgroundImage='none';
+document.getElementById('road').style.setProperty('background-image','repeating-linear-gradient(90deg,#8f7960 0 45px,#6e5c48 45px 49px,#aa9376 49px 94px)','important');
+document.getElementById('fg').style.setProperty('background-image','linear-gradient(90deg,#173e2b77,#345a3577 30%,#173e2b77 60%,#3e643d77)','important');
+</script></body></html>
