@@ -3,8 +3,8 @@ name: Sun Airport flights
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 23 * * *' # 06:00 Vietnam
-    - cron: '0 11 * * *' # 18:00 Vietnam
+    - cron: '45 22 * * *' # 05:45 Vietnam, ready before 06:00 reports
+    - cron: '45 10 * * *' # 17:45 Vietnam, ready before 18:00 reports
   push:
     branches: [main]
     paths:
