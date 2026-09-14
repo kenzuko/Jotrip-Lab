@@ -9,6 +9,12 @@ const outRoot = path.join(repoRoot, 'data', 'sunairport');
 
 const clean = (s='') => String(s).replace(/\s+/g, ' ').trim();
 
+const domesticStations = new Set([
+  'HO CHI MINH', 'HA NOI', 'DA NANG', 'HAI PHONG', 'CAN THO', 'CAM RANH',
+  'VINH', 'HUE', 'THANH HOA', 'BUON MA THUOT', 'DA LAT', 'QUY NHON',
+  'PLEIKU', 'DONG HOI', 'DIEN BIEN'
+]);
+
 function stampVN() {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: tz,
@@ -52,6 +58,58 @@ function parseText(text, direction) {
   return [...unique.values()];
 }
 
+function enrichRecord(record) {
+  const parts = record.context.split('|').map(clean).filter(Boolean);
+  const flightIndex = parts.findIndex(p => p.toUpperCase().includes(record.flight_number));
+  const station = flightIndex >= 0 ? clean(parts[flightIndex + 1] || '') : '';
+  const before = flightIndex >= 0 ? parts.slice(Math.max(0, flightIndex - 3), flightIndex).join(' | ').toUpperCase() : '';
+
+  let status = '';
+  const knownStatuses = [
+    'ĐÃ HẠ CÁNH', 'ĐÃ CẤT CÁNH', 'ĐÚNG GIỜ', 'TRỄ', 'HỦY', 'HOÃN',
+    'ĐANG LÀM THỦ TỤC', 'QUẦY THỦ TỤC ĐÃ ĐÓNG', 'LÀM THỦ TỤC LÚC',
+    'BÃI ĐỖ', 'BOARDING', 'DELAYED', 'CANCELLED', 'RESCHEDULED'
+  ];
+  for (const candidate of knownStatuses) {
+    if (before.includes(candidate)) {
+      status = candidate;
+      break;
+    }
+  }
+
+  return {
+    ...record,
+    station,
+    market: station ? (domesticStations.has(station.toUpperCase()) ? 'domestic' : 'international') : 'unknown',
+    status
+  };
+}
+
+function countBy(records, keyFn) {
+  const out = {};
+  for (const r of records) {
+    const key = keyFn(r);
+    if (!key) continue;
+    out[key] = (out[key] || 0) + 1;
+  }
+  return Object.fromEntries(Object.entries(out).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])));
+}
+
+function hourBank(records) {
+  return countBy(records, r => {
+    const t = r.times?.[r.times.length - 1] || r.times?.[0] || '';
+    const h = Number(t.slice(0, 2));
+    if (!Number.isInteger(h)) return '';
+    if (h < 6) return '00:00-05:59';
+    if (h < 9) return '06:00-08:59';
+    if (h < 12) return '09:00-11:59';
+    if (h < 15) return '12:00-14:59';
+    if (h < 18) return '15:00-17:59';
+    if (h < 21) return '18:00-20:59';
+    return '21:00-23:59';
+  });
+}
+
 async function boardText(page, label) {
   const candidates = [
     page.getByRole('button', { name: label, exact: true }),
@@ -80,12 +138,18 @@ try {
 
   const arrivalText = await boardText(page, 'Bay đến');
   const departureText = await boardText(page, 'Bay đi');
-  const arrivals = parseText(arrivalText, 'arrival');
-  const departures = parseText(departureText, 'departure');
+  const arrivals = parseText(arrivalText, 'arrival').map(enrichRecord);
+  const departures = parseText(departureText, 'departure').map(enrichRecord);
   const records = [...arrivals, ...departures];
 
+  const marketCounts = records => ({
+    domestic: records.filter(r => r.market === 'domestic').length,
+    international: records.filter(r => r.market === 'international').length,
+    unknown: records.filter(r => r.market === 'unknown').length
+  });
+
   const output = {
-    schema_version: '1.0',
+    schema_version: '1.1',
     collected_at_vn: s.iso,
     source: {
       name: 'Sun Airport - Phu Quoc International Airport',
@@ -98,6 +162,16 @@ try {
       arrivals: arrivals.length,
       departures: departures.length,
       total: records.length
+    },
+    summary: {
+      arrivals_market: marketCounts(arrivals),
+      departures_market: marketCounts(departures),
+      arrivals_by_station: countBy(arrivals, r => r.station),
+      departures_by_station: countBy(departures, r => r.station),
+      arrivals_by_status: countBy(arrivals, r => r.status),
+      departures_by_status: countBy(departures, r => r.status),
+      arrivals_by_time_bank: hourBank(arrivals),
+      departures_by_time_bank: hourBank(departures)
     },
     quality: {
       usable: arrivals.length >= 5 && departures.length >= 5,
@@ -113,7 +187,7 @@ try {
   const json = JSON.stringify(output, null, 2) + '\n';
   await fs.writeFile(path.join(dayDir, `${s.hhmm}.json`), json);
   await fs.writeFile(path.join(outRoot, 'latest.json'), json);
-  console.log(JSON.stringify(output.counts));
+  console.log(JSON.stringify({ counts: output.counts, summary: output.summary }));
 } finally {
   if (browser) await browser.close();
 }
