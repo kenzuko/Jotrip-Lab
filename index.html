@@ -12,6 +12,7 @@
   <script src="/preview/asset-props.js"></script>
 </head>
 <body>
+<!-- PROD_GIT_PATH_PROBE_20260915_0208 -->
 <div id="app">
   <section id="landing" class="view on">
     <div class="cloud top"></div><div class="cloud bottom"></div>
@@ -22,37 +23,11 @@
     </div>
     <img id="landingMap" class="heroMap" alt="Phu Quoc Island">
     <div class="landingBottom">
-      <div class="tagline">One island. Many bad decisions.</div>
-      <button class="btn" onclick="showView('airport')">ENTER THE ISLAND</button>
-      <div class="small mt">Play free · No download required</div>
-    </div>
+      <div class="tagline">One island. Many bad decisions.</div><button class="btn" onclick="show('airport')">ENTER THE ISLAND</button>
   </section>
-
-  <section id="airport" class="view">
-    <div class="airportScene"><div class="sun"></div><div class="plane">✈</div><div class="runway"></div><div class="terminal">PQC</div></div>
-    <div class="airportTitle"><div class="kicker">PHU QUOC INTERNATIONAL AIRPORT</div><h2>WELCOME TO THE ISLAND</h2></div>
-    <div class="dialog panel"><div class="name">KEN · LOCAL GUIDE</div><p>Welcome to Phu Quoc. Where would you like to go?</p><button class="btn" onclick="showView('characters')">LET'S GO</button></div>
-  </section>
-
-  <section id="characters" class="view">
-    <div class="screenHead"><div class="kicker">CHARACTER SELECT</div><h2>WHO ARE YOU TODAY?</h2><p>Your choice travels with you across the island.</p></div>
-    <div id="charGrid" class="charGrid"></div>
-    <div class="charFoot"><input id="playerName" class="nameInput" value="Traveler" maxlength="18" aria-label="Player name"><button class="btn" onclick="openMap()">OPEN THE MAP</button></div>
-  </section>
-
-  <section id="map" class="view">
-    <div class="mapTitle"><div class="kicker">PHU QUOC ISLAND MAP</div><h2 id="mapHello">WHERE TO NEXT?</h2><div class="mapMeta"><span>MAP PIECES <b>0/9</b></span><span>JO <b id="mapJo">0</b></span></div></div>
-    <div class="mapCanvas"><img id="mapImg" class="mapImg" alt="Phu Quoc map"><button class="pin sunset" onclick="openGame()">SUNSET TOWN · PLAY</button><button class="pin lock hon">HON THOM · LOCKED</button><button class="pin lock market">NIGHT MARKET · LOCKED</button><button class="pin lock north">NORTH · LOCKED</button></div>
-  </section>
-
-  <section id="gameView" class="view gameView">
-    <div id="ambient" class="ambient"></div>
-    <div class="ambientShade"></div>
-    <div id="gameScaler" class="gameScaler"><canvas id="gameCanvas" width="540" height="960"></canvas></div>
-    <div id="tutorial" class="modal on"><div class="sheet panel"><div class="easy">VERY EASY START</div><h2>NO BRAKES</h2><p>The scooter keeps moving.<br><b>Tap once to hop.</b></p><p class="small">The first obstacle comes slowly. Your first mistake gives you a warning, not an instant loss.</p><button class="btn" onclick="startGame()">START RIDE</button><button class="btn alt" onclick="backMap()">BACK TO MAP</button></div></div>
-    <div id="over" class="modal"><div class="sheet panel"><div class="kicker">SUNSET TOWN</div><h2>OOPS!</h2><p id="result"></p><button class="btn" onclick="startGame()">RETRY</button><button class="btn alt" onclick="backMap()">BACK TO MAP</button></div></div>
-  </section>
-</div>
+  <section id="airport" class="scene"><div class="shell"><div class="tag">PHU QUOC INTERNATIONAL AIRPORT</div><h2>ARRIVAL</h2><img class="hero" src="" alt="Phu Quoc airport arrival"><div class="dialog"><div class="who">KEN</div><div>Welcome to Phu Quoc. Where would you like to go?</div></div><button class="btn" onclick="show('characters')">LET'S GO</button></div></section>
+  <section id="characters" class="scene"><div class="shell"><div class="tag">CHARACTER SELECT</div><h2>WHO ARE YOU TODAY?</h2><div id="chars" class="char-grid"></div><input id="name" class="name" value="Traveler" maxlength="18"><button class="btn" onclick="openMap()">OPEN THE MAP</button></div></section>
+  <section id="map" class="scene"><div class="shell"><div class="tag">PHU QUOC ISLAND MAP</div><h2 id="hello">Where would you like to go?</h2><div class="progress"><span>MAP PIECES <b>0/9</b></span><span>JO COINS <b id="mapJo">0</b></span></div><div class="map-wrap"><img class="map-img" src="" alt="Phu Quoc island map"><button class="pin sunset" onclick="openGame()">SUNSET TOWN<br>NO BRAKES</button><button class="pin lock hon">HON THOM<br>LOCKED</button><button class="pin lock north">NORTH<br>LOCKED</button></div></div></section>
+  <section id="gameScreen" class="game-scene"><div id="game" class="game"><div class="bg"></div><div class="bgShade"></div><div id="road" class="road"></div><div class="hud"><span id="score">SCORE 0</span><span id="jo">JO 0</span><span id="best">BEST 0</span></div><div class="gameTitle"><b>SUNSET TOWN</b><h2>NO BRAKES</h2><span>TAP / CLICK / SPACE TO HOP</span></div><div id="shadow" class="shadow"></div><div id="player" class="player"></div><div id="ob" class="ob"></div><div id="coin" class="coin"></div><div id="toast" class="toast">NICE!</div><div id="helper" class="helper">EASY START · FIRST 10 ARE FRIENDLY</div><div id="tutorial" class="overlay"><div class="box"><div class="easy">VERY EASY START</div><h2>NO BRAKES</h2><p>The scooter keeps moving.<br><b>Tap once to hop.</b></p><p class="small">Low hop, long warning, forgiving hitbox.</p><button class="btn" onclick="startGame()">START RIDE</button><button class="btn alt" onclick="backMap()">BACK TO MAP</button></div></div><div id="gameOver" class="overlay"><div class="box"><h2>OOPS!</h2><p id="result"></p><button class="btn" onclick="startGame()">RETRY</button><button class="btn alt" onclick="backMap()">BACK TO MAP</button></div></div></div></section>
 <script src="/app.js"></script>
-</body>
-</html>
+</body></html>
