@@ -43,6 +43,10 @@ def default_manifests(now: datetime) -> list[dict]:
     common_steps = tuple(range(0, 73, 3))
     return [
         RequestManifest("ECMWF_DIRECT", ecmwf_run.isoformat(), ("10u", "10v", "10fg", "tp", "vis"), common_steps, bbox, "deterministic").as_dict(),
+        RequestManifest("ECMWF_ENS_DIRECT", ecmwf_run.isoformat(), ("10u", "10v", "10fg", "tp"), common_steps, bbox, "control_plus_50_members").as_dict(),
         RequestManifest("NOAA_GEFS_DIRECT", gefs_run.isoformat(), ("ugrd10m", "vgrd10m", "gust", "apcp", "vis"), common_steps, bbox, "members").as_dict(),
         RequestManifest("NOAA_GEFS_WAVE_DIRECT", gefs_run.isoformat(), ("htsgw", "dirpw", "perpw"), common_steps, bbox, "members").as_dict(),
+        RequestManifest("DWD_ICON_DIRECT", ecmwf_run.isoformat(), ("u_10m", "v_10m", "vmax_10m", "tot_prec"), common_steps, bbox, "deterministic_crosscheck").as_dict(),
+        RequestManifest("COPERNICUS_WAVE_DIRECT", ecmwf_run.isoformat(), ("hs", "wave_direction", "mean_period", "peak_period"), common_steps, bbox, "dataset_configured").as_dict(),
+        RequestManifest("COPERNICUS_CURRENT_DIRECT", ecmwf_run.isoformat(), ("uo", "vo"), common_steps, bbox, "dataset_configured_depth").as_dict(),
     ]

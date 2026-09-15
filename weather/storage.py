@@ -34,6 +34,21 @@ class WeatherStore:
         )
         self.connection.commit()
 
+    def save_model_run(self, run: dict) -> None:
+        self.connection.execute(
+            "INSERT OR REPLACE INTO model_runs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (run["id"], run["source"], run.get("model"), run.get("system"), run["run_time"],
+             run["status"], run.get("expected_members"), run.get("retrieved_members"), run.get("collector_version")),
+        )
+        self.connection.commit()
+
+    def save_forecast_values(self, records: list[dict]) -> None:
+        rows = [(r["record_id"], r["run_id"], r.get("member"), r["valid_time"], r["variable"],
+                 r.get("requested_lat"), r.get("requested_lon"), r.get("sampled_lat"), r.get("sampled_lon"),
+                 r.get("grid_resolution"), r["value"], r["unit"], r["qc"], r["lineage_id"]) for r in records]
+        self.connection.executemany("INSERT OR REPLACE INTO forecast_values VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", rows)
+        self.connection.commit()
+
     def get_snapshot(self, snapshot_id: str) -> dict | None:
         row = self.connection.execute("SELECT payload FROM snapshots WHERE snapshot_id = ?", (snapshot_id,)).fetchone()
         return json.loads(row[0]) if row else None

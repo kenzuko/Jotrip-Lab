@@ -8,12 +8,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from weather.collectors.catalog import default_manifests, latest_completed_cycle
+from weather.collectors.copernicus import configuration_status
 from weather.collectors.probe import probe_source
 from weather.pipeline.build_snapshot import build_snapshot
 from weather.processing.drift import compare_runs
 from weather.processing.ensemble import summarize_members
 from weather.processing.marine import current_from_uv, summarize_route
 from weather.processing.quality import assert_numeric_source, completeness, critical_gaps, numeric_weight
+from weather.processing.readiness import decision_eligible, derive_data_mode
 from weather.processing.snapshot import verify_snapshot
 from weather.storage import WeatherStore
 
@@ -50,6 +52,24 @@ class SourceFailoverTests(unittest.TestCase):
         self.assertEqual(result["selected_endpoint"], "official_mirror")
         self.assertEqual(result["fallback_level"], 1)
         self.assertEqual(len(result["attempts"]), 2)
+
+
+class ReadinessTests(unittest.TestCase):
+    def test_http_reachable_is_not_decision_eligible(self):
+        self.assertFalse(decision_eligible({"status": "REACHABLE", "qc": "PASS"}))
+
+    def test_mode_a_requires_extracted_marine_ensemble_and_route(self):
+        sources = {
+            "ECMWF": {"readiness": "POINT_ROUTE_EXTRACTED", "qc": "PASS"},
+            "GEFS_WAVE": {"readiness": "MEMBER_COMPLETE", "qc": "PASS"},
+        }
+        self.assertEqual(derive_data_mode(sources, {"routes": {"r": {}}}), "A")
+
+    def test_copernicus_missing_credentials_is_explicit(self):
+        with patch.dict("os.environ", {}, clear=True):
+            result = configuration_status()
+        self.assertEqual(result["status"], "AUTH_OR_CONFIG_REQUIRED")
+        self.assertIn("COPERNICUSMARINE_SERVICE_USERNAME", result["missing"])
 
 
 class EnsembleTests(unittest.TestCase):

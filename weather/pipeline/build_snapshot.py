@@ -11,6 +11,7 @@ from pathlib import Path
 from weather.collectors.catalog import default_manifests
 from weather.collectors.probe import probe_sources
 from weather.processing.snapshot import seal_snapshot
+from weather.processing.readiness import derive_data_mode
 
 
 def git_sha() -> str:
@@ -21,12 +22,7 @@ def git_sha() -> str:
 
 
 def determine_mode(health: dict, evidence: dict) -> str:
-    reachable = sum(v.get("status") == "REACHABLE" for v in health.values())
-    if reachable >= 4 and evidence.get("ensemble") and evidence.get("routes"):
-        return "A"
-    if reachable >= 1 or evidence.get("official_status") or evidence.get("points"):
-        return "B"
-    return "C"
+    return derive_data_mode(health, evidence)
 
 
 def build_snapshot(evidence: dict, cutoff: datetime, health: dict | None = None) -> dict:
@@ -38,7 +34,7 @@ def build_snapshot(evidence: dict, cutoff: datetime, health: dict | None = None)
     snapshot_id = "PQWX_" + cutoff.astimezone(timezone.utc).strftime("%Y%m%d_%H%MZ_V1")
     gaps = list(evidence.get("data_gaps", []))
     for source, state in health.items():
-        if state.get("status") != "REACHABLE":
+        if state.get("readiness") not in {"POINT_ROUTE_EXTRACTED", "MEMBER_COMPLETE", "DECISION_ELIGIBLE"}:
             gaps.append({"source": source, "status": state.get("status"), "impact": "SOURCE_NOT_DIRECT_INGEST_ELIGIBLE"})
     payload = {
         "snapshot_id": snapshot_id, "schema_version": "1.0", "cutoff_time": cutoff.isoformat(),
