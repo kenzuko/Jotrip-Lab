@@ -1,0 +1,51 @@
+name: GM Rebuild Inspect
+
+on:
+  push:
+    branches:
+      - gm-rebuild-inspect
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p inspect/extracted
+          cat deploy-chunks/p*.b64 > inspect/payload.b64
+          base64 --decode inspect/payload.b64 > inspect/payload.gz
+          gzip -dc inspect/payload.gz > inspect/decoded
+          echo '--- FILE TYPE ---'
+          file inspect/decoded
+          echo '--- SIZE ---'
+          wc -c inspect/decoded
+          echo '--- FIRST BYTES ---'
+          head -c 240 inspect/decoded | strings || true
+          echo '--- MARKERS ---'
+          strings inspect/decoded | grep -E -i 'REBUILD|FIX R5|PHU QUOC|PIXEL ISLAND|char-traveler|THE TRAVELER' | head -n 80 || true
+          if unzip -t inspect/decoded >/dev/null 2>&1; then
+            cp inspect/decoded inspect/payload.zip
+            unzip -q inspect/payload.zip -d inspect/extracted
+          elif tar -tf inspect/decoded >/dev/null 2>&1; then
+            tar -xf inspect/decoded -C inspect/extracted
+          else
+            cp inspect/decoded inspect/extracted/decoded.txt
+          fi
+          echo '--- EXTRACTED TREE ---'
+          find inspect/extracted -maxdepth 4 -type f -printf '%p %s bytes\n' | sort | head -n 300
+      - name: Upload decoded payload
+        uses: actions/upload-artifact@v4
+        with:
+          name: gm-decoded-rebuild-payload
+          path: inspect/
+          if-no-files-found: error
+          retention-days: 1
