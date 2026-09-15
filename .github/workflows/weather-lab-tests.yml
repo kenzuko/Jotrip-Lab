@@ -120,6 +120,8 @@ jobs:
           assert p.get('short_record_count', 0) >= 200, p
           assert p.get('medium_record_count', 0) >= 500, p
           assert p.get('record_count', 0) >= 700, p
+          points={r.get('point_id') for r in p.get('records', [])} | {r.get('point_id') for r in p.get('medium_records', [])}
+          assert {'an_thoi','duong_dong','ganh_dau','rach_gia'}.issubset(points), points
           PY
       - uses: actions/upload-artifact@v4
         with:
@@ -195,10 +197,10 @@ jobs:
           python-version: "3.12"
       - name: Install official Toolbox and NetCDF reader
         run: python -m pip install --quiet copernicusmarine xarray netCDF4 numpy
-      - name: Download Phu Quoc wave and current subsets
+      - name: Download Phu Quoc and Rach Gia wave and current subsets
         run: python -m weather.collectors.copernicus_live --output /tmp/copernicus-live.json
       - name: Enforce credential, variable and point gates
-        run: python -c 'import json; p=json.load(open("/tmp/copernicus-live.json")); assert p["status"] == "POINT_NUMERIC_READY", p; assert p["wave"]["available_variables"] == ["VHM0","VMDR","VTM10","VTPK"]; assert p["current"]["available_variables"] == ["uo","vo"]; assert set(p["current"]["derived_vectors"]) == {"duong_dong","an_thoi","ganh_dau"}'
+        run: python -c 'import json; p=json.load(open("/tmp/copernicus-live.json")); assert p["status"] == "POINT_NUMERIC_READY", p; assert p["wave"]["available_variables"] == ["VHM0","VMDR","VTM10","VTPK"]; assert p["current"]["available_variables"] == ["uo","vo"]; assert set(p["current"]["derived_vectors"]) == {"duong_dong","an_thoi","ganh_dau","rach_gia"}'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -262,6 +264,7 @@ jobs:
           assert p['report_status'] == 'LIVE', p
           assert p['completeness'] >= 60, p
           assert p.get('forecast_horizon_hours') == 240, p
+          assert set(p.get('points', {})) == {'an_thoi','duong_dong','ganh_dau','rach_gia'}, p.get('points', {}).keys()
           assert all(len(v['hours']) >= 45 for v in p['points'].values()), {k:len(v['hours']) for k,v in p['points'].items()}
           assert all(len(v.get('daily_outlook', [])) >= 2 for v in p['points'].values()), p
           assert set(p.get('source_cycles', {})) == {'ECMWF','ECMWF_MEDIUM','GEFS','ICON'}, p.get('source_cycles')
