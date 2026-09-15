@@ -39,8 +39,8 @@
         <div class="metric-grid">
           <div><span>Gió nền</span><b id="wind">...</b><small>km/h</small></div>
           <div><span>Gió giật</span><b id="gust">...</b><small>km/h</small></div>
+          <div class="wave-base-metric"><span>Sóng Hs</span><b id="wave">...</b><small>m - trạng thái biển nền</small></div>
           <div class="risk-metric"><span>Hmax rủi ro</span><b id="waveMax">...</b><small>m - sóng cá thể cao nhất kỳ vọng</small></div>
-          <div><span>Sóng Hs</span><b id="wave">...</b><small>m - cao trung bình nhóm 1/3 lớn nhất</small></div>
           <div><span>Chu kỳ đỉnh</span><b id="period">...</b><small>giây</small></div>
           <div><span>Mưa 3 giờ</span><b id="rain">...</b><small>mm / 3 giờ</small></div>
           <div><span>Dòng chảy</span><b id="current">...</b><small>km/h</small></div>
@@ -51,19 +51,19 @@
       <article class="chart-panel panel">
         <div class="panel-head chart-head">
           <div><small>TỪ HIỆN TẠI ĐẾN D+3</small><h2>Gió - sóng - mưa theo thời gian</h2></div>
-          <div class="legend" aria-label="Chú thích biểu đồ"><span><i class="wind"></i>Gió</span><span><i class="gust"></i>Giật</span><span><i class="hmax"></i>Hmax</span><span><i class="wave"></i>Hs</span><span><i class="rain"></i>Mưa</span></div>
+          <div class="legend" aria-label="Chú thích biểu đồ"><span><i class="wind"></i>Gió</span><span><i class="gust"></i>Giật</span><span><i class="wave"></i>Hs</span><span><i class="hmax"></i>Hmax</span><span><i class="rain"></i>Mưa</span></div>
         </div>
-        <p class="chart-guide">Chỉ hiển thị các bước dự báo còn ở phía trước. Thời gian Phú Quốc (UTC+7). Hmax là sóng cá thể cao nhất kỳ vọng trong cửa sổ 20 phút, dùng để nhìn rủi ro; Hs mô tả trạng thái biển nền.</p>
-        <canvas id="forecastChart" width="900" height="390" aria-label="Biểu đồ dự báo tương lai gồm gió, gió giật, Hmax, Hs và mưa theo thời gian"></canvas>
+        <p class="chart-guide">Chỉ hiển thị các bước dự báo còn ở phía trước. Thời gian Phú Quốc (UTC+7). Hs là trạng thái biển nền; Hmax là sóng cá thể cao nhất kỳ vọng trong cửa sổ 20 phút để nhìn rủi ro.</p>
+        <canvas id="forecastChart" width="900" height="390" aria-label="Biểu đồ dự báo tương lai gồm gió, gió giật, Hs, Hmax và mưa theo thời gian"></canvas>
         <div id="chartEmpty" class="empty">Chưa có bước dự báo tương lai trong snapshot hiện tại.</div>
       </article>
     </section>
 
     <section class="panel forecast-table-panel">
-      <div class="panel-head"><div><small>SỐ LIỆU DỰ BÁO TỪ HIỆN TẠI</small><h2>Thời gian, gió, giật, Hmax, Hs và mưa</h2></div><span class="table-note">Mỗi bước 3 giờ</span></div>
+      <div class="panel-head"><div><small>SỐ LIỆU DỰ BÁO TỪ HIỆN TẠI</small><h2>Thời gian, gió, giật, Hs, Hmax và mưa</h2></div><span class="table-note">Mỗi bước 3 giờ</span></div>
       <div class="table-wrap">
         <table class="forecast-table">
-          <thead><tr><th>Thời gian</th><th>Gió<br><small>km/h</small></th><th>Gió giật<br><small>km/h</small></th><th>Mưa 3h<br><small>mm</small></th><th>Hmax<br><small>m</small></th><th>Hs<br><small>m</small></th><th>Chu kỳ<br><small>giây</small></th></tr></thead>
+          <thead><tr><th>Thời gian</th><th>Gió<br><small>km/h</small></th><th>Gió giật<br><small>km/h</small></th><th>Mưa 3h<br><small>mm</small></th><th>Hs<br><small>m</small></th><th>Hmax rủi ro<br><small>m</small></th><th>Chu kỳ<br><small>giây</small></th></tr></thead>
           <tbody id="forecastRows"></tbody>
         </table>
       </div>
@@ -81,7 +81,7 @@
       </article>
     </section>
   </main>
-  <footer><span>JoTrip Lab - số liệu mô hình trực tiếp, ưu tiên Hmax để nhận diện rủi ro sóng; tốc độ hiển thị bằng km/h.</span><span id="commitSha"></span></footer>
+  <footer><span>JoTrip Lab - Hs và Hmax được đặt cạnh nhau để đọc trạng thái biển nền và rủi ro sóng trong cùng một cụm.</span><span id="commitSha"></span></footer>
   <script src="/weather-dashboard.js"></script>
 </body>
 </html>
