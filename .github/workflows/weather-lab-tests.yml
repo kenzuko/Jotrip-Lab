@@ -68,3 +68,22 @@ jobs:
           name: weather-live-numeric-smoke
           path: /tmp/numeric-smoke.json
           retention-days: 7
+
+  icon-remap-asset:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Inspect official DWD remapping pack
+        run: python -m weather.collectors.icon_assets --output /tmp/icon-remap.json
+      - name: Verify remapping assets exist
+        run: python -c 'import json; p=json.load(open("/tmp/icon-remap.json")); assert p["status"] == "OFFICIAL_REMAP_PACK_READY"; assert p["bytes"] > 1000000; assert p["members"], p'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: icon-official-remap-pack-index
+          path: /tmp/icon-remap.json
+          retention-days: 7
