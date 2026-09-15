@@ -24,6 +24,8 @@ POINT_NAMES = {
 }
 VN = ZoneInfo("Asia/Ho_Chi_Minh")
 GUST_KEYS = ("10fg", "10fg3", "i10fg", "max_i10fg")
+HMAX_KEYS = ("hmax", "max_wave_height")
+HMAX_WINDOW_SECONDS = 20 * 60
 
 
 def _load(path: Path) -> dict:
@@ -73,8 +75,11 @@ def _gust_kmh(bucket: dict) -> float | None:
 def _wave_value(record: dict | None) -> float | None:
     if not record:
         return None
-    value = float(record["value"])
-    return round(value, 2) if 0 <= value <= 20 else None
+    try:
+        value = float(record["value"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    return round(value, 2) if 0 <= value <= 30 else None
 
 
 def _period_value(record: dict | None) -> float | None:
@@ -82,6 +87,29 @@ def _period_value(record: dict | None) -> float | None:
         return None
     value = float(record["value"])
     return round(value, 1) if 0 < value <= 40 else None
+
+
+def _hmax_proxy(hs: float | None, period: float | None) -> float | None:
+    """Rayleigh 20-minute expected-max proxy when a direct hmax field is unavailable.
+
+    This is a risk proxy, never presented as an observation. The 20-minute
+    window matches the meaning of ECMWF's hmax product closely enough for a
+    conservative fallback.
+    """
+    if hs is None or hs < 0:
+        return None
+    if period is not None and 0 < period <= 40:
+        wave_count = max(3.0, HMAX_WINDOW_SECONDS / period)
+        factor = math.sqrt(max(1.0, 0.5 * math.log(wave_count)))
+    else:
+        factor = 1.8
+    value = max(hs, hs * factor)
+    return round(value, 2) if value <= 40 else None
+
+
+def _direct_hmax(bucket: dict) -> float | None:
+    record = next((bucket.get(key) for key in HMAX_KEYS if bucket.get(key)), None)
+    return _wave_value(record)
 
 
 def _build_ecmwf_rows(payload: dict) -> dict[str, list[dict]]:
@@ -112,6 +140,13 @@ def _build_ecmwf_rows(payload: dict) -> dict[str, list[dict]]:
                 previous_tp_mm = current_tp_mm
                 rain = round(rain, 2) if rain <= 500 else None
 
+            wave = _wave_value(bucket.get("swh"))
+            period = _period_value(bucket.get("pp1d") or bucket.get("mwp"))
+            direct_hmax = _direct_hmax(bucket)
+            wave_max = direct_hmax if direct_hmax is not None else _hmax_proxy(wave, period)
+            if wave_max is not None and wave is not None:
+                wave_max = max(wave_max, wave)
+
             valid_dt = _iso(valid).astimezone(VN)
             rows.append({
                 "time": valid_dt.strftime("%d/%m %H:%M"),
@@ -119,8 +154,10 @@ def _build_ecmwf_rows(payload: dict) -> dict[str, list[dict]]:
                 "wind": _wind_kmh(bucket),
                 "gust": _gust_kmh(bucket),
                 "rain": rain,
-                "wave": _wave_value(bucket.get("swh")),
-                "period": _period_value(bucket.get("pp1d") or bucket.get("mwp")),
+                "wave": wave,
+                "wave_max": wave_max,
+                "wave_max_method": "ECMWF_HMAX_20MIN" if direct_hmax is not None else ("RAYLEIGH_20MIN_PROXY" if wave_max is not None else None),
+                "period": period,
             })
         rows_by_point[point] = rows
     return rows_by_point
@@ -140,15 +177,20 @@ def _current_speed(copernicus: dict, point: str) -> float | None:
         return None
 
 
-def _copernicus_wave(copernicus: dict, point: str) -> tuple[float | None, float | None]:
+def _copernicus_wave(copernicus: dict, point: str) -> tuple[float | None, float | None, float | None, str | None]:
     try:
-        wave = float(copernicus["wave"]["variables"]["VHM0"]["points"][point]["value"])
+        point_record = copernicus["wave"]["variables"]["VHM0"]["points"][point]
+        wave = float(point_record["value"])
         period = float(copernicus["wave"]["variables"]["VTPK"]["points"][point]["value"])
+        regional_record = copernicus["wave"]["variables"]["VHM0"].get("regional_max_15km", {}).get(point, {})
+        regional = float(regional_record["value"]) if regional_record.get("status") == "PASS" else None
+        sampled_time = point_record.get("sampled_time")
     except (KeyError, TypeError, ValueError):
-        return None, None
+        return None, None, None, None
     wave_out = round(wave, 2) if 0 <= wave <= 20 else None
     period_out = round(period, 2) if 0 < period <= 40 else None
-    return wave_out, period_out
+    regional_out = round(regional, 2) if regional is not None and 0 <= regional <= 20 else None
+    return wave_out, period_out, regional_out, sampled_time
 
 
 def _icon_cycle(field_url: str | None) -> str | None:
@@ -173,16 +215,26 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
     now = datetime.now(timezone.utc)
     rows_by_point = _build_ecmwf_rows(ecmwf)
     points = {}
-    present, expected = 0, len(POINT_NAMES) * 6
+    present, expected = 0, len(POINT_NAMES) * 7
 
     for point, name in POINT_NAMES.items():
         rows = rows_by_point.get(point, [])
         nearest = _nearest_row(rows, now)
         current = _current_speed(copernicus, point)
-        marine_wave, marine_period = _copernicus_wave(copernicus, point)
+        marine_wave, marine_period, regional_hs, marine_sampled_time = _copernicus_wave(copernicus, point)
+        risk_hs_candidates = [value for value in (marine_wave, regional_hs) if value is not None]
+        risk_hs = max(risk_hs_candidates) if risk_hs_candidates else nearest.get("wave")
+        regional_proxy = _hmax_proxy(risk_hs, marine_period or nearest.get("period"))
+        direct_current_hmax = nearest.get("wave_max") if nearest.get("wave_max_method") == "ECMWF_HMAX_20MIN" else None
+        max_candidates = [value for value in (direct_current_hmax, regional_proxy) if value is not None]
+        current_hmax = max(max_candidates) if max_candidates else nearest.get("wave_max")
+        hmax_method = "ECMWF_HMAX_PLUS_REGIONAL_HS_ENVELOPE" if direct_current_hmax is not None and regional_proxy is not None else (
+            "ECMWF_HMAX_20MIN" if direct_current_hmax is not None else ("RAYLEIGH_20MIN_PROXY_FROM_REGIONAL_HS" if regional_proxy is not None else nearest.get("wave_max_method"))
+        )
         values = {
             "wind": nearest.get("wind"),
             "gust": nearest.get("gust"),
+            "wave_max": current_hmax,
             "wave": marine_wave if marine_wave is not None else nearest.get("wave"),
             "period": marine_period if marine_period is not None else nearest.get("period"),
             "rain": nearest.get("rain"),
@@ -193,7 +245,10 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
             "name": name,
             "status": "LIVE DIRECT MODEL",
             **values,
-            "caveat": "Gió nền và mưa lấy từ ECMWF gần valid time của snapshot. Gió giật là trường ECMWF trực tiếp - cực đại 10 m kể từ lần hậu xử lý trước, không suy từ gió nền. Sóng và dòng chảy ở thẻ hiện tại lấy từ Copernicus Marine; chuỗi 72 giờ lấy từ ECMWF khi grid biển hợp lệ. Đây là dữ liệu mô hình, không phải quan trắc tại chỗ.",
+            "wave_regional_hs": regional_hs,
+            "wave_max_method": hmax_method,
+            "marine_sampled_time": marine_sampled_time,
+            "caveat": "Ưu tiên rủi ro bằng Hmax - sóng cá thể cao nhất kỳ vọng trong cửa sổ 20 phút. Hmax dùng trường ECMWF trực tiếp khi có và so với proxy từ Hs cao nhất trong vùng biển 15 km của Copernicus để giảm nguy cơ coastal smoothing. Hs vẫn được giữ để mô tả trạng thái biển trung bình của nhóm sóng cao. Copernicus lấy valid time gần snapshot nhất, không còn cố định time=0. Đây là dữ liệu mô hình, không phải quan trắc tại chỗ.",
             "hours": rows,
         }
 
@@ -205,12 +260,14 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
     icon_ready = icon.get("status") == "POINT_NUMERIC_READY"
     copernicus_ready = copernicus.get("status") == "POINT_NUMERIC_READY"
     gust_available = any(row.get("gust") is not None for rows in rows_by_point.values() for row in rows)
+    direct_hmax_available = any(row.get("wave_max_method") == "ECMWF_HMAX_20MIN" for rows in rows_by_point.values() for row in rows)
 
     gust_detail = ecmwf.get("gust_parameter") or "unavailable"
+    hmax_detail = ecmwf.get("wave_max_parameter") or "proxy-only"
     sources = {
         "ECMWF": {
             "status": "PASS" if atmosphere_ready else "FAIL",
-            "detail": f"IFS/Wave 0-72h · {len(ecmwf.get('steps', []))} bước · {ecmwf.get('record_count', 0)} point-records · gust={gust_detail}",
+            "detail": f"IFS/Wave 0-72h · {len(ecmwf.get('steps', []))} bước · {ecmwf.get('record_count', 0)} point-records · gust={gust_detail} · hmax={hmax_detail}",
         },
         "GEFS": {
             "status": "PARTIAL" if gefs_ready else "FAIL",
@@ -222,7 +279,7 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
         },
         "COPERNICUS": {
             "status": "PASS" if copernicus_ready else "FAIL",
-            "detail": "Wave + current subset cho 3 điểm",
+            "detail": "Wave + current nearest-time; Hs regional max trong bán kính 15 km",
         },
         "RADAR_LIGHTNING": {
             "status": "UNRESOLVED",
@@ -240,6 +297,8 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
     ]
     if not gust_available:
         gaps.insert(1, {"name": "Gió giật", "detail": ecmwf.get("gust_error") or "ECMWF gust chưa có ở cycle này; không nội suy"})
+    if not direct_hmax_available:
+        gaps.insert(1, {"name": "Hmax trực tiếp", "detail": ecmwf.get("wave_max_error") or "ECMWF hmax chưa có; dashboard đang dùng proxy Rayleigh 20 phút"})
 
     return {
         "snapshot_id": f"PQWX_LIVE_{generated.strftime('%Y%m%d_%H%M%S')}",
