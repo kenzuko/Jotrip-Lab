@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from weather.collectors.live_smoke import _utcnow
+from weather.processing.units import add_speed_display
 
 POINTS = {
     "duong_dong": (10.2172, 103.9593),
@@ -30,7 +31,7 @@ def _decode_all(path: Path, run_time: datetime, source: str, stream: str) -> lis
                 valid_time = run_time + timedelta(hours=step)
                 for point_id, (lat, lon) in POINTS.items():
                     nearest = codes_grib_find_nearest(gid, lat, lon)[0]
-                    records.append({
+                    records.append(add_speed_display({
                         "source": source, "stream": stream, "run_time": run_time.isoformat(),
                         "valid_time": valid_time.isoformat(), "lead_hours": step,
                         "member": None, "variable": variable, "point_id": point_id,
@@ -38,7 +39,7 @@ def _decode_all(path: Path, run_time: datetime, source: str, stream: str) -> lis
                         "sampled_lat": float(nearest["lat"]), "sampled_lon": float(nearest["lon"]),
                         "distance_km": float(nearest["distance"]), "value": float(nearest["value"]),
                         "unit": unit, "qc": "PASS", "provenance": "DIRECT",
-                    })
+                    }))
             finally:
                 codes_release(gid)
     return records

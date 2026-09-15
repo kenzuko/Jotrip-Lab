@@ -1,0 +1,37 @@
+{
+  "thresholds": {
+    "gust_kmh": {"watch": 29, "avoid": 39},
+    "hs_m": {"watch": 1.5, "avoid": 2.0},
+    "rain_3h_mm": {"watch": 10, "avoid": 25}
+  },
+  "required_variables": ["gust_kmh", "hs_m", "rain_3h_mm"],
+  "time_rows": [
+    {"start_time": "05:00", "end_time": "08:00", "gust_kmh": 22, "hs_m": 0.9, "rain_3h_mm": 1},
+    {"start_time": "08:00", "end_time": "11:00", "gust_kmh": 26, "hs_m": 1.0, "rain_3h_mm": 2},
+    {"start_time": "11:00", "end_time": "14:00", "gust_kmh": 33, "hs_m": 1.2, "rain_3h_mm": 8}
+  ],
+  "route_samples": [
+    {"valid_time": "08:00", "segment_id": "s1", "hs_m": 0.9, "gust_kmh": 24, "wave_direction_deg": 210, "heading_deg": 190, "duration_minutes": 25, "sea_land_status": "SEA", "qc": "PASS"},
+    {"valid_time": "08:00", "segment_id": "s2", "hs_m": 1.1, "gust_kmh": 27, "wave_direction_deg": 220, "heading_deg": 150, "duration_minutes": 30, "sea_land_status": "SEA", "qc": "PASS"}
+  ],
+  "cumulative_rain": [
+    {"valid_time": "03:00", "lead_hours": 3, "value_mm": 1},
+    {"valid_time": "06:00", "lead_hours": 6, "value_mm": 2},
+    {"valid_time": "09:00", "lead_hours": 9, "value_mm": 4}
+  ],
+  "ensemble_window_records": [
+    {"member": 0, "variable": "gust_kmh", "value": 25}, {"member": 0, "variable": "hs_m", "value": 1.0},
+    {"member": 1, "variable": "gust_kmh", "value": 30}, {"member": 1, "variable": "hs_m", "value": 1.1},
+    {"member": 2, "variable": "gust_kmh", "value": 45}, {"member": 2, "variable": "hs_m", "value": 1.2},
+    {"member": 3, "variable": "gust_kmh", "value": 28}, {"member": 3, "variable": "hs_m", "value": 1.0}
+  ],
+  "operational_envelope": {"gust_kmh": 39, "hs_m": 1.5},
+  "expected_members": 4,
+  "restriction": "OPEN",
+  "critical_missing": [],
+  "actual_hazard": false,
+  "drift_runs": [
+    {"model": "GEFS", "system": "ens", "variable": "hs", "location_id": "route", "valid_window": "D1_AM", "extraction_method": "route_v1", "value": 1.8, "onset_hour": 6},
+    {"model": "GEFS", "system": "ens", "variable": "hs", "location_id": "route", "valid_window": "D1_AM", "extraction_method": "route_v1", "value": 1.4, "onset_hour": 12}
+  ]
+}

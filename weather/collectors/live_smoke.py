@@ -17,6 +17,8 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from weather.processing.units import speed_to_kmh
+
 PHU_QUOC_LAT = 10.0191
 PHU_QUOC_LON = 104.0150
 USER_AGENT = "JoTrip-Lab/1.0 direct-model-smoke"
@@ -85,6 +87,13 @@ def _decode_grib(path: Path, *, nearest: bool = True) -> dict:
                     "value": float(point["value"]),
                     "distance_km": float(point["distance"]),
                 }
+                try:
+                    decoded["phu_quoc_point"]["display_value"] = speed_to_kmh(
+                        point["value"], decoded["units"]
+                    )
+                    decoded["phu_quoc_point"]["display_unit"] = "km/h"
+                except ValueError:
+                    pass
             return decoded
         finally:
             codes_release(gid)

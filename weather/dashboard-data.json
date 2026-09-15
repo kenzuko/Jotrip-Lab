@@ -1,0 +1,28 @@
+{
+  "snapshot_id": "PQWX_VERIFIED_TEST_V1",
+  "generated_at": "2026-09-15T05:47:10+07:00",
+  "data_mode": "B",
+  "completeness": 58,
+  "confidence": 62,
+  "report_status": "VERIFIED_TEST",
+  "decision": "NOT_ISSUED",
+  "headline": "Direct-model đã chạy, snapshot production chưa được phát",
+  "next_review": "sau lần chạy CI kế tiếp",
+  "git_commit_sha": "e1fa6cc",
+  "sources": {
+    "ECMWF": {"status": "PASS", "detail": "IFS/Wave 0-72h, 25 bước"},
+    "GEFS": {"status": "PARTIAL", "detail": "31/31 tại lead +3h"},
+    "ICON": {"status": "PASS", "detail": "DWD remap point"},
+    "COPERNICUS": {"status": "PASS", "detail": "Wave + Current 3 điểm"},
+    "RADAR_LIGHTNING": {"status": "UNRESOLVED", "detail": "Chưa có coverage ổn định"}
+  },
+  "gaps": [
+    {"name": "GEFS full matrix", "detail": "member x biến x 0-72h"},
+    {"name": "Nowcast offshore", "detail": "radar/lightning unresolved"}
+  ],
+  "points": {
+    "an_thoi": {"name": "An Thới", "status": "VERIFIED TEST", "wind": null, "gust": null, "wave": 0.32, "period": 4.44, "rain": null, "current": 0.26, "caveat": "Số Copernicus ở valid time đầu tiên của lần kiểm thử, không phải điều kiện hiện tại và không dùng riêng để GO/HOLD.", "hours": []},
+    "duong_dong": {"name": "Dương Đông", "status": "INGEST VERIFIED", "wind": null, "gust": null, "wave": null, "period": null, "rain": null, "current": null, "caveat": "Đã trích point thành công. Snapshot định lượng production chưa được phát.", "hours": []},
+    "ganh_dau": {"name": "Gành Dầu", "status": "INGEST VERIFIED", "wind": null, "gust": null, "wave": null, "period": null, "rain": null, "current": null, "caveat": "Đã trích point thành công. Snapshot định lượng production chưa được phát.", "hours": []}
+  }
+}

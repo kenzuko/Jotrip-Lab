@@ -1,16 +1,16 @@
 # PHÚ QUỐC WEATHER & MARINE DECISION INTELLIGENCE
 
-## MASTER LOCK V5.3 - LAB-FIRST, REALITY-FIRST, VERIFIED DIRECT-MODEL
+## MASTER LOCK V5.6 - POINT/REGIONAL-FIRST, REALITY-FIRST, CALCULATION-READY
 
 Ngày khóa: 15/09/2026  
-Thay thế: MASTER V5.2, V5.1, V5.0, V4.9 và các bản trước  
+Thay thế: MASTER V5.5, V5.4, V5.3, V5.2, V5.1, V5.0, V4.9 và các bản trước  
 Múi giờ vận hành: UTC+7  
 Lịch báo cáo: 06:00 và 18:00 hằng ngày  
-Phạm vi: Phú Quốc, vùng biển lân cận, các điểm và tuyến vận hành JoTrip
+Phạm vi production: Phú Quốc, vùng biển lân cận và các điểm vận hành. Route là lớp tùy chọn, không phải điều kiện bắt buộc.
 
 ## 1. MỤC TIÊU
 
-Tạo báo cáo ra quyết định sát điều kiện JoTrip thực sự gặp tại điểm và trên tuyến. Hệ thống phải xác định:
+Tạo báo cáo ra quyết định sát điều kiện JoTrip thực sự gặp tại các điểm đại diện và nền khu vực. Hệ thống phải xác định:
 
 - điều kiện có khả năng xảy ra nhất;
 - cửa vận hành tốt nhất và cửa cần tránh;
@@ -20,6 +20,12 @@ Tạo báo cáo ra quyết định sát điều kiện JoTrip thực sự gặp 
 - xu hướng cải thiện hoặc xấu đi giữa các model run.
 
 Không dự báo xấu nhất có thể. Không hạ chuẩn an toàn. Không biến thiếu dữ liệu thành thời tiết xấu.
+
+### Khóa đơn vị hiển thị
+
+Toàn bộ tốc độ gió nền, gió giật và dòng chảy trong bảng điều hành, bảng định lượng, weather window và báo cáo cho người đọc phải dùng `km/h`. Không hiển thị `m/s` hoặc `kt` làm đơn vị số chính. Beaufort chỉ được giữ trong ngoặc để đối chiếu bản tin chính thức.
+
+Lab phải giữ nguyên `raw value + raw unit` từ nguồn để kiểm toán, đồng thời tạo `display_value + display_unit = km/h`. Quy đổi cố định: `1 m/s = 3,6 km/h`; `1 kt = 1,852 km/h`. Hs dùng mét, period dùng giây, lượng mưa dùng mm và hướng dùng độ.
 
 ## 2. LAB-FIRST EXECUTION LOCK
 
@@ -91,11 +97,11 @@ BLEND_WEIGHT = 0
 
 Chúng chỉ dùng discovery/context. Nếu dẫn nguồn chính thức phải truy bản gốc. Không truy được bản gốc thì không đưa claim vào công thức.
 
-Nguồn chính thức Việt Nam không phải nguồn yếu. VISHIPEL, bản tin An Thới và Cảng vụ vẫn có quyền cao trong đúng phạm vi, đúng thời hạn.
+Nguồn chính thức Việt Nam không phải nguồn yếu. Tuy nhiên VISHIPEL, bản tin An Thới và Cảng vụ là lớp tùy chọn: có thì dùng đúng phạm vi và thời hạn; không có thì không ghi Critical Missing, không giảm Completeness, không hạ MODE và không chặn báo cáo. Nguồn thương mại liên quan các bản tin này được bỏ qua.
 
 ## 5. DATA MODE
 
-MODE A - đủ direct atmosphere, direct marine, member-level ensemble, point/route extraction và lớp actual/official cần thiết. Cho phép q50/q90/q95, exceedance probability và P_operational_window khi coherence gate đạt.
+MODE A - đủ direct atmosphere, direct marine, member-level ensemble và point extraction tại Dương Đông, An Thới và Gành Dầu. Bản tin An Thới, Cảng vụ và route không bắt buộc. Cho phép q50/q90/q95, exceedance probability và P_operational_window theo point/time khi coherence gate đạt.
 
 MODE B - có đủ operational evidence nhưng thiếu một số lớp nâng cao. Cho phép deterministic range, model comparison, drift định tính/định lượng hợp lệ, weather window và quyết định có confidence penalty. Không tạo ensemble giả.
 
@@ -155,7 +161,7 @@ ACTUAL/VERIFIED LOCAL TRUTH
 - An Thới: 10.0191N, 104.0150E;
 - Gành Dầu: 10.3759N, khoảng 103.9000E.
 
-Hòn Dăm, Vịnh Đầm, Hòn Thơm, Mây Rút, Gầm Ghì và route geometry chỉ được production-eligible sau khi xác minh GPS.
+Ba điểm production bắt buộc: Dương Đông, An Thới và Gành Dầu. Hòn Dăm, Vịnh Đầm, Hòn Thơm, Mây Rút và Gầm Ghì là điểm bổ sung khi tọa độ đã xác minh. Route geometry là tùy chọn.
 
 Regional hazard không được tự nâng local D0 risk nếu thiếu causal bridge. Causal bridge gồm route intersection, point concurrence, actual deterioration, local official warning hoặc restriction.
 
@@ -249,7 +255,7 @@ Copernicus Wave/Current: authenticated direct subset + NetCDF + 3 points PASS
 
 ECMWF đã chứng minh đường chạy 72 giờ cho `10u`, `10v`, `tp`, `swh`, `mwd`, `mwp`, `pp1d` tại Dương Đông, An Thới và Gành Dầu. Kết quả live ngày 15/09/2026 dùng run 18Z ngày 14/09, `wave_error = null`.
 
-GEFS/GEFS Wave đã chứng minh member completeness 100% tại lead +3h cho 10u và Hs. Chưa chứng minh đủ member x variable x mọi lead 0-72h. Copernicus đã lấy trực tiếp dataset wave 3 giờ và current 6 giờ chính thức, gồm Hs, hướng, mean/peak period, U/V và vector dòng chảy tại ba điểm. P_operational_window toàn cửa và MODE A vẫn khóa cho đến khi đủ matrix ensemble và route production. Không được suy rộng một lead thành full ensemble readiness.
+GEFS/GEFS Wave đã chứng minh member completeness 100% tại lead +3h cho 10u và Hs. Chưa chứng minh đủ member x variable x mọi lead 0-72h. Copernicus đã lấy trực tiếp dataset wave 3 giờ và current 6 giờ chính thức, gồm Hs, hướng, mean/peak period, U/V và vector dòng chảy tại ba điểm. P_operational_window và MODE A vẫn khóa cho đến khi đủ matrix ensemble tại ba point production. Không được suy rộng một lead thành full ensemble readiness.
 
 ### 10.4 VERIFIED-NOT-COMPLETE RULE
 
@@ -261,7 +267,7 @@ IMPLEMENTED-NOT-LIVE-VERIFIED
 NOT-YET-IMPLEMENTED / AUTH-REQUIRED
 ```
 
-Không được dùng câu “đã vượt qua hết” nếu GEFS member gate, Copernicus subset, route GPS hoặc nowcast coverage chưa đạt. Phần đã đạt vẫn được sử dụng đúng phạm vi, không biến toàn report thành MISSING.
+Không được dùng câu “đã vượt qua hết” nếu GEFS member gate, Copernicus subset, ba point production hoặc nowcast coverage chưa đạt. Phần đã đạt vẫn được sử dụng đúng phạm vi, không biến toàn report thành MISSING.
 
 ## 11. ENSEMBLE VÀ CALIBRATION
 
@@ -468,7 +474,30 @@ Critical Data Gaps:
 Report Status: FULL / DEGRADED
 ```
 
-## 23. KHÓA CUỐI
+## 23. CALCULATION EXECUTION LOCK
+
+Các kết quả sau chỉ được đọc từ hàm versioned của Lab, không tính tự do trong lúc viết báo cáo:
+
+```text
+WIND_VECTOR: U/V -> speed km/h + direction-from
+RAIN_INCREMENT: cumulative -> native-step increment
+RAIN_WINDOWS: 3h/6h/24h theo đúng bước nguồn
+ENSEMBLE: q25/q50/q75/q90/q95 + exceedance gate
+ROUTE: typical/max Hs + max gust + wave angle + worst segment + exposure
+WINDOW: BEST/MARGINAL/AVOID/UNRESOLVED
+P_OPERATIONAL_WINDOW: coherent member x toàn time/point/variable
+DRIFT: amplitude/onset/peak/probability + reversal
+D4-D14: likely/possible range, planning only
+DECISION: restriction + actual hazard + window + critical uncertainty
+```
+
+`P_operational_window` chỉ xuất khi ít nhất 75% member có đủ mọi biến bắt buộc xuyên suốt cửa vận hành tại point production; từ 90% mới `ELIGIBLE`, 75-89% là `PARTIAL_ENSEMBLE` kèm penalty. Thiếu coherence phải ghi `NOT_COMPUTABLE`.
+
+Route là lớp tùy chọn. Thiếu route không hạ MODE và không tạo Critical Missing. Radar/lightning không có coverage phải ghi `UNRESOLVED`, sau đó dùng degradation path. Technical module tồn tại không đồng nghĩa dữ liệu live của cycle đã đầy đủ.
+
+Mỗi derived result phải mang `formula_bundle_version`, input IDs, source/run/member/valid time và QC. Cùng snapshot, config và code version phải tái tạo cùng kết quả.
+
+## 24. KHÓA CUỐI
 
 ```text
 KHÔNG BỊA.

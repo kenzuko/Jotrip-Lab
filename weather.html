@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#07151d">
+  <title>JoTrip Weather Lab</title>
+  <meta name="description" content="Bảng kiểm tra dữ liệu thời tiết và biển Phú Quốc của JoTrip Lab">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307151d'/%3E%3Cpath d='M8 39c10-9 16 9 25 0s16 9 23 0' fill='none' stroke='%232fc5b4' stroke-width='6'/%3E%3Ccircle cx='45' cy='18' r='8' fill='%23fcbc12'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/weather-dashboard.css">
+</head>
+<body>
+  <header class="topbar">
+    <div><span class="brand-mark">JO</span><strong>JoTrip Weather Lab</strong></div>
+    <div class="cycle"><span id="healthDot" class="dot"></span><span id="cycleText">Đang đọc snapshot...</span></div>
+  </header>
+  <main>
+    <section class="status-grid" aria-label="Trạng thái hệ thống">
+      <article><small>DATA MODE</small><b id="dataMode">...</b><span id="modeNote">Đang kiểm tra</span></article>
+      <article><small>SNAPSHOT</small><b id="snapshotAge">...</b><span id="snapshotId">...</span></article>
+      <article><small>ĐỘ ĐẦY ĐỦ</small><b id="completeness">...</b><span>theo point production</span></article>
+      <article><small>ĐỘ TIN CẬY</small><b id="confidence">...</b><span>không phải mức rủi ro</span></article>
+    </section>
+
+    <section class="decision-strip">
+      <div><small>TRẠNG THÁI TÍNH TOÁN</small><h1 id="headline">Chưa có snapshot production</h1></div>
+      <div class="decision-meta"><span id="decisionBadge" class="badge neutral">CHƯA KẾT LUẬN</span><span id="nextReview">Lần đọc tiếp: ...</span></div>
+    </section>
+
+    <nav class="point-tabs" aria-label="Điểm dự báo">
+      <button data-point="an_thoi" class="active">An Thới</button>
+      <button data-point="duong_dong">Dương Đông</button>
+      <button data-point="ganh_dau">Gành Dầu</button>
+    </nav>
+
+    <section class="point-layout">
+      <article class="conditions panel">
+        <div class="panel-head"><div><small>ĐIỀU KIỆN TẠI ĐIỂM</small><h2 id="pointName">An Thới</h2></div><span id="pointStatus" class="source-tag">...</span></div>
+        <div class="metric-grid">
+          <div><span>Gió nền</span><b id="wind">...</b><small>km/h</small></div>
+          <div><span>Gió giật</span><b id="gust">...</b><small>km/h</small></div>
+          <div><span>Sóng Hs</span><b id="wave">...</b><small>m</small></div>
+          <div><span>Chu kỳ đỉnh</span><b id="period">...</b><small>giây</small></div>
+          <div><span>Mưa 3 giờ</span><b id="rain">...</b><small>mm</small></div>
+          <div><span>Dòng chảy</span><b id="current">...</b><small>km/h</small></div>
+        </div>
+        <p id="pointCaveat" class="caveat"></p>
+      </article>
+
+      <article class="chart-panel panel">
+        <div class="panel-head"><div><small>72 GIỜ</small><h2>Mưa, gió và sóng</h2></div><div class="legend"><i class="wind"></i>Gió <i class="wave"></i>Sóng <i class="rain"></i>Mưa</div></div>
+        <canvas id="forecastChart" width="900" height="330" aria-label="Biểu đồ dự báo 72 giờ"></canvas>
+        <div id="chartEmpty" class="empty">Chưa có full matrix 72 giờ để vẽ.</div>
+      </article>
+    </section>
+
+    <section class="lower-grid">
+      <article class="panel">
+        <div class="panel-head"><div><small>DIRECT INGEST</small><h2>Sức khỏe nguồn</h2></div></div>
+        <div id="sources" class="source-list"></div>
+      </article>
+      <article class="panel">
+        <div class="panel-head"><div><small>DATA GAPS</small><h2>Phần đang chờ</h2></div></div>
+        <div id="gaps" class="gap-list"></div>
+      </article>
+      <article class="panel quantitative">
+        <div class="panel-head"><div><small>D0-D3</small><h2>Bảng định lượng</h2></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Thời gian</th><th>Gió</th><th>Giật</th><th>Mưa</th><th>Hs</th><th>Chu kỳ</th></tr></thead><tbody id="forecastRows"></tbody></table></div>
+      </article>
+    </section>
+  </main>
+  <footer><span>JoTrip Lab - số liệu thô được giữ nguyên, tốc độ vận hành hiển thị bằng km/h.</span><span id="commitSha"></span></footer>
+  <script src="/weather-dashboard.js"></script>
+</body>
+</html>

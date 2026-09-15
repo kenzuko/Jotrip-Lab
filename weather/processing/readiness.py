@@ -23,8 +23,15 @@ def derive_data_mode(sources: dict, evidence: dict) -> str:
     atmosphere = any(decision_eligible(v) for k, v in sources.items() if "ECMWF" in k or "GEFS_DIRECT" in k or "ICON" in k)
     marine = any(decision_eligible(v) for k, v in sources.items() if "WAVE" in k or "COPERNICUS" in k)
     ensemble = any(decision_eligible(v, ensemble_required=True) for v in sources.values())
-    route = bool(evidence.get("routes"))
-    if atmosphere and marine and ensemble and route:
+    required_points = set(evidence.get("required_points", ("duong_dong", "an_thoi", "ganh_dau")))
+    point_coverage = set(evidence.get("point_coverage", []))
+    point_ready = required_points.issubset(point_coverage) if required_points else bool(point_coverage)
+    spatial_mode = evidence.get("spatial_mode", "POINT_REGIONAL")
+    spatial_ready = point_ready if spatial_mode == "POINT_REGIONAL" else any(
+        bool(value.get("production_eligible")) and value.get("qc") == "PASS"
+        for value in evidence.get("routes", {}).values()
+    )
+    if atmosphere and marine and ensemble and spatial_ready:
         return "A"
     if atmosphere or marine or evidence.get("official_status") or evidence.get("points"):
         return "B"

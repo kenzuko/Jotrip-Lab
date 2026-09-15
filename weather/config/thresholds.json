@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "status": "PROVISIONAL_UNTIL_LOCAL_CALIBRATION",
+  "units": {"wind": "km/h", "gust": "km/h", "current": "km/h", "hs": "m", "rain": "mm"},
+  "cano_south": {
+    "wind_kmh": {"watch": 29, "avoid": 39},
+    "gust_kmh": {"watch": 39, "avoid": 50},
+    "hs_m": {"watch": 1.5, "avoid": 2.0},
+    "rain_3h_mm": {"watch": 10, "avoid": 25},
+    "convective_probability": {"watch": 0.35, "avoid": 0.65}
+  },
+  "fishing_hon_dam": {
+    "wind_kmh": {"watch": 29, "avoid": 39},
+    "gust_kmh": {"watch": 39, "avoid": 50},
+    "hs_m": {"watch": 1.5, "avoid": 2.0},
+    "convective_probability": {"watch": 0.35, "avoid": 0.65}
+  },
+  "fast_ferry": {
+    "wind_kmh": {"watch": 39, "avoid": 50},
+    "gust_kmh": {"watch": 50, "avoid": 62},
+    "hs_m": {"watch": 2.0, "avoid": 3.0},
+    "convective_probability": {"watch": 0.5, "avoid": 0.75}
+  },
+  "vehicle_ferry": {
+    "wind_kmh": {"watch": 39, "avoid": 50},
+    "gust_kmh": {"watch": 50, "avoid": 62},
+    "hs_m": {"watch": 2.0, "avoid": 3.0},
+    "convective_probability": {"watch": 0.5, "avoid": 0.75}
+  },
+  "land_tour": {
+    "gust_kmh": {"watch": 50, "avoid": 62},
+    "rain_3h_mm": {"watch": 20, "avoid": 50},
+    "convective_probability": {"watch": 0.5, "avoid": 0.75}
+  },
+  "note": "Cấp 4 không tự động nâng rủi ro. Threshold chỉ là gate ban đầu và phải kết hợp hướng sóng, chu kỳ, tuyến, đối lưu, actual và restriction."
+}

@@ -2,14 +2,16 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://jotrip.vn/schemas/lab_snapshot_v1.schema.json",
   "type": "object",
-  "required": ["snapshot_id", "schema_version", "cutoff_time", "generated_at", "data_mode", "direct_ingest_status", "points", "routes", "ensemble", "data_gaps", "audit", "payload_hash"],
+  "required": ["snapshot_id", "schema_version", "cutoff_time", "generated_at", "data_mode", "direct_ingest_status", "points", "routes", "ensemble", "data_gaps", "unit_policy", "audit", "payload_hash"],
   "properties": {
     "snapshot_id": {"type": "string"}, "schema_version": {"const": "1.0"},
     "cutoff_time": {"type": "string", "format": "date-time"}, "generated_at": {"type": "string", "format": "date-time"},
     "data_mode": {"enum": ["A", "B", "C"]}, "direct_ingest_status": {"type": "object"},
     "points": {"type": "object"}, "routes": {"type": "object"}, "ensemble": {"type": "object"},
     "observations": {"type": "object"}, "official_status": {"type": "object"}, "drift": {"type": "object"},
-    "data_gaps": {"type": "array"}, "audit": {"type": "object"},
+    "data_gaps": {"type": "array"},
+    "unit_policy": {"type": "object", "required": ["operational_speed", "raw_units_preserved"]},
+    "audit": {"type": "object"},
     "payload_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
   },
   "additionalProperties": true

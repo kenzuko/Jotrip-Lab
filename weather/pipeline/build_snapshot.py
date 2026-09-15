@@ -43,7 +43,9 @@ def build_snapshot(evidence: dict, cutoff: datetime, health: dict | None = None)
         "ensemble": evidence.get("ensemble", {}), "observations": evidence.get("observations", {}),
         "official_status": evidence.get("official_status", {}), "drift": evidence.get("drift", {}),
         "data_gaps": gaps,
-        "audit": {"git_commit_sha": git_sha(), "formula_bundle_version": "weather-lab-0.1.0", "hash_algorithm": "SHA-256", "request_manifests": default_manifests(now)},
+        "unit_policy": {"operational_speed": "km/h", "raw_units_preserved": True,
+                        "mps_to_kmh": 3.6, "kt_to_kmh": 1.852},
+        "audit": {"git_commit_sha": git_sha(), "formula_bundle_version": "weather-lab-0.2.0", "hash_algorithm": "SHA-256", "request_manifests": default_manifests(now)},
     }
     return seal_snapshot(payload)
 

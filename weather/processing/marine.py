@@ -4,10 +4,18 @@ from __future__ import annotations
 import math
 
 
+MPS_TO_KMH = 3.6
+
+
+def speed_mps_to_kmh(value: float) -> float:
+    """Convert SI model speed to the locked operational display unit."""
+    return round(float(value) * MPS_TO_KMH, 2)
+
+
 def current_from_uv(u_east: float, v_north: float) -> dict:
     speed = math.hypot(u_east, v_north)
     toward = (math.degrees(math.atan2(u_east, v_north)) + 360.0) % 360.0
-    return {"speed_mps": round(speed, 4), "direction_toward_deg": round(toward, 2)}
+    return {"speed_kmh": speed_mps_to_kmh(speed), "direction_toward_deg": round(toward, 2)}
 
 
 def angular_difference(a: float, b: float) -> float:
@@ -24,6 +32,6 @@ def summarize_route(samples: list[dict]) -> dict:
     return {
         "status": "OK", "sample_count": len(valid), "route_typical_hs_m": round(hs[len(hs)//2], 3),
         "route_max_hs_m": round(max(hs), 3), "route_upper_p90_hs_m": round(hs[idx], 3),
-        "max_gust_mps": round(max(float(s.get("gust_mps", 0)) for s in valid), 3),
+        "max_gust_kmh": speed_mps_to_kmh(max(float(s.get("gust_mps", 0)) for s in valid)),
         "worst_segment": max_sample["segment_id"], "worst_sample_coordinate": max_sample["sampled_coordinate"]
     }

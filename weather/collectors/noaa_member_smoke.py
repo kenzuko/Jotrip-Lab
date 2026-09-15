@@ -8,6 +8,7 @@ from pathlib import Path
 
 from weather.collectors.live_smoke import _candidate_cycles, _indexed_grib, _utcnow
 from weather.processing.ensemble import summarize_members
+from weather.processing.units import add_speed_display
 
 ROOTS = (
     "https://nomads.ncep.noaa.gov/pub/data/nccf/com/gens/prod",
@@ -43,8 +44,9 @@ def _collect_family(kind: str, lead: int, work: Path) -> dict:
             if member_result:
                 value = member_result["decoded"]["phu_quoc_point"]["value"]
                 values.append(value)
-                records.append({"member": member, "value": value, "unit": member_result["decoded"]["units"],
-                                "index_record": member_result["index_record"]})
+                records.append(add_speed_display({"member": member, "value": value,
+                                "unit": member_result["decoded"]["units"],
+                                "index_record": member_result["index_record"]}))
         if len(values) >= 24:
             summary = summarize_members(values, expected_members=31)
             return {"status": summary["status"], "readiness": "MEMBER_COMPLETE" if len(values) >= 28 else "POINT_ROUTE_EXTRACTED",

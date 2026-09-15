@@ -25,6 +25,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m unittest discover -s weather/tests -v
+      - run: python -m weather.pipeline.decision_features --input weather/tests/fixtures/end_to_end_decision.json --output /tmp/decision-features.json
+      - run: python -c 'import json; p=json.load(open("/tmp/decision-features.json")); assert p["decision"]["decision"] == "GO_WITH_WATCH"; assert p["operational_probability"]["p_operational_window"] == .75'
       - run: python -m weather.pipeline.build_snapshot --input weather/tests/fixtures/an_thoi_2026_09_14.json --output /tmp/an_thoi_snapshot.json --cutoff 2026-09-14T22:45:00Z --offline
       - run: python -c 'import json; from weather.processing.snapshot import verify_snapshot; p=json.load(open("/tmp/an_thoi_snapshot.json")); assert verify_snapshot(p)'
 
