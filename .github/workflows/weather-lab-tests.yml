@@ -1,0 +1,180 @@
+name: Weather Lab tests
+
+on:
+  schedule:
+    - cron: "40 9,21 * * *"
+  push:
+    paths:
+      - "weather/**"
+      - ".github/workflows/weather-lab-tests.yml"
+  pull_request:
+    paths:
+      - "weather/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m unittest discover -s weather/tests -v
+      - run: python -m weather.pipeline.build_snapshot --input weather/tests/fixtures/an_thoi_2026_09_14.json --output /tmp/an_thoi_snapshot.json --cutoff 2026-09-14T22:45:00Z --offline
+      - run: python -c 'import json; from weather.processing.snapshot import verify_snapshot; p=json.load(open("/tmp/an_thoi_snapshot.json")); assert verify_snapshot(p)'
+
+  live-source-probe:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Probe primary and official mirrors
+        run: python -m weather.collectors.probe --output /tmp/source-health.json
+      - name: Require every credential-free source to be reachable
+        run: python -c 'import json; p=json.load(open("/tmp/source-health.json")); required=("ECMWF_DIRECT","NOAA_GEFS_DIRECT","NOAA_GEFS_WAVE_DIRECT","DWD_ICON_DIRECT"); assert all(p[k]["status"] == "REACHABLE" for k in required), p'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: weather-live-source-health
+          path: /tmp/source-health.json
+          retention-days: 7
+
+  live-numeric-smoke:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install official model clients and GRIB decoder
+        run: python -m pip install --disable-pip-version-check ecmwf-opendata eccodes
+      - name: Download and decode live numerical fields
+        run: python -m weather.collectors.live_smoke --output /tmp/numeric-smoke.json
+      - name: Enforce numerical readiness gates
+        run: python -c 'import json; p=json.load(open("/tmp/numeric-smoke.json")); assert p["ECMWF_DIRECT"]["status"] == "NUMERIC_READY", p["ECMWF_DIRECT"]; assert p["NOAA_GEFS_DIRECT"]["status"] == "NUMERIC_READY", p["NOAA_GEFS_DIRECT"]; assert p["NOAA_GEFS_WAVE_DIRECT"]["status"] == "NUMERIC_READY", p["NOAA_GEFS_WAVE_DIRECT"]; assert p["DWD_ICON_DIRECT"]["status"] == "FIELD_NUMERIC_READY_POINT_PENDING", p["DWD_ICON_DIRECT"]'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: weather-live-numeric-smoke
+          path: /tmp/numeric-smoke.json
+          retention-days: 7
+
+  icon-remap-asset:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Inspect official DWD remapping pack
+        run: python -m weather.collectors.icon_assets --output /tmp/icon-remap.json
+      - name: Verify remapping assets exist
+        run: python -c 'import json; p=json.load(open("/tmp/icon-remap.json")); assert p["status"] == "OFFICIAL_REMAP_PACK_READY"; assert p["bytes"] > 1000000; assert p["members"], p'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: icon-official-remap-pack-index
+          path: /tmp/icon-remap.json
+          retention-days: 7
+
+  icon-point-smoke:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install CDO and GRIB decoder
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y cdo
+          python -m pip install --quiet eccodes
+      - name: Remap live ICON field and extract Phu Quoc
+        run: python -m weather.collectors.icon_point --output /tmp/icon-point.json
+      - name: Enforce point readiness
+        run: python -c 'import json; p=json.load(open("/tmp/icon-point.json")); assert p["status"] == "POINT_NUMERIC_READY"; assert "phu_quoc_point" in p["decoded"]'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: icon-live-point-smoke
+          path: /tmp/icon-point.json
+          retention-days: 7
+
+  ecmwf-72h-point-smoke:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install official client and GRIB decoder
+        run: python -m pip install --quiet ecmwf-opendata eccodes
+      - name: Collect D0-D3 fields at locked points
+        run: python -m weather.collectors.ecmwf_72h --output /tmp/ecmwf-72h.json
+      - name: Enforce 72-hour point readiness
+        run: python -c 'import json; p=json.load(open("/tmp/ecmwf-72h.json")); assert p["readiness"] == "POINT_ROUTE_EXTRACTED"; assert p["horizon_hours"] == 72; assert {0,24,48,72}.issubset(set(p["steps"])); assert p["record_count"] >= 200, p'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ecmwf-live-72h-points
+          path: /tmp/ecmwf-72h.json
+          retention-days: 7
+
+  noaa-member-smoke:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install GRIB decoder
+        run: python -m pip install --quiet eccodes
+      - name: Collect GEFS and GEFS Wave members
+        run: python -m weather.collectors.noaa_member_smoke --lead 3 --output /tmp/noaa-members.json
+      - name: Enforce member gate
+        run: python -c 'import json; p=json.load(open("/tmp/noaa-members.json")); assert p["atmosphere"]["readiness"] == "MEMBER_COMPLETE", p["atmosphere"]; assert p["wave"]["readiness"] == "MEMBER_COMPLETE", p["wave"]'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: noaa-live-member-smoke
+          path: /tmp/noaa-members.json
+          retention-days: 7
+
+  copernicus-live-subset:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      COPERNICUSMARINE_SERVICE_USERNAME: ${{ secrets.COPERNICUSMARINE_SERVICE_USERNAME }}
+      COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUSMARINE_SERVICE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install official Toolbox and NetCDF reader
+        run: python -m pip install --quiet copernicusmarine xarray netCDF4 numpy
+      - name: Download Phu Quoc wave and current subsets
+        run: python -m weather.collectors.copernicus_live --output /tmp/copernicus-live.json
+      - name: Enforce credential, variable and point gates
+        run: python -c 'import json; p=json.load(open("/tmp/copernicus-live.json")); assert p["status"] == "POINT_NUMERIC_READY", p; assert p["wave"]["available_variables"] == ["VHM0","VMDR","VTM10","VTPK"]; assert p["current"]["available_variables"] == ["uo","vo"]; assert set(p["current"]["derived_vectors"]) == {"duong_dong","an_thoi","ganh_dau"}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: copernicus-live-phu-quoc-subset
+          path: /tmp/copernicus-live.json
+          retention-days: 7
