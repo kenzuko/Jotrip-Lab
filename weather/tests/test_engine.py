@@ -3,10 +3,12 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+from unittest.mock import patch
 from datetime import datetime, timezone
 from pathlib import Path
 
 from weather.collectors.catalog import default_manifests, latest_completed_cycle
+from weather.collectors.probe import probe_source
 from weather.pipeline.build_snapshot import build_snapshot
 from weather.processing.drift import compare_runs
 from weather.processing.ensemble import summarize_members
@@ -31,6 +33,23 @@ class QualityTests(unittest.TestCase):
         score = completeness(products["cano_south"], availability)
         self.assertGreater(score, 75)
         self.assertIn("visibility", critical_gaps(products["cano_south"], availability))
+
+
+class SourceFailoverTests(unittest.TestCase):
+    @patch("weather.collectors.probe.probe_url")
+    def test_primary_timeout_uses_official_mirror(self, mocked):
+        mocked.side_effect = [
+            {"status": "RETRIEVAL_FAILED", "checked_at": "t1", "error": "timeout"},
+            {"status": "REACHABLE", "checked_at": "t2", "http_status": 200},
+        ]
+        result = probe_source({"endpoints": [
+            {"name": "primary", "url": "https://primary.invalid"},
+            {"name": "official_mirror", "url": "https://mirror.invalid"},
+        ]})
+        self.assertEqual(result["status"], "REACHABLE")
+        self.assertEqual(result["selected_endpoint"], "official_mirror")
+        self.assertEqual(result["fallback_level"], 1)
+        self.assertEqual(len(result["attempts"]), 2)
 
 
 class EnsembleTests(unittest.TestCase):

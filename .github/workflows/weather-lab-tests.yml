@@ -25,3 +25,43 @@ jobs:
       - run: python -m unittest discover -s weather/tests -v
       - run: python -m weather.pipeline.build_snapshot --input weather/tests/fixtures/an_thoi_2026_09_14.json --output /tmp/an_thoi_snapshot.json --cutoff 2026-09-14T22:45:00Z --offline
       - run: python -c 'import json; from weather.processing.snapshot import verify_snapshot; p=json.load(open("/tmp/an_thoi_snapshot.json")); assert verify_snapshot(p)'
+
+  live-source-probe:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Probe primary and official mirrors
+        run: python -m weather.collectors.probe --output /tmp/source-health.json
+      - name: Require every credential-free source to be reachable
+        run: python -c 'import json; p=json.load(open("/tmp/source-health.json")); required=("ECMWF_DIRECT","NOAA_GEFS_DIRECT","NOAA_GEFS_WAVE_DIRECT","DWD_ICON_DIRECT"); assert all(p[k]["status"] == "REACHABLE" for k in required), p'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: weather-live-source-health
+          path: /tmp/source-health.json
+          retention-days: 7
+
+  live-numeric-smoke:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install official model clients and GRIB decoder
+        run: python -m pip install --disable-pip-version-check ecmwf-opendata eccodes
+      - name: Download and decode live numerical fields
+        run: python -m weather.collectors.live_smoke --output /tmp/numeric-smoke.json
+      - name: Enforce numerical readiness gates
+        run: python -c 'import json; p=json.load(open("/tmp/numeric-smoke.json")); assert p["ECMWF_DIRECT"]["status"] == "NUMERIC_READY", p["ECMWF_DIRECT"]; assert p["NOAA_GEFS_DIRECT"]["status"] == "NUMERIC_READY", p["NOAA_GEFS_DIRECT"]; assert p["NOAA_GEFS_WAVE_DIRECT"]["status"] == "NUMERIC_READY", p["NOAA_GEFS_WAVE_DIRECT"]; assert p["DWD_ICON_DIRECT"]["status"] == "FIELD_NUMERIC_READY_POINT_PENDING", p["DWD_ICON_DIRECT"]'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: weather-live-numeric-smoke
+          path: /tmp/numeric-smoke.json
+          retention-days: 7
