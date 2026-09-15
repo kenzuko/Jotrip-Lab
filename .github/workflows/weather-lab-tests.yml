@@ -1,8 +1,6 @@
 name: Weather Lab tests
 
 on:
-  schedule:
-    - cron: "*/30 * * * *"
   push:
     paths:
       - "weather/**"
@@ -11,9 +9,26 @@ on:
     paths:
       - "weather/**"
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      scheduled_watch:
+        description: "Run as the 30-minute lightweight cycle watcher"
+        required: false
+        type: boolean
+        default: false
+      target_ref:
+        description: "Branch containing Weather Lab code and dashboard snapshot"
+        required: false
+        type: string
+        default: "feat/weather-lab-data-engine-v1"
+    secrets:
+      COPERNICUSMARINE_SERVICE_USERNAME:
+        required: false
+      COPERNICUSMARINE_SERVICE_PASSWORD:
+        required: false
 
 concurrency:
-  group: weather-lab-${{ github.ref }}
+  group: weather-lab-${{ inputs.target_ref || github.ref_name }}
   cancel-in-progress: true
 
 permissions:
@@ -28,6 +43,8 @@ jobs:
       run_heavy: ${{ steps.gate.outputs.run_heavy }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -39,7 +56,7 @@ jobs:
         id: gate
         shell: bash
         run: |
-          if [[ "${GITHUB_EVENT_NAME}" == "schedule" ]]; then
+          if [[ "${GITHUB_EVENT_NAME}" == "schedule" || "${{ inputs.scheduled_watch }}" == "true" ]]; then
             RUN_HEAVY=$(python -c 'import json; p=json.load(open("/tmp/cycle-watch.json")); print(str(bool(p["run_heavy"])).lower())')
           else
             RUN_HEAVY=true
@@ -54,11 +71,13 @@ jobs:
           retention-days: 7
 
   test:
-    if: github.event_name != 'schedule'
+    if: github.event_name != 'schedule' && !inputs.scheduled_watch
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -70,11 +89,13 @@ jobs:
 
   live-source-probe:
     needs: cycle-watch
-    if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || needs.cycle-watch.outputs.run_heavy == 'true')
+    if: github.event_name != 'pull_request' && ((github.event_name != 'schedule' && !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -90,11 +111,13 @@ jobs:
 
   live-numeric-smoke:
     needs: cycle-watch
-    if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || needs.cycle-watch.outputs.run_heavy == 'true')
+    if: github.event_name != 'pull_request' && ((github.event_name != 'schedule' && !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -117,6 +140,8 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -132,11 +157,13 @@ jobs:
 
   icon-point-smoke:
     needs: cycle-watch
-    if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || needs.cycle-watch.outputs.run_heavy == 'true')
+    if: github.event_name != 'pull_request' && ((github.event_name != 'schedule' && !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -157,11 +184,13 @@ jobs:
 
   ecmwf-72h-point-smoke:
     needs: cycle-watch
-    if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || needs.cycle-watch.outputs.run_heavy == 'true')
+    if: github.event_name != 'pull_request' && ((github.event_name != 'schedule' && !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -190,11 +219,13 @@ jobs:
 
   noaa-member-smoke:
     needs: cycle-watch
-    if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || needs.cycle-watch.outputs.run_heavy == 'true')
+    if: github.event_name != 'pull_request' && ((github.event_name != 'schedule' && !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -212,7 +243,7 @@ jobs:
 
   copernicus-live-subset:
     needs: cycle-watch
-    if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || needs.cycle-watch.outputs.run_heavy == 'true')
+    if: github.event_name != 'pull_request' && ((github.event_name != 'schedule' && !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -220,6 +251,8 @@ jobs:
       COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUSMARINE_SERVICE_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -250,7 +283,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ inputs.target_ref || github.ref_name }}
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
@@ -298,7 +331,9 @@ jobs:
           assert 0 <= age < 900, age
           PY
       - name: Commit dashboard snapshot
+        shell: bash
         run: |
+          TARGET_REF="${{ inputs.target_ref || github.ref_name }}"
           git config user.name "jotrip-weather-bot"
           git config user.email "jotrip-weather-bot@users.noreply.github.com"
           git add weather/dashboard-data.json
@@ -307,5 +342,5 @@ jobs:
             exit 0
           fi
           git commit -m "chore(weather): publish live dashboard snapshot [skip ci]"
-          git pull --rebase origin "${GITHUB_REF_NAME}"
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          git pull --rebase origin "${TARGET_REF}"
+          git push origin "HEAD:${TARGET_REF}"
