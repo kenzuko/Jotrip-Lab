@@ -1,35 +1,42 @@
 {
-  "snapshot_id": "PQWX_LIVE_20260915_223858",
-  "generated_at": "2026-09-15T22:38:58.675986+07:00",
+  "snapshot_id": "PQWX_LIVE_20260915_230748",
+  "generated_at": "2026-09-15T23:07:48.760328+07:00",
   "data_mode": "B",
   "completeness": 100,
   "confidence": null,
   "report_status": "LIVE",
   "decision": "NOT_ISSUED",
-  "headline": "Live direct-model snapshot đã được phát; quyết định vận hành chưa được phát.",
-  "next_review": "watch cycle mỗi 30 phút; rebuild khi có model cycle mới",
-  "git_commit_sha": "b1058dc824e3",
+  "headline": "Live D0-D10 snapshot đã được phát; D4-D10 là xu hướng, quyết định vận hành chưa được phát.",
+  "next_review": "watch cycle mỗi 30 phút; rebuild khi short hoặc medium model cycle đổi",
+  "git_commit_sha": "f4311b40a9ed",
+  "forecast_horizon_hours": 240,
+  "horizon_policy": {
+    "D0_D3": "3-hour operational detail from freshest ECMWF cycle",
+    "D4_D7": "6-hour display from ECMWF medium-range control; consensus pending",
+    "D8_D10": "daily trend outlook only; ensemble confidence unscored"
+  },
   "source_cycles": {
     "ECMWF": "2026-09-15T06:00:00+00:00",
+    "ECMWF_MEDIUM": "2026-09-15T00:00:00+00:00",
     "GEFS": "2026-09-15T06:00:00+00:00",
     "ICON": "2026-09-15T12:00:00+00:00"
   },
   "sources": {
     "ECMWF": {
       "status": "PASS",
-      "detail": "IFS/Wave 0-72h · 25 bước · 597 point-records · gust=10fg · hmax=proxy-only"
+      "detail": "IFS/Wave D0-D10 · short=25 bước · medium=65 bước · 2100 records · gust=10fg/10fg · hmax=proxy-only"
     },
     "GEFS": {
       "status": "PARTIAL",
-      "detail": "Ensemble member gate đạt tại lead +3h; full matrix 0-72h chưa publish vào dashboard"
+      "detail": "Ensemble member gate hiện mới ở lead +3h; D4-D10 chưa có full consensus matrix"
     },
     "ICON": {
       "status": "PASS",
-      "detail": "DWD official remap point smoke"
+      "detail": "DWD official remap point smoke; chưa dùng làm D4-D10 consensus"
     },
     "COPERNICUS": {
       "status": "PASS",
-      "detail": "Wave + current nearest-time; Hs regional max trong bán kính 15 km"
+      "detail": "Wave + current nearest-time; Hs regional max trong bán kính 15 km cho hiện tại"
     },
     "RADAR_LIGHTNING": {
       "status": "UNRESOLVED",
@@ -38,8 +45,8 @@
   },
   "gaps": [
     {
-      "name": "GEFS full matrix",
-      "detail": "member x biến x 0-72h chưa được ghép vào dashboard production"
+      "name": "D4-D10 ensemble consensus",
+      "detail": "ECMWF control đã có tới 240h; GEFS/ICON long-range consensus chưa hoàn tất nên D4-D10 chỉ được gắn TREND_ONLY"
     },
     {
       "name": "Hmax trực tiếp",
@@ -64,7 +71,9 @@
       "wave_regional_hs": 0.32,
       "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_REGIONAL_HS",
       "marine_sampled_time": "2026-09-15T15:00:00Z",
-      "caveat": "Ưu tiên rủi ro bằng Hmax - sóng cá thể cao nhất kỳ vọng trong cửa sổ 20 phút. Hmax dùng trường ECMWF trực tiếp khi có và so với proxy từ Hs cao nhất trong vùng biển 15 km của Copernicus để giảm nguy cơ coastal smoothing. Hs vẫn được giữ để mô tả trạng thái biển trung bình của nhóm sóng cao. Copernicus lấy valid time gần snapshot nhất, không còn cố định time=0. Đây là dữ liệu mô hình, không phải quan trắc tại chỗ.",
+      "forecast_end": "2026-09-25T07:00:00+07:00",
+      "long_range_status": "CONTROL_TREND_ONLY",
+      "caveat": "D0-D3 dùng cycle ECMWF mới nhất. D4-D10 nối từ cycle 00/12 có horizon 240 giờ. Hs và Hmax dùng để nhìn biển nền và biên rủi ro; D4-D10 hiện là xu hướng control forecast, chưa phải quyết định vận hành vì lớp ensemble consensus còn đang bổ sung.",
       "hours": [
         {
           "time": "15/09 13:00",
@@ -340,6 +349,459 @@
           "wave_max": 1.22,
           "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.7
+        },
+        {
+          "time": "18/09 16:00",
+          "time_iso": "2026-09-18T16:00:00+07:00",
+          "wind": 19.8,
+          "gust": 35.1,
+          "rain": 0.21,
+          "wave": 0.58,
+          "wave_max": 0.99,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 3.6
+        },
+        {
+          "time": "18/09 19:00",
+          "time_iso": "2026-09-18T19:00:00+07:00",
+          "wind": 21.3,
+          "gust": 34.8,
+          "rain": 0.71,
+          "wave": 0.56,
+          "wave_max": 0.96,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 3.4
+        },
+        {
+          "time": "18/09 22:00",
+          "time_iso": "2026-09-18T22:00:00+07:00",
+          "wind": 15.6,
+          "gust": 39.7,
+          "rain": 1.98,
+          "wave": 0.52,
+          "wave_max": 0.89,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 3.5
+        },
+        {
+          "time": "19/09 01:00",
+          "time_iso": "2026-09-19T01:00:00+07:00",
+          "wind": 20.9,
+          "gust": 27.7,
+          "rain": 0.55,
+          "wave": 0.5,
+          "wave_max": 0.85,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 3.6
+        },
+        {
+          "time": "19/09 04:00",
+          "time_iso": "2026-09-19T04:00:00+07:00",
+          "wind": 25.1,
+          "gust": null,
+          "rain": 0.34,
+          "wave": 0.69,
+          "wave_max": 1.17,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 3.7
+        },
+        {
+          "time": "19/09 07:00",
+          "time_iso": "2026-09-19T07:00:00+07:00",
+          "wind": 18.0,
+          "gust": null,
+          "rain": 0.63,
+          "wave": 0.61,
+          "wave_max": 1.03,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.1
+        },
+        {
+          "time": "19/09 10:00",
+          "time_iso": "2026-09-19T10:00:00+07:00",
+          "wind": 16.7,
+          "gust": null,
+          "rain": 4.74,
+          "wave": 0.56,
+          "wave_max": 0.94,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.4
+        },
+        {
+          "time": "19/09 13:00",
+          "time_iso": "2026-09-19T13:00:00+07:00",
+          "wind": 19.5,
+          "gust": null,
+          "rain": 0.53,
+          "wave": 0.54,
+          "wave_max": 0.9,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.6
+        },
+        {
+          "time": "19/09 16:00",
+          "time_iso": "2026-09-19T16:00:00+07:00",
+          "wind": 15.5,
+          "gust": null,
+          "rain": 0.04,
+          "wave": 0.55,
+          "wave_max": 0.92,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.7
+        },
+        {
+          "time": "19/09 19:00",
+          "time_iso": "2026-09-19T19:00:00+07:00",
+          "wind": 11.3,
+          "gust": null,
+          "rain": 0.01,
+          "wave": 0.53,
+          "wave_max": 0.88,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.9
+        },
+        {
+          "time": "19/09 22:00",
+          "time_iso": "2026-09-19T22:00:00+07:00",
+          "wind": 12.1,
+          "gust": null,
+          "rain": 0.01,
+          "wave": 0.5,
+          "wave_max": 0.83,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 5.0
+        },
+        {
+          "time": "20/09 01:00",
+          "time_iso": "2026-09-20T01:00:00+07:00",
+          "wind": 10.5,
+          "gust": null,
+          "rain": 3.67,
+          "wave": 0.47,
+          "wave_max": 0.78,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 5.0
+        },
+        {
+          "time": "20/09 04:00",
+          "time_iso": "2026-09-20T04:00:00+07:00",
+          "wind": 10.7,
+          "gust": null,
+          "rain": 0.88,
+          "wave": 0.42,
+          "wave_max": 0.7,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.9
+        },
+        {
+          "time": "20/09 07:00",
+          "time_iso": "2026-09-20T07:00:00+07:00",
+          "wind": 14.3,
+          "gust": null,
+          "rain": 2.89,
+          "wave": 0.4,
+          "wave_max": 0.66,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.9
+        },
+        {
+          "time": "20/09 10:00",
+          "time_iso": "2026-09-20T10:00:00+07:00",
+          "wind": 6.5,
+          "gust": null,
+          "rain": 2.62,
+          "wave": 0.37,
+          "wave_max": 0.62,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.7
+        },
+        {
+          "time": "20/09 13:00",
+          "time_iso": "2026-09-20T13:00:00+07:00",
+          "wind": 10.4,
+          "gust": null,
+          "rain": 0.09,
+          "wave": 0.35,
+          "wave_max": 0.58,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.6
+        },
+        {
+          "time": "20/09 16:00",
+          "time_iso": "2026-09-20T16:00:00+07:00",
+          "wind": 9.7,
+          "gust": null,
+          "rain": 0.02,
+          "wave": 0.34,
+          "wave_max": 0.57,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.4
+        },
+        {
+          "time": "20/09 19:00",
+          "time_iso": "2026-09-20T19:00:00+07:00",
+          "wind": 6.7,
+          "gust": null,
+          "rain": 0.0,
+          "wave": 0.31,
+          "wave_max": 0.52,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.2
+        },
+        {
+          "time": "20/09 22:00",
+          "time_iso": "2026-09-20T22:00:00+07:00",
+          "wind": 8.3,
+          "gust": null,
+          "rain": 0.01,
+          "wave": 0.29,
+          "wave_max": 0.49,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.2
+        },
+        {
+          "time": "21/09 01:00",
+          "time_iso": "2026-09-21T01:00:00+07:00",
+          "wind": 5.0,
+          "gust": null,
+          "rain": 0.0,
+          "wave": 0.28,
+          "wave_max": 0.47,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.1
+        },
+        {
+          "time": "21/09 04:00",
+          "time_iso": "2026-09-21T04:00:00+07:00",
+          "wind": 11.8,
+          "gust": null,
+          "rain": 0.18,
+          "wave": 0.27,
+          "wave_max": 0.45,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.2
+        },
+        {
+          "time": "21/09 07:00",
+          "time_iso": "2026-09-21T07:00:00+07:00",
+          "wind": 7.6,
+          "gust": null,
+          "rain": 0.78,
+          "wave": 0.28,
+          "wave_max": 0.47,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.2
+        },
+        {
+          "time": "21/09 13:00",
+          "time_iso": "2026-09-21T13:00:00+07:00",
+          "wind": 10.7,
+          "gust": 20.9,
+          "rain": 1.25,
+          "wave": 0.25,
+          "wave_max": 0.42,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.3
+        },
+        {
+          "time": "21/09 19:00",
+          "time_iso": "2026-09-21T19:00:00+07:00",
+          "wind": 11.7,
+          "gust": 21.0,
+          "rain": 3.45,
+          "wave": 0.25,
+          "wave_max": 0.42,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.1
+        },
+        {
+          "time": "22/09 01:00",
+          "time_iso": "2026-09-22T01:00:00+07:00",
+          "wind": 15.3,
+          "gust": 21.1,
+          "rain": 0.0,
+          "wave": 0.28,
+          "wave_max": 0.49,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.4
+        },
+        {
+          "time": "22/09 07:00",
+          "time_iso": "2026-09-22T07:00:00+07:00",
+          "wind": 15.8,
+          "gust": 29.2,
+          "rain": 0.23,
+          "wave": 0.34,
+          "wave_max": 0.59,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.7
+        },
+        {
+          "time": "22/09 13:00",
+          "time_iso": "2026-09-22T13:00:00+07:00",
+          "wind": 7.6,
+          "gust": 22.8,
+          "rain": 1.36,
+          "wave": 0.21,
+          "wave_max": 0.35,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.3
+        },
+        {
+          "time": "22/09 19:00",
+          "time_iso": "2026-09-22T19:00:00+07:00",
+          "wind": 10.2,
+          "gust": 18.7,
+          "rain": 2.01,
+          "wave": 0.19,
+          "wave_max": 0.32,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 4.6
+        },
+        {
+          "time": "23/09 01:00",
+          "time_iso": "2026-09-23T01:00:00+07:00",
+          "wind": 12.4,
+          "gust": 20.4,
+          "rain": 0.53,
+          "wave": 0.21,
+          "wave_max": 0.37,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.3
+        },
+        {
+          "time": "23/09 07:00",
+          "time_iso": "2026-09-23T07:00:00+07:00",
+          "wind": 12.7,
+          "gust": 25.3,
+          "rain": 4.27,
+          "wave": 0.27,
+          "wave_max": 0.48,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.3
+        },
+        {
+          "time": "23/09 13:00",
+          "time_iso": "2026-09-23T13:00:00+07:00",
+          "wind": 16.4,
+          "gust": 31.3,
+          "rain": 5.89,
+          "wave": 0.28,
+          "wave_max": 0.5,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.2
+        },
+        {
+          "time": "23/09 19:00",
+          "time_iso": "2026-09-23T19:00:00+07:00",
+          "wind": 13.7,
+          "gust": 24.3,
+          "rain": 0.09,
+          "wave": 0.27,
+          "wave_max": 0.47,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.7
+        },
+        {
+          "time": "24/09 01:00",
+          "time_iso": "2026-09-24T01:00:00+07:00",
+          "wind": 17.0,
+          "gust": 24.3,
+          "rain": 2.64,
+          "wave": 0.24,
+          "wave_max": 0.42,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.3
+        },
+        {
+          "time": "24/09 07:00",
+          "time_iso": "2026-09-24T07:00:00+07:00",
+          "wind": 11.6,
+          "gust": 23.9,
+          "rain": 0.37,
+          "wave": 0.18,
+          "wave_max": 0.32,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.6
+        },
+        {
+          "time": "24/09 13:00",
+          "time_iso": "2026-09-24T13:00:00+07:00",
+          "wind": 9.9,
+          "gust": 20.1,
+          "rain": 1.62,
+          "wave": 0.21,
+          "wave_max": 0.37,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.5
+        },
+        {
+          "time": "24/09 19:00",
+          "time_iso": "2026-09-24T19:00:00+07:00",
+          "wind": 11.6,
+          "gust": 20.4,
+          "rain": 0.7,
+          "wave": 0.2,
+          "wave_max": 0.36,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.2
+        },
+        {
+          "time": "25/09 01:00",
+          "time_iso": "2026-09-25T01:00:00+07:00",
+          "wind": 7.1,
+          "gust": 17.6,
+          "rain": 2.99,
+          "wave": 0.18,
+          "wave_max": 0.32,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.4
+        },
+        {
+          "time": "25/09 07:00",
+          "time_iso": "2026-09-25T07:00:00+07:00",
+          "wind": 15.4,
+          "gust": 24.6,
+          "rain": 3.49,
+          "wave": 0.31,
+          "wave_max": 0.54,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.6
+        }
+      ],
+      "daily_outlook": [
+        {
+          "date": "23/09",
+          "day_offset": 8,
+          "wind_max": 16.4,
+          "gust_max": 31.3,
+          "rain_total": 10.78,
+          "hs_max": 0.28,
+          "hmax_max": 0.5,
+          "status": "TREND_ONLY",
+          "confidence": "UNSCORED"
+        },
+        {
+          "date": "24/09",
+          "day_offset": 9,
+          "wind_max": 17.0,
+          "gust_max": 24.3,
+          "rain_total": 5.33,
+          "hs_max": 0.24,
+          "hmax_max": 0.42,
+          "status": "TREND_ONLY",
+          "confidence": "UNSCORED"
+        },
+        {
+          "date": "25/09",
+          "day_offset": 10,
+          "wind_max": 15.4,
+          "gust_max": 24.6,
+          "rain_total": 6.48,
+          "hs_max": 0.31,
+          "hmax_max": 0.54,
+          "status": "TREND_ONLY",
+          "confidence": "UNSCORED"
         }
       ]
     },
@@ -356,7 +818,9 @@
       "wave_regional_hs": 0.31,
       "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_REGIONAL_HS",
       "marine_sampled_time": "2026-09-15T15:00:00Z",
-      "caveat": "Ưu tiên rủi ro bằng Hmax - sóng cá thể cao nhất kỳ vọng trong cửa sổ 20 phút. Hmax dùng trường ECMWF trực tiếp khi có và so với proxy từ Hs cao nhất trong vùng biển 15 km của Copernicus để giảm nguy cơ coastal smoothing. Hs vẫn được giữ để mô tả trạng thái biển trung bình của nhóm sóng cao. Copernicus lấy valid time gần snapshot nhất, không còn cố định time=0. Đây là dữ liệu mô hình, không phải quan trắc tại chỗ.",
+      "forecast_end": "2026-09-25T07:00:00+07:00",
+      "long_range_status": "CONTROL_TREND_ONLY",
+      "caveat": "D0-D3 dùng cycle ECMWF mới nhất. D4-D10 nối từ cycle 00/12 có horizon 240 giờ. Hs và Hmax dùng để nhìn biển nền và biên rủi ro; D4-D10 hiện là xu hướng control forecast, chưa phải quyết định vận hành vì lớp ensemble consensus còn đang bổ sung.",
       "hours": [
         {
           "time": "15/09 13:00",
@@ -632,6 +1096,459 @@
           "wave_max": null,
           "wave_max_method": null,
           "period": null
+        },
+        {
+          "time": "18/09 16:00",
+          "time_iso": "2026-09-18T16:00:00+07:00",
+          "wind": 15.6,
+          "gust": 38.2,
+          "rain": 0.85,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "18/09 19:00",
+          "time_iso": "2026-09-18T19:00:00+07:00",
+          "wind": 12.1,
+          "gust": 27.3,
+          "rain": 0.47,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "18/09 22:00",
+          "time_iso": "2026-09-18T22:00:00+07:00",
+          "wind": 11.0,
+          "gust": 30.0,
+          "rain": 1.11,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "19/09 01:00",
+          "time_iso": "2026-09-19T01:00:00+07:00",
+          "wind": 10.2,
+          "gust": 18.7,
+          "rain": 0.69,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "19/09 04:00",
+          "time_iso": "2026-09-19T04:00:00+07:00",
+          "wind": 11.4,
+          "gust": null,
+          "rain": 0.24,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "19/09 07:00",
+          "time_iso": "2026-09-19T07:00:00+07:00",
+          "wind": 9.6,
+          "gust": null,
+          "rain": 0.24,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "19/09 10:00",
+          "time_iso": "2026-09-19T10:00:00+07:00",
+          "wind": 9.1,
+          "gust": null,
+          "rain": 0.5,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "19/09 13:00",
+          "time_iso": "2026-09-19T13:00:00+07:00",
+          "wind": 13.3,
+          "gust": null,
+          "rain": 2.53,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "19/09 16:00",
+          "time_iso": "2026-09-19T16:00:00+07:00",
+          "wind": 10.8,
+          "gust": null,
+          "rain": 0.32,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "19/09 19:00",
+          "time_iso": "2026-09-19T19:00:00+07:00",
+          "wind": 3.3,
+          "gust": null,
+          "rain": 0.02,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "19/09 22:00",
+          "time_iso": "2026-09-19T22:00:00+07:00",
+          "wind": 4.8,
+          "gust": null,
+          "rain": 0.0,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "20/09 01:00",
+          "time_iso": "2026-09-20T01:00:00+07:00",
+          "wind": 6.8,
+          "gust": null,
+          "rain": 3.9,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "20/09 04:00",
+          "time_iso": "2026-09-20T04:00:00+07:00",
+          "wind": 6.8,
+          "gust": null,
+          "rain": 0.71,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "20/09 07:00",
+          "time_iso": "2026-09-20T07:00:00+07:00",
+          "wind": 11.2,
+          "gust": null,
+          "rain": 4.27,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "20/09 10:00",
+          "time_iso": "2026-09-20T10:00:00+07:00",
+          "wind": 5.9,
+          "gust": null,
+          "rain": 3.76,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "20/09 13:00",
+          "time_iso": "2026-09-20T13:00:00+07:00",
+          "wind": 9.2,
+          "gust": null,
+          "rain": 0.87,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "20/09 16:00",
+          "time_iso": "2026-09-20T16:00:00+07:00",
+          "wind": 8.1,
+          "gust": null,
+          "rain": 0.17,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "20/09 19:00",
+          "time_iso": "2026-09-20T19:00:00+07:00",
+          "wind": 4.7,
+          "gust": null,
+          "rain": 0.0,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "20/09 22:00",
+          "time_iso": "2026-09-20T22:00:00+07:00",
+          "wind": 5.2,
+          "gust": null,
+          "rain": 0.01,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "21/09 01:00",
+          "time_iso": "2026-09-21T01:00:00+07:00",
+          "wind": 5.6,
+          "gust": null,
+          "rain": 0.01,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "21/09 04:00",
+          "time_iso": "2026-09-21T04:00:00+07:00",
+          "wind": 6.4,
+          "gust": null,
+          "rain": 0.02,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "21/09 07:00",
+          "time_iso": "2026-09-21T07:00:00+07:00",
+          "wind": 6.8,
+          "gust": null,
+          "rain": 0.06,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "21/09 13:00",
+          "time_iso": "2026-09-21T13:00:00+07:00",
+          "wind": 9.4,
+          "gust": 28.1,
+          "rain": 5.98,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "21/09 19:00",
+          "time_iso": "2026-09-21T19:00:00+07:00",
+          "wind": 6.0,
+          "gust": 26.6,
+          "rain": 6.13,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "22/09 01:00",
+          "time_iso": "2026-09-22T01:00:00+07:00",
+          "wind": 8.2,
+          "gust": 18.6,
+          "rain": 0.0,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "22/09 07:00",
+          "time_iso": "2026-09-22T07:00:00+07:00",
+          "wind": 10.5,
+          "gust": 23.4,
+          "rain": 0.02,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "22/09 13:00",
+          "time_iso": "2026-09-22T13:00:00+07:00",
+          "wind": 5.2,
+          "gust": 25.6,
+          "rain": 2.3,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "22/09 19:00",
+          "time_iso": "2026-09-22T19:00:00+07:00",
+          "wind": 5.6,
+          "gust": 22.1,
+          "rain": 4.43,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "23/09 01:00",
+          "time_iso": "2026-09-23T01:00:00+07:00",
+          "wind": 7.1,
+          "gust": 14.0,
+          "rain": 0.0,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "23/09 07:00",
+          "time_iso": "2026-09-23T07:00:00+07:00",
+          "wind": 5.4,
+          "gust": 18.5,
+          "rain": 0.23,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "23/09 13:00",
+          "time_iso": "2026-09-23T13:00:00+07:00",
+          "wind": 6.7,
+          "gust": 31.3,
+          "rain": 3.14,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "23/09 19:00",
+          "time_iso": "2026-09-23T19:00:00+07:00",
+          "wind": 3.5,
+          "gust": 26.0,
+          "rain": 1.83,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "24/09 01:00",
+          "time_iso": "2026-09-24T01:00:00+07:00",
+          "wind": 6.7,
+          "gust": 18.6,
+          "rain": 2.64,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "24/09 07:00",
+          "time_iso": "2026-09-24T07:00:00+07:00",
+          "wind": 7.9,
+          "gust": 16.4,
+          "rain": 0.08,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "24/09 13:00",
+          "time_iso": "2026-09-24T13:00:00+07:00",
+          "wind": 7.2,
+          "gust": 22.4,
+          "rain": 1.94,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "24/09 19:00",
+          "time_iso": "2026-09-24T19:00:00+07:00",
+          "wind": 4.8,
+          "gust": 19.5,
+          "rain": 4.24,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "25/09 01:00",
+          "time_iso": "2026-09-25T01:00:00+07:00",
+          "wind": 2.2,
+          "gust": 14.8,
+          "rain": 0.81,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        },
+        {
+          "time": "25/09 07:00",
+          "time_iso": "2026-09-25T07:00:00+07:00",
+          "wind": 8.1,
+          "gust": 15.7,
+          "rain": 0.75,
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
+        }
+      ],
+      "daily_outlook": [
+        {
+          "date": "23/09",
+          "day_offset": 8,
+          "wind_max": 7.1,
+          "gust_max": 31.3,
+          "rain_total": 5.2,
+          "hs_max": null,
+          "hmax_max": null,
+          "status": "TREND_ONLY",
+          "confidence": "UNSCORED"
+        },
+        {
+          "date": "24/09",
+          "day_offset": 9,
+          "wind_max": 7.9,
+          "gust_max": 22.4,
+          "rain_total": 8.9,
+          "hs_max": null,
+          "hmax_max": null,
+          "status": "TREND_ONLY",
+          "confidence": "UNSCORED"
+        },
+        {
+          "date": "25/09",
+          "day_offset": 10,
+          "wind_max": 8.1,
+          "gust_max": 15.7,
+          "rain_total": 1.56,
+          "hs_max": null,
+          "hmax_max": null,
+          "status": "TREND_ONLY",
+          "confidence": "UNSCORED"
         }
       ]
     },
@@ -648,7 +1565,9 @@
       "wave_regional_hs": 0.22,
       "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_REGIONAL_HS",
       "marine_sampled_time": "2026-09-15T15:00:00Z",
-      "caveat": "Ưu tiên rủi ro bằng Hmax - sóng cá thể cao nhất kỳ vọng trong cửa sổ 20 phút. Hmax dùng trường ECMWF trực tiếp khi có và so với proxy từ Hs cao nhất trong vùng biển 15 km của Copernicus để giảm nguy cơ coastal smoothing. Hs vẫn được giữ để mô tả trạng thái biển trung bình của nhóm sóng cao. Copernicus lấy valid time gần snapshot nhất, không còn cố định time=0. Đây là dữ liệu mô hình, không phải quan trắc tại chỗ.",
+      "forecast_end": "2026-09-25T07:00:00+07:00",
+      "long_range_status": "CONTROL_TREND_ONLY",
+      "caveat": "D0-D3 dùng cycle ECMWF mới nhất. D4-D10 nối từ cycle 00/12 có horizon 240 giờ. Hs và Hmax dùng để nhìn biển nền và biên rủi ro; D4-D10 hiện là xu hướng control forecast, chưa phải quyết định vận hành vì lớp ensemble consensus còn đang bổ sung.",
       "hours": [
         {
           "time": "15/09 13:00",
@@ -924,6 +1843,459 @@
           "wave_max": 0.75,
           "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 2.6
+        },
+        {
+          "time": "18/09 16:00",
+          "time_iso": "2026-09-18T16:00:00+07:00",
+          "wind": 23.1,
+          "gust": 34.6,
+          "rain": 1.01,
+          "wave": 0.45,
+          "wave_max": 0.78,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.9
+        },
+        {
+          "time": "18/09 19:00",
+          "time_iso": "2026-09-18T19:00:00+07:00",
+          "wind": 23.0,
+          "gust": 32.6,
+          "rain": 0.43,
+          "wave": 0.42,
+          "wave_max": 0.73,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.8
+        },
+        {
+          "time": "18/09 22:00",
+          "time_iso": "2026-09-18T22:00:00+07:00",
+          "wind": 19.3,
+          "gust": 29.5,
+          "rain": 0.12,
+          "wave": 0.35,
+          "wave_max": 0.61,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.5
+        },
+        {
+          "time": "19/09 01:00",
+          "time_iso": "2026-09-19T01:00:00+07:00",
+          "wind": 21.4,
+          "gust": 29.0,
+          "rain": 0.77,
+          "wave": 0.35,
+          "wave_max": 0.61,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.5
+        },
+        {
+          "time": "19/09 04:00",
+          "time_iso": "2026-09-19T04:00:00+07:00",
+          "wind": 21.8,
+          "gust": null,
+          "rain": 0.03,
+          "wave": 0.39,
+          "wave_max": 0.68,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.6
+        },
+        {
+          "time": "19/09 07:00",
+          "time_iso": "2026-09-19T07:00:00+07:00",
+          "wind": 14.3,
+          "gust": null,
+          "rain": 0.03,
+          "wave": 0.27,
+          "wave_max": 0.48,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.4
+        },
+        {
+          "time": "19/09 10:00",
+          "time_iso": "2026-09-19T10:00:00+07:00",
+          "wind": 16.6,
+          "gust": null,
+          "rain": 0.02,
+          "wave": 0.22,
+          "wave_max": 0.4,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 1.9
+        },
+        {
+          "time": "19/09 13:00",
+          "time_iso": "2026-09-19T13:00:00+07:00",
+          "wind": 21.2,
+          "gust": null,
+          "rain": 1.27,
+          "wave": 0.3,
+          "wave_max": 0.53,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.3
+        },
+        {
+          "time": "19/09 16:00",
+          "time_iso": "2026-09-19T16:00:00+07:00",
+          "wind": 15.2,
+          "gust": null,
+          "rain": 0.5,
+          "wave": 0.27,
+          "wave_max": 0.48,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.4
+        },
+        {
+          "time": "19/09 19:00",
+          "time_iso": "2026-09-19T19:00:00+07:00",
+          "wind": 8.8,
+          "gust": null,
+          "rain": 0.01,
+          "wave": 0.19,
+          "wave_max": 0.34,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.2
+        },
+        {
+          "time": "19/09 22:00",
+          "time_iso": "2026-09-19T22:00:00+07:00",
+          "wind": 7.8,
+          "gust": null,
+          "rain": 0.0,
+          "wave": 0.15,
+          "wave_max": 0.27,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.1
+        },
+        {
+          "time": "20/09 01:00",
+          "time_iso": "2026-09-20T01:00:00+07:00",
+          "wind": 17.0,
+          "gust": null,
+          "rain": 4.53,
+          "wave": 0.23,
+          "wave_max": 0.41,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.0
+        },
+        {
+          "time": "20/09 04:00",
+          "time_iso": "2026-09-20T04:00:00+07:00",
+          "wind": 14.4,
+          "gust": null,
+          "rain": 0.37,
+          "wave": 0.21,
+          "wave_max": 0.38,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.0
+        },
+        {
+          "time": "20/09 07:00",
+          "time_iso": "2026-09-20T07:00:00+07:00",
+          "wind": 20.1,
+          "gust": null,
+          "rain": 2.26,
+          "wave": 0.29,
+          "wave_max": 0.51,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.2
+        },
+        {
+          "time": "20/09 10:00",
+          "time_iso": "2026-09-20T10:00:00+07:00",
+          "wind": 13.0,
+          "gust": null,
+          "rain": 1.62,
+          "wave": 0.21,
+          "wave_max": 0.37,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.2
+        },
+        {
+          "time": "20/09 13:00",
+          "time_iso": "2026-09-20T13:00:00+07:00",
+          "wind": 15.9,
+          "gust": null,
+          "rain": 0.2,
+          "wave": 0.25,
+          "wave_max": 0.44,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.2
+        },
+        {
+          "time": "20/09 16:00",
+          "time_iso": "2026-09-20T16:00:00+07:00",
+          "wind": 15.1,
+          "gust": null,
+          "rain": 0.84,
+          "wave": 0.27,
+          "wave_max": 0.48,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.4
+        },
+        {
+          "time": "20/09 19:00",
+          "time_iso": "2026-09-20T19:00:00+07:00",
+          "wind": 12.6,
+          "gust": null,
+          "rain": 0.14,
+          "wave": 0.19,
+          "wave_max": 0.34,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.1
+        },
+        {
+          "time": "20/09 22:00",
+          "time_iso": "2026-09-20T22:00:00+07:00",
+          "wind": 13.3,
+          "gust": null,
+          "rain": 0.02,
+          "wave": 0.19,
+          "wave_max": 0.34,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 1.9
+        },
+        {
+          "time": "21/09 01:00",
+          "time_iso": "2026-09-21T01:00:00+07:00",
+          "wind": 11.5,
+          "gust": null,
+          "rain": 0.0,
+          "wave": 0.16,
+          "wave_max": 0.29,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 1.8
+        },
+        {
+          "time": "21/09 04:00",
+          "time_iso": "2026-09-21T04:00:00+07:00",
+          "wind": 14.2,
+          "gust": null,
+          "rain": 0.0,
+          "wave": 0.19,
+          "wave_max": 0.34,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 1.9
+        },
+        {
+          "time": "21/09 07:00",
+          "time_iso": "2026-09-21T07:00:00+07:00",
+          "wind": 7.3,
+          "gust": null,
+          "rain": 0.0,
+          "wave": 0.17,
+          "wave_max": 0.3,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.0
+        },
+        {
+          "time": "21/09 13:00",
+          "time_iso": "2026-09-21T13:00:00+07:00",
+          "wind": 12.8,
+          "gust": 17.4,
+          "rain": 2.08,
+          "wave": 0.11,
+          "wave_max": 0.2,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 1.8
+        },
+        {
+          "time": "21/09 19:00",
+          "time_iso": "2026-09-21T19:00:00+07:00",
+          "wind": 11.3,
+          "gust": 29.1,
+          "rain": 4.7,
+          "wave": 0.21,
+          "wave_max": 0.37,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.2
+        },
+        {
+          "time": "22/09 01:00",
+          "time_iso": "2026-09-22T01:00:00+07:00",
+          "wind": 13.3,
+          "gust": 24.2,
+          "rain": 0.0,
+          "wave": 0.21,
+          "wave_max": 0.37,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.2
+        },
+        {
+          "time": "22/09 07:00",
+          "time_iso": "2026-09-22T07:00:00+07:00",
+          "wind": 2.7,
+          "gust": 26.6,
+          "rain": 0.14,
+          "wave": 0.18,
+          "wave_max": 0.32,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.3
+        },
+        {
+          "time": "22/09 13:00",
+          "time_iso": "2026-09-22T13:00:00+07:00",
+          "wind": 4.8,
+          "gust": 16.9,
+          "rain": 0.89,
+          "wave": 0.1,
+          "wave_max": 0.18,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 1.7
+        },
+        {
+          "time": "22/09 19:00",
+          "time_iso": "2026-09-22T19:00:00+07:00",
+          "wind": 8.8,
+          "gust": 22.8,
+          "rain": 3.34,
+          "wave": 0.14,
+          "wave_max": 0.25,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 1.8
+        },
+        {
+          "time": "23/09 01:00",
+          "time_iso": "2026-09-23T01:00:00+07:00",
+          "wind": 16.3,
+          "gust": 22.4,
+          "rain": 0.0,
+          "wave": 0.2,
+          "wave_max": 0.36,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 1.9
+        },
+        {
+          "time": "23/09 07:00",
+          "time_iso": "2026-09-23T07:00:00+07:00",
+          "wind": 0.9,
+          "gust": 22.7,
+          "rain": 0.4,
+          "wave": 0.1,
+          "wave_max": 0.18,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 1.9
+        },
+        {
+          "time": "23/09 13:00",
+          "time_iso": "2026-09-23T13:00:00+07:00",
+          "wind": 6.5,
+          "gust": 22.3,
+          "rain": 9.95,
+          "wave": 0.1,
+          "wave_max": 0.18,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 1.3
+        },
+        {
+          "time": "23/09 19:00",
+          "time_iso": "2026-09-23T19:00:00+07:00",
+          "wind": 9.0,
+          "gust": 20.9,
+          "rain": 3.11,
+          "wave": 0.11,
+          "wave_max": 0.2,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 1.8
+        },
+        {
+          "time": "24/09 01:00",
+          "time_iso": "2026-09-24T01:00:00+07:00",
+          "wind": 7.6,
+          "gust": 15.7,
+          "rain": 1.04,
+          "wave": 0.08,
+          "wave_max": 0.14,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 1.8
+        },
+        {
+          "time": "24/09 07:00",
+          "time_iso": "2026-09-24T07:00:00+07:00",
+          "wind": 9.9,
+          "gust": 15.6,
+          "rain": 0.23,
+          "wave": 0.07,
+          "wave_max": 0.13,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 1.8
+        },
+        {
+          "time": "24/09 13:00",
+          "time_iso": "2026-09-24T13:00:00+07:00",
+          "wind": 6.4,
+          "gust": 20.5,
+          "rain": 3.77,
+          "wave": 0.13,
+          "wave_max": 0.23,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 1.8
+        },
+        {
+          "time": "24/09 19:00",
+          "time_iso": "2026-09-24T19:00:00+07:00",
+          "wind": 11.0,
+          "gust": 21.0,
+          "rain": 19.56,
+          "wave": 0.16,
+          "wave_max": 0.29,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 1.8
+        },
+        {
+          "time": "25/09 01:00",
+          "time_iso": "2026-09-25T01:00:00+07:00",
+          "wind": 4.4,
+          "gust": 17.5,
+          "rain": 0.31,
+          "wave": 0.11,
+          "wave_max": 0.2,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 1.8
+        },
+        {
+          "time": "25/09 07:00",
+          "time_iso": "2026-09-25T07:00:00+07:00",
+          "wind": 14.9,
+          "gust": 24.7,
+          "rain": 2.64,
+          "wave": 0.22,
+          "wave_max": 0.39,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
+          "period": 2.1
+        }
+      ],
+      "daily_outlook": [
+        {
+          "date": "23/09",
+          "day_offset": 8,
+          "wind_max": 16.3,
+          "gust_max": 22.7,
+          "rain_total": 13.46,
+          "hs_max": 0.2,
+          "hmax_max": 0.36,
+          "status": "TREND_ONLY",
+          "confidence": "UNSCORED"
+        },
+        {
+          "date": "24/09",
+          "day_offset": 9,
+          "wind_max": 11.0,
+          "gust_max": 21.0,
+          "rain_total": 24.6,
+          "hs_max": 0.16,
+          "hmax_max": 0.29,
+          "status": "TREND_ONLY",
+          "confidence": "UNSCORED"
+        },
+        {
+          "date": "25/09",
+          "day_offset": 10,
+          "wind_max": 14.9,
+          "gust_max": 24.7,
+          "rain_total": 2.95,
+          "hs_max": 0.22,
+          "hmax_max": 0.39,
+          "status": "TREND_ONLY",
+          "confidence": "UNSCORED"
         }
       ]
     }
