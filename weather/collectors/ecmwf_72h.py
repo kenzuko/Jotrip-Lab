@@ -16,6 +16,7 @@ POINTS = {
     "ganh_dau": (10.3759, 103.9000),
 }
 STEPS = list(range(0, 73, 3))
+GUST_STEPS = [step for step in STEPS if step > 0]
 
 
 def _decode_all(path: Path, run_time: datetime, source: str, stream: str) -> list[dict]:
@@ -45,6 +46,22 @@ def _decode_all(path: Path, run_time: datetime, source: str, stream: str) -> lis
     return records
 
 
+def _collect_gust(client, work: Path, run_time: datetime) -> tuple[list[dict], str | None, str | None]:
+    """Fetch gust separately so a gust outage can never break base wind/rain ingest."""
+    errors = []
+    for parameter in ("10fg", "i10fg"):
+        try:
+            target = work / f"gust-{parameter}.grib2"
+            client.retrieve(type="fc", stream="oper", step=GUST_STEPS,
+                            param=[parameter], target=str(target))
+            records = _decode_all(target, run_time, "ECMWF_IFS_DIRECT", "oper")
+            if records:
+                return records, parameter, None
+        except Exception as exc:
+            errors.append(f"{parameter}: {type(exc).__name__}: {exc}")
+    return [], None, " | ".join(errors) if errors else "No gust records returned"
+
+
 def collect(output: Path | None = None) -> dict:
     from ecmwf.opendata import Client
 
@@ -59,6 +76,10 @@ def collect(output: Path | None = None) -> dict:
                                                param=["10u", "10v", "tp"], target=str(atmosphere))
                 run_time = atmos_result.datetime.astimezone(timezone.utc)
                 records = _decode_all(atmosphere, run_time, "ECMWF_IFS_DIRECT", "oper")
+
+                gust_records, gust_parameter, gust_error = _collect_gust(client, work, run_time)
+                records.extend(gust_records)
+
                 wave_error = None
                 try:
                     wave = work / "wave.grib2"
@@ -73,6 +94,7 @@ def collect(output: Path | None = None) -> dict:
                     "qc": "PASS" if records else "FAIL", "selected_endpoint": source,
                     "run_time": run_time.isoformat(), "horizon_hours": 72,
                     "steps": STEPS, "record_count": len(records), "records": records,
+                    "gust_parameter": gust_parameter, "gust_error": gust_error,
                     "wave_error": wave_error, "attempts": attempts, "checked_at": _utcnow(),
                 }
                 if output:
