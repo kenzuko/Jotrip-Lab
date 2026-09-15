@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "sunairport": {
+    "mode": "retry_until_d0_available",
+    "morning_poll_window_vn": "04:00-08:45",
+    "evening_poll_window_vn": "16:00-18:45",
+    "poll_interval_minutes": 15,
+    "report_cutoff_morning": "05:45",
+    "report_cutoff_evening": "17:45",
+    "rule": "A report cutoff does not stop collection. If the official D0 board is not yet available, continue polling and publish an incremental update when D0 appears. Never substitute D-1 as D0."
+  },
+  "forward_demand_radar": {
+    "horizon_days": 90,
+    "purpose": "Detect demand compression early enough for JoTrip inventory, pricing, vehicles, hosts and supplier commitments.",
+    "primary_layers": [
+      "hotel_availability_pressure",
+      "hotel_rate_pressure",
+      "flight_schedule_supply",
+      "airfare_pressure",
+      "tour_and_attraction_availability",
+      "source_market_signals"
+    ],
+    "hotel": {
+      "primary_source": "Booking.com",
+      "crosscheck_sources": ["other comparable OTA when available", "direct hotel site when needed"],
+      "fixed_search_config": {
+        "rooms": 1,
+        "adults": 2,
+        "currency": "VND",
+        "length_of_stay_nights": 2,
+        "taxes_and_fees": "all_in",
+        "member_state": "logged_out_or_fixed_consistent_state",
+        "cancellation": "track refundable and non-refundable separately",
+        "meal_plan": "track breakfast inclusion separately"
+      },
+      "sampling": {
+        "d1_d14": "daily",
+        "d15_d45": "every_2_days_plus_all_Friday_Saturday_checkins",
+        "d46_d90": "every_3_days_plus_all_Friday_Saturday_checkins_and_peak_dates"
+      },
+      "required_outputs": [
+        "observed_available_property_count",
+        "observed_unavailable_property_count",
+        "observed_scarcity_share",
+        "median_all_in_rate_by_segment",
+        "rate_floor_by_segment",
+        "sellout_or_unavailable_hotels",
+        "minimum_stay_or_inventory_restrictions_when_visible",
+        "change_vs_previous_comparable_scan"
+      ],
+      "interpretation_rule": "Observed OTA scarcity is not occupancy. Label it OTA availability pressure only."
+    },
+    "segments": [
+      "luxury_5_6_star",
+      "premium_family",
+      "midscale",
+      "budget",
+      "south_island",
+      "long_beach",
+      "duong_dong",
+      "north_island"
+    ],
+    "alert_rules": {
+      "watch": ">=30% of fixed hotel basket unavailable on a comparable date/configuration",
+      "high": ">=50% unavailable or median all-in rate rises >=20% vs comparable baseline",
+      "critical": ">=70% unavailable in a target segment/zone or multiple key JoTrip hotels unavailable across adjacent dates",
+      "note": "Thresholds are operating-policy v0.1, not calibrated occupancy probabilities."
+    },
+    "reporting": {
+      "daily_0600": "show 14/30/60/90-day forward pressure calendar and only material changes",
+      "daily_1800": "show material changes since morning when new inventory/rates are observed",
+      "weekly": "full 90-day curve, peak-date clusters, source-market and airlift overlay"
+    }
+  }
+}
