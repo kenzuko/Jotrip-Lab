@@ -241,15 +241,15 @@ Kiểm thử ngoài môi trường proxy ngày 15/09/2026 đã xác nhận:
 
 ```text
 ECMWF IFS/Wave D0-D3: 525 direct point records, 25 bước 3 giờ, 3 điểm, PASS
-GEFS control 10u: indexed byte-range + decode + Phú Quốc point PASS
-GEFS Wave Hs: indexed byte-range + decode + Phú Quốc point PASS
+GEFS 10u lead +3h: 31/31 direct members + quantiles + Phú Quốc point PASS
+GEFS Wave Hs lead +3h: 31/31 direct members + quantiles + Phú Quốc point PASS
 ICON 10u: direct BZ2/GRIB + DWD official remap 0.25° + Phú Quốc point PASS
 Copernicus Marine: AUTH-REQUIRED, không tự kích hoạt
 ```
 
 ECMWF đã chứng minh đường chạy 72 giờ cho `10u`, `10v`, `tp`, `swh`, `mwd`, `mwp`, `pp1d` tại Dương Đông, An Thới và Gành Dầu. Kết quả live ngày 15/09/2026 dùng run 18Z ngày 14/09, `wave_error = null`.
 
-GEFS/GEFS Wave mới chứng minh control field tại một lead, chưa chứng minh đủ member x variable x 0-72h. Copernicus chờ tài khoản miễn phí và dataset ID được chọn từ catalogue chính thức. Vì vậy MODE A và xác suất ensemble vẫn khóa. Không được suy rộng smoke test thành full ensemble readiness.
+GEFS/GEFS Wave đã chứng minh member completeness 100% tại lead +3h cho 10u và Hs. Chưa chứng minh đủ member x variable x mọi lead 0-72h. Copernicus chờ tài khoản miễn phí và dataset ID được chọn từ catalogue chính thức. Vì vậy P_operational_window toàn cửa và MODE A vẫn khóa. Không được suy rộng một lead thành full ensemble readiness.
 
 ### 10.4 VERIFIED-NOT-COMPLETE RULE
 
