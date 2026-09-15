@@ -20,6 +20,7 @@ POINTS = {
     "duong_dong": (10.2172, 103.9593),
     "an_thoi": (10.0191, 104.0150),
     "ganh_dau": (10.3759, 103.9000),
+    "rach_gia": (10.00677, 105.07845),
 }
 SHORT_STEPS = list(range(0, 73, 3))
 MEDIUM_STEPS = list(range(0, 145, 3)) + list(range(150, 241, 6))
