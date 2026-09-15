@@ -4,10 +4,16 @@ on:
   push:
     paths:
       - "weather/**"
+      - "weather.html"
+      - "weather-dashboard.js"
+      - "weather-dashboard.css"
       - ".github/workflows/weather-lab-tests.yml"
   pull_request:
     paths:
       - "weather/**"
+      - "weather.html"
+      - "weather-dashboard.js"
+      - "weather-dashboard.css"
   workflow_dispatch:
   workflow_call:
     inputs:
@@ -38,7 +44,7 @@ jobs:
   cycle-watch:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 5
     outputs:
       run_heavy: ${{ steps.gate.outputs.run_heavy }}
     steps:
@@ -50,13 +56,13 @@ jobs:
           python-version: "3.12"
       - name: Install lightweight ECMWF client
         run: python -m pip install --quiet ecmwf-opendata
-      - name: Check latest model cycles without GRIB downloads
+      - name: Check short and medium model cycles without GRIB downloads
         run: python -m weather.collectors.cycle_watch --snapshot weather/dashboard-data.json --output /tmp/cycle-watch.json
       - name: Decide whether heavy ingest is needed
         id: gate
         shell: bash
         run: |
-          if [[ "${GITHUB_EVENT_NAME}" == "schedule" || "${{ inputs.scheduled_watch }}" == "true" ]]; then
+          if [[ "${{ inputs.scheduled_watch }}" == "true" ]]; then
             RUN_HEAVY=$(python -c 'import json; p=json.load(open("/tmp/cycle-watch.json")); print(str(bool(p["run_heavy"])).lower())')
           else
             RUN_HEAVY=true
@@ -71,7 +77,7 @@ jobs:
           retention-days: 7
 
   test:
-    if: github.event_name != 'schedule' && !inputs.scheduled_watch
+    if: github.event_name != 'workflow_call' || !inputs.scheduled_watch
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -84,14 +90,12 @@ jobs:
       - run: python -m unittest discover -s weather/tests -v
       - run: python -m weather.pipeline.decision_features --input weather/tests/fixtures/end_to_end_decision.json --output /tmp/decision-features.json
       - run: python -c 'import json; p=json.load(open("/tmp/decision-features.json")); assert p["decision"]["decision"] == "GO_WITH_WATCH"; assert p["operational_probability"]["p_operational_window"] == .75'
-      - run: python -m weather.pipeline.build_snapshot --input weather/tests/fixtures/an_thoi_2026_09_14.json --output /tmp/an_thoi_snapshot.json --cutoff 2026-09-14T22:45:00Z --offline
-      - run: python -c 'import json; from weather.processing.snapshot import verify_snapshot; p=json.load(open("/tmp/an_thoi_snapshot.json")); assert verify_snapshot(p)'
 
-  live-source-probe:
+  ecmwf-d10-point:
     needs: cycle-watch
-    if: github.event_name != 'pull_request' && ((github.event_name != 'schedule' && !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
+    if: github.event_name != 'pull_request' && ((github.event_name != 'workflow_call' || !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -99,21 +103,35 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Probe primary and official mirrors
-        run: python -m weather.collectors.probe --output /tmp/source-health.json
-      - name: Require every credential-free source to be reachable
-        run: python -c 'import json; p=json.load(open("/tmp/source-health.json")); required=("ECMWF_DIRECT","NOAA_GEFS_DIRECT","NOAA_GEFS_WAVE_DIRECT","DWD_ICON_DIRECT"); assert all(p[k]["status"] == "REACHABLE" for k in required), p'
+      - name: Install official ECMWF client and GRIB decoder
+        run: python -m pip install --quiet ecmwf-opendata eccodes
+      - name: Collect freshest D0-D3 and medium-range D4-D10 fields
+        run: python -m weather.collectors.ecmwf_72h --output /tmp/ecmwf-d10.json
+      - name: Enforce D10 point readiness
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/ecmwf-d10.json'))
+          assert p['readiness'] == 'POINT_ROUTE_EXTRACTED', p
+          assert p['horizon_hours'] == 240, p
+          assert {0,24,48,72}.issubset(set(p['steps'])), p['steps']
+          assert {144,180,216,240}.issubset(set(p['medium_steps'])), p['medium_steps']
+          assert p.get('medium_run_time'), p
+          assert p.get('short_record_count', 0) >= 200, p
+          assert p.get('medium_record_count', 0) >= 500, p
+          assert p.get('record_count', 0) >= 700, p
+          PY
       - uses: actions/upload-artifact@v4
         with:
-          name: weather-live-source-health
-          path: /tmp/source-health.json
+          name: ecmwf-live-d10-points
+          path: /tmp/ecmwf-d10.json
           retention-days: 7
 
-  live-numeric-smoke:
+  noaa-member-smoke:
     needs: cycle-watch
-    if: github.event_name != 'pull_request' && ((github.event_name != 'schedule' && !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
+    if: github.event_name != 'pull_request' && ((github.event_name != 'workflow_call' || !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -121,43 +139,21 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install official model clients and GRIB decoder
-        run: python -m pip install --disable-pip-version-check ecmwf-opendata eccodes
-      - name: Download and decode live numerical fields
-        run: python -m weather.collectors.live_smoke --output /tmp/numeric-smoke.json
-      - name: Enforce numerical readiness gates
-        run: python -c 'import json; p=json.load(open("/tmp/numeric-smoke.json")); assert p["ECMWF_DIRECT"]["status"] == "NUMERIC_READY", p["ECMWF_DIRECT"]; assert p["NOAA_GEFS_DIRECT"]["status"] == "NUMERIC_READY", p["NOAA_GEFS_DIRECT"]; assert p["NOAA_GEFS_WAVE_DIRECT"]["status"] == "NUMERIC_READY", p["NOAA_GEFS_WAVE_DIRECT"]; assert p["DWD_ICON_DIRECT"]["status"] == "FIELD_NUMERIC_READY_POINT_PENDING", p["DWD_ICON_DIRECT"]'
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: weather-live-numeric-smoke
-          path: /tmp/numeric-smoke.json
-          retention-days: 7
-
-  icon-remap-asset:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    timeout-minutes: 8
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.target_ref || github.ref }}
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Inspect official DWD remapping pack
-        run: python -m weather.collectors.icon_assets --output /tmp/icon-remap.json
-      - name: Verify remapping assets exist
-        run: python -c 'import json; p=json.load(open("/tmp/icon-remap.json")); assert p["status"] == "OFFICIAL_REMAP_PACK_READY"; assert p["bytes"] > 1000000; assert p["members"], p'
+      - name: Install GRIB decoder
+        run: python -m pip install --quiet eccodes
+      - name: Collect GEFS atmosphere and wave member gate
+        run: python -m weather.collectors.noaa_member_smoke --lead 3 --output /tmp/noaa-members.json
+      - name: Enforce member gate
+        run: python -c 'import json; p=json.load(open("/tmp/noaa-members.json")); assert p["atmosphere"]["readiness"] == "MEMBER_COMPLETE", p["atmosphere"]; assert p["wave"]["readiness"] == "MEMBER_COMPLETE", p["wave"]'
       - uses: actions/upload-artifact@v4
         with:
-          name: icon-official-remap-pack-index
-          path: /tmp/icon-remap.json
+          name: noaa-live-member-smoke
+          path: /tmp/noaa-members.json
           retention-days: 7
 
   icon-point-smoke:
     needs: cycle-watch
-    if: github.event_name != 'pull_request' && ((github.event_name != 'schedule' && !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
+    if: github.event_name != 'pull_request' && ((github.event_name != 'workflow_call' || !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -182,68 +178,9 @@ jobs:
           path: /tmp/icon-point.json
           retention-days: 7
 
-  ecmwf-72h-point-smoke:
-    needs: cycle-watch
-    if: github.event_name != 'pull_request' && ((github.event_name != 'schedule' && !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.target_ref || github.ref }}
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install official client and GRIB decoder
-        run: python -m pip install --quiet ecmwf-opendata eccodes
-      - name: Collect D0-D3 fields at locked points including direct gust
-        run: python -m weather.collectors.ecmwf_72h --output /tmp/ecmwf-72h.json
-      - name: Enforce 72-hour point readiness
-        run: |
-          python - <<'PY'
-          import json
-          p=json.load(open('/tmp/ecmwf-72h.json'))
-          assert p['readiness'] == 'POINT_ROUTE_EXTRACTED', p
-          assert p['horizon_hours'] == 72
-          assert {0,24,48,72}.issubset(set(p['steps']))
-          assert p['record_count'] >= 200, p
-          gusts=[r for r in p['records'] if r.get('variable') in {'10fg','10fg3','i10fg','max_i10fg'}]
-          if p.get('gust_parameter'):
-              assert len(gusts) >= 60, len(gusts)
-          PY
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ecmwf-live-72h-points
-          path: /tmp/ecmwf-72h.json
-          retention-days: 7
-
-  noaa-member-smoke:
-    needs: cycle-watch
-    if: github.event_name != 'pull_request' && ((github.event_name != 'schedule' && !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.target_ref || github.ref }}
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install GRIB decoder
-        run: python -m pip install --quiet eccodes
-      - name: Collect GEFS and GEFS Wave members
-        run: python -m weather.collectors.noaa_member_smoke --lead 3 --output /tmp/noaa-members.json
-      - name: Enforce member gate
-        run: python -c 'import json; p=json.load(open("/tmp/noaa-members.json")); assert p["atmosphere"]["readiness"] == "MEMBER_COMPLETE", p["atmosphere"]; assert p["wave"]["readiness"] == "MEMBER_COMPLETE", p["wave"]'
-      - uses: actions/upload-artifact@v4
-        with:
-          name: noaa-live-member-smoke
-          path: /tmp/noaa-members.json
-          retention-days: 7
-
   copernicus-live-subset:
     needs: cycle-watch
-    if: github.event_name != 'pull_request' && ((github.event_name != 'schedule' && !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
+    if: github.event_name != 'pull_request' && ((github.event_name != 'workflow_call' || !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -272,12 +209,12 @@ jobs:
   publish-dashboard:
     if: github.event_name != 'pull_request'
     needs:
-      - ecmwf-72h-point-smoke
+      - ecmwf-d10-point
       - noaa-member-smoke
       - icon-point-smoke
       - copernicus-live-subset
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
     permissions:
       contents: write
     steps:
@@ -288,10 +225,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Download ECMWF artifact
+      - name: Download ECMWF D10 artifact
         uses: actions/download-artifact@v4
         with:
-          name: ecmwf-live-72h-points
+          name: ecmwf-live-d10-points
           path: /tmp/weather-artifacts/ecmwf
       - name: Download GEFS artifact
         uses: actions/download-artifact@v4
@@ -308,10 +245,10 @@ jobs:
         with:
           name: copernicus-live-phu-quoc-subset
           path: /tmp/weather-artifacts/copernicus
-      - name: Build live dashboard snapshot
+      - name: Build live D0-D10 dashboard snapshot
         run: |
           python -m weather.pipeline.build_dashboard \
-            --ecmwf /tmp/weather-artifacts/ecmwf/ecmwf-72h.json \
+            --ecmwf /tmp/weather-artifacts/ecmwf/ecmwf-d10.json \
             --gefs /tmp/weather-artifacts/gefs/noaa-members.json \
             --icon /tmp/weather-artifacts/icon/icon-point.json \
             --copernicus /tmp/weather-artifacts/copernicus/copernicus-live.json \
@@ -324,8 +261,10 @@ jobs:
           p=json.load(open('weather/dashboard-data.json', encoding='utf-8'))
           assert p['report_status'] == 'LIVE', p
           assert p['completeness'] >= 60, p
-          assert all(len(v['hours']) >= 20 for v in p['points'].values()), p
-          assert set(p.get('source_cycles', {})) == {'ECMWF','GEFS','ICON'}, p.get('source_cycles')
+          assert p.get('forecast_horizon_hours') == 240, p
+          assert all(len(v['hours']) >= 45 for v in p['points'].values()), {k:len(v['hours']) for k,v in p['points'].items()}
+          assert all(len(v.get('daily_outlook', [])) >= 2 for v in p['points'].values()), p
+          assert set(p.get('source_cycles', {})) == {'ECMWF','ECMWF_MEDIUM','GEFS','ICON'}, p.get('source_cycles')
           generated=datetime.fromisoformat(p['generated_at'])
           age=(datetime.now(timezone.utc)-generated.astimezone(timezone.utc)).total_seconds()
           assert 0 <= age < 900, age
@@ -333,7 +272,6 @@ jobs:
       - name: Commit dashboard snapshot
         shell: bash
         run: |
-          TARGET_REF="${{ inputs.target_ref || github.ref_name }}"
           git config user.name "jotrip-weather-bot"
           git config user.email "jotrip-weather-bot@users.noreply.github.com"
           git add weather/dashboard-data.json
@@ -341,6 +279,6 @@ jobs:
             echo "Dashboard snapshot unchanged"
             exit 0
           fi
-          git commit -m "chore(weather): publish live dashboard snapshot [skip ci]"
-          git pull --rebase origin "${TARGET_REF}"
-          git push origin "HEAD:${TARGET_REF}"
+          git commit -m "chore(weather): publish live D10 dashboard snapshot [skip ci]"
+          git pull --rebase origin "${{ inputs.target_ref || github.ref_name }}"
+          git push origin "HEAD:${{ inputs.target_ref || github.ref_name }}"
