@@ -1,4 +1,4 @@
-const fallback={snapshot_id:"NO_LIVE_SNAPSHOT",generated_at:new Date().toISOString(),data_mode:"-",completeness:0,confidence:null,report_status:"UNAVAILABLE",decision:"NOT_ISSUED",headline:"Không tải được snapshot live. Kiểm tra dashboard-data.json hoặc lần publish CI gần nhất.",next_review:"sau cycle CI kế tiếp",git_commit_sha:"-",sources:{ECMWF:{status:"UNRESOLVED",detail:"Chưa tải snapshot"},GEFS:{status:"UNRESOLVED",detail:"Chưa tải snapshot"},ICON:{status:"UNRESOLVED",detail:"Chưa tải snapshot"},COPERNICUS:{status:"UNRESOLVED",detail:"Chưa tải snapshot"},RADAR_LIGHTNING:{status:"UNRESOLVED",detail:"Chưa tải snapshot"}},gaps:[{name:"Dashboard data",detail:"Fetch /weather/dashboard-data.json thất bại"}],points:{an_thoi:{name:"An Thới",status:"UNAVAILABLE",wind:null,gust:null,wave:null,period:null,rain:null,current:null,caveat:"Không có snapshot live để hiển thị.",hours:[]},duong_dong:{name:"Dương Đông",status:"UNAVAILABLE",wind:null,gust:null,wave:null,period:null,rain:null,current:null,caveat:"Không có snapshot live để hiển thị.",hours:[]},ganh_dau:{name:"Gành Dầu",status:"UNAVAILABLE",wind:null,gust:null,wave:null,period:null,rain:null,current:null,caveat:"Không có snapshot live để hiển thị.",hours:[]}}};
+const fallback={snapshot_id:"NO_LIVE_SNAPSHOT",generated_at:new Date().toISOString(),data_mode:"-",completeness:0,confidence:null,report_status:"UNAVAILABLE",decision:"NOT_ISSUED",headline:"Không tải được snapshot live. Kiểm tra dashboard-data.json hoặc lần publish CI gần nhất.",next_review:"sau cycle CI kế tiếp",git_commit_sha:"-",sources:{ECMWF:{status:"UNRESOLVED",detail:"Chưa tải snapshot"},GEFS:{status:"UNRESOLVED",detail:"Chưa tải snapshot"},ICON:{status:"UNRESOLVED",detail:"Chưa tải snapshot"},COPERNICUS:{status:"UNRESOLVED",detail:"Chưa tải snapshot"},RADAR_LIGHTNING:{status:"UNRESOLVED",detail:"Chưa tải snapshot"}},gaps:[{name:"Dashboard data",detail:"Fetch /weather/dashboard-data.json thất bại"}],points:{an_thoi:{name:"An Thới",status:"UNAVAILABLE",wind:null,gust:null,wave_max:null,wave:null,period:null,rain:null,current:null,caveat:"Không có snapshot live để hiển thị.",hours:[]},duong_dong:{name:"Dương Đông",status:"UNAVAILABLE",wind:null,gust:null,wave_max:null,wave:null,period:null,rain:null,current:null,caveat:"Không có snapshot live để hiển thị.",hours:[]},ganh_dau:{name:"Gành Dầu",status:"UNAVAILABLE",wind:null,gust:null,wave_max:null,wave:null,period:null,rain:null,current:null,caveat:"Không có snapshot live để hiển thị.",hours:[]}}};
 let state=fallback,currentPoint="an_thoi";
 const $=id=>document.getElementById(id);
 const fmt=(v,d=1)=>{if(v===null||v===undefined||Number.isNaN(Number(v)))return "-";const n=Number(v);return Number(n.toFixed(d)).toString()};
@@ -9,11 +9,11 @@ function render(){const live=state.report_status==="LIVE";$("healthDot").classNa
 function age(date){const mins=Math.max(0,Math.round((Date.now()-new Date(date))/60000));return mins<60?mins+" phút":Math.round(mins/60)+" giờ"}
 function renderSources(){$("sources").innerHTML=Object.entries(state.sources).map(([name,x])=>`<div class="source"><b>${name}</b><span><i class="state ${x.status==="PASS"?"ok":x.status==="PARTIAL"?"partial":"fail"}">${x.status}</i><br>${x.detail}</span></div>`).join("")}
 function renderGaps(){$("gaps").innerHTML=state.gaps.length?state.gaps.map(x=>`<div class="gap"><b>${x.name}</b><span>${x.detail}</span></div>`).join(""):`<div class="gap"><b>Không có critical gap</b><span>Cycle đủ điều kiện</span></div>`}
-function renderPoint(){const p=state.points[currentPoint],rows=futureRows(p.hours||[]);$("pointName").textContent=p.name;$("pointStatus").textContent=p.status;for(const [id,key,d] of [["wind","wind",1],["gust","gust",1],["wave","wave",2],["period","period",2],["rain","rain",2],["current","current",2]])$(id).textContent=fmt(p[key],d);$("pointCaveat").textContent=p.caveat||"";renderTable(rows);drawChart(rows)}
+function renderPoint(){const p=state.points[currentPoint],rows=futureRows(p.hours||[]);$("pointName").textContent=p.name;$("pointStatus").textContent=p.status;for(const [id,key,d] of [["wind","wind",1],["gust","gust",1],["waveMax","wave_max",2],["wave","wave",2],["period","period",2],["rain","rain",2],["current","current",2]])$(id).textContent=fmt(p[key],d);$("pointCaveat").textContent=p.caveat||"";renderTable(rows);drawChart(rows)}
 
 function renderTable(rows){
-  $("forecastRows").innerHTML=rows.length?rows.map(r=>`<tr><td>${r.time}</td><td>${fmt(r.wind,1)}</td><td>${fmt(r.gust,1)}</td><td>${fmt(r.rain,2)}</td><td>${fmt(r.wave,2)}</td><td>${fmt(r.period,1)}</td></tr>`).join(""):`<tr><td colspan="6" style="text-align:center;color:#8da8ae">Chưa có bước dự báo tương lai trong snapshot hiện tại</td></tr>`;
-  $("forecastCards").innerHTML=rows.length?rows.map(r=>`<article class="forecast-card"><time>${r.time}</time><div class="forecast-card-grid"><div><span>Gió nền</span><b>${fmt(r.wind,1)} <small>km/h</small></b></div><div><span>Gió giật</span><b>${fmt(r.gust,1)} <small>km/h</small></b></div><div><span>Mưa 3 giờ</span><b>${fmt(r.rain,2)} <small>mm</small></b></div><div><span>Sóng Hs</span><b>${fmt(r.wave,2)} <small>m</small></b></div><div><span>Chu kỳ</span><b>${fmt(r.period,1)} <small>giây</small></b></div></div></article>`).join(""):`<div class="empty" style="display:grid">Chưa có bước dự báo tương lai trong snapshot hiện tại.</div>`;
+  $("forecastRows").innerHTML=rows.length?rows.map(r=>`<tr><td>${r.time}</td><td>${fmt(r.wind,1)}</td><td>${fmt(r.gust,1)}</td><td>${fmt(r.rain,2)}</td><td>${fmt(r.wave_max,2)}</td><td>${fmt(r.wave,2)}</td><td>${fmt(r.period,1)}</td></tr>`).join(""):`<tr><td colspan="7" style="text-align:center;color:#8da8ae">Chưa có bước dự báo tương lai trong snapshot hiện tại</td></tr>`;
+  $("forecastCards").innerHTML=rows.length?rows.map(r=>`<article class="forecast-card"><time>${r.time}</time><div class="forecast-card-grid"><div><span>Gió nền</span><b>${fmt(r.wind,1)} <small>km/h</small></b></div><div><span>Gió giật</span><b>${fmt(r.gust,1)} <small>km/h</small></b></div><div><span>Mưa 3 giờ</span><b>${fmt(r.rain,2)} <small>mm</small></b></div><div class="risk-cell"><span>Hmax rủi ro</span><b>${fmt(r.wave_max,2)} <small>m</small></b></div><div><span>Sóng Hs</span><b>${fmt(r.wave,2)} <small>m</small></b></div><div><span>Chu kỳ</span><b>${fmt(r.period,1)} <small>giây</small></b></div></div></article>`).join(""):`<div class="empty" style="display:grid">Chưa có bước dự báo tương lai trong snapshot hiện tại.</div>`;
 }
 
 function niceMax(value,kind){
@@ -33,7 +33,7 @@ function drawChart(rows){
   const usable=h-top-bottom-gap*2,panelH=usable/3;
   const panels=[
     {label:"Gió / Giật",unit:"km/h",kind:"wind",series:[{key:"wind",color:"#2fc5b4"},{key:"gust",color:"#ff8b73"}]},
-    {label:"Sóng Hs",unit:"m",kind:"wave",series:[{key:"wave",color:"#63aef4"}]},
+    {label:"Hmax / Hs",unit:"m",kind:"wave",series:[{key:"wave_max",color:"#c28cff"},{key:"wave",color:"#63aef4"}]},
     {label:"Mưa 3h",unit:"mm",kind:"rain",series:[{key:"rain",color:"#fcbc12"}]}
   ];
   ctx.font=w<500?"10px system-ui":"11px system-ui";ctx.textBaseline="middle";
@@ -48,7 +48,7 @@ function drawChart(rows){
     p.series.forEach(s=>{
       const points=rows.map((r,i)=>({i,v:Number(r[s.key])})).filter(x=>Number.isFinite(x.v));
       if(!points.length)return;
-      ctx.strokeStyle=s.color;ctx.lineWidth=2.2;ctx.beginPath();
+      ctx.strokeStyle=s.color;ctx.lineWidth=s.key==="wave_max"?2.8:2.2;ctx.beginPath();
       points.forEach((pt,j)=>{const x=left+(w-left-right)*pt.i/Math.max(1,rows.length-1),y=y1-panelH*Math.min(max,Math.max(0,pt.v))/max;j?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();
     });
   });
