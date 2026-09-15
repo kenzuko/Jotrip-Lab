@@ -1,9 +1,9 @@
 # PHÚ QUỐC WEATHER & MARINE DECISION INTELLIGENCE
 
-## MASTER LOCK V5.1 - LAB-FIRST, REALITY-FIRST, RESILIENT DIRECT-MODEL
+## MASTER LOCK V5.2 - LAB-FIRST, REALITY-FIRST, VERIFIED DIRECT-MODEL
 
 Ngày khóa: 15/09/2026  
-Thay thế: MASTER V5.0, V4.9 và các bản trước  
+Thay thế: MASTER V5.1, V5.0, V4.9 và các bản trước  
 Múi giờ vận hành: UTC+7  
 Lịch báo cáo: 06:00 và 18:00 hằng ngày  
 Phạm vi: Phú Quốc, vùng biển lân cận, các điểm và tuyến vận hành JoTrip
@@ -235,19 +235,33 @@ Không được dùng GEFS để giả là ECMWF fallback hoặc ngược lại.
 
 Source health và numeric readiness là hai lớp riêng. Production report không được nhận source là healthy nếu live smoke chỉ mở được directory nhưng không tải và giải mã được field.
 
-### 10.3 CURRENT VERIFIED ACCESS STATE
+### 10.3 CURRENT VERIFIED EXECUTION STATE
 
 Kiểm thử ngoài môi trường proxy ngày 15/09/2026 đã xác nhận:
 
 ```text
-ECMWF 10u: direct retrieve + GRIB decode + Phú Quốc point PASS
+ECMWF IFS/Wave D0-D3: 525 direct point records, 25 bước 3 giờ, 3 điểm, PASS
 GEFS control 10u: indexed byte-range + decode + Phú Quốc point PASS
 GEFS Wave Hs: indexed byte-range + decode + Phú Quốc point PASS
-ICON 10u: direct BZ2/GRIB decode PASS; point extraction PENDING grid join
+ICON 10u: direct BZ2/GRIB + DWD official remap 0.25° + Phú Quốc point PASS
 Copernicus Marine: AUTH-REQUIRED, không tự kích hoạt
 ```
 
-Đây là smoke evidence, chưa phải bằng chứng đủ 72h variables/members. MODE A chỉ bật sau khi collector đầy đủ biến, lead, member và route gate đạt.
+ECMWF đã chứng minh đường chạy 72 giờ cho `10u`, `10v`, `tp`, `swh`, `mwd`, `mwp`, `pp1d` tại Dương Đông, An Thới và Gành Dầu. Kết quả live ngày 15/09/2026 dùng run 18Z ngày 14/09, `wave_error = null`.
+
+GEFS/GEFS Wave mới chứng minh control field tại một lead, chưa chứng minh đủ member x variable x 0-72h. Copernicus chờ tài khoản miễn phí và dataset ID được chọn từ catalogue chính thức. Vì vậy MODE A và xác suất ensemble vẫn khóa. Không được suy rộng smoke test thành full ensemble readiness.
+
+### 10.4 VERIFIED-NOT-COMPLETE RULE
+
+Mỗi report phải tách ba trạng thái:
+
+```text
+VERIFIED-LIVE
+IMPLEMENTED-NOT-LIVE-VERIFIED
+NOT-YET-IMPLEMENTED / AUTH-REQUIRED
+```
+
+Không được dùng câu “đã vượt qua hết” nếu GEFS member gate, Copernicus subset, route GPS hoặc nowcast coverage chưa đạt. Phần đã đạt vẫn được sử dụng đúng phạm vi, không biến toàn report thành MISSING.
 
 ## 11. ENSEMBLE VÀ CALIBRATION
 

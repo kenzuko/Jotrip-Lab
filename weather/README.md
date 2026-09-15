@@ -1,6 +1,6 @@
 # JoTrip Weather Lab MVP
 
-Data Plane độc lập cho PHÚ QUỐC WEATHER & MARINE DECISION INTELLIGENCE, theo MASTER V5.1.
+Data Plane độc lập cho PHÚ QUỐC WEATHER & MARINE DECISION INTELLIGENCE, theo MASTER V5.2.
 
 ## Trạng thái
 
@@ -10,7 +10,10 @@ Data Plane độc lập cho PHÚ QUỐC WEATHER & MARINE DECISION INTELLIGENCE, 
 - Có route aggregation loại land grid, current U/V và drift comparable-run gate.
 - Có SQLite archive dùng local/CI. Production database chưa được kích hoạt.
 - Có direct-source health probe miễn phí với failover ECMWF sang AWS/GCP và GEFS sang NOAA NODD AWS. Probe chỉ xác nhận endpoint, chưa đồng nghĩa đã tải và giải mã GRIB/NetCDF.
-- Có live numeric smoke test tải GRIB thật và giải mã ECMWF, GEFS atmosphere, GEFS Wave và ICON. ICON chỉ đạt field-level cho đến khi ghép lưới tọa độ chính thức, nên chưa được dùng như point forecast.
+- Có live numeric smoke test tải và giải mã ECMWF, GEFS atmosphere và GEFS Wave.
+- ECMWF IFS/Wave đã chạy D0-D3 tại 25 bước 3 giờ cho Dương Đông, An Thới và Gành Dầu.
+- ICON dùng gói trọng số DWD chính thức, remap sang grid 0,25 độ và đã trích point Phú Quốc.
+- GEFS/GEFS Wave member-level 0-72h chưa qua completeness gate, vì vậy chưa bật xác suất ensemble.
 - Copernicus Marine giữ `AUTH_REQUIRED` đến khi có tài khoản miễn phí do người dùng cấp.
 - Route Nam đảo trong config là test-only đến khi JoTrip xác minh GPS track.
 
@@ -37,3 +40,16 @@ python -m weather.collectors.probe
 ```
 
 Không có dịch vụ trả phí nào được tự động đăng ký hoặc kích hoạt.
+
+## Copernicus Marine
+
+Đăng ký tài khoản miễn phí tại https://data.marine.copernicus.eu/register, sau đó thêm GitHub Actions Secrets/Variables:
+
+```text
+COPERNICUSMARINE_SERVICE_USERNAME
+COPERNICUSMARINE_SERVICE_PASSWORD
+COPERNICUS_WAVE_DATASET_ID
+COPERNICUS_CURRENT_DATASET_ID
+```
+
+Dataset ID phải lấy từ catalogue chính thức tại thời điểm cấu hình, không hard-code theo trí nhớ. Không commit credential vào repository.
