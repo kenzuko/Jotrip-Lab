@@ -1,10 +1,9 @@
 {
-  "schema_version": "2.1",
-  "parser_version": "sunairport-physical-v2.1",
-  "normalization_version": "codeshare-row-v2.1",
-  "report_state": "REPORT_READY",
+  "schema_version": "2.1-raw",
   "collected_at_vn": "2026-09-16T06:29:28+07:00",
-  "source_date": "2026-09-16",
+  "collected_day_vn": "2026-09-16",
+  "collected_hhmm_vn": "0629",
+  "board_date": "2026-09-16",
   "source": {
     "name": "Sun Airport - Phu Quoc International Airport",
     "url": "https://sunairport.com/phuquoc/vi/chuyen-bay",
@@ -12,1441 +11,924 @@
     "paid_services_used": false
   },
   "page_last_updated": "Lần cuối cập nhật 06:29",
-  "counts": {
-    "arrivals": 54,
-    "departures": 54,
-    "total": 108
-  },
-  "summary": {
-    "arrivals_market": {
-      "domestic": 31,
-      "international": 23,
-      "unknown": 0
-    },
-    "departures_market": {
-      "domestic": 32,
-      "international": 22,
-      "unknown": 0
-    },
-    "arrivals_by_station": {
-      "HO CHI MINH": 13,
-      "HA NOI": 10,
-      "INCHEON": 7,
-      "DA NANG": 4,
-      "KUALA LUMPUR": 3,
-      "BANGKOK": 2,
-      "HAI PHONG": 2,
-      "HONG KONG": 2,
-      "SINGAPORE": 2,
-      "TAIPEI": 2,
-      "BUSAN": 1,
-      "CAM RANH": 1,
-      "CAN THO": 1,
-      "CHENGDU TIANFU": 1,
-      "DON MUANG": 1,
-      "PUDONG- SHANGHAI": 1,
-      "XIANYANG-XI AN": 1
-    },
-    "departures_by_station": {
-      "HO CHI MINH": 13,
-      "HA NOI": 10,
-      "INCHEON": 6,
-      "DA NANG": 4,
-      "KUALA LUMPUR": 3,
-      "BANGKOK": 2,
-      "BUSAN": 2,
-      "CAN THO": 2,
-      "HAI PHONG": 2,
-      "HONG KONG": 2,
-      "SINGAPORE": 2,
-      "TAIPEI": 2,
-      "CAM RANH": 1,
-      "DON MUANG": 1,
-      "PUDONG- SHANGHAI": 1,
-      "XIANYANG-XI AN": 1
-    },
-    "arrivals_by_status": {
-      "ĐÚNG GIỜ": 51,
-      "ĐÃ HẠ CÁNH": 2,
-      "BÃI ĐỖ": 1
-    },
-    "departures_by_status": {
-      "LÀM THỦ TỤC LÚC": 50,
-      "ĐÃ CẤT CÁNH": 3
-    },
-    "arrivals_by_time_bank": {
-      "15:00-17:59": 14,
-      "09:00-11:59": 12,
-      "12:00-14:59": 11,
-      "21:00-23:59": 6,
-      "18:00-20:59": 5,
-      "06:00-08:59": 4,
-      "00:00-05:59": 2
-    },
-    "departures_by_time_bank": {
-      "09:00-11:59": 13,
-      "12:00-14:59": 12,
-      "15:00-17:59": 12,
-      "18:00-20:59": 8,
-      "21:00-23:59": 5,
-      "00:00-05:59": 3,
-      "06:00-08:59": 1
-    }
-  },
-  "quality": {
-    "usable": true,
-    "board_date_matches_collection_date": true,
-    "physical_movement_dedup": true,
-    "codeshare_method": "same rendered row + direction + scheduled time"
-  },
-  "records": [
+  "arrivals_raw": [
     {
       "direction": "arrival",
-      "operating_flight_number": "MU6033",
-      "marketing_flight_numbers": [],
+      "flight_number": "MU6033",
       "times": [
         "00:05"
       ],
-      "station": "PUDONG- SHANGHAI",
-      "market": "international",
-      "status": "BÃI ĐỖ",
       "context": "BÃI ĐỖ | TRẠNG THÁI | 1 | MU6033 • CHINA EASTERN AIRLINES | PUDONG- SHANGHAI | 00:05 | 3 | 7"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G611",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G611",
       "times": [
         "00:35"
       ],
-      "station": "CHENGDU TIANFU",
-      "market": "international",
-      "status": "ĐÃ HẠ CÁNH",
       "context": "7 | ĐÃ HẠ CÁNH | 2 | 9G611 • SUN PHUQUOC AIRWAYS | CHENGDU TIANFU | 00:35 | 4 | 13"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VJ979",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ979",
       "times": [
         "07:35"
       ],
-      "station": "INCHEON",
-      "market": "international",
-      "status": "ĐÃ HẠ CÁNH",
       "context": "13 | ĐÃ HẠ CÁNH | 3 | VJ979 • VIETJET AIR | INCHEON | 07:35 | 4 | 8"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VJ449",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ449",
       "times": [
         "08:35"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "8 | ĐÚNG GIỜ | 4 | VJ449 • VIETJET AIR | HA NOI | 08:35 | 2 | 9"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VJ339",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ339",
       "times": [
         "08:50"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "9 | ĐÚNG GIỜ | 5 | VJ339 • VIETJET AIR | HO CHI MINH | 08:50 | 2 | 11"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G1955",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1955",
       "times": [
         "08:55"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "11 | ĐÚNG GIỜ | 6 | 9G1955 • SUN PHUQUOC AIRWAYS | HO CHI MINH | 08:55 | 1 | 12"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G455",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G455",
       "times": [
         "09:00"
       ],
-      "station": "INCHEON",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "12 | ĐÚNG GIỜ | 7 | 9G455 • SUN PHUQUOC AIRWAYS | INCHEON | 09:00 | 3 | 6"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VN1823",
-      "marketing_flight_numbers": [],
+      "flight_number": "VN1823",
       "times": [
         "09:00"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "6 | ĐÚNG GIỜ | 8 | VN1823 • VIETNAM AIRLINES | HO CHI MINH | 09:00 | 1 | 8"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G1207",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1207",
       "times": [
         "09:15"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "8 | ĐÚNG GIỜ | 9 | 9G1207 • SUN PHUQUOC AIRWAYS | HA NOI | 09:15 | 1 | 10"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "AK543",
-      "marketing_flight_numbers": [],
+      "flight_number": "AK543",
       "times": [
         "09:30"
       ],
-      "station": "KUALA LUMPUR",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "10 | ĐÚNG GIỜ | 10 | AK543 • AIR ASIA | KUALA LUMPUR | 09:30 | 4 | 7"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VJ321",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ321",
       "times": [
         "09:55"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "7 | ĐÚNG GIỜ | 11 | VJ321 • VIETJET AIR | HO CHI MINH | 09:55 | 2 | 9"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VJ337",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ337",
       "times": [
         "10:10"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "9 | ĐÚNG GIỜ | 12 | VJ337 • VIETJET AIR | HO CHI MINH | 10:10 | 2 | 14"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G1209",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1209",
       "times": [
         "10:15"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "14 | ĐÚNG GIỜ | 13 | 9G1209 • SUN PHUQUOC AIRWAYS | HA NOI | 10:15 | 1 | 8"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G1961",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1961",
       "times": [
         "10:30"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "8 | ĐÚNG GIỜ | 14 | 9G1961 • SUN PHUQUOC AIRWAYS | HO CHI MINH | 10:30 | 1 | 10"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VZ980",
-      "marketing_flight_numbers": [],
+      "flight_number": "VZ980",
       "times": [
         "10:40"
       ],
-      "station": "BANGKOK",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "10 | ĐÚNG GIỜ | 15 | VZ980 • THAI VIETJET AIR | BANGKOK | 10:40 | 3 | 7"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VJ447",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ447",
       "times": [
         "10:50"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "7 | ĐÚNG GIỜ | 16 | VJ447 • VIETJET AIR | HA NOI | 10:50 | 2 | 18"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G2963",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G2963",
       "times": [
         "10:55"
       ],
-      "station": "DA NANG",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "18 | ĐÚNG GIỜ | 17 | 9G2963 • SUN PHUQUOC AIRWAYS | DA NANG | 10:55 | 1 | 11"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VN1825",
-      "marketing_flight_numbers": [],
+      "flight_number": "VN1825",
       "times": [
         "11:25"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "11 | ĐÚNG GIỜ | 18 | VN1825 • VIETNAM AIRLINES | HO CHI MINH | 11:25 | 1 | 9"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G2501",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G2501",
       "times": [
         "12:05"
       ],
-      "station": "HAI PHONG",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "9 | ĐÚNG GIỜ | 19 | 9G2501 • SUN PHUQUOC AIRWAYS | HAI PHONG | 12:05 | 1 | 12"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VJ335",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ335",
       "times": [
         "12:20"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "12 | ĐÚNG GIỜ | 20 | VJ335 • VIETJET AIR | HO CHI MINH | 12:20 | 2 | 18"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G1221",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1221",
       "times": [
         "12:25"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "18 | ĐÚNG GIỜ | 21 | 9G1221 • SUN PHUQUOC AIRWAYS | HA NOI | 12:25 | 1 | 8"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G1969",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1969",
       "times": [
         "12:35"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "8 | ĐÚNG GIỜ | 22 | 9G1969 • SUN PHUQUOC AIRWAYS | HO CHI MINH | 12:35 | 1 | 10"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VN1233",
-      "marketing_flight_numbers": [],
+      "flight_number": "VN1233",
       "times": [
         "13:20"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "10 | ĐÚNG GIỜ | 23 | VN1233 • VIETNAM AIRLINES | HA NOI | 13:20 | 1 | 9"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "FD660",
-      "marketing_flight_numbers": [],
+      "flight_number": "FD660",
       "times": [
         "13:20"
       ],
-      "station": "DON MUANG",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "9 | ĐÚNG GIỜ | 24 | FD660 • THAI AIRASIA | DON MUANG | 13:20 | 4 | 7"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VJ719",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ719",
       "times": [
         "13:25"
       ],
-      "station": "DA NANG",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "7 | ĐÚNG GIỜ | 25 | VJ719 • VIETJET AIR | DA NANG | 13:25 | 2 | 11"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "AK545",
-      "marketing_flight_numbers": [],
+      "flight_number": "AK545",
       "times": [
         "13:35"
       ],
-      "station": "KUALA LUMPUR",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "11 | ĐÚNG GIỜ | 26 | AK545 • AIR ASIA | KUALA LUMPUR | 13:35 | 3 | 12"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VJ451",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ451",
       "times": [
         "13:55"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "12 | ĐÚNG GIỜ | 27 | VJ451 • VIETJET AIR | HA NOI | 13:55 | 2 | 10"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VN1827",
-      "marketing_flight_numbers": [],
+      "flight_number": "VN1827",
       "times": [
         "14:00"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "10 | ĐÚNG GIỜ | 28 | VN1827 • VIETNAM AIRLINES | HO CHI MINH | 14:00 | 1 | 8"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G702",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G702",
       "times": [
         "14:30"
       ],
-      "station": "BANGKOK",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "8 | ĐÚNG GIỜ | 29 | 9G702 • SUN PHUQUOC AIRWAYS | BANGKOK | 14:30 | 4 | 13"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VJ453",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ453",
       "times": [
         "15:05"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "13 | ĐÚNG GIỜ | 30 | VJ453 • VIETJET AIR | HA NOI | 15:05 | 2 | 9"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G720",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G720",
       "times": [
         "15:05"
       ],
-      "station": "SINGAPORE",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "9 | ĐÚNG GIỜ | 31 | 9G720 • SUN PHUQUOC AIRWAYS | SINGAPORE | 15:05 | 3 | 11"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G1225",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1225",
       "times": [
         "15:10"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "11 | ĐÚNG GIỜ | 32 | 9G1225 • SUN PHUQUOC AIRWAYS | HA NOI | 15:10 | 1 | 6"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G451",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G451",
       "times": [
         "15:35"
       ],
-      "station": "INCHEON",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "6 | ĐÚNG GIỜ | 33 | 9G451 • SUN PHUQUOC AIRWAYS | INCHEON | 15:35 | 4 | 8"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G2953",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G2953",
       "times": [
         "15:50"
       ],
-      "station": "CAM RANH",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "8 | ĐÚNG GIỜ | 34 | 9G2953 • SUN PHUQUOC AIRWAYS | CAM RANH | 15:50 | 1 | 10"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VJ327",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ327",
       "times": [
         "15:50"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "10 | ĐÚNG GIỜ | 35 | VJ327 • VIETJET AIR | HO CHI MINH | 15:50 | 2 | 13"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VJ715",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ715",
       "times": [
         "15:55"
       ],
-      "station": "DA NANG",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "13 | ĐÚNG GIỜ | 36 | VJ715 • VIETJET AIR | DA NANG | 15:55 | 2 | 9"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VN1829",
-      "marketing_flight_numbers": [],
+      "flight_number": "VN1829",
       "times": [
         "16:30"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "9 | ĐÚNG GIỜ | 37 | VN1829 • VIETNAM AIRLINES | HO CHI MINH | 16:30 | 1 | 12"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "JX705",
-      "marketing_flight_numbers": [],
+      "flight_number": "JX705",
       "times": [
         "16:55"
       ],
-      "station": "TAIPEI",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "12 | ĐÚNG GIỜ | 38 | JX705 • STARLUX AIRLINES | TAIPEI | 16:55 | 3 | 7"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "0V8075",
-      "marketing_flight_numbers": [],
+      "flight_number": "0V8075",
       "times": [
         "17:05"
       ],
-      "station": "CAN THO",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "7 | ĐÚNG GIỜ | 39 | 0V8075 • VASCO | CAN THO | 17:05 | 2 | 11"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G2965",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G2965",
       "times": [
         "17:25"
       ],
-      "station": "DA NANG",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "11 | ĐÚNG GIỜ | 40 | 9G2965 • SUN PHUQUOC AIRWAYS | DA NANG | 17:25 | 1 | 10"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "TR524",
-      "marketing_flight_numbers": [],
+      "flight_number": "TR524",
       "times": [
         "17:40"
       ],
-      "station": "SINGAPORE",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "10 | ĐÚNG GIỜ | 41 | TR524 • SCOOT | SINGAPORE | 17:40 | 4 | 14"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VJ767",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ767",
       "times": [
         "17:45"
       ],
-      "station": "HAI PHONG",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "14 | ĐÚNG GIỜ | 42 | VJ767 • VIETJET AIR | HAI PHONG | 17:45 | 2 | 9"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G750",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G750",
       "times": [
         "17:55"
       ],
-      "station": "KUALA LUMPUR",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "9 | ĐÚNG GIỜ | 43 | 9G750 • SUN PHUQUOC AIRWAYS | KUALA LUMPUR | 17:55 | 3 | 8"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "UO596",
-      "marketing_flight_numbers": [],
+      "flight_number": "UO596",
       "times": [
         "18:05"
       ],
-      "station": "HONG KONG",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "8 | ĐÚNG GIỜ | 44 | UO596 • HONG KONG EXPRESS AIRWAYS LIMITED | HONG KONG | 18:05 | 4 | 12"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G501",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G501",
       "times": [
         "18:35"
       ],
-      "station": "HONG KONG",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "12 | ĐÚNG GIỜ | 45 | 9G501 • SUN PHUQUOC AIRWAYS | HONG KONG | 18:35 | 3 | 11"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G1985",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1985",
       "times": [
         "19:20"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "11 | ĐÚNG GIỜ | 46 | 9G1985 • SUN PHUQUOC AIRWAYS | HO CHI MINH | 19:20 | 1 | 10"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "MU861",
-      "marketing_flight_numbers": [],
+      "flight_number": "MU861",
       "times": [
         "20:00"
       ],
-      "station": "XIANYANG-XI AN",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "10 | ĐÚNG GIỜ | 47 | MU861 • CHINA EASTERN AIRLINES | XIANYANG-XI AN | 20:00 | 4 | 7"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "9G511",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G511",
       "times": [
         "20:25"
       ],
-      "station": "TAIPEI",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "7 | ĐÚNG GIỜ | 48 | 9G511 • SUN PHUQUOC AIRWAYS | TAIPEI | 20:25 | 3 | 12"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "LJ091",
-      "marketing_flight_numbers": [],
+      "flight_number": "LJ091",
       "times": [
         "21:00"
       ],
-      "station": "INCHEON",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "12 | ĐÚNG GIỜ | 49 | LJ091 • JIN AIR | INCHEON | 21:00 | 4 | 8"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "7C2315",
-      "marketing_flight_numbers": [],
+      "flight_number": "7C2315",
       "times": [
         "21:25"
       ],
-      "station": "INCHEON",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "8 | ĐÚNG GIỜ | 50 | 7C2315 • JEJU AIR | INCHEON | 21:25 | 3 | 7"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "VJ445",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ445",
       "times": [
         "22:10"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "ĐÚNG GIỜ",
       "context": "7 | ĐÚNG GIỜ | 51 | VJ445 • VIETJET AIR | HA NOI | 22:10 | 2 | 11"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "ZE981",
-      "marketing_flight_numbers": [],
+      "flight_number": "ZE981",
       "times": [
         "22:25"
       ],
-      "station": "BUSAN",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "11 | ĐÚNG GIỜ | 52 | ZE981 • EASTARJET | BUSAN | 22:25 | 4 | 8"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "KE485",
-      "marketing_flight_numbers": [],
+      "flight_number": "KE485",
       "times": [
         "22:50"
       ],
-      "station": "INCHEON",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "8 | ĐÚNG GIỜ | 53 | KE485 • KOREAN AIR | INCHEON | 22:50 | 3 | 7"
     },
     {
       "direction": "arrival",
-      "operating_flight_number": "ZE581",
-      "marketing_flight_numbers": [],
+      "flight_number": "ZE581",
       "times": [
         "23:20"
       ],
-      "station": "INCHEON",
-      "market": "international",
-      "status": "ĐÚNG GIỜ",
       "context": "7 | ĐÚNG GIỜ | 54 | ZE581 • EASTARJET | INCHEON | 23:20 | 4 | 13"
-    },
+    }
+  ],
+  "departures_raw": [
     {
       "direction": "departure",
-      "operating_flight_number": "ZE582",
-      "marketing_flight_numbers": [],
+      "flight_number": "ZE582",
       "times": [
         "00:20"
       ],
-      "station": "INCHEON",
-      "market": "international",
-      "status": "",
       "context": "CỔNG | TRẠNG THÁI | 1 | ZE582 • EASTARJET | INCHEON | 00:20 | 30-32 | 8"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G452",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G452",
       "times": [
         "01:00"
       ],
-      "station": "INCHEON",
-      "market": "international",
-      "status": "ĐÃ CẤT CÁNH",
       "context": "8 | ĐÃ CẤT CÁNH | 2 | 9G452 • SUN PHUQUOC AIRWAYS | INCHEON | 01:00 | 34-35 | 11"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "MU6034",
-      "marketing_flight_numbers": [],
+      "flight_number": "MU6034",
       "times": [
         "01:05"
       ],
-      "station": "PUDONG- SHANGHAI",
-      "market": "international",
-      "status": "ĐÃ CẤT CÁNH",
       "context": "11 | ĐÃ CẤT CÁNH | 3 | MU6034 • CHINA EASTERN AIRLINES | PUDONG- SHANGHAI | 01:05 | 27-29 | 9"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VJ336",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ336",
       "times": [
         "08:30",
         "08:50"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "ĐÃ CẤT CÁNH",
       "context": "9 | ĐÃ CẤT CÁNH | 4 | VJ336 • VIETJET AIR | HO CHI MINH | 08:30 | 08:50 | 17-18"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VJ450",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ450",
       "times": [
         "06:50",
         "09:10"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "4 | LÀM THỦ TỤC LÚC 06:50 | 5 | VJ450 • VIETJET AIR | HA NOI | 09:10 | 11-12 | 3"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VJ718",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ718",
       "times": [
         "07:10",
         "09:25"
       ],
-      "station": "DA NANG",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "3 | LÀM THỦ TỤC LÚC 07:10 | 6 | VJ718 • VIETJET AIR | DA NANG | 09:25 | 14-15 | 14"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VN1822",
-      "marketing_flight_numbers": [],
+      "flight_number": "VN1822",
       "times": [
         "07:25",
         "09:35"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "14 | LÀM THỦ TỤC LÚC 07:25 | 7 | VN1822 • VIETNAM AIRLINES | HO CHI MINH | 09:35 | 08-10 | 4"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "AK544",
-      "marketing_flight_numbers": [],
+      "flight_number": "AK544",
       "times": [
         "07:35",
         "10:05"
       ],
-      "station": "KUALA LUMPUR",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "4 | LÀM THỦ TỤC LÚC 07:35 | 8 | AK544 • AIR ASIA | KUALA LUMPUR | 10:05 | 27-29 | 9"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G1206",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1206",
       "times": [
         "07:05",
         "10:15"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "9 | LÀM THỦ TỤC LÚC 07:05 | 9 | 9G1206 • SUN PHUQUOC AIRWAYS | HA NOI | 10:15 | 03-04 | 2"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VJ330",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ330",
       "times": [
         "08:15",
         "10:30"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "2 | LÀM THỦ TỤC LÚC 08:15 | 10 | VJ330 • VIETJET AIR | HO CHI MINH | 10:30 | 17-18 | 3"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G701",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G701",
       "times": [
         "08:30",
         "10:35"
       ],
-      "station": "BANGKOK",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "3 | LÀM THỦ TỤC LÚC 08:30 | 11 | 9G701 • SUN PHUQUOC AIRWAYS | BANGKOK | 10:35 | 34-35 | 11"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G721",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G721",
       "times": [
         "07:35",
         "10:35"
       ],
-      "station": "SINGAPORE",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "11 | LÀM THỦ TỤC LÚC 07:35 | 12 | 9G721 • SUN PHUQUOC AIRWAYS | SINGAPORE | 10:35 | 32-33 | 5"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VJ440",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ440",
       "times": [
         "07:35",
         "11:25"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "5 | LÀM THỦ TỤC LÚC 07:35 | 13 | VJ440 • VIETJET AIR | HA NOI | 11:25 | 14-15 | 13"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G510",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G510",
       "times": [
         "09:25",
         "11:30"
       ],
-      "station": "TAIPEI",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "13 | LÀM THỦ TỤC LÚC 09:25 | 14 | 9G510 • SUN PHUQUOC AIRWAYS | TAIPEI | 11:30 | 30-31 | 8"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G2962",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G2962",
       "times": [
         "08:30",
         "11:35"
       ],
-      "station": "DA NANG",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "8 | LÀM THỦ TỤC LÚC 08:30 | 15 | 9G2962 • SUN PHUQUOC AIRWAYS | DA NANG | 11:35 | 03-04 | 14"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VZ981",
-      "marketing_flight_numbers": [],
+      "flight_number": "VZ981",
       "times": [
         "09:35",
         "11:45"
       ],
-      "station": "BANGKOK",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "14 | LÀM THỦ TỤC LÚC 09:35 | 16 | VZ981 • THAI VIETJET AIR | BANGKOK | 11:45 | 24-25 | 9"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G502",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G502",
       "times": [
         "08:45",
         "11:55"
       ],
-      "station": "HONG KONG",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "9 | LÀM THỦ TỤC LÚC 08:45 | 17 | 9G502 • SUN PHUQUOC AIRWAYS | HONG KONG | 11:55 | 27-28 | 6"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VN1824",
-      "marketing_flight_numbers": [],
+      "flight_number": "VN1824",
       "times": [
         "08:55",
         "12:05"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "6 | LÀM THỦ TỤC LÚC 08:55 | 18 | VN1824 • VIETNAM AIRLINES | HO CHI MINH | 12:05 | 08-10 | 3"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G2952",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G2952",
       "times": [
         "10:05",
         "12:15"
       ],
-      "station": "CAM RANH",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "3 | LÀM THỦ TỤC LÚC 10:05 | 19 | 9G2952 • SUN PHUQUOC AIRWAYS | CAM RANH | 12:15 | 05-06 | 2"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G2500",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G2500",
       "times": [
         "10:15",
         "12:55"
       ],
-      "station": "HAI PHONG",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "2 | LÀM THỦ TỤC LÚC 10:15 | 20 | 9G2500 • SUN PHUQUOC AIRWAYS | HAI PHONG | 12:55 | 03-04 | 12"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VJ766",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ766",
       "times": [
         "10:55",
         "13:00",
         "13:10"
       ],
-      "station": "HAI PHONG",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "12 | LÀM THỦ TỤC LÚC 10:55 | 21 | VJ766 • VIETJET AIR | HAI PHONG | 13:00 | 13:10 | 17-18"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G2966",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G2966",
       "times": [
         "11:10",
         "13:15"
       ],
-      "station": "DA NANG",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "13 | LÀM THỦ TỤC LÚC 11:10 | 22 | 9G2966 • SUN PHUQUOC AIRWAYS | DA NANG | 13:15 | 07-08 | 2"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G751",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G751",
       "times": [
         "11:15",
         "13:45"
       ],
-      "station": "KUALA LUMPUR",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "2 | LÀM THỦ TỤC LÚC 11:15 | 23 | 9G751 • SUN PHUQUOC AIRWAYS | KUALA LUMPUR | 13:45 | 34-35 | 8"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "FD661",
-      "marketing_flight_numbers": [],
+      "flight_number": "FD661",
       "times": [
         "10:45",
         "13:50"
       ],
-      "station": "DON MUANG",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "8 | LÀM THỦ TỤC LÚC 10:45 | 24 | FD661 • THAI AIRASIA | DON MUANG | 13:50 | 31-33 | 9"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VN1232",
-      "marketing_flight_numbers": [],
+      "flight_number": "VN1232",
       "times": [
         "10:50",
         "13:55"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "9 | LÀM THỦ TỤC LÚC 10:50 | 25 | VN1232 • VIETNAM AIRLINES | HA NOI | 13:55 | 09-11 | 3"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VJ452",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ452",
       "times": [
         "11:55",
         "14:00"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "3 | LÀM THỦ TỤC LÚC 11:55 | 26 | VJ452 • VIETJET AIR | HA NOI | 14:00 | 20-21 | 14"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "AK546",
-      "marketing_flight_numbers": [],
+      "flight_number": "AK546",
       "times": [
         "12:00",
         "14:10"
       ],
-      "station": "KUALA LUMPUR",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "14 | LÀM THỦ TỤC LÚC 12:00 | 27 | AK546 • AIR ASIA | KUALA LUMPUR | 14:10 | 27-29 | 10"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VJ454",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ454",
       "times": [
         "11:10",
         "14:35"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "10 | LÀM THỦ TỤC LÚC 11:10 | 28 | VJ454 • VIETJET AIR | HA NOI | 14:35 | 17-18 | 2"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VN1826",
-      "marketing_flight_numbers": [],
+      "flight_number": "VN1826",
       "times": [
         "12:35",
         "14:35"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "2 | LÀM THỦ TỤC LÚC 12:35 | 29 | VN1826 • VIETNAM AIRLINES | HO CHI MINH | 14:35 | 12-14 | 4"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VJ456",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ456",
       "times": [
         "12:35",
         "15:40"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "4 | LÀM THỦ TỤC LÚC 12:35 | 30 | VJ456 • VIETJET AIR | HA NOI | 15:40 | 12-13 | 3"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G1972",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1972",
       "times": [
         "13:40",
         "15:50"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "3 | LÀM THỦ TỤC LÚC 13:40 | 31 | 9G1972 • SUN PHUQUOC AIRWAYS | HO CHI MINH | 15:50 | 03-04 | 13"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VJ326",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ326",
       "times": [
         "13:50",
         "16:25"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "13 | LÀM THỦ TỤC LÚC 13:50 | 32 | VJ326 • VIETJET AIR | HO CHI MINH | 16:25 | 20-21 | 14"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G1224",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1224",
       "times": [
         "14:25",
         "16:25"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "14 | LÀM THỦ TỤC LÚC 14:25 | 33 | 9G1224 • SUN PHUQUOC AIRWAYS | HA NOI | 16:25 | 05-06 | 12"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VJ714",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ714",
       "times": [
         "14:25",
         "16:30"
       ],
-      "station": "DA NANG",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "12 | LÀM THỦ TỤC LÚC 14:25 | 34 | VJ714 • VIETJET AIR | DA NANG | 16:30 | 14-15 | 3"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G1974",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1974",
       "times": [
         "14:30",
         "16:30"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "3 | LÀM THỦ TỤC LÚC 14:30 | 35 | 9G1974 • SUN PHUQUOC AIRWAYS | HO CHI MINH | 16:30 | 07-08 | 2"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VN1828",
-      "marketing_flight_numbers": [],
+      "flight_number": "VN1828",
       "times": [
         "14:30",
         "17:05"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "2 | LÀM THỦ TỤC LÚC 14:30 | 36 | VN1828 • VIETNAM AIRLINES | HO CHI MINH | 17:05 | 09-11 | 12"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "0V8074",
-      "marketing_flight_numbers": [],
+      "flight_number": "0V8074",
       "times": [
         "15:05",
         "17:35"
       ],
-      "station": "CAN THO",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "12 | LÀM THỦ TỤC LÚC 15:05 | 37 | 0V8074 • VASCO | VN8074 | CAN THO | 17:35 | 12-13"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VN8074",
-      "marketing_flight_numbers": [],
+      "flight_number": "VN8074",
       "times": [
         "15:05",
         "17:35"
       ],
-      "station": "CAN THO",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "LÀM THỦ TỤC LÚC 15:05 | 37 | 0V8074 • VASCO | VN8074 | CAN THO | 17:35 | 12-13 | 13"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VJ978",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ978",
       "times": [
         "15:35",
         "17:45"
       ],
-      "station": "INCHEON",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "13 | LÀM THỦ TỤC LÚC 15:35 | 38 | VJ978 • VIETJET AIR | INCHEON | 17:45 | 27-28 | 5"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G1230",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1230",
       "times": [
         "14:45",
         "17:45"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "5 | LÀM THỦ TỤC LÚC 14:45 | 39 | 9G1230 • SUN PHUQUOC AIRWAYS | HA NOI | 17:45 | 03-04 | 4"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "JX706",
-      "marketing_flight_numbers": [],
+      "flight_number": "JX706",
       "times": [
         "15:45",
         "17:55"
       ],
-      "station": "TAIPEI",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "4 | LÀM THỦ TỤC LÚC 15:45 | 40 | JX706 • STARLUX AIRLINES | TAIPEI | 17:55 | 33-35 | 9"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G1978",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1978",
       "times": [
         "14:55",
         "18:05"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "9 | LÀM THỦ TỤC LÚC 14:55 | 41 | 9G1978 • SUN PHUQUOC AIRWAYS | HO CHI MINH | 18:05 | 05-06 | 2"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "TR525",
-      "marketing_flight_numbers": [],
+      "flight_number": "TR525",
       "times": [
         "16:05",
         "18:20"
       ],
-      "station": "SINGAPORE",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "2 | LÀM THỦ TỤC LÚC 16:05 | 42 | TR525 • SCOOT | SINGAPORE | 18:20 | 31-32 | 11"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VJ338",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ338",
       "times": [
         "15:20",
         "18:20",
         "18:30"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "11 | LÀM THỦ TỤC LÚC 15:20 | 43 | VJ338 • VIETJET AIR | HO CHI MINH | 18:20 | 18:30 | 08-09"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "UO597",
-      "marketing_flight_numbers": [],
+      "flight_number": "UO597",
       "times": [
         "16:30",
         "19:05"
       ],
-      "station": "HONG KONG",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "3 | LÀM THỦ TỤC LÚC 16:30 | 44 | UO597 • HONG KONG EXPRESS AIRWAYS LIMITED | HONG KONG | 19:05 | 28-30 | 10"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G1232",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1232",
       "times": [
         "16:05",
         "19:15"
       ],
-      "station": "HA NOI",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "10 | LÀM THỦ TỤC LÚC 16:05 | 45 | 9G1232 • SUN PHUQUOC AIRWAYS | HA NOI | 19:15 | 03-04 | 4"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G1984",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1984",
       "times": [
         "17:15",
         "20:00"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "4 | LÀM THỦ TỤC LÚC 17:15 | 46 | 9G1984 • SUN PHUQUOC AIRWAYS | HO CHI MINH | 20:00 | 05-06 | 2"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G454",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G454",
       "times": [
         "18:00",
         "20:20"
       ],
-      "station": "INCHEON",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "2 | LÀM THỦ TỤC LÚC 18:00 | 47 | 9G454 • SUN PHUQUOC AIRWAYS | INCHEON | 20:20 | 34-35 | 6"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "9G1986",
-      "marketing_flight_numbers": [],
+      "flight_number": "9G1986",
       "times": [
         "17:20",
         "20:45"
       ],
-      "station": "HO CHI MINH",
-      "market": "domestic",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "6 | LÀM THỦ TỤC LÚC 17:20 | 48 | 9G1986 • SUN PHUQUOC AIRWAYS | HO CHI MINH | 20:45 | 03-04 | 12"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "MU862",
-      "marketing_flight_numbers": [],
+      "flight_number": "MU862",
       "times": [
         "18:45",
         "21:00"
       ],
-      "station": "XIANYANG-XI AN",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "12 | LÀM THỦ TỤC LÚC 18:45 | 49 | MU862 • CHINA EASTERN AIRLINES | XIANYANG-XI AN | 21:00 | 28-29 | 9"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "LJ092",
-      "marketing_flight_numbers": [],
+      "flight_number": "LJ092",
       "times": [
         "18:00",
         "22:00"
       ],
-      "station": "INCHEON",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "9 | LÀM THỦ TỤC LÚC 18:00 | 50 | LJ092 • JIN AIR | INCHEON | 22:00 | 19-21 | 8"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "7C2316",
-      "marketing_flight_numbers": [],
+      "flight_number": "7C2316",
       "times": [
         "19:00",
         "22:25"
       ],
-      "station": "INCHEON",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "8 | LÀM THỦ TỤC LÚC 19:00 | 51 | 7C2316 • JEJU AIR | INCHEON | 22:25 | 30-32 | 9"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "VJ968",
-      "marketing_flight_numbers": [],
+      "flight_number": "VJ968",
       "times": [
         "19:25",
         "23:10"
       ],
-      "station": "BUSAN",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "9 | LÀM THỦ TỤC LÚC 19:25 | 52 | VJ968 • VIETJET AIR | BUSAN | 23:10 | 28-29 | 5"
     },
     {
       "direction": "departure",
-      "operating_flight_number": "ZE982",
-      "marketing_flight_numbers": [],
+      "flight_number": "ZE982",
       "times": [
         "20:10",
         "23:25"
       ],
-      "station": "BUSAN",
-      "market": "international",
-      "status": "LÀM THỦ TỤC LÚC",
       "context": "5 | LÀM THỦ TỤC LÚC 20:10 | 53 | ZE982 • EASTARJET | BUSAN | 23:25 | 15-17 | 8"
     }
   ]
