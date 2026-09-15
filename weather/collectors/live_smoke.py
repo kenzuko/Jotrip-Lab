@@ -61,12 +61,17 @@ def _decode_grib(path: Path, *, nearest: bool = True) -> dict:
         if gid is None:
             raise RuntimeError("No GRIB message decoded")
         try:
+            raw_step = codes_get(gid, "endStep")
+            try:
+                normalized_step = int(raw_step)
+            except (TypeError, ValueError):
+                normalized_step = str(raw_step)
             decoded = {
                 "short_name": codes_get(gid, "shortName"),
                 "units": codes_get(gid, "units"),
                 "data_date": int(codes_get(gid, "dataDate")),
                 "data_time": int(codes_get(gid, "dataTime")),
-                "step": int(codes_get(gid, "endStep")),
+                "step": normalized_step,
                 "grid_type": codes_get(gid, "gridType"),
                 "number_of_points": int(codes_get(gid, "numberOfPoints")),
                 "minimum": float(codes_get(gid, "minimum")),

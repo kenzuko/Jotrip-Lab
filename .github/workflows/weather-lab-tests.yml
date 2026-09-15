@@ -61,6 +61,7 @@ jobs:
       - name: Enforce numerical readiness gates
         run: python -c 'import json; p=json.load(open("/tmp/numeric-smoke.json")); assert p["ECMWF_DIRECT"]["status"] == "NUMERIC_READY", p["ECMWF_DIRECT"]; assert p["NOAA_GEFS_DIRECT"]["status"] == "NUMERIC_READY", p["NOAA_GEFS_DIRECT"]; assert p["NOAA_GEFS_WAVE_DIRECT"]["status"] == "NUMERIC_READY", p["NOAA_GEFS_WAVE_DIRECT"]; assert p["DWD_ICON_DIRECT"]["status"] == "FIELD_NUMERIC_READY_POINT_PENDING", p["DWD_ICON_DIRECT"]'
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: weather-live-numeric-smoke
           path: /tmp/numeric-smoke.json
