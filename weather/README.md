@@ -1,6 +1,6 @@
 # JoTrip Weather Lab MVP
 
-Data Plane độc lập cho PHÚ QUỐC WEATHER & MARINE DECISION INTELLIGENCE, theo MASTER V5.2.
+Data Plane độc lập cho PHÚ QUỐC WEATHER & MARINE DECISION INTELLIGENCE, theo MASTER V5.3.
 
 ## Trạng thái
 
@@ -14,7 +14,7 @@ Data Plane độc lập cho PHÚ QUỐC WEATHER & MARINE DECISION INTELLIGENCE, 
 - ECMWF IFS/Wave đã chạy D0-D3 tại 25 bước 3 giờ cho Dương Đông, An Thới và Gành Dầu.
 - ICON dùng gói trọng số DWD chính thức, remap sang grid 0,25 độ và đã trích point Phú Quốc.
 - GEFS/GEFS Wave đã qua completeness gate 31/31 member tại lead +3h cho 10u và Hs. Toàn bộ matrix biến x lead 0-72h chưa được chứng minh, nên chưa bật P_operational_window.
-- Copernicus Marine giữ `AUTH_REQUIRED` đến khi có tài khoản miễn phí do người dùng cấp.
+- Copernicus Marine Wave/Current đã xác thực, tải subset NetCDF quanh Phú Quốc và trích ba point thành công.
 - Route Nam đảo trong config là test-only đến khi JoTrip xác minh GPS track.
 
 ## Chạy kiểm thử

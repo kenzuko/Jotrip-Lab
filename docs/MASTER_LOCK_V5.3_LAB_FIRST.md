@@ -1,9 +1,9 @@
 # PHÚ QUỐC WEATHER & MARINE DECISION INTELLIGENCE
 
-## MASTER LOCK V5.2 - LAB-FIRST, REALITY-FIRST, VERIFIED DIRECT-MODEL
+## MASTER LOCK V5.3 - LAB-FIRST, REALITY-FIRST, VERIFIED DIRECT-MODEL
 
 Ngày khóa: 15/09/2026  
-Thay thế: MASTER V5.1, V5.0, V4.9 và các bản trước  
+Thay thế: MASTER V5.2, V5.1, V5.0, V4.9 và các bản trước  
 Múi giờ vận hành: UTC+7  
 Lịch báo cáo: 06:00 và 18:00 hằng ngày  
 Phạm vi: Phú Quốc, vùng biển lân cận, các điểm và tuyến vận hành JoTrip
@@ -244,12 +244,12 @@ ECMWF IFS/Wave D0-D3: 525 direct point records, 25 bước 3 giờ, 3 điểm, P
 GEFS 10u lead +3h: 31/31 direct members + quantiles + Phú Quốc point PASS
 GEFS Wave Hs lead +3h: 31/31 direct members + quantiles + Phú Quốc point PASS
 ICON 10u: direct BZ2/GRIB + DWD official remap 0.25° + Phú Quốc point PASS
-Copernicus Marine: AUTH-REQUIRED, không tự kích hoạt
+Copernicus Wave/Current: authenticated direct subset + NetCDF + 3 points PASS
 ```
 
 ECMWF đã chứng minh đường chạy 72 giờ cho `10u`, `10v`, `tp`, `swh`, `mwd`, `mwp`, `pp1d` tại Dương Đông, An Thới và Gành Dầu. Kết quả live ngày 15/09/2026 dùng run 18Z ngày 14/09, `wave_error = null`.
 
-GEFS/GEFS Wave đã chứng minh member completeness 100% tại lead +3h cho 10u và Hs. Chưa chứng minh đủ member x variable x mọi lead 0-72h. Copernicus chờ tài khoản miễn phí và dataset ID được chọn từ catalogue chính thức. Vì vậy P_operational_window toàn cửa và MODE A vẫn khóa. Không được suy rộng một lead thành full ensemble readiness.
+GEFS/GEFS Wave đã chứng minh member completeness 100% tại lead +3h cho 10u và Hs. Chưa chứng minh đủ member x variable x mọi lead 0-72h. Copernicus đã lấy trực tiếp dataset wave 3 giờ và current 6 giờ chính thức, gồm Hs, hướng, mean/peak period, U/V và vector dòng chảy tại ba điểm. P_operational_window toàn cửa và MODE A vẫn khóa cho đến khi đủ matrix ensemble và route production. Không được suy rộng một lead thành full ensemble readiness.
 
 ### 10.4 VERIFIED-NOT-COMPLETE RULE
 

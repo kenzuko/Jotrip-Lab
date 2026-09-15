@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from weather.collectors.copernicus import configuration_status, subset
+from weather.processing.marine import current_from_uv
 
 WAVE_DATASET = "cmems_mod_glo_wav_anfc_0.083deg_PT3H-i"
 CURRENT_DATASET = "cmems_mod_glo_phy-cur_anfc_0.083deg_PT6H-i"
@@ -85,6 +86,18 @@ def run(output: Path | None = None) -> dict:
                                       bbox=BBOX, output=current_path, minimum_depth=0, maximum_depth=5)
             wave = _inspect(wave_path, wave_vars) if wave_path.exists() else {"error": wave_download}
             current = _inspect(current_path, current_vars) if current_path.exists() else {"error": current_download}
+            if not current.get("missing_variables"):
+                vectors = {}
+                for point in POINTS:
+                    u = current["variables"]["uo"]["points"][point]
+                    v = current["variables"]["vo"]["points"][point]
+                    if u.get("status") == "PASS" and v.get("status") == "PASS":
+                        vectors[point] = {
+                            **current_from_uv(u["value"], v["value"]),
+                            "sampled_lat": u["sampled_lat"], "sampled_lon": u["sampled_lon"],
+                            "distance_km": u["distance_km"], "depth_selection": "SHALLOWEST_0_TO_5M",
+                        }
+                current["derived_vectors"] = vectors
             usable = not wave.get("missing_variables") and not current.get("missing_variables")
             result = {
                 "status": "POINT_NUMERIC_READY" if usable else "PARTIAL_OR_FAILED",

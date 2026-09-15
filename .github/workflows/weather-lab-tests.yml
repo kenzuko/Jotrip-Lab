@@ -171,7 +171,7 @@ jobs:
       - name: Download Phu Quoc wave and current subsets
         run: python -m weather.collectors.copernicus_live --output /tmp/copernicus-live.json
       - name: Enforce credential, variable and point gates
-        run: python -c 'import json; p=json.load(open("/tmp/copernicus-live.json")); assert p["status"] == "POINT_NUMERIC_READY", p; assert p["wave"]["available_variables"] == ["VHM0","VMDR","VTM10","VTPK"]; assert p["current"]["available_variables"] == ["uo","vo"]'
+        run: python -c 'import json; p=json.load(open("/tmp/copernicus-live.json")); assert p["status"] == "POINT_NUMERIC_READY", p; assert p["wave"]["available_variables"] == ["VHM0","VMDR","VTM10","VTPK"]; assert p["current"]["available_variables"] == ["uo","vo"]; assert set(p["current"]["derived_vectors"]) == {"duong_dong","an_thoi","ganh_dau"}'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
