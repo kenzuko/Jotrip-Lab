@@ -285,3 +285,39 @@ jobs:
           git commit -m "chore(weather): publish live D10 dashboard snapshot [skip ci]"
           git pull --rebase origin "${{ inputs.target_ref || github.ref_name }}"
           git push origin "HEAD:${{ inputs.target_ref || github.ref_name }}"
+      - name: Build canonical LAB_SNAPSHOT_V1 after dashboard publish
+        run: |
+          python -m weather.pipeline.publish_snapshot \
+            --dashboard weather/dashboard-data.json \
+            --ecmwf /tmp/weather-artifacts/ecmwf/ecmwf-d10.json \
+            --gefs /tmp/weather-artifacts/gefs/noaa-members.json \
+            --icon /tmp/weather-artifacts/icon/icon-point.json \
+            --copernicus /tmp/weather-artifacts/copernicus/copernicus-live.json \
+            --root weather/snapshots
+      - name: Enforce canonical snapshot preflight
+        run: |
+          python - <<'PY'
+          import json
+          from weather.pipeline.publish_snapshot import validate_snapshot
+          from weather.processing.snapshot import verify_snapshot
+          p=json.load(open('weather/snapshots/latest.json', encoding='utf-8'))
+          assert verify_snapshot(p), 'payload hash mismatch'
+          validate_snapshot(p)
+          assert p['schema_version'] == '1.0'
+          assert p['data_mode'] in {'A','B','C'}
+          assert {'duong_dong','an_thoi','ganh_dau'}.issubset(p['points'])
+          assert p['ensemble']['p_operational_window']['status'] == 'NOT_COMPUTABLE'
+          PY
+      - name: Commit canonical LAB snapshot
+        shell: bash
+        run: |
+          git config user.name "jotrip-weather-bot"
+          git config user.email "jotrip-weather-bot@users.noreply.github.com"
+          git add weather/snapshots
+          if git diff --cached --quiet; then
+            echo "Canonical snapshot unchanged"
+            exit 0
+          fi
+          git commit -m "chore(weather): publish canonical LAB snapshot [skip ci]"
+          git pull --rebase origin "${{ inputs.target_ref || github.ref_name }}"
+          git push origin "HEAD:${{ inputs.target_ref || github.ref_name }}"
