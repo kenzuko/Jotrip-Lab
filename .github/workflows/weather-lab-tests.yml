@@ -1,6 +1,8 @@
 name: Weather Lab tests
 
 on:
+  schedule:
+    - cron: "40 9,21 * * *"
   push:
     paths:
       - "weather/**"
@@ -27,7 +29,7 @@ jobs:
       - run: python -c 'import json; from weather.processing.snapshot import verify_snapshot; p=json.load(open("/tmp/an_thoi_snapshot.json")); assert verify_snapshot(p)'
 
   live-source-probe:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -46,7 +48,7 @@ jobs:
           retention-days: 7
 
   live-numeric-smoke:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:

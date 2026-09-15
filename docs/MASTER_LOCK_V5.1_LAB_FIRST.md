@@ -1,9 +1,9 @@
 # PHÚ QUỐC WEATHER & MARINE DECISION INTELLIGENCE
 
-## MASTER LOCK V5.0 - LAB-FIRST, REALITY-FIRST, DIRECT-MODEL FIRST
+## MASTER LOCK V5.1 - LAB-FIRST, REALITY-FIRST, RESILIENT DIRECT-MODEL
 
 Ngày khóa: 15/09/2026  
-Thay thế: MASTER V4.9 và các bản trước  
+Thay thế: MASTER V5.0, V4.9 và các bản trước  
 Múi giờ vận hành: UTC+7  
 Lịch báo cáo: 06:00 và 18:00 hằng ngày  
 Phạm vi: Phú Quốc, vùng biển lân cận, các điểm và tuyến vận hành JoTrip
@@ -202,6 +202,52 @@ lineage
 Không đạt gate thì `NOT-COMPUTABLE`. Windy và technical viewer có underlying model rõ chỉ là cross-check, không thay direct ingest và không được double-count với model gốc.
 
 Các family như GFS deterministic, GEFS control, GEFS mean và GEFS members không phải các model độc lập. Blend ở system level trước, sau đó mới cross-center.
+
+### 10.1 NUMERICAL READINESS GATE
+
+Không dùng HTTP 200 làm bằng chứng data-ready. Mỗi nguồn đi qua các mức:
+
+```text
+ENDPOINT-REACHABLE
+-> OBJECT-RETRIEVED
+-> FIELD-DECODED
+-> POINT/ROUTE-EXTRACTED
+-> MEMBER-COMPLETE
+-> DECISION-ELIGIBLE
+```
+
+Chỉ `POINT/ROUTE-EXTRACTED` mới được đưa số điểm/tuyến vào snapshot. Chỉ `MEMBER-COMPLETE` mới được tính ensemble probability. GRIB tải được nhưng chưa giải mã là `RAW-NOT-PARSED`. Trường ICON giải mã được nhưng chưa ghép tọa độ lưới phi cấu trúc là `FIELD-NUMERIC-READY / POINT-NOT-COMPUTABLE`.
+
+### 10.2 SOURCE FAILOVER LOCK
+
+Failover chỉ dùng hạ tầng chính thức hoặc mirror do chính bên phát hành công bố:
+
+```text
+ECMWF: ECMWF Open Data -> AWS -> Google
+GEFS/GEFS Wave: NOAA NOMADS -> NOAA NODD AWS
+ICON: DWD Open Data -> latest active-valid DWD run trong archive
+Copernicus: official Toolbox/API -> latest active-valid Lab subset
+```
+
+Mỗi attempt lưu endpoint, thời gian, HTTP/error class, retry count và fallback level. Dùng exponential backoff có jitter, timeout riêng cho connect/read, circuit breaker và giới hạn tổng thời gian theo cycle.
+
+Không được dùng GEFS để giả là ECMWF fallback hoặc ngược lại. Nếu một family hỏng, giữ family khác là bằng chứng độc lập, giảm completeness và ghi gap. Nếu live run hỏng, chỉ được dùng latest completed run cùng family còn trong age limit cấu hình; không kéo valid time sang ngày khác.
+
+Source health và numeric readiness là hai lớp riêng. Production report không được nhận source là healthy nếu live smoke chỉ mở được directory nhưng không tải và giải mã được field.
+
+### 10.3 CURRENT VERIFIED ACCESS STATE
+
+Kiểm thử ngoài môi trường proxy ngày 15/09/2026 đã xác nhận:
+
+```text
+ECMWF 10u: direct retrieve + GRIB decode + Phú Quốc point PASS
+GEFS control 10u: indexed byte-range + decode + Phú Quốc point PASS
+GEFS Wave Hs: indexed byte-range + decode + Phú Quốc point PASS
+ICON 10u: direct BZ2/GRIB decode PASS; point extraction PENDING grid join
+Copernicus Marine: AUTH-REQUIRED, không tự kích hoạt
+```
+
+Đây là smoke evidence, chưa phải bằng chứng đủ 72h variables/members. MODE A chỉ bật sau khi collector đầy đủ biến, lead, member và route gate đạt.
 
 ## 11. ENSEMBLE VÀ CALIBRATION
 

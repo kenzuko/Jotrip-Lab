@@ -1,6 +1,6 @@
 # JoTrip Weather Lab MVP
 
-Data Plane độc lập cho PHÚ QUỐC WEATHER & MARINE DECISION INTELLIGENCE.
+Data Plane độc lập cho PHÚ QUỐC WEATHER & MARINE DECISION INTELLIGENCE, theo MASTER V5.1.
 
 ## Trạng thái
 
