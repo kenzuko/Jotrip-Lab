@@ -1,9 +1,8 @@
 """Lightweight model-cycle watcher for Weather Lab.
 
-This module intentionally avoids GRIB downloads. It checks only lightweight
-metadata/index endpoints every 30 minutes and tells CI whether a new numerical
-model cycle is available. Heavy ingestion should run only when at least one
-tracked cycle changed.
+Checks metadata every 30 minutes. ECMWF is tracked as two cycles: the freshest
+short operational cycle for D0-D3 and the latest 00/12 cycle exposing step 240
+for D4-D10. Heavy ingestion runs only when a tracked cycle changes.
 """
 from __future__ import annotations
 
@@ -35,20 +34,28 @@ def _load_previous(path: Path | None) -> dict:
         return {}
 
 
-def latest_ecmwf_cycle() -> str:
+def _latest_ecmwf(step: int) -> str:
     from ecmwf.opendata import Client
 
     errors = []
     for source in ("ecmwf", "aws", "google"):
         try:
             client = Client(source=source, maximum_retries=1, retry_after=1)
-            latest = client.latest(type="fc", stream="oper", step=3, param="10u")
+            latest = client.latest(type="fc", stream="oper", step=step, param="10u")
             if latest.tzinfo is None:
                 latest = latest.replace(tzinfo=timezone.utc)
             return latest.astimezone(timezone.utc).isoformat()
         except Exception as exc:
             errors.append(f"{source}: {type(exc).__name__}: {exc}")
-    raise RuntimeError("ECMWF cycle lookup failed: " + " | ".join(errors))
+    raise RuntimeError(f"ECMWF step {step} cycle lookup failed: " + " | ".join(errors))
+
+
+def latest_ecmwf_cycle() -> str:
+    return _latest_ecmwf(3)
+
+
+def latest_ecmwf_medium_cycle() -> str:
+    return _latest_ecmwf(240)
 
 
 def latest_gefs_cycle() -> str:
@@ -93,7 +100,6 @@ def latest_icon_cycle() -> str:
 
 
 def compare_cycles(current: dict[str, str | None], previous: dict[str, str | None]) -> list[str]:
-    """Return known sources whose current cycle differs from the published snapshot."""
     changed = []
     for source, cycle in current.items():
         if cycle and cycle != previous.get(source):
@@ -104,11 +110,17 @@ def compare_cycles(current: dict[str, str | None], previous: dict[str, str | Non
 def watch(snapshot: Path | None = None) -> dict:
     previous_payload = _load_previous(snapshot)
     previous = previous_payload.get("source_cycles", {}) if isinstance(previous_payload, dict) else {}
-    current: dict[str, str | None] = {"ECMWF": None, "GEFS": None, "ICON": None}
+    current: dict[str, str | None] = {
+        "ECMWF": None,
+        "ECMWF_MEDIUM": None,
+        "GEFS": None,
+        "ICON": None,
+    }
     errors: dict[str, str] = {}
 
     lookups = {
         "ECMWF": latest_ecmwf_cycle,
+        "ECMWF_MEDIUM": latest_ecmwf_medium_cycle,
         "GEFS": latest_gefs_cycle,
         "ICON": latest_icon_cycle,
     }
@@ -120,7 +132,7 @@ def watch(snapshot: Path | None = None) -> dict:
 
     changed = compare_cycles(current, previous)
     known = [source for source, cycle in current.items() if cycle]
-    result = {
+    return {
         "checked_at": _utcnow(),
         "status": "PASS" if len(known) == len(current) else "DEGRADED",
         "run_heavy": bool(changed),
@@ -128,10 +140,9 @@ def watch(snapshot: Path | None = None) -> dict:
         "current_cycles": current,
         "previous_cycles": previous,
         "errors": errors,
-        "policy": "30-minute metadata watch; heavy ingest only when a known model cycle changes",
+        "policy": "30-minute metadata watch; D0-D3 short cycle + D4-D10 step-240 medium cycle; heavy ingest only on change",
         "user_agent": USER_AGENT,
     }
-    return result
 
 
 def main() -> None:
