@@ -10,9 +10,12 @@ import argparse
 import json
 import math
 import os
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
+
+from weather.processing.units import speed_to_kmh
 
 POINT_NAMES = {
     "an_thoi": "An Thới",
@@ -20,6 +23,7 @@ POINT_NAMES = {
     "ganh_dau": "Gành Dầu",
 }
 VN = ZoneInfo("Asia/Ho_Chi_Minh")
+GUST_KEYS = ("10fg", "10fg3", "i10fg", "max_i10fg")
 
 
 def _load(path: Path) -> dict:
@@ -50,6 +54,20 @@ def _wind_kmh(bucket: dict) -> float | None:
         return None
     speed = math.hypot(float(u["value"]), float(v["value"])) * 3.6
     return round(speed, 1) if 0 <= speed <= 200 else None
+
+
+def _gust_kmh(bucket: dict) -> float | None:
+    record = next((bucket.get(key) for key in GUST_KEYS if bucket.get(key)), None)
+    if not record:
+        return None
+    try:
+        if record.get("display_unit") == "km/h" and record.get("display_value") is not None:
+            value = float(record["display_value"])
+        else:
+            value = speed_to_kmh(float(record["value"]), str(record.get("unit", "")))
+    except (KeyError, TypeError, ValueError):
+        return None
+    return round(value, 1) if 0 <= value <= 250 else None
 
 
 def _wave_value(record: dict | None) -> float | None:
@@ -99,7 +117,7 @@ def _build_ecmwf_rows(payload: dict) -> dict[str, list[dict]]:
                 "time": valid_dt.strftime("%d/%m %H:%M"),
                 "time_iso": valid_dt.isoformat(),
                 "wind": _wind_kmh(bucket),
-                "gust": None,
+                "gust": _gust_kmh(bucket),
                 "rain": rain,
                 "wave": _wave_value(bucket.get("swh")),
                 "period": _period_value(bucket.get("pp1d") or bucket.get("mwp")),
@@ -133,6 +151,24 @@ def _copernicus_wave(copernicus: dict, point: str) -> tuple[float | None, float 
     return wave_out, period_out
 
 
+def _icon_cycle(field_url: str | None) -> str | None:
+    if not field_url:
+        return None
+    match = re.search(r"_(\d{10})_000_U_10M\.grib2\.bz2", field_url, flags=re.I)
+    if not match:
+        return None
+    parsed = datetime.strptime(match.group(1), "%Y%m%d%H").replace(tzinfo=timezone.utc)
+    return parsed.isoformat()
+
+
+def _source_cycles(ecmwf: dict, gefs: dict, icon: dict) -> dict[str, str | None]:
+    return {
+        "ECMWF": ecmwf.get("run_time"),
+        "GEFS": gefs.get("atmosphere", {}).get("run_time"),
+        "ICON": _icon_cycle(icon.get("field_url")),
+    }
+
+
 def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
     now = datetime.now(timezone.utc)
     rows_by_point = _build_ecmwf_rows(ecmwf)
@@ -157,7 +193,7 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
             "name": name,
             "status": "LIVE DIRECT MODEL",
             **values,
-            "caveat": "Gió và mưa lấy từ valid time ECMWF gần thời điểm phát snapshot. Sóng và dòng chảy ở thẻ hiện tại lấy từ Copernicus Marine; chuỗi 72 giờ lấy từ ECMWF khi grid biển hợp lệ. Đây là dữ liệu mô hình trực tiếp, không phải quan trắc tại chỗ.",
+            "caveat": "Gió nền và mưa lấy từ ECMWF gần valid time của snapshot. Gió giật là trường ECMWF trực tiếp - cực đại 10 m kể từ lần hậu xử lý trước, không suy từ gió nền. Sóng và dòng chảy ở thẻ hiện tại lấy từ Copernicus Marine; chuỗi 72 giờ lấy từ ECMWF khi grid biển hợp lệ. Đây là dữ liệu mô hình, không phải quan trắc tại chỗ.",
             "hours": rows,
         }
 
@@ -168,11 +204,13 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
     )
     icon_ready = icon.get("status") == "POINT_NUMERIC_READY"
     copernicus_ready = copernicus.get("status") == "POINT_NUMERIC_READY"
+    gust_available = any(row.get("gust") is not None for rows in rows_by_point.values() for row in rows)
 
+    gust_detail = ecmwf.get("gust_parameter") or "unavailable"
     sources = {
         "ECMWF": {
             "status": "PASS" if atmosphere_ready else "FAIL",
-            "detail": f"IFS/Wave 0-72h · {len(ecmwf.get('steps', []))} bước · {ecmwf.get('record_count', 0)} point-records",
+            "detail": f"IFS/Wave 0-72h · {len(ecmwf.get('steps', []))} bước · {ecmwf.get('record_count', 0)} point-records · gust={gust_detail}",
         },
         "GEFS": {
             "status": "PARTIAL" if gefs_ready else "FAIL",
@@ -196,6 +234,12 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
     generated = now.astimezone(VN)
     completeness = round(100 * present / expected) if expected else 0
     sha = os.environ.get("GITHUB_SHA", "unknown")[:12]
+    gaps = [
+        {"name": "GEFS full matrix", "detail": "member x biến x 0-72h chưa được ghép vào dashboard production"},
+        {"name": "Nowcast offshore", "detail": "radar/lightning unresolved"},
+    ]
+    if not gust_available:
+        gaps.insert(1, {"name": "Gió giật", "detail": ecmwf.get("gust_error") or "ECMWF gust chưa có ở cycle này; không nội suy"})
 
     return {
         "snapshot_id": f"PQWX_LIVE_{generated.strftime('%Y%m%d_%H%M%S')}",
@@ -206,14 +250,11 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
         "report_status": "LIVE" if critical_ready else "DEGRADED",
         "decision": "NOT_ISSUED",
         "headline": "Live direct-model snapshot đã được phát; quyết định vận hành chưa được phát." if critical_ready else "Snapshot live thiếu một hoặc nhiều nguồn bắt buộc.",
-        "next_review": "sau cycle CI kế tiếp",
+        "next_review": "watch cycle mỗi 30 phút; rebuild khi có model cycle mới",
         "git_commit_sha": sha,
+        "source_cycles": _source_cycles(ecmwf, gefs, icon),
         "sources": sources,
-        "gaps": [
-            {"name": "GEFS full matrix", "detail": "member x biến x 0-72h chưa được ghép vào dashboard production"},
-            {"name": "Gió giật", "detail": "ECMWF collector hiện chưa tải trường gust nên dashboard để trống, không nội suy"},
-            {"name": "Nowcast offshore", "detail": "radar/lightning unresolved"},
-        ],
+        "gaps": gaps,
         "points": points,
     }
 
@@ -234,6 +275,7 @@ def main() -> None:
         "snapshot_id": result["snapshot_id"],
         "status": result["report_status"],
         "completeness": result["completeness"],
+        "source_cycles": result["source_cycles"],
         "rows": {key: len(value["hours"]) for key, value in result["points"].items()},
     }, ensure_ascii=False, indent=2))
 
