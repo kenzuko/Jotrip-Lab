@@ -1,6 +1,6 @@
 {
-  "snapshot_id": "PQWX_LIVE_20260915_214836",
-  "generated_at": "2026-09-15T21:48:36.458810+07:00",
+  "snapshot_id": "PQWX_LIVE_20260915_223858",
+  "generated_at": "2026-09-15T22:38:58.675986+07:00",
   "data_mode": "B",
   "completeness": 100,
   "confidence": null,
@@ -8,7 +8,7 @@
   "decision": "NOT_ISSUED",
   "headline": "Live direct-model snapshot đã được phát; quyết định vận hành chưa được phát.",
   "next_review": "watch cycle mỗi 30 phút; rebuild khi có model cycle mới",
-  "git_commit_sha": "cd20e5643f3b",
+  "git_commit_sha": "b1058dc824e3",
   "source_cycles": {
     "ECMWF": "2026-09-15T06:00:00+00:00",
     "GEFS": "2026-09-15T06:00:00+00:00",
@@ -17,7 +17,7 @@
   "sources": {
     "ECMWF": {
       "status": "PASS",
-      "detail": "IFS/Wave 0-72h · 25 bước · 597 point-records · gust=10fg"
+      "detail": "IFS/Wave 0-72h · 25 bước · 597 point-records · gust=10fg · hmax=proxy-only"
     },
     "GEFS": {
       "status": "PARTIAL",
@@ -29,7 +29,7 @@
     },
     "COPERNICUS": {
       "status": "PASS",
-      "detail": "Wave + current subset cho 3 điểm"
+      "detail": "Wave + current nearest-time; Hs regional max trong bán kính 15 km"
     },
     "RADAR_LIGHTNING": {
       "status": "UNRESOLVED",
@@ -42,6 +42,10 @@
       "detail": "member x biến x 0-72h chưa được ghép vào dashboard production"
     },
     {
+      "name": "Hmax trực tiếp",
+      "detail": "hmax: ValueError: Cannot find index entries matching {'type': ['fc'], 'step': ['3', '6', '9', '12', '15', '18', '21', '24', '27', '30', '33', '36', '39', '42', '45', '48', '51', '54', '57', '60', '63', '66', '69', '72'], 'param': ['hmax']}"
+    },
+    {
       "name": "Nowcast offshore",
       "detail": "radar/lightning unresolved"
     }
@@ -52,11 +56,15 @@
       "status": "LIVE DIRECT MODEL",
       "wind": 7.7,
       "gust": 13.1,
-      "wave": 0.32,
-      "period": 4.44,
+      "wave_max": 0.53,
+      "wave": 0.29,
+      "period": 5.13,
       "rain": 0.08,
-      "current": 0.26,
-      "caveat": "Gió nền và mưa lấy từ ECMWF gần valid time của snapshot. Gió giật là trường ECMWF trực tiếp - cực đại 10 m kể từ lần hậu xử lý trước, không suy từ gió nền. Sóng và dòng chảy ở thẻ hiện tại lấy từ Copernicus Marine; chuỗi 72 giờ lấy từ ECMWF khi grid biển hợp lệ. Đây là dữ liệu mô hình, không phải quan trắc tại chỗ.",
+      "current": 0.42,
+      "wave_regional_hs": 0.32,
+      "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_REGIONAL_HS",
+      "marine_sampled_time": "2026-09-15T15:00:00Z",
+      "caveat": "Ưu tiên rủi ro bằng Hmax - sóng cá thể cao nhất kỳ vọng trong cửa sổ 20 phút. Hmax dùng trường ECMWF trực tiếp khi có và so với proxy từ Hs cao nhất trong vùng biển 15 km của Copernicus để giảm nguy cơ coastal smoothing. Hs vẫn được giữ để mô tả trạng thái biển trung bình của nhóm sóng cao. Copernicus lấy valid time gần snapshot nhất, không còn cố định time=0. Đây là dữ liệu mô hình, không phải quan trắc tại chỗ.",
       "hours": [
         {
           "time": "15/09 13:00",
@@ -65,6 +73,8 @@
           "gust": null,
           "rain": 0.0,
           "wave": 0.25,
+          "wave_max": 0.42,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.8
         },
         {
@@ -74,6 +84,8 @@
           "gust": 20.1,
           "rain": 0.01,
           "wave": 0.29,
+          "wave_max": 0.49,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.8
         },
         {
@@ -83,6 +95,8 @@
           "gust": 18.1,
           "rain": 0.02,
           "wave": 0.3,
+          "wave_max": 0.51,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.6
         },
         {
@@ -92,6 +106,8 @@
           "gust": 13.1,
           "rain": 0.08,
           "wave": 0.28,
+          "wave_max": 0.48,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.5
         },
         {
@@ -101,6 +117,8 @@
           "gust": 9.5,
           "rain": 0.0,
           "wave": 0.25,
+          "wave_max": 0.43,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.6
         },
         {
@@ -110,6 +128,8 @@
           "gust": 10.2,
           "rain": 0.0,
           "wave": 0.23,
+          "wave_max": 0.39,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.6
         },
         {
@@ -119,6 +139,8 @@
           "gust": 11.6,
           "rain": 0.05,
           "wave": 0.22,
+          "wave_max": 0.37,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.9
         },
         {
@@ -128,6 +150,8 @@
           "gust": 14.6,
           "rain": 0.02,
           "wave": 0.22,
+          "wave_max": 0.37,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 4.1
         },
         {
@@ -137,6 +161,8 @@
           "gust": 19.9,
           "rain": 0.02,
           "wave": 0.25,
+          "wave_max": 0.43,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.5
         },
         {
@@ -146,6 +172,8 @@
           "gust": 30.6,
           "rain": 0.16,
           "wave": 0.45,
+          "wave_max": 0.78,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 2.9
         },
         {
@@ -155,6 +183,8 @@
           "gust": 27.2,
           "rain": 0.12,
           "wave": 0.45,
+          "wave_max": 0.78,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.1
         },
         {
@@ -164,6 +194,8 @@
           "gust": 21.0,
           "rain": 0.21,
           "wave": 0.39,
+          "wave_max": 0.67,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.2
         },
         {
@@ -173,6 +205,8 @@
           "gust": 34.3,
           "rain": 0.72,
           "wave": 0.48,
+          "wave_max": 0.83,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.1
         },
         {
@@ -182,6 +216,8 @@
           "gust": 30.5,
           "rain": 0.34,
           "wave": 0.53,
+          "wave_max": 0.91,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.4
         },
         {
@@ -191,6 +227,8 @@
           "gust": 29.9,
           "rain": 4.36,
           "wave": 0.56,
+          "wave_max": 0.95,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.6
         },
         {
@@ -200,6 +238,8 @@
           "gust": 40.9,
           "rain": 6.15,
           "wave": 0.64,
+          "wave_max": 1.09,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.8
         },
         {
@@ -209,6 +249,8 @@
           "gust": 41.5,
           "rain": 1.99,
           "wave": 0.78,
+          "wave_max": 1.31,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 4.1
         },
         {
@@ -218,6 +260,8 @@
           "gust": 44.1,
           "rain": 0.93,
           "wave": 0.84,
+          "wave_max": 1.41,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 4.3
         },
         {
@@ -227,6 +271,8 @@
           "gust": 35.3,
           "rain": 0.13,
           "wave": 0.78,
+          "wave_max": 1.31,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 4.4
         },
         {
@@ -236,6 +282,8 @@
           "gust": 46.8,
           "rain": 3.58,
           "wave": 0.83,
+          "wave_max": 1.4,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 4.2
         },
         {
@@ -245,6 +293,8 @@
           "gust": 45.9,
           "rain": 1.49,
           "wave": 0.89,
+          "wave_max": 1.49,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 4.3
         },
         {
@@ -254,6 +304,8 @@
           "gust": 38.2,
           "rain": 1.34,
           "wave": 0.8,
+          "wave_max": 1.34,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 4.5
         },
         {
@@ -263,6 +315,8 @@
           "gust": 33.6,
           "rain": 1.13,
           "wave": 0.7,
+          "wave_max": 1.17,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 4.4
         },
         {
@@ -272,6 +326,8 @@
           "gust": 31.9,
           "rain": 1.25,
           "wave": 0.59,
+          "wave_max": 0.99,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 4.4
         },
         {
@@ -281,6 +337,8 @@
           "gust": 42.6,
           "rain": 0.47,
           "wave": 0.72,
+          "wave_max": 1.22,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.7
         }
       ]
@@ -290,11 +348,15 @@
       "status": "LIVE DIRECT MODEL",
       "wind": 4.2,
       "gust": 7.0,
-      "wave": 0.3,
-      "period": 3.94,
+      "wave_max": 0.51,
+      "wave": 0.25,
+      "period": 5.05,
       "rain": 0.06,
-      "current": 0.2,
-      "caveat": "Gió nền và mưa lấy từ ECMWF gần valid time của snapshot. Gió giật là trường ECMWF trực tiếp - cực đại 10 m kể từ lần hậu xử lý trước, không suy từ gió nền. Sóng và dòng chảy ở thẻ hiện tại lấy từ Copernicus Marine; chuỗi 72 giờ lấy từ ECMWF khi grid biển hợp lệ. Đây là dữ liệu mô hình, không phải quan trắc tại chỗ.",
+      "current": 0.37,
+      "wave_regional_hs": 0.31,
+      "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_REGIONAL_HS",
+      "marine_sampled_time": "2026-09-15T15:00:00Z",
+      "caveat": "Ưu tiên rủi ro bằng Hmax - sóng cá thể cao nhất kỳ vọng trong cửa sổ 20 phút. Hmax dùng trường ECMWF trực tiếp khi có và so với proxy từ Hs cao nhất trong vùng biển 15 km của Copernicus để giảm nguy cơ coastal smoothing. Hs vẫn được giữ để mô tả trạng thái biển trung bình của nhóm sóng cao. Copernicus lấy valid time gần snapshot nhất, không còn cố định time=0. Đây là dữ liệu mô hình, không phải quan trắc tại chỗ.",
       "hours": [
         {
           "time": "15/09 13:00",
@@ -303,6 +365,8 @@
           "gust": null,
           "rain": 0.0,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -312,6 +376,8 @@
           "gust": 28.2,
           "rain": 0.14,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -321,6 +387,8 @@
           "gust": 12.8,
           "rain": 0.03,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -330,6 +398,8 @@
           "gust": 7.0,
           "rain": 0.06,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -339,6 +409,8 @@
           "gust": 3.3,
           "rain": 0.01,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -348,6 +420,8 @@
           "gust": 3.7,
           "rain": 0.0,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -357,6 +431,8 @@
           "gust": 9.7,
           "rain": 0.03,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -366,6 +442,8 @@
           "gust": 24.7,
           "rain": 0.11,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -375,6 +453,8 @@
           "gust": 32.6,
           "rain": 0.14,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -384,6 +464,8 @@
           "gust": 33.1,
           "rain": 1.71,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -393,6 +475,8 @@
           "gust": 18.6,
           "rain": 1.04,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -402,6 +486,8 @@
           "gust": 16.6,
           "rain": 0.56,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -411,6 +497,8 @@
           "gust": 19.3,
           "rain": 0.04,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -420,6 +508,8 @@
           "gust": 22.7,
           "rain": 0.37,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -429,6 +519,8 @@
           "gust": 22.4,
           "rain": 4.1,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -438,6 +530,8 @@
           "gust": 40.6,
           "rain": 0.44,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -447,6 +541,8 @@
           "gust": 46.9,
           "rain": 6.01,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -456,6 +552,8 @@
           "gust": 45.2,
           "rain": 1.28,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -465,6 +563,8 @@
           "gust": 29.4,
           "rain": 0.11,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -474,6 +574,8 @@
           "gust": 40.8,
           "rain": 2.04,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -483,6 +585,8 @@
           "gust": 36.9,
           "rain": 0.95,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -492,6 +596,8 @@
           "gust": 25.4,
           "rain": 0.39,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -501,6 +607,8 @@
           "gust": 21.3,
           "rain": 0.78,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -510,6 +618,8 @@
           "gust": 33.1,
           "rain": 0.12,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         },
         {
@@ -519,6 +629,8 @@
           "gust": 45.6,
           "rain": 1.0,
           "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
           "period": null
         }
       ]
@@ -528,11 +640,15 @@
       "status": "LIVE DIRECT MODEL",
       "wind": 5.8,
       "gust": 12.5,
-      "wave": 0.22,
-      "period": 3.52,
+      "wave_max": 0.36,
+      "wave": 0.19,
+      "period": 5.09,
       "rain": 0.03,
-      "current": 0.19,
-      "caveat": "Gió nền và mưa lấy từ ECMWF gần valid time của snapshot. Gió giật là trường ECMWF trực tiếp - cực đại 10 m kể từ lần hậu xử lý trước, không suy từ gió nền. Sóng và dòng chảy ở thẻ hiện tại lấy từ Copernicus Marine; chuỗi 72 giờ lấy từ ECMWF khi grid biển hợp lệ. Đây là dữ liệu mô hình, không phải quan trắc tại chỗ.",
+      "current": 0.29,
+      "wave_regional_hs": 0.22,
+      "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_REGIONAL_HS",
+      "marine_sampled_time": "2026-09-15T15:00:00Z",
+      "caveat": "Ưu tiên rủi ro bằng Hmax - sóng cá thể cao nhất kỳ vọng trong cửa sổ 20 phút. Hmax dùng trường ECMWF trực tiếp khi có và so với proxy từ Hs cao nhất trong vùng biển 15 km của Copernicus để giảm nguy cơ coastal smoothing. Hs vẫn được giữ để mô tả trạng thái biển trung bình của nhóm sóng cao. Copernicus lấy valid time gần snapshot nhất, không còn cố định time=0. Đây là dữ liệu mô hình, không phải quan trắc tại chỗ.",
       "hours": [
         {
           "time": "15/09 13:00",
@@ -541,6 +657,8 @@
           "gust": null,
           "rain": 0.0,
           "wave": 0.04,
+          "wave_max": 0.07,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.7
         },
         {
@@ -550,6 +668,8 @@
           "gust": 14.4,
           "rain": 0.08,
           "wave": 0.09,
+          "wave_max": 0.17,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 1.4
         },
         {
@@ -559,6 +679,8 @@
           "gust": 15.2,
           "rain": 0.02,
           "wave": 0.12,
+          "wave_max": 0.22,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 1.7
         },
         {
@@ -568,6 +690,8 @@
           "gust": 12.5,
           "rain": 0.03,
           "wave": 0.11,
+          "wave_max": 0.2,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 1.8
         },
         {
@@ -577,6 +701,8 @@
           "gust": 9.6,
           "rain": 0.0,
           "wave": 0.09,
+          "wave_max": 0.16,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 1.8
         },
         {
@@ -586,6 +712,8 @@
           "gust": 11.9,
           "rain": 0.0,
           "wave": 0.08,
+          "wave_max": 0.14,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 1.8
         },
         {
@@ -595,6 +723,8 @@
           "gust": 12.9,
           "rain": 0.0,
           "wave": 0.07,
+          "wave_max": 0.13,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 1.7
         },
         {
@@ -604,6 +734,8 @@
           "gust": 17.3,
           "rain": 0.0,
           "wave": 0.12,
+          "wave_max": 0.22,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 1.7
         },
         {
@@ -613,6 +745,8 @@
           "gust": 23.9,
           "rain": 0.12,
           "wave": 0.2,
+          "wave_max": 0.36,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 2.1
         },
         {
@@ -622,6 +756,8 @@
           "gust": 29.7,
           "rain": 0.51,
           "wave": 0.31,
+          "wave_max": 0.55,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 2.3
         },
         {
@@ -631,6 +767,8 @@
           "gust": 26.7,
           "rain": 0.62,
           "wave": 0.33,
+          "wave_max": 0.58,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 2.6
         },
         {
@@ -640,6 +778,8 @@
           "gust": 24.2,
           "rain": 0.2,
           "wave": 0.28,
+          "wave_max": 0.5,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 2.3
         },
         {
@@ -649,6 +789,8 @@
           "gust": 29.7,
           "rain": 0.0,
           "wave": 0.35,
+          "wave_max": 0.62,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 2.4
         },
         {
@@ -658,6 +800,8 @@
           "gust": 30.6,
           "rain": 0.03,
           "wave": 0.37,
+          "wave_max": 0.65,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 2.6
         },
         {
@@ -667,6 +811,8 @@
           "gust": 31.3,
           "rain": 3.03,
           "wave": 0.33,
+          "wave_max": 0.58,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 2.5
         },
         {
@@ -676,6 +822,8 @@
           "gust": 31.9,
           "rain": 0.19,
           "wave": 0.37,
+          "wave_max": 0.65,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 2.5
         },
         {
@@ -685,6 +833,8 @@
           "gust": 41.6,
           "rain": 2.94,
           "wave": 0.52,
+          "wave_max": 0.9,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.0
         },
         {
@@ -694,6 +844,8 @@
           "gust": 41.4,
           "rain": 2.02,
           "wave": 0.55,
+          "wave_max": 0.95,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.1
         },
         {
@@ -703,6 +855,8 @@
           "gust": 33.7,
           "rain": 0.14,
           "wave": 0.48,
+          "wave_max": 0.83,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.0
         },
         {
@@ -712,6 +866,8 @@
           "gust": 38.9,
           "rain": 0.49,
           "wave": 0.46,
+          "wave_max": 0.8,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 2.8
         },
         {
@@ -721,6 +877,8 @@
           "gust": 42.9,
           "rain": 0.69,
           "wave": 0.58,
+          "wave_max": 1.0,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.0
         },
         {
@@ -730,6 +888,8 @@
           "gust": 34.8,
           "rain": 0.24,
           "wave": 0.45,
+          "wave_max": 0.78,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 3.0
         },
         {
@@ -739,6 +899,8 @@
           "gust": 27.7,
           "rain": 0.5,
           "wave": 0.31,
+          "wave_max": 0.54,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 2.5
         },
         {
@@ -748,6 +910,8 @@
           "gust": 26.6,
           "rain": 0.05,
           "wave": 0.28,
+          "wave_max": 0.5,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 2.2
         },
         {
@@ -757,6 +921,8 @@
           "gust": 35.5,
           "rain": 1.19,
           "wave": 0.43,
+          "wave_max": 0.75,
+          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
           "period": 2.6
         }
       ]
