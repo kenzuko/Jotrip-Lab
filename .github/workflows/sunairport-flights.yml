@@ -30,6 +30,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          # A re-run otherwise checks out the original event SHA and can
+          # conflict with data committed by the preceding successful attempt.
+          ref: main
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -78,7 +83,11 @@ jobs:
           for attempt in 1 2 3; do
             echo "Push attempt ${attempt}/3" | tee -a .artifacts/sunairport/commit.log
             git fetch origin main 2>&1 | tee -a .artifacts/sunairport/commit.log
-            if ! git rebase origin/main 2>&1 | tee -a .artifacts/sunairport/commit.log; then
+            # This commit contains generated Sun Airport data only. During a
+            # rebase, prefer the newly collected version of mutable pointers
+            # such as latest.json and health.json, while retaining all other
+            # commits already present on main.
+            if ! git rebase -X theirs origin/main 2>&1 | tee -a .artifacts/sunairport/commit.log; then
               git status --short | tee -a .artifacts/sunairport/commit.log
               git rebase --abort || true
               break
