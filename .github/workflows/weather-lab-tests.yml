@@ -132,3 +132,24 @@ jobs:
           name: ecmwf-live-72h-points
           path: /tmp/ecmwf-72h.json
           retention-days: 7
+
+  noaa-member-smoke:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install GRIB decoder
+        run: python -m pip install --quiet eccodes
+      - name: Collect GEFS and GEFS Wave members
+        run: python -m weather.collectors.noaa_member_smoke --lead 3 --output /tmp/noaa-members.json
+      - name: Enforce member gate
+        run: python -c 'import json; p=json.load(open("/tmp/noaa-members.json")); assert p["atmosphere"]["readiness"] == "MEMBER_COMPLETE", p["atmosphere"]; assert p["wave"]["readiness"] == "MEMBER_COMPLETE", p["wave"]'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: noaa-live-member-smoke
+          path: /tmp/noaa-members.json
+          retention-days: 7
