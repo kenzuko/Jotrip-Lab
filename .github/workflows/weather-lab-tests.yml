@@ -180,3 +180,74 @@ jobs:
           name: copernicus-live-phu-quoc-subset
           path: /tmp/copernicus-live.json
           retention-days: 7
+
+  publish-dashboard:
+    if: github.event_name != 'pull_request'
+    needs:
+      - ecmwf-72h-point-smoke
+      - noaa-member-smoke
+      - icon-point-smoke
+      - copernicus-live-subset
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Download ECMWF artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ecmwf-live-72h-points
+          path: /tmp/weather-artifacts/ecmwf
+      - name: Download GEFS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: noaa-live-member-smoke
+          path: /tmp/weather-artifacts/gefs
+      - name: Download ICON artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: icon-live-point-smoke
+          path: /tmp/weather-artifacts/icon
+      - name: Download Copernicus artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: copernicus-live-phu-quoc-subset
+          path: /tmp/weather-artifacts/copernicus
+      - name: Build live dashboard snapshot
+        run: |
+          python -m weather.pipeline.build_dashboard \
+            --ecmwf /tmp/weather-artifacts/ecmwf/ecmwf-72h.json \
+            --gefs /tmp/weather-artifacts/gefs/noaa-members.json \
+            --icon /tmp/weather-artifacts/icon/icon-point.json \
+            --copernicus /tmp/weather-artifacts/copernicus/copernicus-live.json \
+            --output weather/dashboard-data.json
+      - name: Enforce dashboard publication gate
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          p=json.load(open('weather/dashboard-data.json', encoding='utf-8'))
+          assert p['report_status'] == 'LIVE', p
+          assert p['completeness'] >= 60, p
+          assert all(len(v['hours']) >= 20 for v in p['points'].values()), p
+          generated=datetime.fromisoformat(p['generated_at'])
+          age=(datetime.now(timezone.utc)-generated.astimezone(timezone.utc)).total_seconds()
+          assert 0 <= age < 900, age
+          PY
+      - name: Commit dashboard snapshot
+        run: |
+          git config user.name "jotrip-weather-bot"
+          git config user.email "jotrip-weather-bot@users.noreply.github.com"
+          git add weather/dashboard-data.json
+          if git diff --cached --quiet; then
+            echo "Dashboard snapshot unchanged"
+            exit 0
+          fi
+          git commit -m "chore(weather): publish live dashboard snapshot [skip ci]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
