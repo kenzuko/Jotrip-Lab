@@ -111,3 +111,24 @@ jobs:
           name: icon-live-point-smoke
           path: /tmp/icon-point.json
           retention-days: 7
+
+  ecmwf-72h-point-smoke:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install official client and GRIB decoder
+        run: python -m pip install --quiet ecmwf-opendata eccodes
+      - name: Collect D0-D3 fields at locked points
+        run: python -m weather.collectors.ecmwf_72h --output /tmp/ecmwf-72h.json
+      - name: Enforce 72-hour point readiness
+        run: python -c 'import json; p=json.load(open("/tmp/ecmwf-72h.json")); assert p["readiness"] == "POINT_ROUTE_EXTRACTED"; assert p["horizon_hours"] == 72; assert {0,24,48,72}.issubset(set(p["steps"])); assert p["record_count"] >= 200, p'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ecmwf-live-72h-points
+          path: /tmp/ecmwf-72h.json
+          retention-days: 7
