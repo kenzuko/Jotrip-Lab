@@ -27,11 +27,20 @@
       <div class="decision-meta"><span id="decisionBadge" class="badge neutral">CHƯA KẾT LUẬN</span><span id="nextReview">Lần đọc tiếp: ...</span></div>
     </section>
 
-    <nav class="point-tabs" aria-label="Điểm dự báo">
-      <button data-point="an_thoi" class="active">An Thới</button>
-      <button data-point="duong_dong">Dương Đông</button>
-      <button data-point="ganh_dau">Gành Dầu</button>
-    </nav>
+    <div class="control-row">
+      <nav class="point-tabs" aria-label="Điểm dự báo">
+        <button data-point="an_thoi" class="active">An Thới</button>
+        <button data-point="duong_dong">Dương Đông</button>
+        <button data-point="ganh_dau">Gành Dầu</button>
+      </nav>
+      <nav class="horizon-tabs" aria-label="Khoảng dự báo">
+        <span>Khoảng xem</span>
+        <button data-horizon="72" class="active">72 giờ</button>
+        <button data-horizon="120">5 ngày</button>
+        <button data-horizon="168">7 ngày</button>
+        <button data-horizon="240">10 ngày</button>
+      </nav>
+    </div>
 
     <section class="point-layout">
       <article class="conditions panel">
@@ -50,24 +59,30 @@
 
       <article class="chart-panel panel">
         <div class="panel-head chart-head">
-          <div><small>TỪ HIỆN TẠI ĐẾN D+3</small><h2>Gió - sóng - mưa theo thời gian</h2></div>
+          <div><small id="horizonLabel">TỪ HIỆN TẠI ĐẾN D+3</small><h2>Gió - sóng - mưa theo thời gian</h2></div>
           <div class="legend" aria-label="Chú thích biểu đồ"><span><i class="wind"></i>Gió</span><span><i class="gust"></i>Giật</span><span><i class="wave"></i>Hs</span><span><i class="hmax"></i>Hmax</span><span><i class="rain"></i>Mưa</span></div>
         </div>
-        <p class="chart-guide">Chỉ hiển thị các bước dự báo còn ở phía trước. Thời gian Phú Quốc (UTC+7). Hs là trạng thái biển nền; Hmax là sóng cá thể cao nhất kỳ vọng trong cửa sổ 20 phút để nhìn rủi ro.</p>
+        <p id="chartGuide" class="chart-guide">D0-D3 hiển thị chi tiết 3 giờ. Hs là trạng thái biển nền; Hmax là biên rủi ro sóng cá thể.</p>
         <canvas id="forecastChart" width="900" height="390" aria-label="Biểu đồ dự báo tương lai gồm gió, gió giật, Hs, Hmax và mưa theo thời gian"></canvas>
         <div id="chartEmpty" class="empty">Chưa có bước dự báo tương lai trong snapshot hiện tại.</div>
       </article>
     </section>
 
     <section class="panel forecast-table-panel">
-      <div class="panel-head"><div><small>SỐ LIỆU DỰ BÁO TỪ HIỆN TẠI</small><h2>Thời gian, gió, giật, Hs, Hmax và mưa</h2></div><span class="table-note">Mỗi bước 3 giờ</span></div>
+      <div class="panel-head"><div><small>SỐ LIỆU DỰ BÁO TỪ HIỆN TẠI</small><h2>Thời gian, gió, giật, Hs, Hmax và mưa</h2></div><span id="tableStepNote" class="table-note">D0-D3: mỗi 3 giờ</span></div>
       <div class="table-wrap">
         <table class="forecast-table">
-          <thead><tr><th>Thời gian</th><th>Gió<br><small>km/h</small></th><th>Gió giật<br><small>km/h</small></th><th>Mưa 3h<br><small>mm</small></th><th>Hs<br><small>m</small></th><th>Hmax rủi ro<br><small>m</small></th><th>Chu kỳ<br><small>giây</small></th></tr></thead>
+          <thead><tr><th>Thời gian</th><th>Gió<br><small>km/h</small></th><th>Gió giật<br><small>km/h</small></th><th>Mưa<br><small>mm/kỳ</small></th><th>Hs<br><small>m</small></th><th>Hmax rủi ro<br><small>m</small></th><th>Chu kỳ<br><small>giây</small></th></tr></thead>
           <tbody id="forecastRows"></tbody>
         </table>
       </div>
       <div id="forecastCards" class="forecast-cards" aria-label="Dự báo tương lai trên điện thoại"></div>
+    </section>
+
+    <section id="longRangePanel" class="panel long-range-panel" hidden>
+      <div class="panel-head"><div><small>D+8 ĐẾN D+10</small><h2>Xu hướng ngày - không dùng để chốt vận hành</h2></div><span class="trend-badge">TREND ONLY</span></div>
+      <p class="chart-guide">Từ D+8 chỉ giữ xu hướng theo ngày: cực đại gió, giật, Hs, Hmax và tổng mưa. Lớp ensemble consensus chưa hoàn tất nên chưa chấm độ tin cậy.</p>
+      <div id="outlookCards" class="outlook-cards"></div>
     </section>
 
     <section class="lower-grid">
@@ -81,7 +96,7 @@
       </article>
     </section>
   </main>
-  <footer><span>JoTrip Lab - Hs và Hmax được đặt cạnh nhau để đọc trạng thái biển nền và rủi ro sóng trong cùng một cụm.</span><span id="commitSha"></span></footer>
+  <footer><span>JoTrip Lab - D0-D3 là vận hành chi tiết; D4-D7 là medium-range; D8-D10 chỉ là xu hướng. Hs và Hmax luôn đặt cạnh nhau.</span><span id="commitSha"></span></footer>
   <script src="/weather-dashboard.js"></script>
 </body>
 </html>
