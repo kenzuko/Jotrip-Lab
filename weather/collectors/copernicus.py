@@ -9,7 +9,6 @@ from pathlib import Path
 def configuration_status() -> dict:
     required = (
         "COPERNICUSMARINE_SERVICE_USERNAME", "COPERNICUSMARINE_SERVICE_PASSWORD",
-        "COPERNICUS_WAVE_DATASET_ID", "COPERNICUS_CURRENT_DATASET_ID",
     )
     missing = [name for name in required if not os.getenv(name)]
     return {"status": "READY" if not missing else "AUTH_OR_CONFIG_REQUIRED", "missing": missing}
