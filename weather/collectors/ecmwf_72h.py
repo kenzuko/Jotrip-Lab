@@ -17,6 +17,7 @@ POINTS = {
 }
 STEPS = list(range(0, 73, 3))
 GUST_STEPS = [step for step in STEPS if step > 0]
+WAVE_MAX_STEPS = [step for step in STEPS if step > 0]
 
 
 def _decode_all(path: Path, run_time: datetime, source: str, stream: str) -> list[dict]:
@@ -62,6 +63,20 @@ def _collect_gust(client, work: Path, run_time: datetime) -> tuple[list[dict], s
     return [], None, " | ".join(errors) if errors else "No gust records returned"
 
 
+def _collect_wave_max(client, work: Path, run_time: datetime) -> tuple[list[dict], str | None, str | None]:
+    """Fetch ECMWF expected maximum individual wave height independently from base wave fields."""
+    try:
+        target = work / "wave-hmax.grib2"
+        client.retrieve(type="fc", stream="wave", step=WAVE_MAX_STEPS,
+                        param=["hmax"], target=str(target))
+        records = _decode_all(target, run_time, "ECMWF_WAVE_DIRECT", "wave")
+        if records:
+            return records, "hmax", None
+        return [], None, "No hmax records returned"
+    except Exception as exc:
+        return [], None, f"hmax: {type(exc).__name__}: {exc}"
+
+
 def collect(output: Path | None = None) -> dict:
     from ecmwf.opendata import Client
 
@@ -88,6 +103,10 @@ def collect(output: Path | None = None) -> dict:
                     records.extend(_decode_all(wave, run_time, "ECMWF_WAVE_DIRECT", "wave"))
                 except Exception as exc:
                     wave_error = f"{type(exc).__name__}: {exc}"
+
+                wave_max_records, wave_max_parameter, wave_max_error = _collect_wave_max(client, work, run_time)
+                records.extend(wave_max_records)
+
                 result = {
                     "status": "POINT_ROUTE_EXTRACTED" if records else "FIELD_DECODE_FAILED",
                     "readiness": "POINT_ROUTE_EXTRACTED" if records else "UNAVAILABLE",
@@ -95,7 +114,9 @@ def collect(output: Path | None = None) -> dict:
                     "run_time": run_time.isoformat(), "horizon_hours": 72,
                     "steps": STEPS, "record_count": len(records), "records": records,
                     "gust_parameter": gust_parameter, "gust_error": gust_error,
-                    "wave_error": wave_error, "attempts": attempts, "checked_at": _utcnow(),
+                    "wave_error": wave_error,
+                    "wave_max_parameter": wave_max_parameter, "wave_max_error": wave_max_error,
+                    "attempts": attempts, "checked_at": _utcnow(),
                 }
                 if output:
                     output.parent.mkdir(parents=True, exist_ok=True)
