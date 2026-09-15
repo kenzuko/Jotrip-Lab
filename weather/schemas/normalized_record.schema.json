@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jotrip.vn/schemas/normalized_record.schema.json",
+  "type": "object",
+  "required": ["record_id", "source", "run_time", "valid_time", "variable", "value", "unit", "qc", "provenance", "lineage_id"],
+  "properties": {
+    "record_id": {"type": "string", "minLength": 1},
+    "source": {"type": "string"}, "center": {"type": ["string", "null"]},
+    "model": {"type": ["string", "null"]}, "system": {"type": ["string", "null"]},
+    "run_time": {"type": "string", "format": "date-time"}, "valid_time": {"type": "string", "format": "date-time"},
+    "lead_hours": {"type": ["integer", "number"]}, "member": {"type": ["integer", "string", "null"]},
+    "variable": {"type": "string"}, "value": {"type": "number"}, "unit": {"type": "string"},
+    "requested_lat": {"type": ["number", "null"]}, "requested_lon": {"type": ["number", "null"]},
+    "sampled_lat": {"type": ["number", "null"]}, "sampled_lon": {"type": ["number", "null"]},
+    "grid_resolution_deg": {"type": ["number", "null"]},
+    "qc": {"enum": ["PASS", "PARTIAL", "REJECTED_LAND_GRID", "REJECTED_QC"]},
+    "provenance": {"enum": ["DIRECT", "OFFICIAL", "ACTUAL", "QUALIFIED_PROXY"]},
+    "lineage_id": {"type": "string"}, "retrieval_time": {"type": ["string", "null"], "format": "date-time"}
+  },
+  "additionalProperties": true
+}
