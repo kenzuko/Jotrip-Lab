@@ -1,4 +1,4 @@
-"""Live Copernicus Marine wave/current subset and numeric QC for Phu Quoc."""
+"""Live Copernicus Marine wave/current subset and numeric QC for Phu Quoc + Rach Gia."""
 from __future__ import annotations
 
 import argparse
@@ -13,12 +13,13 @@ from weather.processing.marine import current_from_uv
 
 WAVE_DATASET = "cmems_mod_glo_wav_anfc_0.083deg_PT3H-i"
 CURRENT_DATASET = "cmems_mod_glo_phy-cur_anfc_0.083deg_PT6H-i"
-BBOX = (9.70, 103.55, 10.55, 104.45)
+BBOX = (9.70, 103.55, 10.55, 105.30)
 REGIONAL_RADIUS_KM = 15.0
 POINTS = {
     "duong_dong": (10.2172, 103.9593),
     "an_thoi": (10.0191, 104.0150),
     "ganh_dau": (10.3759, 103.9000),
+    "rach_gia": (10.00677, 105.07845),
 }
 
 
@@ -130,8 +131,8 @@ def run(output: Path | None = None) -> dict:
         end = now + timedelta(hours=24)
         with tempfile.TemporaryDirectory(prefix="jotrip-cmems-") as temp:
             work = Path(temp)
-            wave_path = work / "phu-quoc-wave.nc"
-            current_path = work / "phu-quoc-current.nc"
+            wave_path = work / "regional-wave.nc"
+            current_path = work / "regional-current.nc"
             wave_vars = ["VHM0", "VMDR", "VTM10", "VTPK"]
             current_vars = ["uo", "vo"]
             wave_download = subset(dataset_id=WAVE_DATASET, variables=wave_vars, start=start, end=end,
