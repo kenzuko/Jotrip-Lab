@@ -1,0 +1,141 @@
+name: Sun Airport flights
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Morning D0 polling window - Asia/Ho_Chi_Minh 04:00-08:45.
+    - cron: '*/15 21-23 * * *'
+    - cron: '*/15 0-1 * * *'
+    # Evening refresh window - Asia/Ho_Chi_Minh 16:00-18:45.
+    - cron: '*/15 9-11 * * *'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sunairport-flights.yml'
+      - 'tools/sunairport-collector/**'
+
+concurrency:
+  group: sunairport-data-writer
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  DATA_BRANCH: data-sunairport
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout code from main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Restore previous Sun Airport state from data branch
+        run: |
+          git fetch origin "$DATA_BRANCH" --depth=1
+          git checkout "origin/$DATA_BRANCH" -- data/sunairport || true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install collector
+        working-directory: tools/sunairport-collector
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Collect official flight board
+        id: collect
+        continue-on-error: true
+        working-directory: tools/sunairport-collector
+        run: npm run collect
+
+      - name: Normalize, deduplicate and QA
+        id: normalize
+        if: steps.collect.outcome == 'success'
+        continue-on-error: true
+        working-directory: tools/sunairport-collector
+        run: npm run normalize
+
+      - name: Record collection failure health
+        if: steps.collect.outcome == 'failure'
+        working-directory: tools/sunairport-collector
+        run: node write-failure-health.mjs COLLECT
+
+      - name: Record normalization failure health
+        if: steps.collect.outcome == 'success' && steps.normalize.outcome == 'failure'
+        working-directory: tools/sunairport-collector
+        run: node write-failure-health.mjs NORMALIZE
+
+      - name: Upload diagnostics on failure
+        if: steps.collect.outcome == 'failure' || steps.normalize.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sunairport-diagnostics-${{ github.run_id }}
+          path: |
+            artifacts/sunairport/**
+            data/sunairport/_working/**
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Persist Sun Airport state to isolated data branch
+        if: always()
+        run: |
+          if [ ! -d data/sunairport ]; then
+            echo 'No Sun Airport state to persist'
+            exit 0
+          fi
+
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'data/sunairport/health.json';
+          if (fs.existsSync(p)) {
+            const h = JSON.parse(fs.readFileSync(p, 'utf8'));
+            h.commit_succeeded = true;
+            fs.writeFileSync(p, JSON.stringify(h, null, 2) + '\n');
+          }
+          NODE
+
+          rm -rf /tmp/sunairport-export
+          mkdir -p /tmp/sunairport-export
+          cp -a data/sunairport/. /tmp/sunairport-export/
+
+          git reset --hard HEAD
+          rm -rf data/sunairport
+          git fetch origin "$DATA_BRANCH"
+          git checkout -B "$DATA_BRANCH" "origin/$DATA_BRANCH"
+          mkdir -p data/sunairport
+          cp -a /tmp/sunairport-export/. data/sunairport/
+          git config user.name 'jotrip-data-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add data/sunairport
+
+          if git diff --cached --quiet; then
+            echo 'No Sun Airport data changes'
+            exit 0
+          fi
+
+          git commit -m 'data: update Sun Airport flight board'
+
+          for attempt in 1 2 3; do
+            if git pull --rebase origin "$DATA_BRANCH" && git push origin "HEAD:$DATA_BRANCH"; then
+              echo "Sun Airport state persisted on attempt $attempt"
+              exit 0
+            fi
+            echo "Push attempt $attempt failed; retrying after backoff"
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+
+          echo 'Failed to persist Sun Airport state after 3 attempts'
+          exit 1
+
+      - name: Fail run if collection or QA failed
+        if: steps.collect.outcome == 'failure' || steps.normalize.outcome == 'failure'
+        run: exit 1
