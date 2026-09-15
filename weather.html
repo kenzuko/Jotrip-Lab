@@ -49,24 +49,24 @@
 
       <article class="chart-panel panel">
         <div class="panel-head chart-head">
-          <div><small>DỰ BÁO 72 GIỜ</small><h2>Gió - sóng - mưa theo thời gian</h2></div>
+          <div><small>TỪ HIỆN TẠI ĐẾN D+3</small><h2>Gió - sóng - mưa theo thời gian</h2></div>
           <div class="legend" aria-label="Chú thích biểu đồ"><span><i class="wind"></i>Gió</span><span><i class="gust"></i>Giật</span><span><i class="wave"></i>Sóng</span><span><i class="rain"></i>Mưa</span></div>
         </div>
-        <p class="chart-guide">Thời gian địa phương Phú Quốc (UTC+7). Gió và giật: km/h - Sóng Hs: m - Mưa: mm trong 3 giờ.</p>
-        <canvas id="forecastChart" width="900" height="390" aria-label="Biểu đồ dự báo 72 giờ gồm gió, gió giật, sóng và mưa theo thời gian"></canvas>
-        <div id="chartEmpty" class="empty">Chưa có full matrix 72 giờ để vẽ.</div>
+        <p class="chart-guide">Chỉ hiển thị các bước dự báo còn ở phía trước. Thời gian Phú Quốc (UTC+7). Gió và giật: km/h - Sóng Hs: m - Mưa: mm trong 3 giờ.</p>
+        <canvas id="forecastChart" width="900" height="390" aria-label="Biểu đồ dự báo tương lai gồm gió, gió giật, sóng và mưa theo thời gian"></canvas>
+        <div id="chartEmpty" class="empty">Chưa có bước dự báo tương lai trong snapshot hiện tại.</div>
       </article>
     </section>
 
     <section class="panel forecast-table-panel">
-      <div class="panel-head"><div><small>DỰ BÁO 72 GIỜ - SỐ LIỆU CHI TIẾT</small><h2>Thời gian, gió, giật, mưa và sóng</h2></div><span class="table-note">Mỗi bước 3 giờ</span></div>
+      <div class="panel-head"><div><small>SỐ LIỆU DỰ BÁO TỪ HIỆN TẠI</small><h2>Thời gian, gió, giật, mưa và sóng</h2></div><span class="table-note">Mỗi bước 3 giờ</span></div>
       <div class="table-wrap">
         <table class="forecast-table">
           <thead><tr><th>Thời gian</th><th>Gió<br><small>km/h</small></th><th>Gió giật<br><small>km/h</small></th><th>Mưa 3h<br><small>mm</small></th><th>Sóng Hs<br><small>m</small></th><th>Chu kỳ<br><small>giây</small></th></tr></thead>
           <tbody id="forecastRows"></tbody>
         </table>
       </div>
-      <div id="forecastCards" class="forecast-cards" aria-label="Dự báo 72 giờ trên điện thoại"></div>
+      <div id="forecastCards" class="forecast-cards" aria-label="Dự báo tương lai trên điện thoại"></div>
     </section>
 
     <section class="lower-grid">
