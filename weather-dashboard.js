@@ -9,11 +9,11 @@ function render(){const live=state.report_status==="LIVE";$("healthDot").classNa
 function age(date){const mins=Math.max(0,Math.round((Date.now()-new Date(date))/60000));return mins<60?mins+" phút":Math.round(mins/60)+" giờ"}
 function renderSources(){$("sources").innerHTML=Object.entries(state.sources).map(([name,x])=>`<div class="source"><b>${name}</b><span><i class="state ${x.status==="PASS"?"ok":x.status==="PARTIAL"?"partial":"fail"}">${x.status}</i><br>${x.detail}</span></div>`).join("")}
 function renderGaps(){$("gaps").innerHTML=state.gaps.length?state.gaps.map(x=>`<div class="gap"><b>${x.name}</b><span>${x.detail}</span></div>`).join(""):`<div class="gap"><b>Không có critical gap</b><span>Cycle đủ điều kiện</span></div>`}
-function renderPoint(){const p=state.points[currentPoint],rows=futureRows(p.hours||[]);$("pointName").textContent=p.name;$("pointStatus").textContent=p.status;for(const [id,key,d] of [["wind","wind",1],["gust","gust",1],["waveMax","wave_max",2],["wave","wave",2],["period","period",2],["rain","rain",2],["current","current",2]])$(id).textContent=fmt(p[key],d);$("pointCaveat").textContent=p.caveat||"";renderTable(rows);drawChart(rows)}
+function renderPoint(){const p=state.points[currentPoint],rows=futureRows(p.hours||[]);$("pointName").textContent=p.name;$("pointStatus").textContent=p.status;for(const [id,key,d] of [["wind","wind",1],["gust","gust",1],["wave","wave",2],["waveMax","wave_max",2],["period","period",2],["rain","rain",2],["current","current",2]])$(id).textContent=fmt(p[key],d);$("pointCaveat").textContent=p.caveat||"";renderTable(rows);drawChart(rows)}
 
 function renderTable(rows){
-  $("forecastRows").innerHTML=rows.length?rows.map(r=>`<tr><td>${r.time}</td><td>${fmt(r.wind,1)}</td><td>${fmt(r.gust,1)}</td><td>${fmt(r.rain,2)}</td><td>${fmt(r.wave_max,2)}</td><td>${fmt(r.wave,2)}</td><td>${fmt(r.period,1)}</td></tr>`).join(""):`<tr><td colspan="7" style="text-align:center;color:#8da8ae">Chưa có bước dự báo tương lai trong snapshot hiện tại</td></tr>`;
-  $("forecastCards").innerHTML=rows.length?rows.map(r=>`<article class="forecast-card"><time>${r.time}</time><div class="forecast-card-grid"><div><span>Gió nền</span><b>${fmt(r.wind,1)} <small>km/h</small></b></div><div><span>Gió giật</span><b>${fmt(r.gust,1)} <small>km/h</small></b></div><div><span>Mưa 3 giờ</span><b>${fmt(r.rain,2)} <small>mm</small></b></div><div class="risk-cell"><span>Hmax rủi ro</span><b>${fmt(r.wave_max,2)} <small>m</small></b></div><div><span>Sóng Hs</span><b>${fmt(r.wave,2)} <small>m</small></b></div><div><span>Chu kỳ</span><b>${fmt(r.period,1)} <small>giây</small></b></div></div></article>`).join(""):`<div class="empty" style="display:grid">Chưa có bước dự báo tương lai trong snapshot hiện tại.</div>`;
+  $("forecastRows").innerHTML=rows.length?rows.map(r=>`<tr><td>${r.time}</td><td>${fmt(r.wind,1)}</td><td>${fmt(r.gust,1)}</td><td>${fmt(r.rain,2)}</td><td>${fmt(r.wave,2)}</td><td>${fmt(r.wave_max,2)}</td><td>${fmt(r.period,1)}</td></tr>`).join(""):`<tr><td colspan="7" style="text-align:center;color:#8da8ae">Chưa có bước dự báo tương lai trong snapshot hiện tại</td></tr>`;
+  $("forecastCards").innerHTML=rows.length?rows.map(r=>`<article class="forecast-card"><time>${r.time}</time><div class="forecast-card-grid"><div><span>Gió nền</span><b>${fmt(r.wind,1)} <small>km/h</small></b></div><div><span>Gió giật</span><b>${fmt(r.gust,1)} <small>km/h</small></b></div><div class="wave-cell"><span>Sóng Hs</span><b>${fmt(r.wave,2)} <small>m</small></b></div><div class="risk-cell"><span>Hmax rủi ro</span><b>${fmt(r.wave_max,2)} <small>m</small></b></div><div><span>Mưa 3 giờ</span><b>${fmt(r.rain,2)} <small>mm</small></b></div><div><span>Chu kỳ</span><b>${fmt(r.period,1)} <small>giây</small></b></div></div></article>`).join(""):`<div class="empty" style="display:grid">Chưa có bước dự báo tương lai trong snapshot hiện tại.</div>`;
 }
 
 function niceMax(value,kind){
@@ -33,7 +33,7 @@ function drawChart(rows){
   const usable=h-top-bottom-gap*2,panelH=usable/3;
   const panels=[
     {label:"Gió / Giật",unit:"km/h",kind:"wind",series:[{key:"wind",color:"#2fc5b4"},{key:"gust",color:"#ff8b73"}]},
-    {label:"Hmax / Hs",unit:"m",kind:"wave",series:[{key:"wave_max",color:"#c28cff"},{key:"wave",color:"#63aef4"}]},
+    {label:"Hs / Hmax rủi ro",unit:"m",kind:"wave",series:[{key:"wave",color:"#63aef4"},{key:"wave_max",color:"#c28cff"}]},
     {label:"Mưa 3h",unit:"mm",kind:"rain",series:[{key:"rain",color:"#fcbc12"}]}
   ];
   ctx.font=w<500?"10px system-ui":"11px system-ui";ctx.textBaseline="middle";
