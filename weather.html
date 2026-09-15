@@ -41,17 +41,32 @@
           <div><span>Gió giật</span><b id="gust">...</b><small>km/h</small></div>
           <div><span>Sóng Hs</span><b id="wave">...</b><small>m</small></div>
           <div><span>Chu kỳ đỉnh</span><b id="period">...</b><small>giây</small></div>
-          <div><span>Mưa 3 giờ</span><b id="rain">...</b><small>mm</small></div>
+          <div><span>Mưa 3 giờ</span><b id="rain">...</b><small>mm / 3 giờ</small></div>
           <div><span>Dòng chảy</span><b id="current">...</b><small>km/h</small></div>
         </div>
         <p id="pointCaveat" class="caveat"></p>
       </article>
 
       <article class="chart-panel panel">
-        <div class="panel-head"><div><small>72 GIỜ</small><h2>Mưa, gió và sóng</h2></div><div class="legend"><i class="wind"></i>Gió <i class="wave"></i>Sóng <i class="rain"></i>Mưa</div></div>
-        <canvas id="forecastChart" width="900" height="330" aria-label="Biểu đồ dự báo 72 giờ"></canvas>
+        <div class="panel-head chart-head">
+          <div><small>DỰ BÁO 72 GIỜ</small><h2>Gió - sóng - mưa theo thời gian</h2></div>
+          <div class="legend" aria-label="Chú thích biểu đồ"><span><i class="wind"></i>Gió</span><span><i class="gust"></i>Giật</span><span><i class="wave"></i>Sóng</span><span><i class="rain"></i>Mưa</span></div>
+        </div>
+        <p class="chart-guide">Thời gian địa phương Phú Quốc (UTC+7). Gió và giật: km/h - Sóng Hs: m - Mưa: mm trong 3 giờ.</p>
+        <canvas id="forecastChart" width="900" height="390" aria-label="Biểu đồ dự báo 72 giờ gồm gió, gió giật, sóng và mưa theo thời gian"></canvas>
         <div id="chartEmpty" class="empty">Chưa có full matrix 72 giờ để vẽ.</div>
       </article>
+    </section>
+
+    <section class="panel forecast-table-panel">
+      <div class="panel-head"><div><small>DỰ BÁO 72 GIỜ - SỐ LIỆU CHI TIẾT</small><h2>Thời gian, gió, giật, mưa và sóng</h2></div><span class="table-note">Mỗi bước 3 giờ</span></div>
+      <div class="table-wrap">
+        <table class="forecast-table">
+          <thead><tr><th>Thời gian</th><th>Gió<br><small>km/h</small></th><th>Gió giật<br><small>km/h</small></th><th>Mưa 3h<br><small>mm</small></th><th>Sóng Hs<br><small>m</small></th><th>Chu kỳ<br><small>giây</small></th></tr></thead>
+          <tbody id="forecastRows"></tbody>
+        </table>
+      </div>
+      <div id="forecastCards" class="forecast-cards" aria-label="Dự báo 72 giờ trên điện thoại"></div>
     </section>
 
     <section class="lower-grid">
@@ -62,10 +77,6 @@
       <article class="panel">
         <div class="panel-head"><div><small>DATA GAPS</small><h2>Phần đang chờ</h2></div></div>
         <div id="gaps" class="gap-list"></div>
-      </article>
-      <article class="panel quantitative">
-        <div class="panel-head"><div><small>D0-D3</small><h2>Bảng định lượng</h2></div></div>
-        <div class="table-wrap"><table><thead><tr><th>Thời gian</th><th>Gió</th><th>Giật</th><th>Mưa</th><th>Hs</th><th>Chu kỳ</th></tr></thead><tbody id="forecastRows"></tbody></table></div>
       </article>
     </section>
   </main>
