@@ -1,6 +1,6 @@
 """Build the public Weather Lab dashboard snapshot from verified CI artifacts.
 
-This module deliberately does not issue an operational GO/HOLD decision.  It
+This module deliberately does not issue an operational GO/HOLD decision. It
 only publishes a live, auditable direct-model snapshot after upstream CI gates
 have passed.
 """
@@ -40,8 +40,6 @@ def _tp_mm(value: float, unit: str) -> float:
         return float(value)
     if "mm" in normalized:
         return float(value)
-    # ECMWF total precipitation is normally metres. Unknown units stay raw
-    # rather than being silently re-scaled.
     return float(value)
 
 
@@ -50,7 +48,22 @@ def _wind_kmh(bucket: dict) -> float | None:
     v = bucket.get("10v") or bucket.get("v10")
     if not u or not v:
         return None
-    return round(math.hypot(float(u["value"]), float(v["value"])) * 3.6, 1)
+    speed = math.hypot(float(u["value"]), float(v["value"])) * 3.6
+    return round(speed, 1) if 0 <= speed <= 200 else None
+
+
+def _wave_value(record: dict | None) -> float | None:
+    if not record:
+        return None
+    value = float(record["value"])
+    return round(value, 2) if 0 <= value <= 20 else None
+
+
+def _period_value(record: dict | None) -> float | None:
+    if not record:
+        return None
+    value = float(record["value"])
+    return round(value, 1) if 0 < value <= 40 else None
 
 
 def _build_ecmwf_rows(payload: dict) -> dict[str, list[dict]]:
@@ -79,10 +92,8 @@ def _build_ecmwf_rows(payload: dict) -> dict[str, list[dict]]:
                 else:
                     rain = max(0.0, current_tp_mm - previous_tp_mm)
                 previous_tp_mm = current_tp_mm
-                rain = round(rain, 2)
+                rain = round(rain, 2) if rain <= 500 else None
 
-            wave = bucket.get("swh")
-            period = bucket.get("pp1d") or bucket.get("mwp")
             valid_dt = _iso(valid).astimezone(VN)
             rows.append({
                 "time": valid_dt.strftime("%d/%m %H:%M"),
@@ -90,8 +101,8 @@ def _build_ecmwf_rows(payload: dict) -> dict[str, list[dict]]:
                 "wind": _wind_kmh(bucket),
                 "gust": None,
                 "rain": rain,
-                "wave": round(float(wave["value"]), 2) if wave else None,
-                "period": round(float(period["value"]), 1) if period else None,
+                "wave": _wave_value(bucket.get("swh")),
+                "period": _period_value(bucket.get("pp1d") or bucket.get("mwp")),
             })
         rows_by_point[point] = rows
     return rows_by_point
@@ -105,9 +116,21 @@ def _nearest_row(rows: list[dict], now: datetime) -> dict:
 
 def _current_speed(copernicus: dict, point: str) -> float | None:
     try:
-        return round(float(copernicus["current"]["derived_vectors"][point]["speed_kmh"]), 2)
+        value = float(copernicus["current"]["derived_vectors"][point]["speed_kmh"])
+        return round(value, 2) if 0 <= value <= 20 else None
     except (KeyError, TypeError, ValueError):
         return None
+
+
+def _copernicus_wave(copernicus: dict, point: str) -> tuple[float | None, float | None]:
+    try:
+        wave = float(copernicus["wave"]["variables"]["VHM0"]["points"][point]["value"])
+        period = float(copernicus["wave"]["variables"]["VTPK"]["points"][point]["value"])
+    except (KeyError, TypeError, ValueError):
+        return None, None
+    wave_out = round(wave, 2) if 0 <= wave <= 20 else None
+    period_out = round(period, 2) if 0 < period <= 40 else None
+    return wave_out, period_out
 
 
 def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
@@ -120,11 +143,12 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
         rows = rows_by_point.get(point, [])
         nearest = _nearest_row(rows, now)
         current = _current_speed(copernicus, point)
+        marine_wave, marine_period = _copernicus_wave(copernicus, point)
         values = {
             "wind": nearest.get("wind"),
             "gust": nearest.get("gust"),
-            "wave": nearest.get("wave"),
-            "period": nearest.get("period"),
+            "wave": marine_wave if marine_wave is not None else nearest.get("wave"),
+            "period": marine_period if marine_period is not None else nearest.get("period"),
             "rain": nearest.get("rain"),
             "current": current,
         }
@@ -133,7 +157,7 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
             "name": name,
             "status": "LIVE DIRECT MODEL",
             **values,
-            "caveat": "Gió, mưa và sóng lấy từ valid time ECMWF gần thời điểm phát snapshot; dòng chảy lấy từ Copernicus Marine. Đây là dữ liệu mô hình trực tiếp, không phải quan trắc tại chỗ.",
+            "caveat": "Gió và mưa lấy từ valid time ECMWF gần thời điểm phát snapshot. Sóng và dòng chảy ở thẻ hiện tại lấy từ Copernicus Marine; chuỗi 72 giờ lấy từ ECMWF khi grid biển hợp lệ. Đây là dữ liệu mô hình trực tiếp, không phải quan trắc tại chỗ.",
             "hours": rows,
         }
 
