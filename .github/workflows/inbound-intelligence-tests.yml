@@ -1,0 +1,22 @@
+name: Inbound Intelligence Lab Tests
+
+on:
+  pull_request:
+    paths:
+      - "inbound_intelligence/**"
+      - ".github/workflows/inbound-intelligence-tests.yml"
+  push:
+    branches: [main]
+    paths:
+      - "inbound_intelligence/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Unit tests
+        run: python -m unittest discover -s inbound_intelligence/tests -v
