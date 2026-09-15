@@ -12,6 +12,10 @@ on:
       - "weather/**"
   workflow_dispatch:
 
+concurrency:
+  group: weather-lab-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -195,6 +199,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
@@ -250,4 +255,5 @@ jobs:
             exit 0
           fi
           git commit -m "chore(weather): publish live dashboard snapshot [skip ci]"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
           git push origin "HEAD:${GITHUB_REF_NAME}"
