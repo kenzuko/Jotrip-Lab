@@ -18,7 +18,8 @@ const clean = (value = '') => String(value).replace(/\s+/g, ' ').trim();
 const knownStatuses = [
   'ĐÃ HẠ CÁNH', 'ĐÃ CẤT CÁNH', 'ĐÚNG GIỜ', 'TRỄ', 'HỦY', 'HOÃN',
   'ĐANG LÀM THỦ TỤC', 'QUẦY THỦ TỤC ĐÃ ĐÓNG', 'LÀM THỦ TỤC LÚC',
-  'BÃI ĐỖ', 'BOARDING', 'DELAYED', 'CANCELLED', 'RESCHEDULED'
+  'HÀNH KHÁCH ĐANG LÊN TÀU BAY', 'ĐỔI GIỜ', 'BÃI ĐỖ', 'BOARDING',
+  'DELAYED', 'CANCELLED', 'RESCHEDULED'
 ];
 
 function stampVN() {
@@ -131,9 +132,9 @@ const health = {
     ? previousHealth.completed_at
     : previousHealth?.last_successful_run || previousSnapshot?.collected_at_vn || null,
   schema_version: '2.0',
-  parser_version: '2.0.0',
-  normalization_version: '2.0.0',
-  configuration_version: '2.0.0',
+  parser_version: '2.0.1',
+  normalization_version: '2.0.1',
+  configuration_version: '2.0.1',
   errors: [],
   warnings: []
 };
@@ -183,9 +184,9 @@ try {
   const aggregates = buildSummary(records);
   const output = {
     schema_version: '2.0',
-    parser_version: '2.0.0',
-    normalization_version: '2.0.0',
-    configuration_version: '2.0.0',
+    parser_version: '2.0.1',
+    normalization_version: '2.0.1',
+    configuration_version: '2.0.1',
     source_date: stamp.day,
     collected_at_vn: stamp.iso,
     report_state: qa.passed && rollover.detected ? 'REPORT_READY' : 'NOT_READY',

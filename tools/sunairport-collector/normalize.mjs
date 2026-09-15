@@ -23,7 +23,8 @@ const knownStations = new Set([
 const knownStatuses = [
   'ĐÃ HẠ CÁNH', 'ĐÃ CẤT CÁNH', 'ĐÚNG GIỜ', 'TRỄ', 'HỦY', 'HOÃN',
   'ĐANG LÀM THỦ TỤC', 'QUẦY THỦ TỤC ĐÃ ĐÓNG', 'LÀM THỦ TỤC LÚC',
-  'BÃI ĐỖ', 'BOARDING', 'DELAYED', 'CANCELLED', 'RESCHEDULED'
+  'HÀNH KHÁCH ĐANG LÊN TÀU BAY', 'ĐỔI GIỜ', 'BÃI ĐỖ', 'BOARDING',
+  'DELAYED', 'CANCELLED', 'RESCHEDULED'
 ];
 
 const activeStatuses = new Set([
@@ -51,9 +52,10 @@ function movementParts(record) {
   const statusContext = carrierIndex >= 0 ? parts.slice(Math.max(0, carrierIndex - 4), carrierIndex) : [];
   const status = [...knownStatuses].find(candidate =>
     statusContext.slice().reverse().some(part => part.toUpperCase().includes(candidate))
-  ) || clean(record.status).toUpperCase();
+  ) || clean(record.status).toUpperCase() || 'UNKNOWN';
 
   let station = '';
+  let stationIndex = -1;
   const marketingFlights = [];
   if (carrierIndex >= 0) {
     for (let index = carrierIndex + 1; index < Math.min(parts.length, carrierIndex + 6); index += 1) {
@@ -66,12 +68,19 @@ function movementParts(record) {
       if (knownStatuses.some(status => candidate.includes(status))) continue;
       if (/^[\d\s-]+$/.test(candidate)) continue;
       station = candidate;
+      stationIndex = index;
       break;
     }
   }
 
-  const scheduledTime = record.times?.[0] || '';
-  const actualTime = record.times?.length > 1 ? record.times.at(-1) : null;
+  // Times before the carrier can belong to a status such as
+  // "LÀM THỦ TỤC LÚC 15:05". Flight times are the time cells after station.
+  const flightTimes = stationIndex >= 0
+    ? parts.slice(stationIndex + 1).filter(part => timeRe.test(part))
+    : [];
+  const resolvedTimes = flightTimes.length ? flightTimes : (record.times || []);
+  const scheduledTime = resolvedTimes[0] || '';
+  const actualTime = resolvedTimes.length > 1 ? resolvedTimes.at(-1) : null;
   return {
     operatingFlight,
     marketingFlights: [...new Set(marketingFlights.filter(number => number !== operatingFlight))],
@@ -79,7 +88,8 @@ function movementParts(record) {
     station,
     scheduledTime,
     actualTime,
-    status
+    status,
+    flightTimes: resolvedTimes
   };
 }
 
@@ -96,7 +106,7 @@ export function normalizeRecords(rawRecords = [], sourceDate = '') {
       carrier: parsed.carrier,
       scheduled_time: parsed.scheduledTime,
       actual_time: parsed.actualTime,
-      times: raw.times || [],
+      times: parsed.flightTimes,
       station: parsed.station,
       market: parsed.station
         ? (domesticStations.has(parsed.station) ? 'domestic' : 'international')
@@ -181,6 +191,7 @@ export function runQualityChecks(records) {
     else if (!knownStations.has(record.station)) errors.push(`UNKNOWN_STATION:${record.station}`);
     if (!record.operating_flight_number) errors.push(`MISSING_OPERATING_FLIGHT:${record.movement_id}`);
     if (!record.scheduled_time) warnings.push(`MISSING_SCHEDULED_TIME:${record.operating_flight_number}`);
+    if (record.status === 'UNKNOWN') warnings.push(`UNKNOWN_STATUS:${record.operating_flight_number}`);
     if (ids.has(record.movement_id)) errors.push(`DUPLICATE_MOVEMENT:${record.movement_id}`);
     ids.add(record.movement_id);
   }
@@ -188,7 +199,7 @@ export function runQualityChecks(records) {
     passed: errors.length === 0,
     errors: [...new Set(errors)],
     warnings: [...new Set(warnings)],
-    rules_checked: 7,
+    rules_checked: 8,
     records_checked: records.length
   };
 }

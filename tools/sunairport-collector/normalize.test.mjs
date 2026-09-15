@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { buildSummary, normalizeRecords, runQualityChecks } from './normalize.mjs';
 
+const rawRecord = (direction, flight_number, context, times) => ({
+  direction, flight_number, context, times, status: ''
+});
+
 test('collapses VASCO and Vietnam Airlines codeshare into one physical movement', () => {
   const raw = [
     {
@@ -55,6 +59,29 @@ test('summary counts physical movements after normalization', () => {
     }
   ], '2026-09-15');
   assert.deepEqual(buildSummary(records).counts, { arrivals: 1, departures: 1, total: 2 });
+});
+
+test('does not treat check-in status time as the scheduled departure time', () => {
+  const records = normalizeRecords([rawRecord(
+    'departure',
+    '0V8074',
+    '2 | LÀM THỦ TỤC LÚC 15:05 | 43 | 0V8074 • VASCO | VN8074 | CAN THO | 17:35 | 11',
+    ['15:05', '17:35']
+  )], '2026-09-15');
+  assert.equal(records[0].scheduled_time, '17:35');
+  assert.equal(records[0].actual_time, null);
+  assert.deepEqual(records[0].times, ['17:35']);
+});
+
+test('keeps unknown status explicit and visible to QA', () => {
+  const records = normalizeRecords([rawRecord(
+    'departure',
+    'ZE582',
+    'CỔNG | TRẠNG THÁI | 1 | ZE582 • EASTARJET | INCHEON | 00:20 | 19-21 | 8',
+    ['00:20']
+  )], '2026-09-15');
+  assert.equal(records[0].status, 'UNKNOWN');
+  assert.match(runQualityChecks(records).warnings.join(','), /UNKNOWN_STATUS:ZE582/);
 });
 
 test('QA rejects unknown station labels instead of misclassifying them', () => {
