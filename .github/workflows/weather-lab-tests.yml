@@ -2,7 +2,7 @@ name: Weather Lab tests
 
 on:
   schedule:
-    - cron: "40 9,21 * * *"
+    - cron: "*/30 * * * *"
   push:
     paths:
       - "weather/**"
@@ -20,7 +20,41 @@ permissions:
   contents: read
 
 jobs:
+  cycle-watch:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    outputs:
+      run_heavy: ${{ steps.gate.outputs.run_heavy }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install lightweight ECMWF client
+        run: python -m pip install --quiet ecmwf-opendata
+      - name: Check latest model cycles without GRIB downloads
+        run: python -m weather.collectors.cycle_watch --snapshot weather/dashboard-data.json --output /tmp/cycle-watch.json
+      - name: Decide whether heavy ingest is needed
+        id: gate
+        shell: bash
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "schedule" ]]; then
+            RUN_HEAVY=$(python -c 'import json; p=json.load(open("/tmp/cycle-watch.json")); print(str(bool(p["run_heavy"])).lower())')
+          else
+            RUN_HEAVY=true
+          fi
+          echo "run_heavy=${RUN_HEAVY}" >> "$GITHUB_OUTPUT"
+          echo "Weather Lab heavy ingest: ${RUN_HEAVY}"
+          cat /tmp/cycle-watch.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: weather-cycle-watch
+          path: /tmp/cycle-watch.json
+          retention-days: 7
+
   test:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -35,7 +69,8 @@ jobs:
       - run: python -c 'import json; from weather.processing.snapshot import verify_snapshot; p=json.load(open("/tmp/an_thoi_snapshot.json")); assert verify_snapshot(p)'
 
   live-source-probe:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    needs: cycle-watch
+    if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || needs.cycle-watch.outputs.run_heavy == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -54,7 +89,8 @@ jobs:
           retention-days: 7
 
   live-numeric-smoke:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    needs: cycle-watch
+    if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || needs.cycle-watch.outputs.run_heavy == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -95,7 +131,8 @@ jobs:
           retention-days: 7
 
   icon-point-smoke:
-    if: github.event_name != 'pull_request'
+    needs: cycle-watch
+    if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || needs.cycle-watch.outputs.run_heavy == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -119,7 +156,8 @@ jobs:
           retention-days: 7
 
   ecmwf-72h-point-smoke:
-    if: github.event_name != 'pull_request'
+    needs: cycle-watch
+    if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || needs.cycle-watch.outputs.run_heavy == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -129,10 +167,21 @@ jobs:
           python-version: "3.12"
       - name: Install official client and GRIB decoder
         run: python -m pip install --quiet ecmwf-opendata eccodes
-      - name: Collect D0-D3 fields at locked points
+      - name: Collect D0-D3 fields at locked points including direct gust
         run: python -m weather.collectors.ecmwf_72h --output /tmp/ecmwf-72h.json
       - name: Enforce 72-hour point readiness
-        run: python -c 'import json; p=json.load(open("/tmp/ecmwf-72h.json")); assert p["readiness"] == "POINT_ROUTE_EXTRACTED"; assert p["horizon_hours"] == 72; assert {0,24,48,72}.issubset(set(p["steps"])); assert p["record_count"] >= 200, p'
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/ecmwf-72h.json'))
+          assert p['readiness'] == 'POINT_ROUTE_EXTRACTED', p
+          assert p['horizon_hours'] == 72
+          assert {0,24,48,72}.issubset(set(p['steps']))
+          assert p['record_count'] >= 200, p
+          gusts=[r for r in p['records'] if r.get('variable') in {'10fg','10fg3','i10fg','max_i10fg'}]
+          if p.get('gust_parameter'):
+              assert len(gusts) >= 60, len(gusts)
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: ecmwf-live-72h-points
@@ -140,7 +189,8 @@ jobs:
           retention-days: 7
 
   noaa-member-smoke:
-    if: github.event_name != 'pull_request'
+    needs: cycle-watch
+    if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || needs.cycle-watch.outputs.run_heavy == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -161,7 +211,8 @@ jobs:
           retention-days: 7
 
   copernicus-live-subset:
-    if: github.event_name != 'pull_request'
+    needs: cycle-watch
+    if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || needs.cycle-watch.outputs.run_heavy == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -241,6 +292,7 @@ jobs:
           assert p['report_status'] == 'LIVE', p
           assert p['completeness'] >= 60, p
           assert all(len(v['hours']) >= 20 for v in p['points'].values()), p
+          assert set(p.get('source_cycles', {})) == {'ECMWF','GEFS','ICON'}, p.get('source_cycles')
           generated=datetime.fromisoformat(p['generated_at'])
           age=(datetime.now(timezone.utc)-generated.astimezone(timezone.utc)).total_seconds()
           assert 0 <= age < 900, age
