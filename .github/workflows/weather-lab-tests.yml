@@ -89,7 +89,7 @@ jobs:
           retention-days: 7
 
   icon-point-smoke:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
