@@ -21,6 +21,7 @@ POINT_NAMES = {
     "an_thoi": "An Thới",
     "duong_dong": "Dương Đông",
     "ganh_dau": "Gành Dầu",
+    "rach_gia": "Rạch Giá",
 }
 VN = ZoneInfo("Asia/Ho_Chi_Minh")
 GUST_KEYS = ("10fg", "10fg3", "i10fg", "max_i10fg")
