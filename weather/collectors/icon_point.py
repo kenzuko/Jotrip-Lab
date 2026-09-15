@@ -16,17 +16,28 @@ from weather.collectors.live_smoke import _decode_grib, _request
 DWD_ROOT = "https://opendata.dwd.de/weather/nwp/icon/grib"
 
 
+def _field_stamp(name: str) -> str | None:
+    match = re.search(r"_(\d{10})_000_U_10M\.grib2\.bz2$", name, flags=re.I)
+    return match.group(1) if match else None
+
+
 def discover_latest_field() -> str:
+    """Select the newest step-000 object across 00/06/12/18 ICON directories."""
     errors = []
+    candidates: list[tuple[str, str]] = []
     for hour in (0, 6, 12, 18):
         directory = f"{DWD_ROOT}/{hour:02d}/u_10m/"
         try:
             html = _request(directory).decode("utf-8", errors="replace")
             names = re.findall(r'href="([^"]+_000_U_10M\.grib2\.bz2)"', html, flags=re.I)
-            if names:
-                return directory + sorted(set(names))[-1]
+            for name in set(names):
+                stamp = _field_stamp(name)
+                if stamp:
+                    candidates.append((stamp, directory + name))
         except Exception as exc:
             errors.append(f"{directory}: {type(exc).__name__}: {exc}")
+    if candidates:
+        return max(candidates, key=lambda item: item[0])[1]
     raise RuntimeError("No live ICON step-000 field: " + " | ".join(errors))
 
 
