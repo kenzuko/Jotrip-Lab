@@ -87,3 +87,27 @@ jobs:
           name: icon-official-remap-pack-index
           path: /tmp/icon-remap.json
           retention-days: 7
+
+  icon-point-smoke:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install CDO and GRIB decoder
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y cdo
+          python -m pip install --quiet eccodes
+      - name: Remap live ICON field and extract Phu Quoc
+        run: python -m weather.collectors.icon_point --output /tmp/icon-point.json
+      - name: Enforce point readiness
+        run: python -c 'import json; p=json.load(open("/tmp/icon-point.json")); assert p["status"] == "POINT_NUMERIC_READY"; assert "phu_quoc_point" in p["decoded"]'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: icon-live-point-smoke
+          path: /tmp/icon-point.json
+          retention-days: 7
