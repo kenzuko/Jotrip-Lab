@@ -6,6 +6,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+SUPPORTED_SCHEMA_VERSIONS = {"1.0", "1.1"}
+
 
 def load_registry(path: str | Path) -> dict[str, Any]:
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
@@ -14,8 +16,9 @@ def load_registry(path: str | Path) -> dict[str, Any]:
 
 
 def validate_registry(payload: dict[str, Any]) -> None:
-    if payload.get("schema_version") != "1.0":
-        raise ValueError("source registry schema_version must be 1.0")
+    version = payload.get("schema_version")
+    if version not in SUPPORTED_SCHEMA_VERSIONS:
+        raise ValueError(f"unsupported source registry schema_version: {version}")
     seen: set[str] = set()
     for source in payload.get("sources", []):
         source_id = source.get("source_id")
