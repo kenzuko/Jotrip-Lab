@@ -1,17 +1,16 @@
-const VERSION="weather-lab-2026.09.16.9";
+const VERSION="weather-lab-2026.09.16.10";
 const CACHE=`${VERSION}-static`;
 const STATIC=[
   "/weather.html",
   "/weather-dashboard.css",
   "/weather-dashboard-base.css",
   "/weather-dashboard-typography.css",
-  "/weather-dashboard.js?v=20260916-15",
+  "/weather-dashboard.js?v=20260916-16",
   "/weather-dashboard-enhancements.js",
   "/weather-dashboard-legacy.js",
   "/weather-dashboard-air-quality.js",
   "/weather-dashboard-tide.js",
   "/weather-dashboard-observation-status.js",
-  "/weather-dashboard-polish.js",
   "/weather-dashboard-history-link.js",
   "/weather-app-icon.svg",
   "/weather-manifest.webmanifest"
