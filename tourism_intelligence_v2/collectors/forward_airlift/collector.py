@@ -85,20 +85,27 @@ def collect(config_path: str | Path, output_dir: str | Path) -> dict[str, Any]:
     summary = summarize(evidence)
     configured_markets = set(cfg.get("required_markets", [])) or {"Vietnam", "Korea", "Russia_CIS", "Taiwan_HK_China", "SEA", "Western"}
     covered_markets = {item["market"] for item in evidence}
+    direct_markets = {item["market"] for item in direct}
     coverage = len(covered_markets) / len(configured_markets) if configured_markets else 0.0
-    score_gate_passed = coverage >= 0.65 and bool(direct)
+    direct_coverage = len(direct_markets) / len(configured_markets) if configured_markets else 0.0
+    gate_cfg = cfg.get("score_gate", {})
+    min_total = float(gate_cfg.get("minimum_market_coverage", 0.65))
+    min_direct = float(gate_cfg.get("minimum_direct_market_coverage", 0.50))
+    score_gate_passed = coverage >= min_total and direct_coverage >= min_direct
 
     latest = {
-        "schema_version": "forward-airlift-evidence-1.0",
+        "schema_version": "forward-airlift-evidence-1.1",
         "observed_at_vn": now.isoformat(),
         "state": "REPORT_READY" if score_gate_passed else ("PARTIAL_READY" if evidence else "DEGRADED"),
         "market_coverage": round(coverage, 4),
+        "direct_market_coverage": round(direct_coverage, 4),
+        "score_gate": {"minimum_market_coverage": min_total, "minimum_direct_market_coverage": min_direct},
         "score_gate_passed": score_gate_passed,
         "forward_airlift_signal": summary.get("forward_airlift_signal") if score_gate_passed else None,
         "markets": summary.get("markets", {}),
         "evidence": evidence,
         "sources": source_states,
-        "interpretation_rule": "Bookable/published route evidence is supply evidence only; never infer passenger demand or load factor.",
+        "interpretation_rule": "Bookable/published route evidence is supply evidence only; never infer passenger demand or load factor. Proxy coverage cannot unlock a composite score without direct-market coverage.",
     }
     health = {
         "module": "Forward Airlift",
@@ -109,6 +116,7 @@ def collect(config_path: str | Path, output_dir: str | Path) -> dict[str, Any]:
         "qa_passed": bool(evidence),
         "commit_succeeded": None,
         "market_coverage": round(coverage, 4),
+        "direct_market_coverage": round(direct_coverage, 4),
         "direct_source_count": len(direct),
         "score_gate_passed": score_gate_passed,
         "last_successful_run": now.isoformat() if evidence else None,
@@ -116,7 +124,7 @@ def collect(config_path: str | Path, output_dir: str | Path) -> dict[str, Any]:
     }
     manifest = {
         "schema_version": "1.0",
-        "collector_version": "forward-airlift-evidence-0.1.0",
+        "collector_version": "forward-airlift-evidence-0.2.0",
         "source_config_version": cfg.get("schema_version"),
         "paid_services_used": False,
     }
