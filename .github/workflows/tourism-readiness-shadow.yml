@@ -1,0 +1,60 @@
+name: Tourism Readiness Shadow
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/tourism-v2-readiness-v1
+    paths:
+      - 'tourism_intelligence_v2/readiness.py'
+      - 'tourism_intelligence_v2/registry.py'
+      - 'config/tourism_v2/source-registry.v1.json'
+      - 'config/tourism_v2/module-registry.v1.json'
+      - '.github/workflows/tourism-readiness-shadow.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Fetch isolated data refs
+        run: |
+          git fetch origin data-sunairport:data-sunairport --depth=1
+          git fetch origin data-marine-ops:data-marine-ops --depth=1
+          git fetch origin feat/weather-lab-data-engine-v1:feat/weather-lab-data-engine-v1 --depth=1
+      - name: Materialize read-only inputs
+        run: |
+          mkdir -p /tmp/tourism-readiness
+          git show data-sunairport:data/sunairport/health.json > /tmp/tourism-readiness/sun-health.json
+          git show data-marine-ops:data/marine_ops/health.json > /tmp/tourism-readiness/marine-health.json
+          git show feat/weather-lab-data-engine-v1:weather/snapshots/latest.json > /tmp/tourism-readiness/weather-latest.json
+      - name: Build readiness snapshot
+        run: |
+          python -m tourism_intelligence_v2.readiness \
+            --weather /tmp/tourism-readiness/weather-latest.json \
+            --sun /tmp/tourism-readiness/sun-health.json \
+            --marine /tmp/tourism-readiness/marine-health.json \
+            --output /tmp/tourism-readiness/latest.json
+      - name: Enforce no overclaim
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/tourism-readiness/latest.json', encoding='utf-8'))
+          assert p['market_condition_not_data_system_condition'] is True
+          assert p['modules']['hotel_forward']['state'] == 'NOT_AUTOMATED'
+          assert p['modules']['airfare']['state'] == 'NOT_AUTOMATED'
+          assert p['pipeline_health_score'] is None
+          assert p['run_status'] in {'DEGRADED','PARTIAL'}
+          print(json.dumps(p,ensure_ascii=False,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tourism-readiness-shadow-${{ github.run_id }}
+          path: /tmp/tourism-readiness/**
+          retention-days: 7
