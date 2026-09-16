@@ -95,6 +95,22 @@ try {
   await fs.mkdir(diagDir, { recursive: true });
   browser = await chromium.launch({ headless: true });
   page = await browser.newPage({ locale: 'vi-VN', timezoneId: tz });
+
+  const network = [];
+  page.on('response', response => {
+    try {
+      const request = response.request();
+      const type = request.resourceType();
+      if (!['xhr', 'fetch'].includes(type)) return;
+      network.push({
+        url: response.url(),
+        status: response.status(),
+        resource_type: type,
+        content_type: response.headers()['content-type'] || ''
+      });
+    } catch {}
+  });
+
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForTimeout(5000);
 
@@ -121,7 +137,8 @@ try {
   };
 
   await fs.writeFile(path.join(workDir, 'raw.json'), JSON.stringify(raw, null, 2) + '\n');
-  console.log(JSON.stringify({ board_date: boardDate, arrivals_raw: raw.arrivals_raw.length, departures_raw: raw.departures_raw.length }));
+  await fs.writeFile(path.join(workDir, 'network.json'), JSON.stringify({ collected_at_vn: s.iso, requests: network }, null, 2) + '\n');
+  console.log(JSON.stringify({ board_date: boardDate, arrivals_raw: raw.arrivals_raw.length, departures_raw: raw.departures_raw.length, api_requests: network.length }));
 } catch (error) {
   const errorInfo = {
     collected_at_vn: s.iso,
