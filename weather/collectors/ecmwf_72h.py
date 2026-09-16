@@ -101,24 +101,16 @@ def _collect_gust(client, work: Path, run_time: datetime, steps: list[int], pref
 
 
 def _collect_wave_max(client, work: Path, run_time: datetime, steps: list[int], prefix: str) -> tuple[list[dict], str | None, str | None]:
-    """Fetch ECMWF expected maximum individual wave height when available."""
-    hmax_steps = [step for step in steps if step > 0]
-    try:
-        target = work / f"{prefix}-wave-hmax.grib2"
-        client.retrieve(
-            type="fc",
-            stream="wave",
-            step=hmax_steps,
-            param=["hmax"],
-            target=str(target),
-            **_cycle_kwargs(run_time),
-        )
-        records = _decode_all(target, run_time, "ECMWF_WAVE_DIRECT", "wave")
-        if records:
-            return records, "hmax", None
-        return [], None, "No hmax records returned"
-    except Exception as exc:
-        return [], None, f"hmax: {type(exc).__name__}: {exc}"
+    """Keep the direct-Hmax slot explicit without querying an unpublished Open Data field."""
+    # Maximum individual wave height (hmax) exists in broader ECMWF catalogues,
+    # but it is not part of the current free ECMWF Open Data wave parameter set.
+    # Querying param=hmax therefore produces a catalog ValueError every cycle.
+    # Keep the interface for future availability while using the documented
+    # Rayleigh 20-minute proxy from Hs in the dashboard today.
+    return [], None, (
+        "ECMWF Open Data hiện không phát hành trực tiếp Hmax; "
+        "Weather Lab dùng proxy Rayleigh 20 phút từ Hs và ghi rõ phương pháp."
+    )
 
 
 def _collect_cycle(client, work: Path, steps: list[int], prefix: str, run_time: datetime | None = None) -> dict:
