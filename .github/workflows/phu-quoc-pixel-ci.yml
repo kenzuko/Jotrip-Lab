@@ -1,0 +1,45 @@
+name: Phu Quoc Pixel CI
+
+on:
+  pull_request:
+    paths:
+      - 'phu-quoc-pixel/**'
+      - '.github/workflows/phu-quoc-pixel-ci.yml'
+  push:
+    branches:
+      - 'feat/phu-quoc-pixel-architecture-v1'
+    paths:
+      - 'phu-quoc-pixel/**'
+      - '.github/workflows/phu-quoc-pixel-ci.yml'
+
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: phu-quoc-pixel
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Bundle report
+        run: |
+          echo '--- dist size ---'
+          du -sh dist
+          echo '--- largest files ---'
+          find dist -type f -printf '%s %p\n' | sort -nr | head -20
