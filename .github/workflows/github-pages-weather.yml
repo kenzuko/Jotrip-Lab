@@ -23,11 +23,8 @@ env:
   DATA_REF: data-weather
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout Weather Lab source
         uses: actions/checkout@v4
@@ -94,26 +91,23 @@ jobs:
               text = path.read_text(encoding='utf-8')
               original = text
 
-              # Only rewrite same-origin Weather Lab paths. External URLs are untouched.
               for quote in ('"', "'"):
                   text = text.replace(f'{quote}/weather-', f'{quote}{base}weather-')
                   text = text.replace(f'{quote}/weather/', f'{quote}{base}weather/')
                   text = text.replace(f'{quote}/weather.html', f'{quote}{base}weather.html')
 
-              # A service worker under /<repo>/ cannot claim the github.io root scope.
               text = text.replace('{scope:"/"}', f'{{scope:"{base}"}}')
               text = text.replace("{scope:'/' }", f"{{scope:'{base}'}}")
 
               if text != original:
                   path.write_text(text, encoding='utf-8')
 
-          # Pages root opens Weather Lab directly.
           index = root / 'index.html'
           assert index.exists()
           assert f'{base}weather-dashboard.css' in index.read_text(encoding='utf-8')
           PY
 
-      - name: Configure GitHub Pages
+      - name: Configure or enable GitHub Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
@@ -123,6 +117,13 @@ jobs:
         with:
           path: _site
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
