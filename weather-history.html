@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#087fb8">
+  <title>JoTrip Weather History</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;650;700&family=Manrope:wght@500;550;600;650;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/weather-history.css?v=20260916-1">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <a class="back-link" href="/weather.html">← Weather Lab</a>
+      <p class="eyebrow">JOTRIP WEATHER LAB</p>
+      <h1>History & Compare</h1>
+      <p class="lead">Tra cứu lịch sử nowcast quan sát, sự kiện thay đổi và so sánh ngày mà không lưu mọi snapshot.</p>
+    </div>
+    <div id="archiveHealth" class="health-pill">ĐANG TẢI</div>
+  </header>
+
+  <main class="shell">
+    <section class="panel search-panel">
+      <div class="panel-head">
+        <div><span>ARCHIVE SEARCH</span><h2>Tìm dữ liệu</h2></div>
+        <strong id="archiveCount">—</strong>
+      </div>
+      <div class="filters">
+        <label><span>Tìm nhanh</span><input id="historySearch" type="search" placeholder="Ngày, An Thới, HIGH, Rạch Giá..."></label>
+        <label><span>Khu vực</span><select id="pointFilter"><option value="all">Tất cả khu vực</option><option value="an_thoi">An Thới</option><option value="duong_dong">Dương Đông</option><option value="ganh_dau">Gành Dầu</option><option value="rach_gia">Rạch Giá</option></select></label>
+        <label><span>Mức cao nhất</span><select id="levelFilter"><option value="all">Tất cả mức</option><option>LOW</option><option>WATCH</option><option>ELEVATED</option><option>HIGH</option></select></label>
+      </div>
+      <div id="archiveList" class="archive-list"><div class="empty">Đang đọc catalog...</div></div>
+    </section>
+
+    <section class="panel compare-panel">
+      <div class="panel-head">
+        <div><span>DAY-TO-DAY</span><h2>So sánh hai ngày</h2></div>
+        <strong id="compareState">READY</strong>
+      </div>
+      <div class="compare-controls">
+        <label><span>Ngày A</span><select id="dateA"></select></label>
+        <label><span>Ngày B</span><select id="dateB"></select></label>
+        <label><span>Khu vực</span><select id="comparePoint"><option value="an_thoi">An Thới</option><option value="duong_dong">Dương Đông</option><option value="ganh_dau">Gành Dầu</option><option value="rach_gia">Rạch Giá</option></select></label>
+      </div>
+      <div id="compareCards" class="compare-cards"></div>
+      <div id="compareInsight" class="insight"></div>
+    </section>
+
+    <section class="panel timeline-panel">
+      <div class="panel-head">
+        <div><span>MATERIAL EVENTS</span><h2>Những lần thay đổi đáng kể</h2></div>
+        <strong id="timelineMeta">—</strong>
+      </div>
+      <div class="timeline-controls">
+        <label><span>Ngày</span><select id="eventDate"></select></label>
+        <label><span>Khu vực</span><select id="eventPoint"><option value="all">Tất cả khu vực</option><option value="an_thoi">An Thới</option><option value="duong_dong">Dương Đông</option><option value="ganh_dau">Gành Dầu</option><option value="rach_gia">Rạch Giá</option></select></label>
+      </div>
+      <div id="eventList" class="event-list"><div class="empty">Chọn ngày để xem thay đổi.</div></div>
+    </section>
+
+    <section class="method-note">
+      <b>Archive mode</b>
+      <span>Daily raw + material change events + daily summary. Latest state được ghi đè, không lưu toàn bộ polling snapshot. Summary vẫn tích lũy mọi lần quan sát thành công để phục vụ so sánh dài hạn.</span>
+    </section>
+  </main>
+
+  <script src="/weather-history.js?v=20260916-1" defer></script>
+</body>
+</html>
