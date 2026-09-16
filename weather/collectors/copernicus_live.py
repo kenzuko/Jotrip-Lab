@@ -9,18 +9,13 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from weather.collectors.copernicus import configuration_status, subset
+from weather.points import POINTS
 from weather.processing.marine import current_from_uv
 
 WAVE_DATASET = "cmems_mod_glo_wav_anfc_0.083deg_PT3H-i"
 CURRENT_DATASET = "cmems_mod_glo_phy-cur_anfc_0.083deg_PT6H-i"
 BBOX = (9.70, 103.55, 10.55, 105.30)
 REGIONAL_RADIUS_KM = 15.0
-POINTS = {
-    "duong_dong": (10.2172, 103.9593),
-    "an_thoi": (10.0191, 104.0150),
-    "ganh_dau": (10.3759, 103.9000),
-    "rach_gia": (10.00677, 105.07845),
-}
 
 
 def _select_time(data, target_time: datetime):
