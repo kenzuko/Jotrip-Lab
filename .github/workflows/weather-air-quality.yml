@@ -5,7 +5,9 @@ on:
   push:
     paths:
       - "weather/collectors/cams_air_quality.py"
+      - "weather/collectors/iqair_air_quality.py"
       - "weather/processing/air_quality.py"
+      - "weather/processing/merge_air_quality.py"
       - "weather/air-quality.json"
       - ".github/workflows/weather-air-quality.yml"
   workflow_dispatch:
@@ -19,6 +21,8 @@ on:
     secrets:
       ADS_API_KEY:
         required: false
+      IQAIR_API_KEY:
+        required: false
 
 concurrency:
   group: weather-air-quality-${{ inputs.target_ref || github.ref_name }}
@@ -28,11 +32,12 @@ permissions:
   contents: write
 
 jobs:
-  cams-air-quality:
+  air-quality:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
       ADS_API_KEY: ${{ secrets.ADS_API_KEY }}
+      IQAIR_API_KEY: ${{ secrets.IQAIR_API_KEY }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -51,32 +56,35 @@ jobs:
           if [[ -z "$CLEAN" ]]; then
             CLEAN=$(printf '%s\n' "$RAW" | sed '/^[[:space:]]*url:/d;/^[[:space:]]*$/d' | head -n 1 | xargs)
           fi
-          if [[ -z "$CLEAN" ]]; then
-            echo "ADS_API_KEY is empty after normalization" >&2
-            exit 1
+          if [[ -n "$CLEAN" ]]; then
+            echo "ADS_API_KEY=$CLEAN" >> "$GITHUB_ENV"
+            echo "ADS token normalized without exposing its value"
+          else
+            echo "ADS token missing; IQAir can still publish AQI if configured"
           fi
-          echo "ADS_API_KEY=$CLEAN" >> "$GITHUB_ENV"
-          echo "ADS token normalized without exposing its value"
-      - name: Collect CAMS PM2.5 and PM10
-        run: python -m weather.collectors.cams_air_quality --output /tmp/air-quality.json
+      - name: Collect CAMS PM2.5 and PM10 model reference
+        run: python -m weather.collectors.cams_air_quality --output /tmp/cams-air-quality.json
+      - name: Collect optional IQAir realtime city AQI
+        run: python -m weather.collectors.iqair_air_quality --output /tmp/iqair-air-quality.json
+      - name: Merge observed-first AQI policy
+        run: python -m weather.processing.merge_air_quality --cams /tmp/cams-air-quality.json --iqair /tmp/iqair-air-quality.json --output /tmp/air-quality.json
       - name: Validate environmental layer
         run: |
           python - <<'PY'
           import json
           p=json.load(open('/tmp/air-quality.json'))
-          assert p['status'] in {'POINT_NUMERIC_READY','CREDENTIALS_MISSING','UNAVAILABLE'}, p
+          assert p['status'] in {'POINT_NUMERIC_READY','PARTIAL','UNAVAILABLE'}, p
           if p['status'] == 'POINT_NUMERIC_READY':
               assert set(p['points']) == {'an_thoi','duong_dong','ganh_dau','rach_gia'}
               assert all(p['points'][k]['aqi_us'] is not None for k in p['points'])
-              assert all(p['points'][k]['pm25_ugm3'] is not None for k in p['points'])
-              assert all(p['points'][k]['pm10_ugm3'] is not None for k in p['points'])
+              assert all(p['points'][k]['aqi_source'] in {'IQAIR_COMMUNITY_REALTIME','CAMS_GLOBAL_ANALYSIS'} for k in p['points'])
           PY
-      - name: Publish only a valid CAMS snapshot
+      - name: Publish only a usable AQI snapshot
         shell: bash
         run: |
           STATUS=$(python -c 'import json; print(json.load(open("/tmp/air-quality.json"))["status"])')
           if [[ "$STATUS" != "POINT_NUMERIC_READY" ]]; then
-            echo "CAMS layer not ready ($STATUS); keeping last published air-quality.json"
+            echo "AQI layer not fully ready ($STATUS); keeping last published air-quality.json"
             cat /tmp/air-quality.json
             exit 0
           fi
@@ -88,12 +96,15 @@ jobs:
             echo "Air-quality snapshot unchanged"
             exit 0
           fi
-          git commit -m "chore(weather): publish CAMS air quality snapshot [skip ci]"
+          git commit -m "chore(weather): publish observed-first air quality snapshot [skip ci]"
           git pull --rebase origin "${{ inputs.target_ref || github.ref_name }}"
           git push origin "HEAD:${{ inputs.target_ref || github.ref_name }}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cams-air-quality
-          path: /tmp/air-quality.json
+          name: weather-air-quality
+          path: |
+            /tmp/air-quality.json
+            /tmp/cams-air-quality.json
+            /tmp/iqair-air-quality.json
           retention-days: 7
