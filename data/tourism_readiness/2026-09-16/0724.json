@@ -1,0 +1,137 @@
+{
+  "direct_evidence_coverage_percent": 60.0,
+  "failed_sources": [],
+  "generated_at_vn": "2026-09-16T07:24:09.635991+07:00",
+  "language_policy": "Vietnamese-first; preserve technical codes, proper names, URLs and verbatim quotations where needed.",
+  "market_condition_not_data_system_condition": true,
+  "missing_core_modules": [
+    "airfare",
+    "hotel_forward"
+  ],
+  "modules": {
+    "airfare": {
+      "automation_state": "PROCESSOR_ONLY",
+      "direct_evidence": false,
+      "qa_passed": false,
+      "state": "NOT_AUTOMATED"
+    },
+    "aviation": {
+      "direct_evidence": true,
+      "observed_at": "2026-09-16T06:29:28+07:00",
+      "qa_passed": true,
+      "state": "OK"
+    },
+    "forward_airlift": {
+      "automation_state": "PROCESSOR_ONLY",
+      "direct_evidence": false,
+      "qa_passed": false,
+      "state": "NOT_AUTOMATED"
+    },
+    "hotel_forward": {
+      "automation_state": "PROCESSOR_ONLY",
+      "direct_evidence": false,
+      "qa_passed": false,
+      "state": "NOT_AUTOMATED"
+    },
+    "jotrip_internal": {
+      "automation_state": "SCHEMA_ONLY",
+      "direct_evidence": false,
+      "qa_passed": false,
+      "state": "NOT_AUTOMATED"
+    },
+    "marine_ops": {
+      "direct_evidence": true,
+      "observed_at": "2026-09-16T07:14:07.736706+07:00",
+      "qa_passed": true,
+      "state": "OK"
+    },
+    "social_intent": {
+      "automation_state": "SCHEMA_ONLY",
+      "direct_evidence": false,
+      "qa_passed": false,
+      "state": "NOT_AUTOMATED"
+    },
+    "weather_marine": {
+      "direct_evidence": true,
+      "observed_at": "2026-09-16T06:44:40.341018+07:00",
+      "qa_passed": true,
+      "state": "OK"
+    }
+  },
+  "overall_completeness_percent": 60.0,
+  "pipeline_health_note": "Không xuất điểm tổng cho đến khi execution/QA/redundancy telemetry phủ đủ các module lõi.",
+  "pipeline_health_score": null,
+  "run_status": "DEGRADED",
+  "schema_version": "tourism-readiness-1.0",
+  "source_freshness_score": 62.5,
+  "sources": [
+    {
+      "critical_data_gaps": [],
+      "criticality": "CORE",
+      "data_mode": "B",
+      "direct_ingest_pass_count": 5,
+      "evidence_class": "DIRECT",
+      "freshness": {
+        "age_minutes": 39.5,
+        "score": 0.6448,
+        "state": "FRESH",
+        "ttl_minutes": 90
+      },
+      "module": "weather_marine",
+      "observed_at": "2026-09-16T06:44:40.341018+07:00",
+      "paid": false,
+      "source_id": "WEATHER_LAB_CANONICAL",
+      "state": "OK"
+    },
+    {
+      "criticality": "CORE",
+      "evidence_class": "DIRECT",
+      "freshness": {
+        "age_minutes": 54.7,
+        "score": 0.1615,
+        "state": "STALE",
+        "ttl_minutes": 30
+      },
+      "module": "aviation",
+      "observed_at": "2026-09-16T06:29:28+07:00",
+      "paid": false,
+      "source_date": "2026-09-16",
+      "source_id": "SUN_AIRPORT_D0",
+      "state": "REPORT_READY"
+    },
+    {
+      "criticality": "CORE",
+      "evidence_class": "DIRECT",
+      "freshness": {
+        "age_minutes": 10.0,
+        "score": 0.846,
+        "state": "FRESH",
+        "ttl_minutes": 60
+      },
+      "module": "marine_ops",
+      "observed_at": "2026-09-16T07:14:07.736706+07:00",
+      "paid": false,
+      "source_id": "MARINE_PERMIT_KGG",
+      "state": "OK"
+    },
+    {
+      "criticality": "CORE",
+      "evidence_class": "DIRECT",
+      "freshness": {
+        "age_minutes": 10.0,
+        "score": 0.846,
+        "state": "FRESH",
+        "ttl_minutes": 60
+      },
+      "module": "marine_ops",
+      "observed_at": "2026-09-16T07:14:07.736706+07:00",
+      "paid": false,
+      "source_id": "THANH_THOI_OPERATOR",
+      "state": "OK"
+    }
+  ],
+  "stale_sources": [
+    "SUN_AIRPORT_D0"
+  ],
+  "unresolved_conflicts": []
+}
