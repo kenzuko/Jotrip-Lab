@@ -97,6 +97,8 @@ jobs:
               '/data/weather-aqi/': base + 'data/weather-aqi/',
               '/data/weather-nowcast/': base + 'data/weather-nowcast/',
               '/weather-history.html': base + 'weather-history.html',
+              '/weather-history.css': base + 'weather-history.css',
+              '/weather-history.js': base + 'weather-history.js',
               '/weather.html': base,
               '/weather-dashboard': base + 'weather-dashboard',
               '/weather-app-icon.svg': base + 'weather-app-icon.svg',
@@ -118,8 +120,11 @@ jobs:
               path.write_text(text, encoding='utf-8')
 
           html = (root / 'index.html').read_text(encoding='utf-8')
+          history_html = (root / 'weather-history.html').read_text(encoding='utf-8')
           assert '/Jotrip-Lab/weather/weather-dashboard.css' in html
           assert '/Jotrip-Lab/weather/data/dashboard-data.json' in (root / 'weather-dashboard-enhancements.js').read_text(encoding='utf-8')
+          assert '/Jotrip-Lab/weather/weather-history.css' in history_html
+          assert '/Jotrip-Lab/weather/weather-history.js' in history_html
           history_js = (root / 'weather-history.js').read_text(encoding='utf-8')
           assert 'raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast' in history_js
           assert 'data-weather/Jotrip-Lab/weather/' not in history_js
