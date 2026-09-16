@@ -1,5 +1,5 @@
 (()=>{
-  const V="20260916-15";
+  const V="20260916-16";
   const style=href=>{
     const l=document.createElement("link");
     l.rel="stylesheet";
@@ -44,10 +44,10 @@
     await optional("/weather-dashboard-air-quality.js","chất lượng không khí",()=>window.WeatherLabAirQuality?.install?.());
     await optional("/weather-dashboard-tide.js","thủy triều",()=>window.WeatherLabTide?.install?.());
     await optional("/weather-dashboard-observation-status.js","trạng thái quan sát",()=>window.WeatherLabObservationStatus?.install?.());
-    await optional("/weather-dashboard-polish.js","hoàn thiện giao diện",()=>window.WeatherLabPolish?.install?.());
 
-    // Bản đồ OpenStreetMap/Leaflet tạm tắt. Weather Lab ưu tiên dữ liệu vận hành,
-    // tránh phụ thuộc CDN/tile bên ngoài làm chậm hoặc chặn quá trình tải trang.
+    // OpenStreetMap/Leaflet đã tắt. Không tải tile, Leaflet hoặc mô-đun bản đồ.
+    // Mô-đun polish động cũng tạm ngưng để ưu tiên tải trang ổn định;
+    // các nhãn tiếng Việt sẽ được giữ ở lớp giao diện cốt lõi thay vì observer runtime.
 
     await optional("/weather-dashboard-history-link.js","lịch sử và đối chiếu",()=>window.WeatherLabHistoryLink?.install?.());
   }
