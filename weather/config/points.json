@@ -1,9 +1,35 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
+  "coordinate_reference": "WGS84",
   "points": {
-    "duong_dong": {"name": "Dương Đông", "lat": 10.2172, "lon": 103.9593, "surface": "coastal"},
-    "an_thoi": {"name": "An Thới", "lat": 10.0191, "lon": 104.0150, "surface": "coastal"},
-    "ganh_dau": {"name": "Gành Dầu", "lat": 10.3759, "lon": 103.9000, "surface": "coastal"}
+    "duong_dong": {
+      "name": "Dương Đông",
+      "lat": 10.2172,
+      "lon": 103.9593,
+      "reference_type": "locality_center",
+      "note": "Điểm tham chiếu khu vực cho khí quyển, AQI và đối lưu; dữ liệu biển phải dùng ô lưới biển hợp lệ gần nhất."
+    },
+    "an_thoi": {
+      "name": "An Thới",
+      "lat": 10.0191,
+      "lon": 104.0150,
+      "reference_type": "locality_center",
+      "note": "Điểm tham chiếu An Thới nằm trên đất liền là chủ ý. Dữ liệu biển không được hiểu là đo tại chính tọa độ này."
+    },
+    "ganh_dau": {
+      "name": "Gành Dầu",
+      "lat": 10.37077,
+      "lon": 103.84472,
+      "reference_type": "locality_center",
+      "note": "Hiệu chỉnh theo vị trí Gành Dầu trên OpenStreetMap; thay cho điểm cũ 10.3759, 103.9000 nằm lệch khoảng 6 km về phía đông."
+    },
+    "rach_gia": {
+      "name": "Rạch Giá",
+      "lat": 10.00677,
+      "lon": 105.07845,
+      "reference_type": "coastal_operations_reference",
+      "note": "Điểm tham chiếu vận hành ven biển Rạch Giá; không phải tâm hành chính thành phố."
+    }
   },
   "unverified_points": ["hon_dam_trong", "vinh_dam", "hon_thom", "may_rut", "gam_ghi"]
 }
