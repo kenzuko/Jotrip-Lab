@@ -14,16 +14,11 @@ import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from weather.points import POINTS
 from weather.processing.convective_proxy import convective_signal
 
 BUCKET = "noaa-himawari9"
 PREFIX_ROOT = "AHI-L2-FLDK-Clouds"
-POINTS = {
-    "duong_dong": (10.2172, 103.9593),
-    "an_thoi": (10.0191, 104.0150),
-    "ganh_dau": (10.3759, 103.9000),
-    "rach_gia": (10.00677, 105.07845),
-}
 # Keep the signal local enough for operations. At the nominal 2 km nadir
 # sampling this is about a 40 km radius-equivalent square. Himawari sampling is
 # coarser away from nadir, so the label is intentionally approximate.
@@ -64,8 +59,6 @@ def _s3_client():
 def _recent_keys(client) -> list[dict]:
     now = datetime.now(timezone.utc)
     found: list[dict] = []
-    # NOAA keys include an HHMM directory. Probe recent hours first instead of
-    # walking every Cloud product in an entire day.
     for hours_back in range(0, 30):
         stamp = now - timedelta(hours=hours_back)
         hour_prefix = f"{PREFIX_ROOT}/{stamp:%Y/%m/%d/%H}"
@@ -74,7 +67,6 @@ def _recent_keys(client) -> list[dict]:
             key = item.get("Key", "")
             if "/AHI-CHGT_" in key and key.endswith(".nc"):
                 found.append({"key": key, "last_modified": item.get("LastModified")})
-        # Two hours are enough to find a current and previous full-disk scan.
         if len(found) >= 4:
             break
     found.sort(key=lambda x: x.get("last_modified") or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
@@ -131,8 +123,6 @@ def _temp_stats(array) -> tuple[float | None, float | None, float | None]:
     if not values.size:
         return None, None, None
     c = values - 273.15
-    # Keep absolute minimum for diagnostics, but use p05 for operational signal
-    # so one noisy/extreme pixel cannot turn the whole local area HIGH.
     return float(np.min(c)), float(np.nanpercentile(c, 5)), float(np.nanmedian(c))
 
 
