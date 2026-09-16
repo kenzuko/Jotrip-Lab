@@ -1,0 +1,127 @@
+{
+  "eligible_for_airfare_pressure": false,
+  "fixed_basket_compatible": false,
+  "interpretation_rule": "Public fare/deal pages are fallback evidence only. They never create Airfare Pressure or fixed-basket trend.",
+  "mode": "PUBLIC_FARE_FALLBACK",
+  "observations": [
+    {
+      "airline": "Vietnam Airlines",
+      "amount": 778181,
+      "currency": "VND",
+      "evidence_class": "DIRECT",
+      "fixed_basket_compatible": false,
+      "market": "Vietnam",
+      "observation_type": "PUBLIC_PAGE_FLOOR",
+      "observed_at": "2026-09-16T07:56:15.086813+07:00",
+      "product_scope": "public one-way economy cached fare page",
+      "route": "SGN-PQC",
+      "source_id": "VNA_SGN_PQC_PUBLIC_FARE"
+    },
+    {
+      "airline": "Vietnam Airlines",
+      "amount": 1063181,
+      "currency": "VND",
+      "evidence_class": "DIRECT",
+      "fixed_basket_compatible": false,
+      "market": "Vietnam",
+      "observation_type": "PUBLIC_PAGE_FLOOR",
+      "observed_at": "2026-09-16T07:56:15.086813+07:00",
+      "product_scope": "public one-way economy cached fare page",
+      "route": "HAN-PQC",
+      "source_id": "VNA_HAN_PQC_PUBLIC_FARE"
+    },
+    {
+      "airline": "AirAsia / marketplace",
+      "amount": 275,
+      "currency": "MYR",
+      "evidence_class": "PROXY",
+      "fixed_basket_compatible": false,
+      "market": "SEA",
+      "observation_type": "PUBLIC_DEAL_FARE",
+      "observed_at": "2026-09-16T07:56:15.086813+07:00",
+      "product_scope": "public one-way/deal fare page",
+      "route": "KUL-PQC",
+      "source_id": "AIRASIA_MOVE_KUL_PQC_PUBLIC_FARE"
+    },
+    {
+      "airline": "AirAsia / marketplace",
+      "amount": 327,
+      "currency": "MYR",
+      "evidence_class": "PROXY",
+      "fixed_basket_compatible": false,
+      "market": "SEA",
+      "observation_type": "PUBLIC_DEAL_FARE",
+      "observed_at": "2026-09-16T07:56:15.086813+07:00",
+      "product_scope": "public one-way/deal fare page",
+      "route": "KUL-PQC",
+      "source_id": "AIRASIA_MOVE_KUL_PQC_PUBLIC_FARE"
+    },
+    {
+      "airline": "AirAsia / marketplace",
+      "amount": 191,
+      "currency": "MYR",
+      "evidence_class": "PROXY",
+      "fixed_basket_compatible": false,
+      "market": "SEA",
+      "observation_type": "PUBLIC_DEAL_FARE",
+      "observed_at": "2026-09-16T07:56:15.086813+07:00",
+      "product_scope": "public one-way/deal fare page",
+      "route": "KUL-PQC",
+      "source_id": "AIRASIA_MOVE_KUL_PQC_PUBLIC_FARE"
+    }
+  ],
+  "observed_at_vn": "2026-09-16T07:56:15.086813+07:00",
+  "schema_version": "airfare-public-fallback-1.1",
+  "source_coverage": 0.75,
+  "sources": [
+    {
+      "evidence_class": "DIRECT",
+      "final_url": "https://www.vietnamairlines.com/en-vn/flights-from-ho-chi-minh-city-to-phu-quoc",
+      "fixed_basket_compatible": false,
+      "http_status": 200,
+      "market": "Vietnam",
+      "parsed_count": 1,
+      "route": "SGN-PQC",
+      "source_id": "VNA_SGN_PQC_PUBLIC_FARE",
+      "state": "OK",
+      "text_length": 10795,
+      "url": "https://www.vietnamairlines.com/en-vn/flights-from-ho-chi-minh-city-to-phu-quoc"
+    },
+    {
+      "evidence_class": "DIRECT",
+      "final_url": "https://www.vietnamairlines.com/en-vn/flights-from-hanoi-to-phu-quoc",
+      "fixed_basket_compatible": false,
+      "http_status": 200,
+      "market": "Vietnam",
+      "parsed_count": 1,
+      "route": "HAN-PQC",
+      "source_id": "VNA_HAN_PQC_PUBLIC_FARE",
+      "state": "OK",
+      "text_length": 8879,
+      "url": "https://www.vietnamairlines.com/en-vn/flights-from-hanoi-to-phu-quoc"
+    },
+    {
+      "error": "HTTPError: 403 Client Error: Forbidden for url: https://www.koreanair.com/flights/en/flights-from-seoul-to-phu-quoc",
+      "evidence_class": "DIRECT",
+      "fixed_basket_compatible": false,
+      "market": "Korea",
+      "route": "ICN-PQC",
+      "source_id": "KOREAN_AIR_ICN_PQC_PUBLIC_FARE",
+      "state": "FETCH_FAILED",
+      "url": "https://www.koreanair.com/flights/en/flights-from-seoul-to-phu-quoc"
+    },
+    {
+      "evidence_class": "PROXY",
+      "final_url": "https://www.airasia.com/flights/from-kuala-lumpur-kul-to-phu-quoc-pqc/",
+      "fixed_basket_compatible": false,
+      "http_status": 200,
+      "market": "SEA",
+      "parsed_count": 3,
+      "route": "KUL-PQC",
+      "source_id": "AIRASIA_MOVE_KUL_PQC_PUBLIC_FARE",
+      "state": "OK",
+      "text_length": 12058,
+      "url": "https://www.airasia.com/flights/from-kuala-lumpur-kul-to-phu-quoc-pqc/"
+    }
+  ]
+}
