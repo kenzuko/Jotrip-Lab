@@ -8,12 +8,13 @@
 <link rel="stylesheet" href="./style.css">
 <link rel="stylesheet" href="./typography.css">
 <link rel="stylesheet" href="./history.css">
+<link rel="stylesheet" href="./ui-fixes.css?v=20260916d">
 </head>
 <body>
 <div class="history-app">
 <header class="topbar">
   <div class="brand">
-    <div class="brand-logo"><img src="./jotrip-logo.png" alt="JoTrip"></div>
+    <a class="brand-home" href="./index.html" aria-label="Về trang chủ JoTrip Airport Live"><div class="brand-logo"><img src="./jotrip-logo-master.png" alt="JoTrip"></div></a>
     <span class="brand-divider"></span>
     <div><h1>Airport History</h1><p>PQC historical flight intelligence</p></div>
   </div>
@@ -24,34 +25,44 @@
 
 <main class="history-shell">
   <section class="history-hero">
-    <div><span class="section-kicker">PQC · HISTORICAL DATA</span><h2>Tìm lại dữ liệu chuyến bay</h2><p>Raw chính thức theo ngày + lịch sử thay đổi theo sự kiện. Không lưu lặp cả snapshot mỗi 5 phút.</p></div>
+    <div><span class="section-kicker">PQC · HISTORICAL DATA</span><h2>Tìm lại dữ liệu chuyến bay</h2><p>Raw chính thức theo ngày + lịch sử thay đổi theo sự kiện. Tra cứu và thống kê theo khoảng ngày.</p></div>
     <div id="archiveHealth" class="archive-pill">ĐANG TẢI</div>
   </section>
 
   <section class="history-card filters-card">
     <div class="history-filters">
-      <label><span>Ngày</span><input id="historyDate" type="date"></label>
+      <label><span>Từ ngày</span><input id="historyFrom" type="date"></label>
+      <label><span>Đến ngày</span><input id="historyTo" type="date"></label>
       <label><span>Chiều bay</span><select id="historyDirection"><option value="all">Tất cả</option><option value="arrival">Chuyến đến</option><option value="departure">Chuyến đi</option></select></label>
+      <label><span>Hãng bay</span><select id="historyAirline"><option value="all">Tất cả hãng</option></select></label>
       <label><span>Khung giờ</span><select id="historyTime"><option value="all">Cả ngày</option><option value="00-06">00:00 - 05:59</option><option value="06-09">06:00 - 08:59</option><option value="09-12">09:00 - 11:59</option><option value="12-15">12:00 - 14:59</option><option value="15-18">15:00 - 17:59</option><option value="18-21">18:00 - 20:59</option><option value="21-24">21:00 - 23:59</option></select></label>
       <label class="history-search"><span>Tìm kiếm</span><input id="historySearch" type="search" placeholder="VJ337, Hà Nội, VietJet, Incheon..."></label>
     </div>
+    <p class="history-range-note">Tối đa 31 ngày mỗi lần tra cứu để giữ trang nhẹ. Thống kê dùng trạng thái/giờ cuối ngày đã lưu từ Sun Airport.</p>
   </section>
 
-  <section class="history-metrics">
+  <section class="history-metrics range-metrics">
     <article><span>Tổng chuyến</span><strong id="hTotal">-</strong></article>
     <article><span>Chuyến đến</span><strong id="hArrivals">-</strong></article>
     <article><span>Chuyến đi</span><strong id="hDepartures">-</strong></article>
-    <article><span>Có thay đổi</span><strong id="hChanged">-</strong></article>
+    <article><span>Đúng giờ*</span><strong id="hOnTime">-</strong></article>
     <article><span>Trễ / đổi giờ</span><strong id="hDelayed">-</strong></article>
+    <article><span>Tỷ lệ đúng giờ*</span><strong id="hOnTimeRate">-</strong></article>
+    <article><span>Trễ trung bình</span><strong id="hAvgDelay">-</strong></article>
+  </section>
+
+  <section class="history-card history-airline-block">
+    <span class="section-kicker">AIRLINE PERFORMANCE</span><h3>Hiệu suất theo hãng trong khoảng đã chọn</h3><p>* “Đúng giờ” nghĩa là không có cờ trễ/đổi giờ trong raw Sun Airport cuối ngày, không phải chuẩn OTP 15 phút.</p>
+    <div class="airline-table-wrap"><table class="airline-table"><thead><tr><th>Hãng</th><th>Tổng</th><th>Đúng giờ</th><th>Trễ</th><th>Tỷ lệ đúng giờ</th><th>Tỷ lệ trễ</th><th>Trễ TB</th></tr></thead><tbody id="historyAirlineBody"></tbody></table></div>
   </section>
 
   <section class="history-card">
-    <div class="history-card-head"><div><span class="section-kicker">FLIGHT ARCHIVE</span><h3 id="historyTitle">Dữ liệu theo ngày</h3></div><span id="historyCount" class="history-count"></span></div>
+    <div class="history-card-head"><div><span class="section-kicker">FLIGHT ARCHIVE</span><h3 id="historyTitle">Dữ liệu theo khoảng ngày</h3></div><span id="historyCount" class="history-count"></span></div>
     <div id="historyError" class="history-error hidden"></div>
     <div id="historyList" class="history-list"></div>
   </section>
 </main>
 </div>
-<script src="./history.js"></script>
+<script src="./history-v2.js?v=20260916d"></script>
 </body>
 </html>
