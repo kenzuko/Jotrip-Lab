@@ -1,6 +1,12 @@
 name: Weather Air Quality
 
 on:
+  push:
+    paths:
+      - "weather/collectors/cams_air_quality.py"
+      - "weather/processing/air_quality.py"
+      - "weather/air-quality.json"
+      - ".github/workflows/weather-air-quality.yml"
   workflow_dispatch:
   workflow_call:
     inputs:
