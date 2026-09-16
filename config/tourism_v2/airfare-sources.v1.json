@@ -1,8 +1,32 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "mode": "PUBLIC_FARE_FALLBACK",
   "fixed_basket_compatible": false,
   "sources": [
+    {
+      "source_id": "VNA_SGN_PQC_PUBLIC_FARE",
+      "route": "SGN-PQC",
+      "market": "Vietnam",
+      "airline": "Vietnam Airlines",
+      "url": "https://www.vietnamairlines.com/en-vn/flights-from-ho-chi-minh-city-to-phu-quoc",
+      "parser": "vietnam_airlines",
+      "native_currency": "VND",
+      "evidence_class": "DIRECT",
+      "product_scope": "public one-way economy cached fare page",
+      "fixed_basket_compatible": false
+    },
+    {
+      "source_id": "VNA_HAN_PQC_PUBLIC_FARE",
+      "route": "HAN-PQC",
+      "market": "Vietnam",
+      "airline": "Vietnam Airlines",
+      "url": "https://www.vietnamairlines.com/en-vn/flights-from-hanoi-to-phu-quoc",
+      "parser": "vietnam_airlines",
+      "native_currency": "VND",
+      "evidence_class": "DIRECT",
+      "product_scope": "public one-way economy cached fare page",
+      "fixed_basket_compatible": false
+    },
     {
       "source_id": "KOREAN_AIR_ICN_PQC_PUBLIC_FARE",
       "route": "ICN-PQC",
