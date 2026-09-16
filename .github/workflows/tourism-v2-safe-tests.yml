@@ -22,6 +22,8 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -36,6 +38,7 @@ jobs:
           if [[ -z "$BASE_SHA" || "$BASE_SHA" == "0000000000000000000000000000000000000000" ]]; then
             exit 0
           fi
+          git cat-file -e "$BASE_SHA^{commit}"
           CHANGED=$(git diff --name-only "$BASE_SHA" "${{ github.sha }}")
           echo "$CHANGED"
           if echo "$CHANGED" | grep -E '^(weather/|weather-dashboard\.|tools/sunairport-collector/|\.github/workflows/weather-lab|\.github/workflows/sunairport-flights\.yml|index\.html$|app\.js$|style\.css$)'; then
