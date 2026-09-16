@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "sources": [
+    {
+      "source_id": "KOREAN_AIR_ICN_PQC_BOOKABLE",
+      "route": "ICN-PQC",
+      "market": "Korea",
+      "airline": "Korean Air",
+      "service_type": "scheduled",
+      "url": "https://www.koreanair.com/flights/en/flights-from-seoul-to-phu-quoc",
+      "evidence_class": "DIRECT",
+      "required_markers": ["ICN", "PQC"],
+      "future_markers": ["Oct 2026", "Nov 2026", "Dec 2026", "Jan 2027", "Feb 2027"],
+      "frequency_weekly": null
+    },
+    {
+      "source_id": "AIRASIA_MOVE_KUL_PQC_BOOKABLE",
+      "route": "KUL-PQC",
+      "market": "SEA",
+      "airline": "AirAsia",
+      "service_type": "scheduled",
+      "url": "https://www.airasia.com/flights/from-kuala-lumpur-kul-to-phu-quoc-pqc/",
+      "evidence_class": "PROXY",
+      "required_markers": ["Kuala Lumpur", "Phu Quoc"],
+      "future_markers": ["November", "October", "December"],
+      "frequency_weekly": null
+    },
+    {
+      "source_id": "PEGAS_PHU_QUOC_WINTER_2026_27",
+      "route": "MULTI-RU-PQC",
+      "market": "Russia_CIS",
+      "airline": "charter program",
+      "service_type": "charter",
+      "url": "https://agency.pegast.ru/News/phu-quoc-2026-2027",
+      "evidence_class": "DIRECT",
+      "required_markers": ["Фукуок"],
+      "future_markers": ["2026", "2027"],
+      "frequency_weekly": null
+    }
+  ],
+  "rules": {
+    "bookable_page_is_supply_signal_not_passenger_demand": true,
+    "unknown_frequency_must_remain_null": true,
+    "composite_score_requires_coverage_gate": true,
+    "failed_fetch_is_not_route_inactive": true
+  }
+}
