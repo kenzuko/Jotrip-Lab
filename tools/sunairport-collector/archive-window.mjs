@@ -1,0 +1,22 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+const API_ROOT='https://sunairport.com/phuquoc/cms/api/flights';
+const SOURCE_URL='https://sunairport.com/phuquoc/vi/chuyen-bay';
+const TZ='Asia/Ho_Chi_Minh';
+const repoRoot=path.resolve(process.cwd(),'../..');
+const root=path.join(repoRoot,'data','sunairport');
+const tracked=['flightNo','airline','airlineName','flightDate','route','cityName','country','arrDep','status','acType','aircraft','scheduledTime','estimatedTime','actualTime','boardingStart','boardingFinish','codeShare','parkingBay','terminal','ckRow','belt','gate','remarks','synced_at','notesVn','notesEn'];
+const clean=(s='')=>String(s??'').replace(/\s+/g,' ').trim();
+
+function nowVN(){const p=new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(new Date());const m=Object.fromEntries(p.map(x=>[x.type,x.value]));return{day:`${m.year}-${m.month}-${m.day}`,iso:`${m.year}-${m.month}-${m.day}T${m.hour}:${m.minute}:${m.second}+07:00`}}
+function addDays(day,n){const d=new Date(`${day}T12:00:00+07:00`);d.setUTCDate(d.getUTCDate()+n);return new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}).format(d)}
+async function fetchBoard(type,day){const u=new URL(API_ROOT);u.searchParams.set('type',type);u.searchParams.set('date',day);u.searchParams.set('limit','100');u.searchParams.set('_t',String(Date.now()));const r=await fetch(u,{headers:{accept:'application/json','user-agent':'JoTrip-Airport-AutoSync/3.1'},cache:'no-store',signal:AbortSignal.timeout(15000)});if(!r.ok)throw new Error(`Sun Airport ${type} ${day}: HTTP ${r.status}`);const b=await r.json();if(!b?.success||!Array.isArray(b?.data))throw new Error(`Sun Airport ${type} ${day}: invalid JSON`);return b.data}
+function rowKey(direction,row){return row?.id!=null?`${direction}|id:${row.id}`:`${direction}|${clean(row?.flightNo).toUpperCase()}|${clean(row?.scheduledTime)}|${clean(row?.cityName).toUpperCase()}`}
+function compact(row){const o={};for(const k of tracked)o[k]=row?.[k]??null;return o}
+function changes(before,after){const o={};for(const k of tracked){const a=before?.[k]??null,b=after?.[k]??null;if(JSON.stringify(a)!==JSON.stringify(b))o[k]={from:a,to:b}}return o}
+async function readJson(file){try{return JSON.parse(await fs.readFile(file,'utf8'))}catch{return null}}
+
+async function archiveDay(day,stamp){const [arrivals,departures]=await Promise.all([fetchBoard('A',day),fetchBoard('D',day)]);if(arrivals.length<1&&departures.length<1)throw new Error(`Empty board ${day}`);const rawDir=path.join(root,'raw');const historyDir=path.join(root,'history',day);const rawPath=path.join(rawDir,`${day}.json`);const eventsPath=path.join(historyDir,'events.jsonl');await fs.mkdir(rawDir,{recursive:true});await fs.mkdir(historyDir,{recursive:true});const prev=await readJson(rawPath);const prevMap=new Map();for(const r of prev?.arrivals||[])prevMap.set(rowKey('arrival',r),r);for(const r of prev?.departures||[])prevMap.set(rowKey('departure',r),r);const events=[];for(const [direction,rows] of [['arrival',arrivals],['departure',departures]])for(const row of rows){const key=rowKey(direction,row),before=prevMap.get(key);if(!before){events.push({at:stamp.iso,type:'FIRST_SEEN',key,direction,flight_number:clean(row.flightNo).toUpperCase(),current:compact(row)});continue}const c=changes(before,row);if(Object.keys(c).length)events.push({at:stamp.iso,type:'CHANGED',key,direction,flight_number:clean(row.flightNo).toUpperCase(),changes:c,current:compact(row)})}if(events.length)await fs.appendFile(eventsPath,events.map(x=>JSON.stringify(x)).join('\n')+'\n');const daily={schema_version:'1.1-daily-raw',date:day,collected_at_vn:stamp.iso,source:{name:'Sun Airport - Phu Quoc International Airport',url:SOURCE_URL,api:API_ROOT,acquisition:'Direct official JSON API via JoTrip AutoSync 3-day window',paid_services_used:false},arrivals,departures};await fs.writeFile(rawPath,JSON.stringify(daily,null,2)+'\n');return{day,arrivals:arrivals.length,departures:departures.length,events:events.length}}
+
+const stamp=nowVN();const days=[addDays(stamp.day,-1),addDays(stamp.day,1)];const results=[];for(const day of days)results.push(await archiveDay(day,stamp));console.log(JSON.stringify({archive_window:'yesterday+tomorrow',collected_at_vn:stamp.iso,results}));
