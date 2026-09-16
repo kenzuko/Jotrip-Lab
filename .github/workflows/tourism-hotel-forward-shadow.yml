@@ -30,11 +30,11 @@ jobs:
         run: |
           python -m pip install --quiet playwright
           python -m playwright install --with-deps chromium
-      - name: Shadow scan D+30 on three hotels
+      - name: Shadow scan D+30 using visible logged-out Booking UI
         run: |
-          python -m tourism_intelligence_v2.collectors.hotel_forward.collector \
+          python -m tourism_intelligence_v2.collectors.hotel_forward.collector_ui \
             --horizon 30 \
-            --hotel-limit 3 \
+            --hotel-limit 1 \
             --output /tmp/hotel_forward_shadow
       - name: Enforce shadow safety
         run: |
