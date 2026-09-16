@@ -26,7 +26,7 @@
     <div class="source-strip">
       <span class="live-pill"><i></i> LIVE</span>
       <span id="healthPill" class="health-pill loading">ĐANG TẢI</span>
-      <span class="source-label">Sun Airport - Phú Quốc</span>
+      <span class="source-label">Sun Airport · JoTrip Live API</span>
       <span id="updatedAt" class="updated-at">Đang đồng bộ dữ liệu...</span>
     </div>
     <div id="errorBox" class="error-box hidden"></div>
@@ -63,8 +63,8 @@
     <section class="side-card live-only"><div class="side-head"><h3>Next Arrivals</h3><span class="muted">PQC</span></div><div id="nextArrivalsList" class="arrival-list"></div></section>
     <section class="side-card">
       <div class="side-head"><h3>Data Health</h3><span id="qaBadge" class="qa-badge">...</span></div>
-      <div class="health-summary"><div id="healthIcon" class="health-icon">⋯</div><div><strong id="healthTitle">Đang kiểm tra</strong><p id="healthDescription">Đang kiểm tra JoTrip AutoSync và độ mới của dữ liệu.</p></div></div>
-      <dl class="health-meta"><div><dt>Nguồn</dt><dd>Sun Airport / PQC</dd></div><div><dt>Đồng bộ</dt><dd>JoTrip AutoSync</dd></div><div><dt>QA</dt><dd id="qaText">-</dd></div><div><dt>Tuổi dữ liệu</dt><dd id="dataAge">-</dd></div></dl>
+      <div class="health-summary"><div id="healthIcon" class="health-icon">⋯</div><div><strong id="healthTitle">Đang kiểm tra</strong><p id="healthDescription">Đang kiểm tra JoTrip Live API và độ mới của dữ liệu.</p></div></div>
+      <dl class="health-meta"><div><dt>Nguồn</dt><dd>Sun Airport / PQC</dd></div><div><dt>Live</dt><dd>JoTrip Live API</dd></div><div><dt>Lưu trữ</dt><dd>JoTrip AutoSync</dd></div><div><dt>QA</dt><dd id="qaText">-</dd></div><div><dt>Tuổi dữ liệu</dt><dd id="dataAge">-</dd></div></dl>
     </section>
     <section class="side-card analytics-only hidden"><div class="side-head"><h3>Trạng thái bảng bay</h3></div><div id="statusSummary" class="status-summary"></div></section>
   </aside>
@@ -74,8 +74,8 @@
 </div>
 <div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
 <aside id="flightDrawer" class="flight-drawer hidden" aria-hidden="true"><div class="drawer-grab"></div><button id="drawerClose" class="drawer-close">×</button><div id="drawerContent"></div></aside>
-<script src="./live-config.js"></script>
-<script src="./live-source.js"></script>
-<script src="./app.js"></script>
+<script src="./live-config.js?v=20260916c"></script>
+<script src="./live-source.js?v=20260916c"></script>
+<script src="./app.js?v=20260916c"></script>
 </body>
 </html>
