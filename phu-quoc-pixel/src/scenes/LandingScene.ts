@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { SceneKeys } from '../app/scene-keys';
+import { flowController } from '../core/navigation/FlowController';
+import { createButton } from '../ui/createButton';
 
 export class LandingScene extends Phaser.Scene {
   constructor() {
@@ -8,7 +10,6 @@ export class LandingScene extends Phaser.Scene {
 
   create(): void {
     const { width, height } = this.scale;
-
     this.cameras.main.setBackgroundColor('#05263a');
 
     this.add
@@ -29,20 +30,16 @@ export class LandingScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    const enter = this.add
-      .text(width / 2, height * 0.66, 'ENTER THE ISLAND', {
+    this.add
+      .text(width / 2, height * 0.56, 'EXPLORE · DISCOVER · PLAY', {
         fontFamily: 'monospace',
-        fontSize: '22px',
-        fontStyle: 'bold',
-        color: '#05263a',
-        backgroundColor: '#fcbd22',
-        padding: { x: 24, y: 14 }
+        fontSize: '14px',
+        color: '#9ec9d9'
       })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
+      .setOrigin(0.5);
 
-    enter.on('pointerdown', () => {
-      enter.setText('FOUNDATION READY');
+    createButton(this, width / 2, height * 0.69, 'ENTER THE ISLAND', () => {
+      flowController.go(this, SceneKeys.Airport);
     });
   }
 }
