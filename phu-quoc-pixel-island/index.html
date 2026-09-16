@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#05263a">
+<title>PHU QUOC: PIXEL ISLAND</title>
+<link rel="stylesheet" href="./style.css?v=gh-stage-1">
+<script src="./runtime/asset-map.js?v=gh-stage-1"></script>
+<script src="./runtime/asset-bg.js?v=gh-stage-1"></script>
+<script src="./runtime/asset-rides.js?v=gh-stage-1"></script>
+<script src="./runtime/asset-props.js?v=gh-stage-1"></script>
+<script src="./asset-bridge.js?v=gh-stage-1"></script>
+</head>
+<body>
+<div id="app">
+  <section id="landing" class="screen active landing-screen">
+    <div class="ocean-grid"></div>
+    <div class="cloud cloud-a"></div><div class="cloud cloud-b"></div>
+    <img id="landingPlane" class="plane plane-one" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="">
+    <div class="brand-lockup">
+      <div class="eyebrow">WELCOME TO</div>
+      <h1>PHU QUOC:<br><span>PIXEL ISLAND</span></h1>
+      <div class="micro">EXPLORE · DISCOVER · PLAY</div>
+    </div>
+    <img id="landingIsland" class="landing-island" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Phu Quoc island">
+    <div class="landing-cta">
+      <p>One island. Many bad decisions.</p>
+      <button class="btn primary" data-go="airport">ENTER THE ISLAND</button>
+      <small>Play free · No download required</small>
+    </div>
+  </section>
+
+  <section id="airport" class="screen airport-screen">
+    <div class="airport-photo"></div>
+    <div class="airport-overlay"></div>
+    <div class="scene-title"><div class="eyebrow">PHU QUOC INTERNATIONAL AIRPORT</div><h2>YOU MADE IT.</h2></div>
+    <img id="kenWave" class="ken ken-wave" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Ken">
+    <div class="dialog-card">
+      <div class="speaker">KEN · LOCAL GUIDE</div>
+      <p>Welcome to Phu Quoc. Where would you like to go?</p>
+      <button class="btn primary" data-go="characters">LET'S GO</button>
+    </div>
+  </section>
+
+  <section id="characters" class="screen character-screen">
+    <div class="section-heading">
+      <div class="eyebrow">CHARACTER SELECT</div>
+      <h2>WHO ARE YOU TODAY?</h2>
+      <p>Choose your island character.</p>
+    </div>
+    <div id="characterGrid" class="character-grid"></div>
+    <div class="character-footer">
+      <label for="playerName">WHAT SHOULD WE CALL YOU?</label>
+      <input id="playerName" maxlength="18" value="Traveler" autocomplete="off">
+      <button id="openMapBtn" class="btn primary">OPEN THE MAP</button>
+    </div>
+  </section>
+
+  <section id="map" class="screen map-screen">
+    <div class="map-water"></div>
+    <div class="map-heading">
+      <div class="eyebrow">PHU QUOC ISLAND MAP</div>
+      <h2 id="mapHello">WHERE TO NEXT?</h2>
+      <div class="meta"><span>MAP PIECES <b>0/9</b></span><span>JO <b id="mapJo">0</b></span></div>
+    </div>
+    <div class="island-map-wrap">
+      <img id="mapIsland" class="map-island" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Phu Quoc island">
+      <button class="map-pin active-pin" style="left:31%;top:72%" id="sunsetPin"><span>★</span><b>SUNSET TOWN</b><small>PLAY</small></button>
+      <button class="map-pin locked" style="left:49%;top:91%"><span>🔒</span><b>HON THOM</b></button>
+      <button class="map-pin locked" style="left:63%;top:67%"><span>🔒</span><b>BAI SAO</b></button>
+      <button class="map-pin locked" style="left:39%;top:49%"><span>🔒</span><b>NIGHT MARKET</b></button>
+      <button class="map-pin locked" style="left:35%;top:24%"><span>🔒</span><b>GRAND WORLD</b></button>
+      <button class="map-pin locked" style="left:44%;top:17%"><span>🔒</span><b>SAFARI</b></button>
+    </div>
+    <button class="map-back" data-go="characters">← CHARACTER</button>
+  </section>
+
+  <section id="game" class="screen game-screen">
+    <div class="game-ambient"></div>
+    <div class="game-canvas-wrap"><canvas id="gameCanvas" width="540" height="960"></canvas></div>
+    <div id="tutorial" class="game-modal active">
+      <div class="modal-card">
+        <div class="eyebrow green">FAST START · FRIENDLY FIRST</div>
+        <h2>NO BRAKES</h2>
+        <p>The scooter moves fast.<br><b>Tap once to hop.</b></p>
+        <small>First 2 obstacles teach the rhythm. They cannot end your run.</small>
+        <button id="startRideBtn" class="btn primary">START RIDE</button>
+        <button class="btn ghost" id="backMapFromTutorial">BACK TO MAP</button>
+      </div>
+    </div>
+    <div id="gameOver" class="game-modal">
+      <div class="modal-card">
+        <div class="eyebrow">SUNSET TOWN</div>
+        <h2>GAME OVER</h2>
+        <p id="gameOverText"></p>
+        <button id="retryBtn" class="btn primary">RETRY</button>
+        <button class="btn ghost" id="backMapBtn">BACK TO MAP</button>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="./game.js?v=gh-stage-1"></script>
+<div id="buildStamp" style="position:fixed;right:8px;bottom:max(8px,env(safe-area-inset-bottom));z-index:99999;background:#00131dcc;color:#8ff3a6;border:1px solid #8ff3a655;padding:5px 7px;font:700 9px ui-monospace,monospace;letter-spacing:.08em;pointer-events:none">GITHUB STAGING · CLEAN ENGINE</div>
+</body>
+</html>
