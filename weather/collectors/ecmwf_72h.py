@@ -14,14 +14,9 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from weather.collectors.live_smoke import _utcnow
+from weather.points import POINTS
 from weather.processing.units import add_speed_display
 
-POINTS = {
-    "duong_dong": (10.2172, 103.9593),
-    "an_thoi": (10.0191, 104.0150),
-    "ganh_dau": (10.3759, 103.9000),
-    "rach_gia": (10.00677, 105.07845),
-}
 SHORT_STEPS = list(range(0, 73, 3))
 MEDIUM_STEPS = list(range(0, 145, 3)) + list(range(150, 241, 6))
 STEPS = SHORT_STEPS  # backward compatibility for existing callers
@@ -102,11 +97,6 @@ def _collect_gust(client, work: Path, run_time: datetime, steps: list[int], pref
 
 def _collect_wave_max(client, work: Path, run_time: datetime, steps: list[int], prefix: str) -> tuple[list[dict], str | None, str | None]:
     """Keep the direct-Hmax slot explicit without querying an unpublished Open Data field."""
-    # Maximum individual wave height (hmax) exists in broader ECMWF catalogues,
-    # but it is not part of the current free ECMWF Open Data wave parameter set.
-    # Querying param=hmax therefore produces a catalog ValueError every cycle.
-    # Keep the interface for future availability while using the documented
-    # Rayleigh 20-minute proxy from Hs in the dashboard today.
     return [], None, (
         "ECMWF Open Data hiện không phát hành trực tiếp Hmax; "
         "Weather Lab dùng proxy Rayleigh 20 phút từ Hs và ghi rõ phương pháp."
