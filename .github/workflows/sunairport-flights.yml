@@ -48,7 +48,7 @@ jobs:
         working-directory: tools/sunairport-collector
         run: node collect.mjs
 
-      - name: Normalize, archive events and finalize live data
+      - name: Normalize and archive 3-day board window
         id: normalize
         if: steps.collect.outcome == 'success'
         continue-on-error: true
@@ -56,6 +56,7 @@ jobs:
         run: |
           node normalize.mjs
           node compat.mjs
+          node archive-window.mjs
 
       - name: Record collection failure health
         if: steps.collect.outcome == 'failure'
