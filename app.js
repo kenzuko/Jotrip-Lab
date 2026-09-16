@@ -2,6 +2,7 @@ const DATA_BASE='https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-sunai
 const AUTO_REFRESH_MS=60*1000;
 const state={latest:null,health:null,direction:'arrival',filter:'all',query:'',limit:8,mode:'live',lastFetchAt:0,loading:false};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const typographyLink=document.createElement('link');typographyLink.rel='stylesheet';typographyLink.href='./typography.css?v=20260916a';document.head.appendChild(typographyLink);
 
 function vnNowParts(date=new Date()){
   const p=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit',hour12:false,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);
