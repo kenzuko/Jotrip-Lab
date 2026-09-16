@@ -6,20 +6,20 @@
 <meta name="theme-color" content="#f7fbfd">
 <title>JoTrip Airport Live</title>
 <link rel="stylesheet" href="./style.css">
-<link rel="stylesheet" href="./ui-fixes.css?v=20260916g">
-<link rel="stylesheet" href="./board-days.css?v=20260916g">
+<link rel="stylesheet" href="./ui-fixes.css?v=20260916h">
+<link rel="stylesheet" href="./board-days.css?v=20260916h">
 </head>
 <body>
 <div id="app" class="app">
 <header class="topbar">
   <div class="brand">
-    <a class="brand-home" href="./index.html" aria-label="Về trang chủ JoTrip Airport Live"><div class="brand-logo"><img src="./jotrip-logo.png?v=20260916g" alt="JoTrip"></div></a>
+    <a class="brand-home" href="./index.html" aria-label="Về trang chủ JoTrip Airport Live"><div class="brand-logo"><img src="./jotrip-logo.webp?v=20260916h" alt="JoTrip"></div></a>
     <span class="brand-divider"></span>
     <div><h1>Airport Live</h1><p>PQC operations dashboard</p></div>
   </div>
   <div class="top-actions">
     <div class="mode-switch"><button class="active" data-mode="live">LIVE</button><button onclick="location.href='./history.html'">HISTORY</button><button data-mode="analytics">ANALYTICS</button></div>
-    <button class="icon-button" id="refreshBtn" title="Làm mới">↻</button>
+    <button class="icon-button" id="refreshBtn" title="Refresh">↻</button>
   </div>
 </header>
 
@@ -27,8 +27,8 @@
   <section class="content">
     <div class="source-strip">
       <span class="live-pill"><i></i> LIVE</span>
-      <span id="healthPill" class="health-pill loading">ĐANG TẢI</span>
-      <span class="source-label">JoTrip Live · Tự động cập nhật</span>
+      <span id="healthPill" class="health-pill loading">LOADING</span>
+      <span class="source-label">JoTrip Live · Auto refresh</span>
       <span id="updatedAt" class="updated-at">Đang đồng bộ dữ liệu...</span>
     </div>
     <div id="errorBox" class="error-box hidden"></div>
@@ -36,7 +36,7 @@
     <section class="hero live-only">
       <div class="hero-copy"><div class="eyebrow">PQC · PHU QUOC INTERNATIONAL AIRPORT</div><h2>Hôm nay tại Phú Quốc</h2><p>3 giây để biết sân bay đang ra sao.</p></div>
       <div class="hero-stats"><article><strong id="totalFlights">-</strong><span>Tổng chuyến</span></article><article><strong id="arrivalsCount">-</strong><span>Chuyến đến</span></article><article><strong id="departuresCount">-</strong><span>Chuyến đi</span></article><article><strong id="internationalCount">-</strong><span>Quốc tế đến</span></article></div>
-      <div id="opsState" class="ops-state">ĐANG ĐÁNH GIÁ</div><div class="hero-plane">✈</div>
+      <div id="opsState" class="ops-state">CHECKING</div><div class="hero-plane">✈</div>
     </section>
 
     <section class="card live-only">
@@ -53,7 +53,7 @@
     </section>
 
     <section class="card analytics-only hidden">
-      <div class="card-head"><div><span class="section-kicker">ANALYTICS</span><h3>Cơ cấu chuyến bay</h3></div><span class="muted">Dữ liệu đang ghi nhận</span></div>
+      <div class="card-head"><div><span class="section-kicker">ANALYTICS</span><h3>Cơ cấu chuyến bay</h3></div><span class="muted">Dữ liệu hiện tại</span></div>
       <div class="metric-grid analytics-metrics"><article><span>Quốc tế đến</span><strong id="aIntlArr">-</strong><small id="aIntlArrPct"></small></article><article><span>Nội địa đến</span><strong id="aDomArr">-</strong><small id="aDomArrPct"></small></article><article><span>Quốc tế đi</span><strong id="aIntlDep">-</strong><small id="aIntlDepPct"></small></article><article><span>Nội địa đi</span><strong id="aDomDep">-</strong><small id="aDomDepPct"></small></article></div>
       <div class="analytics-block"><h4>Top điểm đi / đến</h4><div id="routeBars" class="route-bars"></div></div>
       <div class="analytics-block"><h4>Phân bố theo khung giờ</h4><div id="timeBankBars" class="time-bank"></div></div>
@@ -66,22 +66,22 @@
     <section class="side-card live-only"><div class="side-head"><h3>Next Arrivals</h3><span class="muted">PQC</span></div><div id="nextArrivalsList" class="arrival-list"></div></section>
     <section class="side-card">
       <div class="side-head"><h3>Data Health</h3><span id="qaBadge" class="qa-badge">...</span></div>
-      <div class="health-summary"><div id="healthIcon" class="health-icon">⋯</div><div><strong id="healthTitle">Đang kiểm tra</strong><p id="healthDescription">Đang kiểm tra luồng JoTrip Live và độ mới của dữ liệu.</p></div></div>
-      <dl class="health-meta"><div><dt>Luồng dữ liệu</dt><dd>JoTrip Live</dd></div><div><dt>Lưu trữ</dt><dd>JoTrip AutoSync</dd></div><div><dt>QA</dt><dd id="qaText">-</dd></div><div><dt>Tuổi dữ liệu</dt><dd id="dataAge">-</dd></div></dl>
+      <div class="health-summary"><div id="healthIcon" class="health-icon">⋯</div><div><strong id="healthTitle">CHECKING</strong><p id="healthDescription">Đang kiểm tra luồng JoTrip Live và độ mới của dữ liệu.</p></div></div>
+      <dl class="health-meta"><div><dt>Live</dt><dd>JoTrip Live</dd></div><div><dt>Archive</dt><dd>JoTrip AutoSync</dd></div><div><dt>QA</dt><dd id="qaText">-</dd></div><div><dt>Data age</dt><dd id="dataAge">-</dd></div></dl>
     </section>
-    <section class="side-card analytics-only hidden"><div class="side-head"><h3>Trạng thái bảng bay</h3></div><div id="statusSummary" class="status-summary"></div></section>
+    <section class="side-card analytics-only hidden"><div class="side-head"><h3>Flight Status</h3></div><div id="statusSummary" class="status-summary"></div></section>
   </aside>
 </main>
 
-<nav class="mobile-nav"><button class="active" data-mobile-mode="live"><span>⌂</span>Live</button><button id="mobileFlights"><span>✈</span>Flights</button><button onclick="location.href='./history.html'"><span>◷</span>History</button><button data-mobile-mode="analytics"><span>▥</span>Analytics</button><button id="mobileRefresh"><span>↻</span>Làm mới</button></nav>
+<nav class="mobile-nav"><button class="active" data-mobile-mode="live"><span>⌂</span>Live</button><button id="mobileFlights"><span>✈</span>Flights</button><button onclick="location.href='./history.html'"><span>◷</span>History</button><button data-mobile-mode="analytics"><span>▥</span>Analytics</button><button id="mobileRefresh"><span>↻</span>Refresh</button></nav>
 </div>
 <div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
 <aside id="flightDrawer" class="flight-drawer hidden" aria-hidden="true"><div class="drawer-grab"></div><button id="drawerClose" class="drawer-close">×</button><div id="drawerContent"></div></aside>
-<script src="./live-config.js?v=20260916g"></script>
-<script src="./live-source.js?v=20260916g"></script>
-<script src="./app.js?v=20260916g"></script>
-<script src="./board-days.js?v=20260916g"></script>
-<script src="./app-copy.js?v=20260916g"></script>
-<script src="./analytics-v3.js?v=20260916g"></script>
+<script src="./live-config.js?v=20260916h"></script>
+<script src="./live-source.js?v=20260916h"></script>
+<script src="./app.js?v=20260916h"></script>
+<script src="./board-days.js?v=20260916h"></script>
+<script src="./app-copy.js?v=20260916h"></script>
+<script src="./analytics-v3.js?v=20260916h"></script>
 </body>
 </html>
