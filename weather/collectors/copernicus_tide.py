@@ -14,21 +14,12 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from weather.collectors.copernicus import configuration_status, subset
+from weather.points import POINT_NAMES, POINTS
 
 DATASET = "cmems_mod_glo_phy_anfc_merged-sl_PT1H-i"
 VARIABLE = "ocean_tide"
 BBOX = (9.70, 103.55, 10.55, 105.30)
 VN = ZoneInfo("Asia/Ho_Chi_Minh")
-POINTS = {
-    "duong_dong": (10.2172, 103.9593),
-    "an_thoi": (10.0191, 104.0150),
-    "ganh_dau": (10.3759, 103.9000),
-    "rach_gia": (10.00677, 105.07845),
-}
-NAMES = {
-    "duong_dong": "Dương Đông", "an_thoi": "An Thới",
-    "ganh_dau": "Gành Dầu", "rach_gia": "Rạch Giá",
-}
 
 
 def _coord_name(data, options: tuple[str, ...]) -> str:
@@ -145,7 +136,7 @@ def run(output: Path | None = None) -> dict:
                     points = {}
                     for key, (lat, lon) in POINTS.items():
                         rows, sampled = _series(ds[VARIABLE], lat, lon)
-                        points[key] = {"name": NAMES[key], **sampled, **_summarize(rows, now)}
+                        points[key] = {"name": POINT_NAMES[key], **sampled, **_summarize(rows, now)}
                 ready = all(p.get("status") == "POINT_NUMERIC_READY" for p in points.values())
                 result = {
                     "status": "POINT_NUMERIC_READY" if ready else "PARTIAL_OR_FAILED",
