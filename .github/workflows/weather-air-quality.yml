@@ -43,6 +43,20 @@ jobs:
           python-version: "3.12"
       - name: Install current ADS PAT client and NetCDF readers
         run: python -m pip install --quiet "ecmwf-datastores-client==0.5.1" xarray netCDF4 numpy
+      - name: Normalize ADS secret
+        shell: bash
+        run: |
+          RAW="$ADS_API_KEY"
+          CLEAN=$(printf '%s\n' "$RAW" | sed -nE 's/^[[:space:]]*key:[[:space:]]*["'\'']?([^"'\'']+)["'\'']?[[:space:]]*$/\1/p' | head -n 1)
+          if [[ -z "$CLEAN" ]]; then
+            CLEAN=$(printf '%s\n' "$RAW" | sed '/^[[:space:]]*url:/d;/^[[:space:]]*$/d' | head -n 1 | xargs)
+          fi
+          if [[ -z "$CLEAN" ]]; then
+            echo "ADS_API_KEY is empty after normalization" >&2
+            exit 1
+          fi
+          echo "ADS_API_KEY=$CLEAN" >> "$GITHUB_ENV"
+          echo "ADS token normalized without exposing its value"
       - name: Collect CAMS PM2.5 and PM10
         run: python -m weather.collectors.cams_air_quality --output /tmp/air-quality.json
       - name: Validate environmental layer
