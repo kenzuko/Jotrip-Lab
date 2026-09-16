@@ -26,7 +26,7 @@ function localize(){
   const gaps=document.getElementById('gaps');replaceText(gaps,[['Không có critical gap','Không có thiếu hụt dữ liệu nghiêm trọng'],['Cycle đủ điều kiện','Chu kỳ dữ liệu đủ điều kiện'],['Data gap','Thiếu dữ liệu']]);
   const footer=document.querySelector('footer span:first-child');setText(footer,'JoTrip Weather Lab · D0-D3 chi tiết · D4-D7 trung hạn · D8-D10 chỉ xem xu hướng');
 }
-function installLocalization(){let queued=false;const run=()=>{queued=false;localize()};const observer=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(run)});observer.observe(document.body,{childList:true,subtree:true,characterData:true});localize()}
+function installLocalization(){localize();document.querySelectorAll('.point-tabs button,.horizon-tabs button').forEach(btn=>btn.addEventListener('click',()=>setTimeout(localize,0)));setInterval(localize,60000)}
 function install(){styles();installLocation();installRadar();installLocalization()}
 window.WeatherLabPolish={install,updateLocation,localize};
 })();
