@@ -1,0 +1,128 @@
+name: Weather Lab - GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/github-pages-weather.yml"
+  schedule:
+    - cron: "17,47 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: weather-pages
+  cancel-in-progress: true
+
+env:
+  WEATHER_REF: feat/weather-lab-data-engine-v1
+  DATA_REF: data-weather
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout Weather Lab source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.WEATHER_REF }}
+          path: source
+          fetch-depth: 1
+
+      - name: Checkout compact live data
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DATA_REF }}
+          path: live-data
+          fetch-depth: 1
+
+      - name: Build static Pages bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _site
+          mkdir -p _site/weather _site/data
+
+          cp source/weather.html _site/index.html
+          cp source/weather.html _site/weather.html
+          cp source/weather-history.html _site/
+          cp source/weather-history.css _site/
+          cp source/weather-history.js _site/
+          cp source/weather-dashboard*.js _site/
+          cp source/weather-dashboard*.css _site/
+          cp source/weather-app-icon.svg _site/
+          cp source/weather-manifest.webmanifest _site/
+          cp source/weather-sw.js _site/
+
+          for f in dashboard-data.json air-quality.json tide.json nowcast.json; do
+            if [ -f "source/weather/$f" ]; then
+              cp "source/weather/$f" "_site/weather/$f"
+            fi
+          done
+
+          if [ -d live-data/data/weather-aqi ]; then
+            cp -a live-data/data/weather-aqi _site/data/
+          fi
+          if [ -d live-data/data/weather-nowcast ]; then
+            cp -a live-data/data/weather-nowcast _site/data/
+          fi
+
+          touch _site/.nojekyll
+
+      - name: Make Weather Lab project-path safe
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          root = Path('_site')
+          base = f"/{os.environ['REPO_NAME']}/"
+          text_ext = {'.html', '.js', '.css', '.webmanifest'}
+
+          for path in root.rglob('*'):
+              if not path.is_file() or path.suffix not in text_ext:
+                  continue
+              text = path.read_text(encoding='utf-8')
+              original = text
+
+              # Only rewrite same-origin Weather Lab paths. External URLs are untouched.
+              for quote in ('"', "'"):
+                  text = text.replace(f'{quote}/weather-', f'{quote}{base}weather-')
+                  text = text.replace(f'{quote}/weather/', f'{quote}{base}weather/')
+                  text = text.replace(f'{quote}/weather.html', f'{quote}{base}weather.html')
+
+              # A service worker under /<repo>/ cannot claim the github.io root scope.
+              text = text.replace('{scope:"/"}', f'{{scope:"{base}"}}')
+              text = text.replace("{scope:'/' }", f"{{scope:'{base}'}}")
+
+              if text != original:
+                  path.write_text(text, encoding='utf-8')
+
+          # Pages root opens Weather Lab directly.
+          index = root / 'index.html'
+          assert index.exists()
+          assert f'{base}weather-dashboard.css' in index.read_text(encoding='utf-8')
+          PY
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
