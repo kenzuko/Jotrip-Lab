@@ -1,0 +1,14 @@
+{
+  "schema_version":"1.0",
+  "timezone":"Asia/Ho_Chi_Minh",
+  "categories":["fast_boat","ferry","cano"],
+  "source_ladder":["PERMIT_PORT","OPERATOR","FIELD","OFFICIAL_NOTICE","UNKNOWN"],
+  "rules":{
+    "no_permit_or_departure_slip_means_no_departure":true,
+    "permit_or_departure_slip_is_direct_evidence":true,
+    "one_normal_fast_boat_can_confirm_category_absent_specific_exception":true,
+    "one_normal_ferry_can_confirm_category_absent_specific_exception":true,
+    "never_cross_infer_between_categories":true,
+    "cano_is_independent":true
+  }
+}

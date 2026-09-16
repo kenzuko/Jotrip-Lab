@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "sources": [
+    {"source_id":"SUN_AIRPORT_D0","module":"aviation","evidence_class":"DIRECT","criticality":"CORE","ttl_minutes":30,"expected_schedule":"D0 rolling","fallbacks":["AIRLINE_OFFICIAL_BOARD","FLIGHT_TRACKER"],"dependency_cap":100,"paid":false},
+    {"source_id":"WEATHER_LAB_CANONICAL","module":"weather_marine","evidence_class":"DIRECT","criticality":"CORE","ttl_minutes":90,"expected_schedule":"cycle-aware","fallbacks":["ECMWF_DIRECT","GEFS_DIRECT","ICON_DIRECT","COPERNICUS_MARINE_DIRECT"],"dependency_cap":100,"paid":false},
+    {"source_id":"MARINE_PERMIT_KGG","module":"marine_ops","evidence_class":"DIRECT","criticality":"CORE","ttl_minutes":60,"expected_schedule":"trip day rolling","fallbacks":["OPERATOR_CONFIRMATION","FIELD_CONFIRMATION","OFFICIAL_NOTICE"],"dependency_cap":59,"paid":false},
+    {"source_id":"THANH_THOI_OPERATOR","module":"marine_ops","evidence_class":"DIRECT","criticality":"CORE","ttl_minutes":60,"expected_schedule":"trip day rolling","fallbacks":["FIELD_CONFIRMATION","OFFICIAL_NOTICE"],"dependency_cap":59,"paid":false},
+    {"source_id":"BOOKING_FIXED_BASKET","module":"hotel_forward","evidence_class":"DIRECT","criticality":"CORE","ttl_minutes":1440,"expected_schedule":"daily/adaptive by lead time","fallbacks":["HOTEL_DIRECT","COMPARABLE_OTA"],"dependency_cap":59,"paid":false},
+    {"source_id":"AIRFARE_FIXED_BASKET","module":"airfare","evidence_class":"DIRECT","criticality":"CORE","ttl_minutes":720,"expected_schedule":"daily","fallbacks":["AIRLINE_DIRECT_ALTERNATE"],"dependency_cap":59,"paid":false},
+    {"source_id":"FORWARD_AIRLIFT_DIRECT","module":"forward_airlift","evidence_class":"DIRECT","criticality":"CORE","ttl_minutes":10080,"expected_schedule":"weekly plus change detection","fallbacks":["TOUR_OPERATOR_DIRECT","SCHEDULE_PROXY"],"dependency_cap":59,"paid":false},
+    {"source_id":"SOCIAL_INTENT_MATRIX","module":"social_intent","evidence_class":"LEADING","criticality":"SUPPORTING","ttl_minutes":10080,"expected_schedule":"daily/weekly","fallbacks":[],"dependency_cap":100,"paid":false},
+    {"source_id":"JOTRIP_INTERNAL","module":"jotrip_internal","evidence_class":"DIRECT","criticality":"CORE","ttl_minutes":1440,"expected_schedule":"daily","fallbacks":[],"dependency_cap":100,"paid":false}
+  ]
+}
