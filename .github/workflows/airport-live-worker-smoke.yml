@@ -1,0 +1,26 @@
+name: Airport Live Worker smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'cloudflare/airport-live-worker.mjs'
+      - 'server/airport-live-core.mjs'
+      - 'wrangler.airport-live.jsonc'
+      - '.github/workflows/airport-live-worker-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Bundle Worker without deploying
+        run: npx --yes wrangler@latest deploy --dry-run --config wrangler.airport-live.jsonc --outdir /tmp/jotrip-worker
