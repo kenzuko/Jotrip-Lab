@@ -13,7 +13,7 @@ from tourism_intelligence_v2.storage import write_json_atomic
 
 VN = ZoneInfo("Asia/Ho_Chi_Minh")
 PORT_CLEARANCE_URL = "https://hanghai.moc.gov.vn/giay-phep-roi-cang"
-THANH_THOI_URL = "https://www.thanhthoi.vn/"
+THANH_THOI_URL = "https://thanhthoi.vn/"
 FAST_PATTERNS = ("SUPERDONG", "PHU QUOC EXPRESS", "PHÚ QUỐC EXPRESS")
 FERRY_PATTERNS = ("THRIVING", "BINH AN", "BÌNH AN")
 KGG_PORT_PATTERNS = ("KGIANG", "RACH GIA", "RẠCH GIÁ", "HA TIEN", "HÀ TIÊN", "BAI VONG", "BÃI VÒNG", "THACH THOI", "THẠNH THỚI")
@@ -177,7 +177,7 @@ def collect(target_date: str | None = None, output_dir: str | Path = "out/marine
     manifest = {
         "schema_version": "1.0",
         "module_schema_version": "marine-ops-1.0",
-        "collector_version": "marine-ops-web-0.1.0",
+        "collector_version": "marine-ops-web-0.1.1",
         "normalization_version": "marine-ops-rules-0.1.0",
         "source_registry_version": "1.0",
         "paid_services_used": False,
