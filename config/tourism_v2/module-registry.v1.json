@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "modules": [
+    {"module_id":"source_registry","automation_state":"LIVE","production_write":false,"notes":"Versioned TTL, evidence class, fallback and dependency caps."},
+    {"module_id":"marine_ops","automation_state":"LIVE_TESTED_AWAITING_MAIN","production_write":true,"data_branch":"data-marine-ops","notes":"Port clearance direct source + Thạnh Thới operator fallback. Cano remains FIELD_REQUIRED."},
+    {"module_id":"hotel_forward","automation_state":"PROCESSOR_ONLY","production_write":false,"notes":"Basket and coverage/rate processor exist; Booking adapter is not production-ready."},
+    {"module_id":"airfare","automation_state":"PROCESSOR_ONLY","production_write":false,"notes":"Route basket and comparability processor exist; airline adapters are not production-ready."},
+    {"module_id":"forward_airlift","automation_state":"PROCESSOR_ONLY","production_write":false,"notes":"Contract and market aggregation exist; direct schedule collectors are not yet automated."},
+    {"module_id":"social_intent","automation_state":"SCHEMA_ONLY","production_write":false,"notes":"Multimarket/language/platform evidence schema only."},
+    {"module_id":"jotrip_internal","automation_state":"SCHEMA_ONLY","production_write":false,"notes":"Internal lead schema only; no JoTrip operational data connected."}
+  ]
+}
