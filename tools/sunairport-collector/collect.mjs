@@ -1,8 +1,8 @@
-import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const url = 'https://sunairport.com/phuquoc/vi/chuyen-bay';
+const API_ROOT = 'https://sunairport.com/phuquoc/cms/api/flights';
+const SOURCE_URL = 'https://sunairport.com/phuquoc/vi/chuyen-bay';
 const tz = 'Asia/Ho_Chi_Minh';
 const repoRoot = path.resolve(process.cwd(), '../..');
 const workDir = path.join(repoRoot, 'data', 'sunairport', '_working');
@@ -20,133 +20,128 @@ function stampVN() {
   return {
     day: `${m.year}-${m.month}-${m.day}`,
     hhmm: `${m.hour}${m.minute}`,
+    hm: `${m.hour}:${m.minute}`,
     iso: `${m.year}-${m.month}-${m.day}T${m.hour}:${m.minute}:${m.second}+07:00`
   };
 }
 
-function parseBoardDate(text='') {
-  const m = text.match(/\b(\d{1,2})\s*(?:thg|tháng)\s*(\d{1,2})\s*,?\s*(\d{4})\b/i);
-  if (!m) return null;
-  const dd = String(Number(m[1])).padStart(2, '0');
-  const mm = String(Number(m[2])).padStart(2, '0');
-  return `${m[3]}-${mm}-${dd}`;
+function hhmm(value) {
+  const digits = clean(value).match(/^(\d{2})(\d{2})/);
+  if (!digits) return null;
+  const h = Number(digits[1]), m = Number(digits[2]);
+  return h <= 23 && m <= 59 ? `${digits[1]}:${digits[2]}` : null;
 }
 
-function flightNo(token) {
-  const x = token.replace(/\s+/g, '').toUpperCase();
-  if (!/^[A-Z0-9]{2,3}\d{2,4}[A-Z]?$/.test(x)) return null;
-  const prefix = x.match(/^[A-Z0-9]{2,3}/)?.[0] || '';
-  return /[A-Z]/.test(prefix) ? x : null;
+function flightNos(value) {
+  const text = typeof value === 'string' ? value : JSON.stringify(value ?? '');
+  const hits = String(text).toUpperCase().match(/\b[A-Z0-9]{2,3}\s?\d{2,4}[A-Z]?\b/g) || [];
+  return [...new Set(hits.map(x => x.replace(/\s+/g, '')).filter(x => /[A-Z]/.test(x.slice(0,3))))];
 }
 
-function flightHits(line='') {
-  const hits = String(line).toUpperCase().match(/\b[A-Z0-9]{2,3}\s?\d{2,4}[A-Z]?\b/g) || [];
-  return [...new Set(hits.map(flightNo).filter(Boolean))];
+function rowStatus(item, scheduled, estimated) {
+  const direct = clean(item.notesVn || item.notesEn || item.status || item.remarks || '');
+  if (direct) return direct;
+  return estimated && scheduled && estimated !== scheduled ? 'ĐỔI GIỜ' : '';
 }
 
-function parseText(text, direction) {
-  const lines = text.split(/\n+/).map(clean).filter(Boolean);
-  const flightLineIndexes = [];
-  for (let i = 0; i < lines.length; i++) {
-    if (flightHits(lines[i]).length) flightLineIndexes.push(i);
-  }
-
-  const records = [];
-  for (let n = 0; n < flightLineIndexes.length; n++) {
-    const i = flightLineIndexes[n];
-    const next = flightLineIndexes[n + 1] ?? lines.length;
-    let rowLines = lines.slice(i, next);
-    if (rowLines.length > 1 && /^\d{1,3}$/.test(rowLines[rowLines.length - 1])) rowLines = rowLines.slice(0, -1);
-    const numbers = flightHits(lines[i]);
-    const context = clean(rowLines.join(' | '));
-    const times = [...new Set(rowLines.flatMap(line => line.match(/\b(?:[01]?\d|2[0-3]):[0-5]\d\b/g) || []))];
-    for (const number of numbers) records.push({ direction, flight_number: number, times, context });
-  }
-  return records;
+function toRaw(item, direction) {
+  const flight = clean(item.flightNo).toUpperCase();
+  const scheduled = hhmm(item.scheduledTime);
+  const estimated = hhmm(item.estimatedTime);
+  const times = [...new Set([scheduled, estimated && estimated !== scheduled ? estimated : null].filter(Boolean))];
+  const status = rowStatus(item, scheduled, estimated);
+  const station = clean(item.cityName);
+  const airline = clean(item.airlineName || item.airline);
+  const meta = [clean(item.belt), clean(item.parkingBay), clean(item.gate)].filter(Boolean);
+  const context = clean([
+    `${flight} • ${airline}`,
+    station,
+    ...times,
+    ...meta,
+    status
+  ].filter(Boolean).join(' | '));
+  const aliases = flightNos(item.codeShare).filter(x => x !== flight);
+  return [flight, ...aliases].filter(Boolean).map(number => ({
+    direction,
+    flight_number: number,
+    times,
+    context
+  }));
 }
 
-async function boardText(page, label) {
-  const candidates = [
-    page.getByRole('button', { name: label, exact: true }),
-    page.getByRole('tab', { name: label, exact: true }),
-    page.getByText(label, { exact: true })
-  ];
-  for (const locator of candidates) {
-    try {
-      if (await locator.count()) {
-        await locator.first().click({ timeout: 5000 });
-        await page.waitForTimeout(2500);
-        break;
-      }
-    } catch {}
-  }
-  return await page.locator('body').innerText();
+async function fetchBoard(type, day) {
+  const u = new URL(API_ROOT);
+  u.searchParams.set('type', type);
+  u.searchParams.set('date', day);
+  u.searchParams.set('limit', '100');
+  u.searchParams.set('_t', String(Date.now()));
+  const response = await fetch(u, {
+    headers: {
+      'accept': 'application/json',
+      'user-agent': 'JoTrip-Airport-Live/2.3 (+https://github.com/kenzuko/Jotrip-Lab)',
+      'origin': 'https://kenzuko.github.io'
+    },
+    cache: 'no-store',
+    signal: AbortSignal.timeout(20000)
+  });
+  if (!response.ok) throw new Error(`Sun Airport API ${type}: HTTP ${response.status}`);
+  const body = await response.json();
+  if (!body?.success || !Array.isArray(body?.data)) throw new Error(`Sun Airport API ${type}: invalid JSON shape`);
+  return {
+    url: u.toString(),
+    data: body.data,
+    headers: {
+      cache_control: response.headers.get('cache-control'),
+      content_type: response.headers.get('content-type'),
+      access_control_allow_origin: response.headers.get('access-control-allow-origin'),
+      rate_limit: response.headers.get('x-ratelimit-limit'),
+      rate_remaining: response.headers.get('x-ratelimit-remaining')
+    }
+  };
 }
 
 const s = stampVN();
-let browser;
-let page;
 try {
   await fs.mkdir(workDir, { recursive: true });
   await fs.mkdir(diagDir, { recursive: true });
-  browser = await chromium.launch({ headless: true });
-  page = await browser.newPage({ locale: 'vi-VN', timezoneId: tz });
+  const [arrival, departure] = await Promise.all([fetchBoard('A', s.day), fetchBoard('D', s.day)]);
 
-  const network = [];
-  page.on('response', response => {
-    try {
-      const request = response.request();
-      const type = request.resourceType();
-      if (!['xhr', 'fetch'].includes(type)) return;
-      const headers = response.headers();
-      network.push({
-        url: response.url(),
-        status: response.status(),
-        resource_type: type,
-        content_type: headers['content-type'] || '',
-        access_control_allow_origin: headers['access-control-allow-origin'] || ''
-      });
-    } catch {}
-  });
-
-  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
-  await page.waitForTimeout(5000);
-
-  const bodyText = await page.locator('body').innerText();
-  const boardDate = parseBoardDate(bodyText);
-  const arrivalText = await boardText(page, 'Bay đến');
-  const departureText = await boardText(page, 'Bay đi');
-
-  const apiProbe = await page.evaluate(async ({ day }) => {
-    const fetchOne = async type => {
-      const u = `/phuquoc/cms/api/flights?type=${type}&date=${day}&limit=100&_t=${Date.now()}`;
-      const r = await fetch(u, { cache: 'no-store' });
-      return { type, url: new URL(u, location.origin).href, status: r.status, headers: Object.fromEntries(r.headers.entries()), body: await r.json() };
-    };
-    return { arrival: await fetchOne('A'), departure: await fetchOne('D') };
-  }, { day: s.day });
+  const arrivalsRaw = arrival.data.flatMap(x => toRaw(x, 'arrival'));
+  const departuresRaw = departure.data.flatMap(x => toRaw(x, 'departure'));
 
   const raw = {
-    schema_version: '2.2-raw',
+    schema_version: '2.3-raw',
     collected_at_vn: s.iso,
     collected_day_vn: s.day,
     collected_hhmm_vn: s.hhmm,
-    board_date: boardDate,
+    board_date: s.day,
     source: {
       name: 'Sun Airport - Phu Quoc International Airport',
-      url,
-      acquisition: 'Playwright on GitHub Actions',
+      url: SOURCE_URL,
+      api: API_ROOT,
+      acquisition: 'Direct official JSON API on GitHub Actions',
       paid_services_used: false
     },
-    page_last_updated: clean(arrivalText.match(/Lần cuối cập nhật[^\n]*/i)?.[0] || ''),
-    arrivals_raw: parseText(arrivalText, 'arrival'),
-    departures_raw: parseText(departureText, 'departure')
+    page_last_updated: `Official API fetched ${s.hm}`,
+    arrivals_raw: arrivalsRaw,
+    departures_raw: departuresRaw
   };
 
   await fs.writeFile(path.join(workDir, 'raw.json'), JSON.stringify(raw, null, 2) + '\n');
-  await fs.writeFile(path.join(workDir, 'network.json'), JSON.stringify({ collected_at_vn: s.iso, requests: network }, null, 2) + '\n');
-  await fs.writeFile(path.join(workDir, 'api-probe.json'), JSON.stringify({ collected_at_vn: s.iso, ...apiProbe }, null, 2) + '\n');
-  console.log(JSON.stringify({ board_date: boardDate, arrivals_raw: raw.arrivals_raw.length, departures_raw: raw.departures_raw.length, api_requests: network.length, api_probe: true }));
+  await fs.writeFile(path.join(workDir, 'api-meta.json'), JSON.stringify({
+    collected_at_vn: s.iso,
+    arrival: { url: arrival.url, rows: arrival.data.length, headers: arrival.headers },
+    departure: { url: departure.url, rows: departure.data.length, headers: departure.headers }
+  }, null, 2) + '\n');
+
+  console.log(JSON.stringify({
+    board_date: s.day,
+    arrivals_api: arrival.data.length,
+    departures_api: departure.data.length,
+    arrivals_raw: arrivalsRaw.length,
+    departures_raw: departuresRaw.length,
+    cors: arrival.headers.access_control_allow_origin || null
+  }));
 } catch (error) {
   const errorInfo = {
     collected_at_vn: s.iso,
@@ -156,11 +151,5 @@ try {
   };
   await fs.mkdir(diagDir, { recursive: true });
   await fs.writeFile(path.join(diagDir, 'error.json'), JSON.stringify(errorInfo, null, 2) + '\n');
-  if (page) {
-    try { await page.screenshot({ path: path.join(diagDir, 'page.png'), fullPage: true }); } catch {}
-    try { await fs.writeFile(path.join(diagDir, 'page.html'), await page.content()); } catch {}
-  }
   throw error;
-} finally {
-  if (browser) await browser.close();
 }
