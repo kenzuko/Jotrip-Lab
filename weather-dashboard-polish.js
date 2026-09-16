@@ -8,6 +8,10 @@ function installRadar(){const card=$('#observationPanel .radar-card'),frame=$('#
 function setText(el,text){if(el&&el.textContent!==text)el.textContent=text}
 function replaceText(el,pairs){if(!el)return;let text=el.textContent||'',next=text;for(const [a,b] of pairs)next=next.replace(a,b);if(next!==text)el.textContent=next}
 function localize(){
+  setText($('.hero-watermark'),'ĐIỀU KIỆN BIỂN');
+  setText($('.live-pill b'),'TRỰC TIẾP');
+  const seaTab=document.querySelector('.point-tabs button[data-point="an_thoi"]');setText(seaTab,'Biển An Thới');
+  if((document.body.dataset.point||'an_thoi')==='an_thoi')setText(document.getElementById('pointName'),'Biển An Thới - Mây Rút');
   const eyebrow=$('#observationPanel .premium-head small');setText(eyebrow,'QUAN SÁT HIỆN TẠI');
   const rain=$('#observationPanel .radar-card .observation-state');if(rain&&/RAINVIEWER/i.test(rain.textContent||''))setText(rain,'RAINVIEWER · TRỰC TIẾP');
   const kicker=document.getElementById('nowcastKicker');replaceText(kicker,[['OBSERVED','QUAN SÁT'],['PENDING','CHỜ DỮ LIỆU'],['FREE','MIỄN PHÍ'],['LIVE','TRỰC TIẾP']]);
@@ -20,6 +24,7 @@ function localize(){
   document.querySelectorAll('.lower-grid .premium-head small').forEach(el=>{const raw=(el.textContent||'').trim().toUpperCase(),m={'DIRECT INGEST':'NGUỒN NẠP TRỰC TIẾP','DATA GAPS':'PHẦN CÒN THIẾU'};if(m[raw])setText(el,m[raw])});
   document.querySelectorAll('.trend-badge').forEach(el=>{if(/TREND ONLY/i.test(el.textContent||''))setText(el,'CHỈ XEM XU HƯỚNG')});
   const gaps=document.getElementById('gaps');replaceText(gaps,[['Không có critical gap','Không có thiếu hụt dữ liệu nghiêm trọng'],['Cycle đủ điều kiện','Chu kỳ dữ liệu đủ điều kiện'],['Data gap','Thiếu dữ liệu']]);
+  const footer=document.querySelector('footer span:first-child');setText(footer,'JoTrip Weather Lab · D0-D3 chi tiết · D4-D7 trung hạn · D8-D10 chỉ xem xu hướng');
 }
 function installLocalization(){let queued=false;const run=()=>{queued=false;localize()};const observer=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(run)});observer.observe(document.body,{childList:true,subtree:true,characterData:true});localize()}
 function install(){styles();installLocation();installRadar();installLocalization()}
