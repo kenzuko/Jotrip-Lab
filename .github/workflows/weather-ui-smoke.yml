@@ -1,0 +1,58 @@
+name: Weather UI smoke
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'weather.html'
+      - 'weather-dashboard.css'
+      - 'weather-dashboard-base.css'
+      - 'weather-dashboard.js'
+      - 'weather-dashboard-enhancements.js'
+      - 'weather-dashboard-legacy.js'
+      - 'weather-manifest.webmanifest'
+      - 'weather-sw.js'
+      - 'weather-app-icon.svg'
+      - 'weather/ui-smoke.mjs'
+      - 'vercel.json'
+      - '.github/workflows/weather-ui-smoke.yml'
+  pull_request:
+    paths:
+      - 'weather.html'
+      - 'weather-dashboard.css'
+      - 'weather-dashboard-base.css'
+      - 'weather-dashboard.js'
+      - 'weather-dashboard-enhancements.js'
+      - 'weather-dashboard-legacy.js'
+      - 'weather-manifest.webmanifest'
+      - 'weather-sw.js'
+      - 'weather-app-icon.svg'
+      - 'weather/ui-smoke.mjs'
+      - 'vercel.json'
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start static server
+        run: |
+          python3 -m http.server 4173 >/tmp/weather-ui-http.log 2>&1 &
+          sleep 2
+      - name: Check 390 / 430 / tablet / desktop
+        run: node weather/ui-smoke.mjs
+      - name: Upload visual QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weather-ui-smoke
+          path: artifacts/weather-ui-*.png
+          if-no-files-found: ignore
