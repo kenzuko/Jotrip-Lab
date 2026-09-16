@@ -1,9 +1,7 @@
-"""Collect a non-critical CAMS air-quality layer for Weather Lab.
+"""Collect CAMS PM2.5/PM10 for Weather Lab using the current ADS PAT client.
 
-Source: CAMS global atmospheric composition analysis via the Atmosphere Data
-Store. PM2.5/PM10 are model fields on a coarse global grid. The derived US AQI
-value is explicitly published as a model concentration proxy, not as an observed
-or regulatory AQI.
+AQI is a model-derived US EPA particulate proxy, not an observed/regulatory AQI.
+This layer is non-critical and never changes marine GO/HOLD logic.
 """
 from __future__ import annotations
 
@@ -62,17 +60,15 @@ def _find_var(dataset, names: tuple[str, ...]):
 
 def _sample_time(array) -> str | None:
     import numpy as np
-
     for coord_name in ("valid_time", "time"):
         if coord_name not in array.coords:
             continue
         values = np.asarray(array.coords[coord_name].values).reshape(-1)
-        if values.size == 0:
-            continue
-        value = values[-1]
-        if np.issubdtype(np.asarray(value).dtype, np.datetime64):
-            return np.datetime_as_string(value, unit="s") + "Z"
-        return str(value)
+        if values.size:
+            value = values[-1]
+            if np.issubdtype(np.asarray(value).dtype, np.datetime64):
+                return np.datetime_as_string(value, unit="s") + "Z"
+            return str(value)
     return None
 
 
@@ -80,8 +76,6 @@ def _ugm3(value: float, unit: str) -> float | None:
     try:
         number = float(value)
     except (TypeError, ValueError):
-        return None
-    if not (0 <= number < 10):
         return None
     normalized = (unit or "").lower().replace(" ", "")
     if "kg" in normalized or normalized == "":
@@ -93,7 +87,6 @@ def _ugm3(value: float, unit: str) -> float | None:
 
 def _point_value(array, lat: float, lon: float) -> tuple[float | None, float | None, float | None, str | None]:
     import numpy as np
-
     obj = array
     lat_name = next((x for x in ("latitude", "lat") if x in obj.coords), None)
     lon_name = next((x for x in ("longitude", "lon") if x in obj.coords), None)
@@ -106,31 +99,34 @@ def _point_value(array, lat: float, lon: float) -> tuple[float | None, float | N
         if obj.sizes.get(dim, 1) > 1:
             obj = obj.isel({dim: -1})
     value = float(np.asarray(obj.values).reshape(-1)[-1])
-    unit = str(array.attrs.get("units", ""))
-    return _ugm3(value, unit), grid_lat, grid_lon, sampled_time
+    return _ugm3(value, str(array.attrs.get("units", ""))), grid_lat, grid_lon, sampled_time
 
 
-def _load_zip(path: Path):
+def _open_download(path: Path):
     import xarray as xr
+    if zipfile.is_zipfile(path):
+        extract_dir = path.parent / "netcdf"
+        extract_dir.mkdir(exist_ok=True)
+        with zipfile.ZipFile(path) as archive:
+            archive.extractall(extract_dir)
+        files = sorted(extract_dir.rglob("*.nc"))
+        if not files:
+            raise RuntimeError("CAMS archive did not contain NetCDF files")
+        datasets = [xr.open_dataset(file) for file in files]
+        return (datasets[0] if len(datasets) == 1 else xr.merge(datasets, compat="override", join="outer")), datasets
+    dataset = xr.open_dataset(path)
+    return dataset, [dataset]
 
-    extract_dir = path.parent / "netcdf"
-    extract_dir.mkdir(exist_ok=True)
-    with zipfile.ZipFile(path) as archive:
-        archive.extractall(extract_dir)
-    files = sorted(extract_dir.rglob("*.nc"))
-    if not files:
-        raise RuntimeError("CAMS archive did not contain NetCDF files")
-    datasets = [xr.open_dataset(file) for file in files]
-    if len(datasets) == 1:
-        return datasets[0], datasets
-    return xr.merge(datasets, compat="override", join="outer"), datasets
+
+def _client(api_key: str):
+    """Use ECMWF's current Data Stores client so ADS Personal Access Tokens work directly."""
+    from ecmwf.datastores import Client
+    return Client(url=ADS_URL, key=api_key)
 
 
 def collect(api_key: str) -> dict:
-    import cdsapi
     from weather.processing.air_quality import particulate_aqi
-
-    client = cdsapi.Client(url=ADS_URL, key=api_key, quiet=True, progress=False)
+    client = _client(api_key)
     now = datetime.now(timezone.utc)
     last_error = None
     with tempfile.TemporaryDirectory(prefix="jotrip-cams-") as tmp:
@@ -144,46 +140,44 @@ def collect(api_key: str) -> dict:
                 "date": [day],
                 "time": TIMES,
                 "type": "analysis",
-                "leadtime_hour": "0",
+                "leadtime_hour": ["0"],
                 "area": [str(value) for value in AREA],
                 "data_format": "netcdf_zip",
             }
             try:
                 if target.exists():
                     target.unlink()
-                client.retrieve(DATASET, request).download(str(target))
+                client.retrieve(DATASET, request, target=str(target))
                 selected_date = day
                 break
-            except Exception as exc:  # ADS availability is not operationally guaranteed.
+            except Exception as exc:
                 last_error = f"{type(exc).__name__}: {exc}"
         if selected_date is None:
             raise RuntimeError(last_error or "No recent CAMS analysis available")
 
-        dataset, opened = _load_zip(target)
+        dataset, opened = _open_download(target)
         try:
             pm25 = _find_var(dataset, ("pm2p5", "particulate_matter_25um", "particulate_matter_2.5um"))
             pm10 = _find_var(dataset, ("pm10", "particulate_matter_10um"))
             if pm25 is None or pm10 is None:
                 raise RuntimeError(f"PM variables unavailable: {list(dataset.data_vars)}")
-            points = {}
-            times = []
+            points, times = {}, []
             for point_id, (lat, lon) in POINTS.items():
                 pm25_value, grid_lat, grid_lon, sampled25 = _point_value(pm25, lat, lon)
                 pm10_value, _, _, sampled10 = _point_value(pm10, lat, lon)
-                aqi = particulate_aqi(pm25_value, pm10_value)
                 sampled = sampled25 or sampled10
                 if sampled:
                     times.append(sampled)
                 points[point_id] = {
                     "pm25_ugm3": pm25_value,
                     "pm10_ugm3": pm10_value,
-                    **aqi,
+                    **particulate_aqi(pm25_value, pm10_value),
                     "sampled_time": sampled,
                     "grid_lat": round(grid_lat, 4) if grid_lat is not None else None,
                     "grid_lon": round(grid_lon, 4) if grid_lon is not None else None,
                     "source_type": "MODEL",
                 }
-            if not all(points[p]["aqi_us"] is not None for p in POINTS):
+            if not all(points[p].get("aqi_us") is not None for p in POINTS):
                 raise RuntimeError("One or more CAMS points do not have numeric PM/AQI values")
             return {
                 "status": "POINT_NUMERIC_READY",
@@ -209,15 +203,13 @@ def main() -> None:
     key = os.environ.get("ADS_API_KEY", "").strip()
     if not key:
         payload = _empty("CREDENTIALS_MISSING", "Set GitHub Actions secret ADS_API_KEY after accepting the CAMS dataset licence")
-        _write(args.output, payload)
-        print(json.dumps(payload, ensure_ascii=False))
-        return
-    try:
-        payload = collect(key)
-    except Exception as exc:
-        payload = _empty("UNAVAILABLE", f"{type(exc).__name__}: {exc}")
+    else:
+        try:
+            payload = collect(key)
+        except Exception as exc:
+            payload = _empty("UNAVAILABLE", f"{type(exc).__name__}: {exc}")
     _write(args.output, payload)
-    print(json.dumps({"status": payload["status"], "sampled_time": payload.get("sampled_time"), "points": payload.get("points", {})}, ensure_ascii=False, indent=2))
+    print(json.dumps({"status": payload["status"], "sampled_time": payload.get("sampled_time"), "detail": payload.get("detail"), "points": payload.get("points", {})}, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":
