@@ -3,10 +3,9 @@ name: Sun Airport flights
 on:
   workflow_dispatch:
   schedule:
-    # Airport Live polling window - Asia/Ho_Chi_Minh roughly 04:03-23:58.
-    # Scheduled starts are best-effort, so collection itself is intentionally lightweight.
-    - cron: '3,8,13,18,23,28,33,38,43,48,53,58 21-23 * * *'
-    - cron: '3,8,13,18,23,28,33,38,43,48,53,58 0-16 * * *'
+    # JoTrip AutoSync archive runs 24/7. GitHub scheduled starts are best-effort.
+    # Live UI does not depend on this cron - Cloudflare Worker serves the near-live board.
+    - cron: '3,8,13,18,23,28,33,38,43,48,53,58 * * * *'
   push:
     branches: [main]
     paths:
