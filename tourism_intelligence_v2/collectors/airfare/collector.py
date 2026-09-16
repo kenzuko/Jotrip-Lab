@@ -38,9 +38,44 @@ def _amount(value: str) -> int | None:
     return int(digits) if digits else None
 
 
+def _dedupe(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    seen: set[tuple[Any, ...]] = set()
+    out: list[dict[str, Any]] = []
+    for item in items:
+        key = (item.get("currency"), item.get("amount"), item.get("observation_type"))
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(item)
+    return out
+
+
+def parse_vietnam_airlines(text: str, route: str) -> list[dict[str, Any]]:
+    origin, destination = route.split("-", 1)
+    out: list[dict[str, Any]] = []
+    # Server-rendered public cached fare cards. Keep only VND amounts close to the route pair.
+    route_pattern = re.compile(
+        rf"{re.escape(origin)}\)?\s*(?:to|đến)?\s*[^A-Z0-9]{{0,30}}{re.escape(destination)}\)?(.{{0,450}}?)From\s*([0-9][0-9. ,]*)\s*VND",
+        re.I,
+    )
+    for match in route_pattern.finditer(text):
+        value = _amount(match.group(2))
+        if value is not None:
+            context = match.group(1).lower()
+            fare_scope = "ONE_WAY_ECONOMY" if "economy" in context or "phổ thông" in context else "PUBLIC_CACHED_FARE"
+            out.append({"currency": "VND", "amount": value, "observation_type": fare_scope})
+    if not out:
+        # Page headline floor is fallback-only and remains non-comparable.
+        match = re.search(r"from\s*([0-9][0-9. ,]*)\s*VND", text, re.I)
+        if match:
+            value = _amount(match.group(1))
+            if value is not None:
+                out.append({"currency": "VND", "amount": value, "observation_type": "PUBLIC_PAGE_FLOOR"})
+    return _dedupe(out)[:30]
+
+
 def parse_korean_air(text: str, route: str) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
-    # Date-specific public cached fares, e.g. ICN–PQC, Sep 11, 2026 ... From KRW 466,900.
     pattern = re.compile(
         rf"{re.escape(route.split('-')[0])}\s*[–-]\s*{re.escape(route.split('-')[1])}[^:]*?:\s*(?:From\s*)?KRW\s*([0-9][0-9,]*)",
         re.I,
@@ -49,18 +84,16 @@ def parse_korean_air(text: str, route: str) -> list[dict[str, Any]]:
         value = _amount(match.group(1))
         if value is not None:
             out.append({"currency": "KRW", "amount": value, "observation_type": "PUBLIC_CACHED_FARE"})
-    # Monthly floor fallback when date rows are not rendered in the server response.
     if not out:
         for match in re.finditer(r"(?:Sep|Oct|Nov|Dec|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug)\s+20\d{2}.{0,80}?KRW\s*([0-9][0-9,]*)", text, re.I):
             value = _amount(match.group(1))
             if value is not None:
                 out.append({"currency": "KRW", "amount": value, "observation_type": "PUBLIC_MONTH_FLOOR"})
-    return out[:100]
+    return _dedupe(out)[:30]
 
 
 def parse_airasia_move(text: str, route: str) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
-    # Public deal/fare cards. This is deliberately not treated as a fixed fare basket.
     for match in re.finditer(r"(?:AirAsia|Sun\s+PhuQuoc\s+Airways).{0,220}?MYR\s*([0-9][0-9,.]*)", text, re.I):
         value = _amount(match.group(1))
         if value is not None:
@@ -71,7 +104,18 @@ def parse_airasia_move(text: str, route: str) -> list[dict[str, Any]]:
             value = _amount(match.group(1))
             if value is not None:
                 out.append({"currency": "MYR", "amount": value, "observation_type": "PUBLIC_PAGE_FLOOR"})
-    return out[:100]
+    return _dedupe(out)[:30]
+
+
+def _parse(source: dict[str, Any], text: str) -> list[dict[str, Any]]:
+    parser = source.get("parser")
+    if parser == "vietnam_airlines":
+        return parse_vietnam_airlines(text, source["route"])
+    if parser == "korean_air":
+        return parse_korean_air(text, source["route"])
+    if parser == "airasia_move":
+        return parse_airasia_move(text, source["route"])
+    return []
 
 
 def collect(config_path: str | Path, output_dir: str | Path) -> dict[str, Any]:
@@ -92,8 +136,7 @@ def collect(config_path: str | Path, output_dir: str | Path) -> dict[str, Any]:
         }
         try:
             status, text, final_url = _fetch_text(source["url"])
-            parser = source.get("parser")
-            parsed = parse_korean_air(text, source["route"]) if parser == "korean_air" else parse_airasia_move(text, source["route"])
+            parsed = _parse(source, text)
             row.update({
                 "http_status": status,
                 "final_url": final_url,
@@ -120,7 +163,7 @@ def collect(config_path: str | Path, output_dir: str | Path) -> dict[str, Any]:
     working_sources = sum(1 for item in sources_out if item.get("state") == "OK")
     coverage = working_sources / len(sources_out) if sources_out else 0.0
     latest = {
-        "schema_version": "airfare-public-fallback-1.0",
+        "schema_version": "airfare-public-fallback-1.1",
         "mode": "PUBLIC_FARE_FALLBACK",
         "eligible_for_airfare_pressure": False,
         "fixed_basket_compatible": False,
@@ -146,7 +189,7 @@ def collect(config_path: str | Path, output_dir: str | Path) -> dict[str, Any]:
     }
     manifest = {
         "schema_version": "1.0",
-        "collector_version": "airfare-public-fallback-0.1.0",
+        "collector_version": "airfare-public-fallback-0.2.0",
         "source_config_version": cfg.get("schema_version"),
         "paid_services_used": False,
         "writes_production_data": False,
