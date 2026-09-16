@@ -59,8 +59,24 @@ await page.waitForTimeout(900);
 await page.screenshot({ path: `${out}/06-no-brakes-running.png` });
 
 // Deliberately do not jump. The first two training obstacles must rescue the
-// player, while the first non-training collision should end the run.
-await page.waitForTimeout(11_000);
+// player, while the first non-training collision should end the run. Do not
+// use a fixed sleep here: training rescue timing and browser frame pacing can
+// legitimately shift the third collision. The persisted best score is the
+// authoritative completion signal because endRun() writes it exactly once.
+await page.waitForFunction(
+  () => {
+    const raw = window.localStorage.getItem('pqpi:v1:progress');
+    if (!raw) return false;
+    try {
+      const progress = JSON.parse(raw);
+      return (progress.bestScores?.['no-brakes'] ?? 0) >= 2;
+    } catch {
+      return false;
+    }
+  },
+  { timeout: 25_000 }
+);
+await page.waitForTimeout(250);
 await page.screenshot({ path: `${out}/07-no-brakes-result.png` });
 
 const progress = await page.evaluate(() => {
