@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import '../core/assets/catalog';
 import { AirportScene } from '../scenes/AirportScene';
 import { BootScene } from '../scenes/BootScene';
 import { CharacterScene } from '../scenes/CharacterScene';
