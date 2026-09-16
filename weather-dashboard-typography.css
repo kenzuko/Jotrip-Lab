@@ -1,0 +1,65 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Manrope:wght@500..800&display=swap");
+
+:root{
+  --font-ui:"Inter",ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --font-display:"Manrope","Inter",ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+html,body,button,input,select,textarea,table{
+  font-family:var(--font-ui)!important;
+  font-optical-sizing:auto;
+  font-synthesis:none;
+}
+body{
+  font-weight:450;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+}
+
+.brand-copy strong,
+.hero-copy h1,
+.hero-temp b,
+.panel h2,
+.metric b,
+.decision-state b,
+.status-grid b,
+.aqi-orb b,
+.air-quality-metrics b,
+.tide-now>b,
+.tide-metrics b,
+.forecast-card b,
+.outlook-card b{
+  font-family:var(--font-display)!important;
+  font-optical-sizing:auto;
+  font-variant-numeric:tabular-nums;
+}
+
+.brand-copy strong{font-weight:700!important;letter-spacing:-.03em!important}
+.brand-copy span{font-weight:450!important;font-style:normal!important}
+.point-tabs button,.horizon-tabs button{font-weight:650!important}
+.hero-copy>small,.premium-head small,.source-tag{font-weight:700!important}
+.hero-copy h1{font-weight:700!important;letter-spacing:-.04em!important}
+.hero-copy p{font-weight:450!important}
+.hero-temp span{font-weight:600!important}
+.hero-temp b{font-weight:650!important;letter-spacing:-.04em!important}
+.panel h2{font-weight:700!important;letter-spacing:-.02em!important}
+.metric span{font-weight:600!important}
+.metric b{font-weight:650!important;letter-spacing:-.018em!important}
+.metric small,.table-note,.section-kicker{font-weight:450!important}
+.decision-main small,.decision-state span{font-weight:500!important}
+.decision-state b{font-weight:700!important}
+.aqi-orb span,.air-quality-metrics span,.tide-now>span,.tide-metrics span{font-weight:600!important}
+.aqi-orb b,.air-quality-metrics b,.tide-now>b,.tide-metrics b{font-weight:650!important;letter-spacing:-.025em!important}
+.live-pill,.hero-meta,.legend,.chart-guide,.source,.gap,.air-quality-foot,.tide-foot{font-weight:450!important}
+
+/* Keep operational numerics aligned and easy to scan. */
+.hero-temp b,.metric b,.status-grid b,.decision-state b,.aqi-orb b,.air-quality-metrics b,.tide-now>b,.tide-metrics b,.chart-tooltip-grid span:nth-child(even),td{
+  font-feature-settings:"tnum" 1,"cv02" 1,"cv03" 1;
+  font-variant-numeric:tabular-nums;
+}
+
+@media(max-width:780px){
+  .hero-copy h1{letter-spacing:-.035em!important}
+  .panel h2{letter-spacing:-.018em!important}
+}
