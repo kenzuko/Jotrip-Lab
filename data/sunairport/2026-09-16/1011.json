@@ -1,9 +1,9 @@
 {
-  "schema_version": "2.1",
-  "parser_version": "sunairport-physical-v2.1",
-  "normalization_version": "codeshare-row-v2.1",
+  "schema_version": "2.2",
+  "parser_version": "sunairport-row-v2.2",
+  "normalization_version": "codeshare-timing-v2.2",
   "report_state": "REPORT_READY",
-  "collected_at_vn": "2026-09-16T10:11:17+07:00",
+  "collected_at_vn": "2026-09-16T10:11:58+07:00",
   "source_date": "2026-09-16",
   "source": {
     "name": "Sun Airport - Phu Quoc International Airport",
@@ -11,7 +11,7 @@
     "acquisition": "Playwright on GitHub Actions",
     "paid_services_used": false
   },
-  "page_last_updated": "Lần cuối cập nhật 10:11",
+  "page_last_updated": "Lần cuối cập nhật 10:12",
   "counts": {
     "arrivals": 54,
     "departures": 54,
@@ -67,7 +67,8 @@
     },
     "arrivals_by_status": {
       "ĐÚNG GIỜ": 40,
-      "ĐÃ HẠ CÁNH": 12
+      "ĐÃ HẠ CÁNH": 12,
+      "ĐỔI GIỜ": 2
     },
     "departures_by_status": {
       "LÀM THỦ TỤC LÚC": 35,
@@ -85,10 +86,11 @@
       "00:00-05:59": 2
     },
     "departures_by_time_bank": {
-      "09:00-11:59": 21,
+      "09:00-11:59": 13,
       "12:00-14:59": 12,
-      "15:00-17:59": 9,
-      "18:00-20:59": 7,
+      "15:00-17:59": 11,
+      "18:00-20:59": 8,
+      "21:00-23:59": 5,
       "00:00-05:59": 4,
       "06:00-08:59": 1
     }
@@ -97,7 +99,9 @@
     "usable": true,
     "board_date_matches_collection_date": true,
     "physical_movement_dedup": true,
-    "codeshare_method": "same rendered row + direction + scheduled time"
+    "row_scoped_status_parse": true,
+    "codeshare_method": "same rendered row + direction + scheduled time",
+    "revised_time_method": "second row time only when row status indicates delay/reschedule"
   },
   "records": [
     {
@@ -107,6 +111,10 @@
       "times": [
         "00:05"
       ],
+      "scheduled_time": "00:05",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "PUDONG- SHANGHAI",
       "market": "international",
       "status": "ĐÃ HẠ CÁNH",
@@ -119,6 +127,10 @@
       "times": [
         "00:35"
       ],
+      "scheduled_time": "00:35",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "CHENGDU TIANFU",
       "market": "international",
       "status": "ĐÃ HẠ CÁNH",
@@ -131,6 +143,10 @@
       "times": [
         "07:35"
       ],
+      "scheduled_time": "07:35",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "INCHEON",
       "market": "international",
       "status": "ĐÃ HẠ CÁNH",
@@ -143,6 +159,10 @@
       "times": [
         "08:35"
       ],
+      "scheduled_time": "08:35",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "ĐÃ HẠ CÁNH",
@@ -155,6 +175,10 @@
       "times": [
         "08:50"
       ],
+      "scheduled_time": "08:50",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "ĐÃ HẠ CÁNH",
@@ -167,6 +191,10 @@
       "times": [
         "08:55"
       ],
+      "scheduled_time": "08:55",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "ĐÃ HẠ CÁNH",
@@ -179,6 +207,10 @@
       "times": [
         "09:00"
       ],
+      "scheduled_time": "09:00",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "INCHEON",
       "market": "international",
       "status": "ĐÃ HẠ CÁNH",
@@ -191,6 +223,10 @@
       "times": [
         "09:00"
       ],
+      "scheduled_time": "09:00",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "ĐÃ HẠ CÁNH",
@@ -203,6 +239,10 @@
       "times": [
         "09:15"
       ],
+      "scheduled_time": "09:15",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "ĐÃ HẠ CÁNH",
@@ -215,6 +255,10 @@
       "times": [
         "09:30"
       ],
+      "scheduled_time": "09:30",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "KUALA LUMPUR",
       "market": "international",
       "status": "ĐÃ HẠ CÁNH",
@@ -227,6 +271,10 @@
       "times": [
         "09:55"
       ],
+      "scheduled_time": "09:55",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "ĐÃ HẠ CÁNH",
@@ -239,6 +287,10 @@
       "times": [
         "10:15"
       ],
+      "scheduled_time": "10:15",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "ĐÃ HẠ CÁNH",
@@ -251,6 +303,10 @@
       "times": [
         "10:30"
       ],
+      "scheduled_time": "10:30",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -263,6 +319,10 @@
       "times": [
         "10:40"
       ],
+      "scheduled_time": "10:40",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "BANGKOK",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -275,6 +335,10 @@
       "times": [
         "10:50"
       ],
+      "scheduled_time": "10:50",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -287,6 +351,10 @@
       "times": [
         "10:55"
       ],
+      "scheduled_time": "10:55",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "DA NANG",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -299,6 +367,10 @@
       "times": [
         "11:25"
       ],
+      "scheduled_time": "11:25",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -311,6 +383,10 @@
       "times": [
         "12:05"
       ],
+      "scheduled_time": "12:05",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HAI PHONG",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -324,9 +400,13 @@
         "10:10",
         "12:10"
       ],
+      "scheduled_time": "10:10",
+      "estimated_time": "12:10",
+      "delay_minutes": 120,
+      "timing_source": "SUN_AIRPORT_ROW",
       "station": "HO CHI MINH",
       "market": "domestic",
-      "status": "",
+      "status": "ĐỔI GIỜ",
       "context": "VJ337 • VIETJET AIR | HO CHI MINH | 10:10 | 12:10 | 2 | 14 | ĐỔI GIỜ"
     },
     {
@@ -336,6 +416,10 @@
       "times": [
         "12:25"
       ],
+      "scheduled_time": "12:25",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -348,6 +432,10 @@
       "times": [
         "12:35"
       ],
+      "scheduled_time": "12:35",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -360,6 +448,10 @@
       "times": [
         "13:20"
       ],
+      "scheduled_time": "13:20",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -372,6 +464,10 @@
       "times": [
         "13:20"
       ],
+      "scheduled_time": "13:20",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "DON MUANG",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -384,6 +480,10 @@
       "times": [
         "13:25"
       ],
+      "scheduled_time": "13:25",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "DA NANG",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -396,6 +496,10 @@
       "times": [
         "13:35"
       ],
+      "scheduled_time": "13:35",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "KUALA LUMPUR",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -408,6 +512,10 @@
       "times": [
         "13:55"
       ],
+      "scheduled_time": "13:55",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -420,6 +528,10 @@
       "times": [
         "14:00"
       ],
+      "scheduled_time": "14:00",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -433,9 +545,13 @@
         "12:20",
         "14:25"
       ],
+      "scheduled_time": "12:20",
+      "estimated_time": "14:25",
+      "delay_minutes": 125,
+      "timing_source": "SUN_AIRPORT_ROW",
       "station": "HO CHI MINH",
       "market": "domestic",
-      "status": "",
+      "status": "ĐỔI GIỜ",
       "context": "VJ335 • VIETJET AIR | HO CHI MINH | 12:20 | 14:25 | 2 | 18 | ĐỔI GIỜ"
     },
     {
@@ -445,6 +561,10 @@
       "times": [
         "14:30"
       ],
+      "scheduled_time": "14:30",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "BANGKOK",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -457,6 +577,10 @@
       "times": [
         "15:05"
       ],
+      "scheduled_time": "15:05",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -469,6 +593,10 @@
       "times": [
         "15:05"
       ],
+      "scheduled_time": "15:05",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "SINGAPORE",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -481,6 +609,10 @@
       "times": [
         "15:10"
       ],
+      "scheduled_time": "15:10",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -493,6 +625,10 @@
       "times": [
         "15:35"
       ],
+      "scheduled_time": "15:35",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "INCHEON",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -505,6 +641,10 @@
       "times": [
         "15:50"
       ],
+      "scheduled_time": "15:50",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "CAM RANH",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -517,6 +657,10 @@
       "times": [
         "15:50"
       ],
+      "scheduled_time": "15:50",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -529,6 +673,10 @@
       "times": [
         "15:55"
       ],
+      "scheduled_time": "15:55",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "DA NANG",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -541,6 +689,10 @@
       "times": [
         "16:30"
       ],
+      "scheduled_time": "16:30",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -553,6 +705,10 @@
       "times": [
         "16:55"
       ],
+      "scheduled_time": "16:55",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "TAIPEI",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -565,6 +721,10 @@
       "times": [
         "17:05"
       ],
+      "scheduled_time": "17:05",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "CAN THO",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -577,6 +737,10 @@
       "times": [
         "17:25"
       ],
+      "scheduled_time": "17:25",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "DA NANG",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -589,6 +753,10 @@
       "times": [
         "17:40"
       ],
+      "scheduled_time": "17:40",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "SINGAPORE",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -601,6 +769,10 @@
       "times": [
         "17:45"
       ],
+      "scheduled_time": "17:45",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HAI PHONG",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -613,6 +785,10 @@
       "times": [
         "17:55"
       ],
+      "scheduled_time": "17:55",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "KUALA LUMPUR",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -625,6 +801,10 @@
       "times": [
         "18:05"
       ],
+      "scheduled_time": "18:05",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HONG KONG",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -637,6 +817,10 @@
       "times": [
         "18:35"
       ],
+      "scheduled_time": "18:35",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HONG KONG",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -649,6 +833,10 @@
       "times": [
         "19:20"
       ],
+      "scheduled_time": "19:20",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -661,6 +849,10 @@
       "times": [
         "20:00"
       ],
+      "scheduled_time": "20:00",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "XIANYANG-XI AN",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -673,6 +865,10 @@
       "times": [
         "20:25"
       ],
+      "scheduled_time": "20:25",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "TAIPEI",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -685,6 +881,10 @@
       "times": [
         "21:00"
       ],
+      "scheduled_time": "21:00",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "INCHEON",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -697,6 +897,10 @@
       "times": [
         "21:25"
       ],
+      "scheduled_time": "21:25",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "INCHEON",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -709,6 +913,10 @@
       "times": [
         "22:10"
       ],
+      "scheduled_time": "22:10",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "ĐÚNG GIỜ",
@@ -721,6 +929,10 @@
       "times": [
         "22:25"
       ],
+      "scheduled_time": "22:25",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "BUSAN",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -733,6 +945,10 @@
       "times": [
         "22:50"
       ],
+      "scheduled_time": "22:50",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "INCHEON",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -745,6 +961,10 @@
       "times": [
         "23:20"
       ],
+      "scheduled_time": "23:20",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "INCHEON",
       "market": "international",
       "status": "ĐÚNG GIỜ",
@@ -757,6 +977,10 @@
       "times": [
         "00:20"
       ],
+      "scheduled_time": "00:20",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "INCHEON",
       "market": "international",
       "status": "ĐÃ CẤT CÁNH",
@@ -769,6 +993,10 @@
       "times": [
         "01:00"
       ],
+      "scheduled_time": "01:00",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "INCHEON",
       "market": "international",
       "status": "ĐÃ CẤT CÁNH",
@@ -781,6 +1009,10 @@
       "times": [
         "01:05"
       ],
+      "scheduled_time": "01:05",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "PUDONG- SHANGHAI",
       "market": "international",
       "status": "ĐÃ CẤT CÁNH",
@@ -794,6 +1026,10 @@
         "08:30",
         "08:50"
       ],
+      "scheduled_time": "08:30",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "ĐÃ CẤT CÁNH",
@@ -806,6 +1042,10 @@
       "times": [
         "09:10"
       ],
+      "scheduled_time": "09:10",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "ĐÃ CẤT CÁNH",
@@ -818,6 +1058,10 @@
       "times": [
         "09:25"
       ],
+      "scheduled_time": "09:25",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "DA NANG",
       "market": "domestic",
       "status": "ĐÃ CẤT CÁNH",
@@ -830,6 +1074,10 @@
       "times": [
         "10:05"
       ],
+      "scheduled_time": "10:05",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "KUALA LUMPUR",
       "market": "international",
       "status": "ĐÃ CẤT CÁNH",
@@ -843,6 +1091,10 @@
         "09:35",
         "10:10"
       ],
+      "scheduled_time": "09:35",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "",
@@ -855,6 +1107,10 @@
       "times": [
         "10:15"
       ],
+      "scheduled_time": "10:15",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "",
@@ -867,6 +1123,10 @@
       "times": [
         "10:30"
       ],
+      "scheduled_time": "10:30",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "QUẦY THỦ TỤC ĐÃ ĐÓNG",
@@ -879,6 +1139,10 @@
       "times": [
         "10:35"
       ],
+      "scheduled_time": "10:35",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "BANGKOK",
       "market": "international",
       "status": "",
@@ -891,6 +1155,10 @@
       "times": [
         "10:35"
       ],
+      "scheduled_time": "10:35",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "SINGAPORE",
       "market": "international",
       "status": "",
@@ -903,6 +1171,10 @@
       "times": [
         "11:25"
       ],
+      "scheduled_time": "11:25",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "ĐANG LÀM THỦ TỤC",
@@ -915,6 +1187,10 @@
       "times": [
         "11:30"
       ],
+      "scheduled_time": "11:30",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "TAIPEI",
       "market": "international",
       "status": "ĐANG LÀM THỦ TỤC",
@@ -927,6 +1203,10 @@
       "times": [
         "11:35"
       ],
+      "scheduled_time": "11:35",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "DA NANG",
       "market": "domestic",
       "status": "ĐANG LÀM THỦ TỤC",
@@ -939,6 +1219,10 @@
       "times": [
         "11:45"
       ],
+      "scheduled_time": "11:45",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "BANGKOK",
       "market": "international",
       "status": "ĐANG LÀM THỦ TỤC",
@@ -951,6 +1235,10 @@
       "times": [
         "11:55"
       ],
+      "scheduled_time": "11:55",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HONG KONG",
       "market": "international",
       "status": "ĐANG LÀM THỦ TỤC",
@@ -963,6 +1251,10 @@
       "times": [
         "12:05"
       ],
+      "scheduled_time": "12:05",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "ĐANG LÀM THỦ TỤC",
@@ -976,6 +1268,10 @@
         "12:15",
         "10:15"
       ],
+      "scheduled_time": "12:15",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "CAM RANH",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -989,6 +1285,10 @@
         "12:55",
         "10:55"
       ],
+      "scheduled_time": "12:55",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HAI PHONG",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1003,6 +1303,10 @@
         "13:10",
         "11:10"
       ],
+      "scheduled_time": "13:00",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HAI PHONG",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1016,6 +1320,10 @@
         "13:15",
         "11:15"
       ],
+      "scheduled_time": "13:15",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "DA NANG",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1029,6 +1337,10 @@
         "13:45",
         "10:45"
       ],
+      "scheduled_time": "13:45",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "KUALA LUMPUR",
       "market": "international",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1042,6 +1354,10 @@
         "13:50",
         "10:50"
       ],
+      "scheduled_time": "13:50",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "DON MUANG",
       "market": "international",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1055,6 +1371,10 @@
         "13:55",
         "11:55"
       ],
+      "scheduled_time": "13:55",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1068,6 +1388,10 @@
         "14:00",
         "12:00"
       ],
+      "scheduled_time": "14:00",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1081,6 +1405,10 @@
         "14:10",
         "11:10"
       ],
+      "scheduled_time": "14:10",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "KUALA LUMPUR",
       "market": "international",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1094,6 +1422,10 @@
         "14:35",
         "12:35"
       ],
+      "scheduled_time": "14:35",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1107,6 +1439,10 @@
         "14:35",
         "12:35"
       ],
+      "scheduled_time": "14:35",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1120,6 +1456,10 @@
         "15:40",
         "13:40"
       ],
+      "scheduled_time": "15:40",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1133,6 +1473,10 @@
         "15:50",
         "13:50"
       ],
+      "scheduled_time": "15:50",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1146,6 +1490,10 @@
         "16:25",
         "14:25"
       ],
+      "scheduled_time": "16:25",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1159,6 +1507,10 @@
         "16:25",
         "14:25"
       ],
+      "scheduled_time": "16:25",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1172,6 +1524,10 @@
         "16:30",
         "14:30"
       ],
+      "scheduled_time": "16:30",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "DA NANG",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1185,6 +1541,10 @@
         "16:30",
         "14:30"
       ],
+      "scheduled_time": "16:30",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1198,6 +1558,10 @@
         "17:05",
         "15:05"
       ],
+      "scheduled_time": "17:05",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1208,6 +1572,10 @@
       "operating_flight_number": "0V8074",
       "marketing_flight_numbers": [],
       "times": [],
+      "scheduled_time": null,
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "",
       "market": "unknown",
       "status": "",
@@ -1221,6 +1589,10 @@
         "17:35",
         "15:35"
       ],
+      "scheduled_time": "17:35",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "CAN THO",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1234,6 +1606,10 @@
         "17:45",
         "14:45"
       ],
+      "scheduled_time": "17:45",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "INCHEON",
       "market": "international",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1247,6 +1623,10 @@
         "17:45",
         "15:45"
       ],
+      "scheduled_time": "17:45",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1260,6 +1640,10 @@
         "17:55",
         "14:55"
       ],
+      "scheduled_time": "17:55",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "TAIPEI",
       "market": "international",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1273,6 +1657,10 @@
         "18:05",
         "16:05"
       ],
+      "scheduled_time": "18:05",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1286,6 +1674,10 @@
         "18:20",
         "15:20"
       ],
+      "scheduled_time": "18:20",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "SINGAPORE",
       "market": "international",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1300,6 +1692,10 @@
         "18:30",
         "16:30"
       ],
+      "scheduled_time": "18:20",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1313,6 +1709,10 @@
         "19:05",
         "16:05"
       ],
+      "scheduled_time": "19:05",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HONG KONG",
       "market": "international",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1326,6 +1726,10 @@
         "19:15",
         "17:15"
       ],
+      "scheduled_time": "19:15",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HA NOI",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1339,6 +1743,10 @@
         "20:00",
         "18:00"
       ],
+      "scheduled_time": "20:00",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1352,6 +1760,10 @@
         "20:20",
         "17:20"
       ],
+      "scheduled_time": "20:20",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "INCHEON",
       "market": "international",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1365,6 +1777,10 @@
         "20:45",
         "18:45"
       ],
+      "scheduled_time": "20:45",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "HO CHI MINH",
       "market": "domestic",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1378,6 +1794,10 @@
         "21:00",
         "18:00"
       ],
+      "scheduled_time": "21:00",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "XIANYANG-XI AN",
       "market": "international",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1391,6 +1811,10 @@
         "22:00",
         "19:00"
       ],
+      "scheduled_time": "22:00",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "INCHEON",
       "market": "international",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1404,6 +1828,10 @@
         "22:25",
         "19:25"
       ],
+      "scheduled_time": "22:25",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "INCHEON",
       "market": "international",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1417,6 +1845,10 @@
         "23:10",
         "20:10"
       ],
+      "scheduled_time": "23:10",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "BUSAN",
       "market": "international",
       "status": "LÀM THỦ TỤC LÚC",
@@ -1430,6 +1862,10 @@
         "23:25",
         "20:25"
       ],
+      "scheduled_time": "23:25",
+      "estimated_time": null,
+      "delay_minutes": null,
+      "timing_source": "SCHEDULED_ONLY",
       "station": "BUSAN",
       "market": "international",
       "status": "LÀM THỦ TỤC LÚC",
