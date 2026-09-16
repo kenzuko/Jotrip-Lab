@@ -127,7 +127,7 @@ def _collect_cycle(client, work: Path, steps: list[int], prefix: str, run_time: 
         type="fc",
         stream="oper",
         step=steps,
-        param=["10u", "10v", "tp"],
+        param=["10u", "10v", "2t", "tp"],
         target=str(atmosphere),
         **_cycle_kwargs(run_time),
     )
