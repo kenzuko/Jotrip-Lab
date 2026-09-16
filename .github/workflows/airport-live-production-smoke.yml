@@ -1,0 +1,47 @@
+name: Airport Live production smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/airport-live-production-smoke.yml'
+      - 'airport-live/app.js'
+      - 'airport-live/index.html'
+      - 'airport-live/live-config.js'
+      - 'server/airport-live-core.mjs'
+      - 'cloudflare/airport-live/**'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check frontend JavaScript syntax
+        run: node --check airport-live/app.js && node --check airport-live/live-source.js && node --check airport-live/live-config.js
+      - name: Verify Cloudflare live endpoint
+        run: |
+          node --input-type=module <<'NODE'
+          const url = 'https://jotrip-airport-live.kenzuko.workers.dev';
+          const started = Date.now();
+          const res = await fetch(url, { headers: { accept: 'application/json' } });
+          if (!res.ok) throw new Error(`Worker HTTP ${res.status}`);
+          const p = await res.json();
+          if (!p?.latest?.records || !p?.health?.qa_passed) throw new Error('Invalid live payload');
+          if (p.latest.records.length !== p.latest.counts.total) throw new Error('Record count mismatch');
+          const ageMs = Date.now() - new Date(p.latest.collected_at_vn).getTime();
+          console.log(JSON.stringify({
+            http_status: res.status,
+            cache: res.headers.get('x-jotrip-cache'),
+            collected_at_vn: p.latest.collected_at_vn,
+            age_seconds: Math.round(ageMs / 1000),
+            latency_ms: Date.now() - started,
+            counts: p.latest.counts,
+            source_mode: p.latest.quality?.source_mode
+          }));
+          if (ageMs > 180000) throw new Error(`Live payload too old: ${Math.round(ageMs/1000)}s`);
+          NODE
