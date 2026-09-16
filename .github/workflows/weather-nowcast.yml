@@ -8,8 +8,9 @@ on:
     paths:
       - "weather/collectors/himawari_nowcast.py"
       - "weather/processing/convective_proxy.py"
+      - "weather/pipeline/archive_nowcast.py"
       - "weather/tests/test_convective_proxy.py"
-      - "weather/nowcast.json"
+      - "weather/tests/test_nowcast_archive.py"
       - ".github/workflows/weather-nowcast.yml"
   workflow_dispatch:
   workflow_call:
@@ -27,6 +28,10 @@ concurrency:
 permissions:
   contents: write
 
+env:
+  DATA_BRANCH: data-weather
+  DATA_ROOT: data/weather-nowcast
+
 jobs:
   himawari-nowcast:
     runs-on: ubuntu-latest
@@ -36,15 +41,28 @@ jobs:
         with:
           ref: ${{ inputs.target_ref || github.ref_name }}
           fetch-depth: 0
+
+      - name: Restore compact Weather Nowcast state from data branch
+        shell: bash
+        run: |
+          git fetch origin "$DATA_BRANCH" --depth=1
+          git checkout "origin/$DATA_BRANCH" -- "$DATA_ROOT" || true
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Install free NOAA/JMA satellite clients
         run: python -m pip install --quiet boto3 s3fs xarray h5netcdf h5py numpy pyproj
-      - name: Test transparent convective signal
-        run: python -m unittest weather.tests.test_convective_proxy -v
+
+      - name: Test transparent convective signal and compact archive
+        run: |
+          python -m unittest weather.tests.test_convective_proxy -v
+          python -m unittest weather.tests.test_nowcast_archive -v
+
       - name: Collect latest Himawari-9 cloud-top observations
         run: python -m weather.collectors.himawari_nowcast --output /tmp/nowcast.json
+
       - name: Validate isolated nowcast contract
         run: |
           python - <<'PY'
@@ -60,26 +78,81 @@ jobs:
                   assert 0 <= sig['score'] <= 100
                   assert 'NOT_LIGHTNING_OBSERVATION' in sig['method']
           PY
-      - name: Publish only a valid satellite observation snapshot
+
+      - name: Build Airport-style compact archive
+        id: archive
         shell: bash
         run: |
           STATUS=$(python -c 'import json; print(json.load(open("/tmp/nowcast.json"))["status"])')
           if [[ "$STATUS" != "POINT_NUMERIC_READY" ]]; then
-            echo "Himawari layer not ready ($STATUS); keeping last valid nowcast.json"
-            cat /tmp/nowcast.json
+            echo "Himawari layer not ready ($STATUS); keeping last valid latest/history"
+            python - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from pathlib import Path
+          root=Path('data/weather-nowcast')
+          root.mkdir(parents=True, exist_ok=True)
+          payload=json.load(open('/tmp/nowcast.json'))
+          current={}
+          p=root/'health.json'
+          if p.exists():
+              try: current=json.loads(p.read_text())
+              except Exception: current={}
+          current.update({
+              'module':'JoTrip Weather Nowcast Archive',
+              'state':'SOURCE_UNAVAILABLE',
+              'archive_mode':'DAILY_RAW_PLUS_MATERIAL_EVENTS_PLUS_DAILY_SUMMARY',
+              'full_snapshot_history':False,
+              'last_attempt_at':datetime.now(timezone.utc).isoformat(),
+              'detail':payload.get('detail'),
+          })
+          p.write_text(json.dumps(current,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          PY
             exit 0
           fi
-          cp /tmp/nowcast.json weather/nowcast.json
+          python -m weather.pipeline.archive_nowcast --snapshot /tmp/nowcast.json --root "$DATA_ROOT"
+
+      - name: Persist compact Weather Nowcast state to isolated data branch
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -d "$DATA_ROOT" ]; then
+            echo 'No Weather Nowcast state to persist'
+            exit 0
+          fi
+
+          rm -rf /tmp/weather-nowcast-export
+          mkdir -p /tmp/weather-nowcast-export
+          cp -a "$DATA_ROOT"/. /tmp/weather-nowcast-export/
+
+          git reset --hard HEAD
+          rm -rf "$DATA_ROOT"
+          git fetch origin "$DATA_BRANCH"
+          git checkout -B "$DATA_BRANCH" "origin/$DATA_BRANCH"
+          mkdir -p "$DATA_ROOT"
+          cp -a /tmp/weather-nowcast-export/. "$DATA_ROOT"/
           git config user.name "jotrip-weather-bot"
           git config user.email "jotrip-weather-bot@users.noreply.github.com"
-          git add weather/nowcast.json
+          git add "$DATA_ROOT"
+
           if git diff --cached --quiet; then
-            echo "Nowcast snapshot unchanged"
+            echo 'No Weather Nowcast data changes'
             exit 0
           fi
-          git commit -m "chore(weather): publish Himawari nowcast snapshot [skip ci]"
-          git pull --rebase origin "${{ inputs.target_ref || github.ref_name }}"
-          git push origin "HEAD:${{ inputs.target_ref || github.ref_name }}"
+
+          git commit -m "data: update compact Weather Nowcast archive"
+          for attempt in 1 2 3; do
+            if git pull --rebase origin "$DATA_BRANCH" && git push origin "HEAD:$DATA_BRANCH"; then
+              echo "Weather Nowcast state persisted on attempt $attempt"
+              exit 0
+            fi
+            echo "Push attempt $attempt failed; retrying after backoff"
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+          echo 'Failed to persist Weather Nowcast state after 3 attempts'
+          exit 1
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
