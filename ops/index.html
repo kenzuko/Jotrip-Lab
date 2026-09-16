@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b3b31">
+  <title>JoTrip Operations Center</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <img id="brandLogo" alt="JoTrip" />
+        <button class="icon-btn sidebar-toggle" id="sidebarToggle" aria-label="Thu gọn menu">☰</button>
+      </div>
+
+      <nav class="nav">
+        <a class="nav-item active" href="#overview" data-label="Tổng quan"><span>⌂</span><b>Tổng quan</b></a>
+        <a class="nav-item" href="#tasks" data-label="Việc cần làm"><span>✓</span><b>Việc cần làm</b><em id="navTaskBadge" class="badge danger hidden">0</em></a>
+        <a class="nav-item" href="#today" data-label="Điều hành hôm nay"><span>◫</span><b>Điều hành hôm nay</b></a>
+
+        <div class="nav-group">TOUR & KHÁCH HÀNG</div>
+        <a class="nav-item" href="#tours"><span>▣</span><b>Tour & Booking</b></a>
+        <a class="nav-item" href="#customers"><span>♙</span><b>Khách hàng</b></a>
+        <a class="nav-item" href="#partners"><span>♧</span><b>Đối tác</b></a>
+        <a class="nav-item" href="#staff"><span>♙</span><b>Nhân sự & công việc</b></a>
+
+        <div class="nav-group">VẬN TẢI & ĐIỀU KIỆN</div>
+        <a class="nav-item" href="#flights"><span>✈</span><b>Chuyến bay</b><em id="navFlightBadge" class="badge info hidden">0</em></a>
+        <a class="nav-item" href="#ferries"><span>▰</span><b>Tàu & phà</b></a>
+        <a class="nav-item" href="#weather"><span>☁</span><b>Thời tiết & biển</b></a>
+        <a class="nav-item" href="#map"><span>⌖</span><b>Bản đồ</b></a>
+
+        <div class="nav-group">HỆ THỐNG</div>
+        <a class="nav-item" href="#sources"><span>◉</span><b>Dữ liệu & nguồn</b><em id="navSourceBadge" class="badge warn hidden">STALE</em></a>
+        <a class="nav-item" href="#reports"><span>▥</span><b>Báo cáo</b></a>
+        <a class="nav-item" href="#settings"><span>⚙</span><b>Cài đặt</b></a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <button id="quickButton" class="quick-button"><span>＋</span><b>Tạo nhanh</b></button>
+        <div class="user-mini">
+          <div class="avatar">KA</div>
+          <div><b>Ken Anh</b><small>Administrator</small></div>
+          <span>⋮</span>
+        </div>
+        <div class="readonly-chip">READ ONLY DATA</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="global-search">
+          <span>⌕</span>
+          <input id="globalSearch" placeholder="Tìm tour, khách hàng, booking, chuyến bay, đối tác..." autocomplete="off">
+          <kbd>⌘ K</kbd>
+        </div>
+        <div class="topbar-status">
+          <span id="topClock">--</span>
+          <span class="status-pill"><i class="dot ok"></i><b id="systemHealth">Hệ thống đang đọc dữ liệu</b></span>
+          <span class="status-pill muted">Cập nhật: <b id="lastUpdated">--</b></span>
+          <span class="status-pill" id="sourceDelayPill"><i class="dot warn"></i><b id="sourceDelay">Đang kiểm tra nguồn</b></span>
+          <button class="icon-btn" title="Thông báo">🔔<em id="bellBadge" class="badge danger hidden">0</em></button>
+          <div class="weather-mini"><span>☀</span><b>Phú Quốc</b><small id="miniTemp">--°C</small></div>
+        </div>
+      </header>
+
+      <section class="page-head" id="overview">
+        <div>
+          <h1>Điều hành hôm nay</h1>
+          <p id="pageSubtitle">Một màn hình để nhìn việc cần xử lý, vận tải, điều kiện biển và dữ liệu nguồn.</p>
+        </div>
+        <div class="head-actions">
+          <button class="btn ghost" id="prevDay">‹</button>
+          <input class="date-input" type="date" id="dayPicker">
+          <button class="btn ghost" id="nextDay">›</button>
+          <button class="btn" id="todayButton">Hôm nay</button>
+          <span class="readonly-lock">🔒 Backend cũ chỉ GET</span>
+        </div>
+      </section>
+
+      <section class="scope-tabs" aria-label="Phạm vi">
+        <button class="active" data-scope="all">Tất cả</button>
+        <button data-scope="tour">Tour</button>
+        <button data-scope="flight">Đón/tiễn sân bay</button>
+        <button data-scope="ferry">Tàu/phà</button>
+        <button data-scope="task">Công việc</button>
+        <button data-scope="weather">Điều kiện</button>
+      </section>
+
+      <section class="kpi-grid">
+        <article class="kpi"><div class="kpi-icon gold">✈</div><div><small>Chuyến bay nguồn hiện có</small><strong id="kpiFlights">--</strong><p id="kpiFlightMeta">Đang tải Sun Airport</p></div></article>
+        <article class="kpi"><div class="kpi-icon gold">▰</div><div><small>Tàu & phà hôm nay</small><strong id="kpiFerries">--</strong><p id="kpiFerryMeta">Chưa kết nối GET</p></div></article>
+        <article class="kpi"><div class="kpi-icon olive">♙</div><div><small>Khách đang phục vụ</small><strong id="kpiGuests">--</strong><p id="kpiGuestMeta">Chưa kết nối GET</p></div></article>
+        <article class="kpi"><div class="kpi-icon green">✓</div><div><small>Tour đang vận hành</small><strong id="kpiTours">--</strong><p id="kpiTourMeta">Chưa kết nối GET</p></div></article>
+        <article class="kpi urgent"><div class="kpi-icon red">!</div><div><small>Cần xử lý ngay</small><strong id="kpiUrgent">--</strong><p id="kpiUrgentMeta">Không suy diễn khi thiếu dữ liệu</p></div></article>
+      </section>
+
+      <section class="dashboard-grid primary">
+        <article class="panel weather-panel" id="weather">
+          <header class="panel-head">
+            <div><h2>Thời tiết & điều kiện biển</h2><p id="weatherMeta">Đang tải snapshot JoTrip Lab</p></div>
+            <a href="../weather.html" class="btn small ghost">Mở Weather Lab</a>
+          </header>
+          <div id="weatherPointCards" class="weather-points">
+            <div class="skeleton h120"></div><div class="skeleton h120"></div><div class="skeleton h120"></div>
+          </div>
+          <div class="condition-strip">
+            <div><small>AQI Dương Đông</small><b id="aqiValue">--</b><span id="aqiNote">Đang tải</span></div>
+            <div><small>Triều Dương Đông</small><b id="tideValue">--</b><span id="tideNote">Đang tải</span></div>
+            <div><small>Mode dữ liệu</small><b id="weatherMode">--</b><span id="weatherCompleteness">--</span></div>
+          </div>
+        </article>
+
+        <article class="panel" id="flights">
+          <header class="panel-head">
+            <div><h2>Chuyến bay đến/đi Phú Quốc</h2><p id="flightMeta">Đang tải dữ liệu Sun Airport</p></div>
+            <div class="segmented">
+              <button class="active" data-flight-dir="arrival">Đến <span id="arrivalCount">--</span></button>
+              <button data-flight-dir="departure">Đi <span id="departureCount">--</span></button>
+            </div>
+          </header>
+          <div class="table-wrap compact">
+            <table>
+              <thead><tr><th>Giờ</th><th>Hãng</th><th>Số hiệu</th><th>Nơi đi/đến</th><th>Trạng thái</th></tr></thead>
+              <tbody id="flightRows"><tr><td colspan="5"><div class="empty-inline">Đang tải...</div></td></tr></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel" id="ferries">
+          <header class="panel-head">
+            <div><h2>Tàu & phà</h2><p>Dữ liệu vận tải biển từ GET hiện hữu khi được cấu hình</p></div>
+            <span class="source-state neutral" id="ferrySourceState">CHƯA KẾT NỐI</span>
+          </header>
+          <div id="ferryBody" class="empty-state">
+            <div class="empty-icon">▰</div>
+            <b>Không hiển thị số giả</b>
+            <p>Chưa có endpoint GET cụ thể cho tàu/phà trong cấu hình dashboard. Khi kết nối, trang chỉ đọc và không ghi vào backend cũ.</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="dashboard-grid operations">
+        <article class="panel timeline-panel" id="today">
+          <header class="panel-head">
+            <div><h2>Timeline vận hành hôm nay</h2><p>Tour, chuyến bay, tàu/phà, xe, cano, nhân sự và sự kiện trên cùng trục giờ.</p></div>
+            <div class="segmented view-tabs"><button class="active">Timeline</button><button>Bảng</button></div>
+          </header>
+          <div class="timeline" id="timeline">
+            <div class="timeline-hours">
+              <span></span><span>06:00</span><span>08:00</span><span>10:00</span><span>12:00</span><span>14:00</span><span>16:00</span><span>18:00</span><span>20:00</span><span>22:00</span>
+            </div>
+            <div class="timeline-row"><b>Tour</b><div class="track" id="tlTours"><span class="timeline-empty">Chờ GET tours</span></div></div>
+            <div class="timeline-row"><b>Chuyến bay</b><div class="track" id="tlFlights"></div></div>
+            <div class="timeline-row"><b>Tàu & phà</b><div class="track" id="tlFerries"><span class="timeline-empty">Chờ GET tàu/phà</span></div></div>
+            <div class="timeline-row"><b>Xe</b><div class="track" id="tlVehicles"><span class="timeline-empty">Chờ GET tài nguyên</span></div></div>
+            <div class="timeline-row"><b>Cano</b><div class="track" id="tlBoats"><span class="timeline-empty">Chờ GET tài nguyên</span></div></div>
+            <div class="timeline-row"><b>HDV / Host</b><div class="track" id="tlStaff"><span class="timeline-empty">Chờ GET nhân sự</span></div></div>
+            <div class="timeline-row alert-row"><b>Cảnh báo</b><div class="track" id="tlAlerts"></div></div>
+          </div>
+        </article>
+
+        <div class="side-stack">
+          <article class="panel alerts-panel" id="tasks">
+            <header class="panel-head"><div><h2>Cảnh báo & việc cần xử lý <span id="alertCount" class="text-danger"></span></h2><p>Chỉ tạo cảnh báo từ dữ liệu có căn cứ.</p></div></header>
+            <div class="alert-tabs segmented"><button class="active">Cần xử lý</button><button>Theo dõi</button><button>Thông tin</button></div>
+            <div id="alertsList" class="alert-list"><div class="empty-state slim"><b>Đang đánh giá dữ liệu live...</b></div></div>
+          </article>
+          <article class="panel">
+            <header class="panel-head"><div><h2>Hoạt động gần đây</h2><p>Nhật ký đọc từ backend khi có endpoint.</p></div></header>
+            <div id="activityList" class="activity-list"><div class="empty-state slim"><b>Chưa kết nối GET nhật ký</b><p>Không tạo lịch sử giả.</p></div></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="dashboard-grid lower">
+        <article class="panel tours-panel" id="tours">
+          <header class="panel-head">
+            <div><h2>Danh sách tour hôm nay</h2><p>Readiness, HDV/host, phương tiện và vấn đề vận hành.</p></div>
+            <div class="toolbar">
+              <input id="tourSearch" class="small-input" placeholder="Tìm tour...">
+              <span class="source-state neutral" id="tourSourceState">CHƯA KẾT NỐI</span>
+            </div>
+          </header>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Giờ</th><th>Mã tour</th><th>Hành trình</th><th>Khách</th><th>HDV / Host</th><th>Phương tiện</th><th>Readiness</th><th>Trạng thái</th><th>Vấn đề</th></tr></thead>
+              <tbody id="tourRows"><tr><td colspan="9"><div class="empty-inline">Chưa có endpoint GET tours. Không dùng mock ở chế độ live.</div></td></tr></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel source-health" id="sources">
+          <header class="panel-head"><div><h2>Chất lượng nguồn dữ liệu</h2><p>Freshness và readiness tách riêng.</p></div><span class="source-state" id="coverageState">ĐANG KIỂM TRA</span></header>
+          <div id="sourceHealthRows" class="source-rows"></div>
+        </article>
+
+        <article class="panel shift-panel">
+          <header class="panel-head"><div><h2>Điều hành theo ca</h2><p>Bàn giao việc mở, cảnh báo và đối tác chưa xác nhận.</p></div></header>
+          <div id="shiftBody" class="empty-state slim"><b>Chưa kết nối GET ca trực</b><p>Module này sẽ đọc dữ liệu hiện hữu hoặc dùng lớp mới tách biệt.</p></div>
+        </article>
+      </section>
+
+      <section class="dashboard-grid intelligence">
+        <article class="panel">
+          <header class="panel-head"><div><h2>AQI & môi trường</h2><p>CAMS model estimate, không trình bày như AQI quan trắc chính thức.</p></div></header>
+          <div id="aqiCards" class="mini-cards"></div>
+        </article>
+        <article class="panel">
+          <header class="panel-head"><div><h2>Thủy triều</h2><p>Giữ riêng độ cao/pha triều với dòng chảy.</p></div></header>
+          <div id="tideCards" class="mini-cards"></div>
+        </article>
+        <article class="panel">
+          <header class="panel-head"><div><h2>Khoảng trống & giới hạn</h2><p>Không biến thiếu dữ liệu thành rủi ro thời tiết.</p></div></header>
+          <div id="gapList" class="gap-list"></div>
+        </article>
+      </section>
+
+      <footer>
+        <span>JoTrip Operations Center</span>
+        <span>Frontend read-only • Existing backend untouched</span>
+        <span id="buildMode">LIVE DATA MODE</span>
+      </footer>
+    </main>
+
+    <nav class="mobile-nav">
+      <a href="#overview" class="active"><span>⌂</span><b>Tổng quan</b></a>
+      <a href="#today"><span>◫</span><b>Điều hành</b></a>
+      <a href="#tours"><span>▣</span><b>Tour</b></a>
+      <a href="#tasks"><span>!</span><b>Cảnh báo</b></a>
+      <button id="mobileMore"><span>＋</span><b>Thêm</b></button>
+    </nav>
+
+    <dialog id="quickDialog">
+      <form method="dialog" class="dialog-card">
+        <header><div><h3>Tạo nhanh</h3><p>Chưa ghi vào backend cũ.</p></div><button class="icon-btn">✕</button></header>
+        <div class="quick-grid">
+          <button value="cancel" data-action="tour">▣ <b>Tạo tour</b><small>Module mới</small></button>
+          <button value="cancel" data-action="booking">◫ <b>Thêm booking</b><small>Module mới</small></button>
+          <button value="cancel" data-action="customer">♙ <b>Thêm khách</b><small>Module mới</small></button>
+          <button value="cancel" data-action="task">✓ <b>Giao việc</b><small>Module mới</small></button>
+          <button value="cancel" data-action="transport">▰ <b>Nhập dữ liệu vận tải</b><small>Module mới</small></button>
+          <button value="cancel" data-action="alert">! <b>Tạo cảnh báo</b><small>Module mới</small></button>
+        </div>
+        <p class="dialog-note">Các nút này mới là giao diện. Chưa có lệnh POST/PUT/PATCH/DELETE tới backend cũ.</p>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./logo-data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
