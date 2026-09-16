@@ -15,10 +15,20 @@ def main() -> int:
     parser.add_argument("--weather", required=True)
     parser.add_argument("--sun", required=True)
     parser.add_argument("--marine", required=True)
+    parser.add_argument("--airfare-fallback", required=False, default=None)
+    parser.add_argument("--forward-airlift", required=False, default=None)
     parser.add_argument("--output-dir", required=True)
     args = parser.parse_args()
 
-    latest = build(args.source_registry, args.module_registry, args.weather, args.sun, args.marine)
+    latest = build(
+        args.source_registry,
+        args.module_registry,
+        args.weather,
+        args.sun,
+        args.marine,
+        args.airfare_fallback,
+        args.forward_airlift,
+    )
     health = build_health(
         "Tourism Data Readiness",
         "REPORT_READY",
@@ -33,11 +43,11 @@ def main() -> int:
     health["report_run_status"] = latest["run_status"]
     health["market_condition_not_data_system_condition"] = True
     manifest = {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "module_schema_version": latest["schema_version"],
-        "collector_version": "read-only-preflight-1.0.0",
-        "source_registry_version": "1.0",
-        "module_registry_version": "1.0",
+        "collector_version": "read-only-preflight-1.1.0",
+        "source_registry_version": "1.1",
+        "module_registry_version": "1.1",
         "paid_services_used": False,
     }
     write_bundle(Path(args.output_dir), latest, health, manifest)
