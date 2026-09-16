@@ -1,0 +1,35 @@
+name: Airport Live API smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/airport-live-api-smoke.yml'
+      - 'server/airport-live-core.mjs'
+      - 'api/airport-live.js'
+      - 'netlify/functions/airport-live.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Fetch and validate official PQC live board
+        run: |
+          node --input-type=module <<'NODE'
+          import { getAirportLivePayload } from './server/airport-live-core.mjs';
+          const p = await getAirportLivePayload();
+          const c = p.latest.counts;
+          console.log(JSON.stringify({ collected_at_vn: p.latest.collected_at_vn, counts: c, latency_ms: p.health.latency_ms }));
+          if (!p.health.qa_passed) throw new Error('Live API QA failed');
+          if (c.arrivals < 5 || c.departures < 5) throw new Error('Unexpectedly small flight board');
+          if (p.latest.records.length !== c.total) throw new Error('Record count mismatch');
+          NODE
