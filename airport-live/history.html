@@ -8,13 +8,13 @@
 <link rel="stylesheet" href="./style.css">
 <link rel="stylesheet" href="./typography.css">
 <link rel="stylesheet" href="./history.css">
-<link rel="stylesheet" href="./ui-fixes.css?v=20260916g">
+<link rel="stylesheet" href="./ui-fixes.css?v=20260916h">
 </head>
 <body>
 <div class="history-app">
 <header class="topbar">
   <div class="brand">
-    <a class="brand-home" href="./index.html" aria-label="Về trang chủ JoTrip Airport Live"><div class="brand-logo"><img src="./jotrip-logo.png?v=20260916g" alt="JoTrip"></div></a>
+    <a class="brand-home" href="./index.html" aria-label="Về trang chủ JoTrip Airport Live"><div class="brand-logo"><img src="./jotrip-logo.webp?v=20260916h" alt="JoTrip"></div></a>
     <span class="brand-divider"></span>
     <div><h1>Airport History</h1><p>PQC historical flight intelligence</p></div>
   </div>
@@ -26,7 +26,7 @@
 <main class="history-shell">
   <section class="history-hero">
     <div><span class="section-kicker">PQC · HISTORICAL DATA</span><h2>Tìm lại dữ liệu chuyến bay</h2><p>Dữ liệu được lưu theo ngày, kèm lịch sử thay đổi theo sự kiện. Có thể tra cứu và thống kê theo khoảng ngày.</p></div>
-    <div id="archiveHealth" class="archive-pill">ĐANG TẢI</div>
+    <div id="archiveHealth" class="archive-pill">LOADING</div>
   </section>
 
   <section class="history-card filters-card">
@@ -55,8 +55,8 @@
     <span class="section-kicker">AIRLINE PERFORMANCE</span><h3>Đúng giờ theo hãng trong khoảng đã chọn</h3>
     <p><b>OTP15</b> là On-Time Performance theo ngưỡng 15 phút: chuyến được tính đúng giờ khi giờ thực tế không muộn quá 15 phút so với giờ lịch. Chuyến hủy hoặc chưa có giờ thực tế không được chấm.</p>
     <div class="otp-direction-grid">
-      <section class="otp-direction-card"><div class="otp-direction-head"><div><span class="section-kicker">ARRIVALS</span><h4>Đến Phú Quốc</h4></div><div class="otp-summary"><b id="historyArrivalRate">-</b><span>ĐÚNG GIỜ ≤15'</span><small id="historyArrivalSample">- chuyến</small></div></div><div class="airline-table-wrap"><table class="airline-table"><thead><tr><th>Hãng</th><th>Mẫu đã bay</th><th>Đúng giờ</th><th>Trễ &gt;15'</th><th>Tỷ lệ đúng giờ</th><th>Tỷ lệ trễ</th><th>Trễ TB</th></tr></thead><tbody id="historyAirlineArrivalBody"></tbody></table></div></section>
-      <section class="otp-direction-card"><div class="otp-direction-head"><div><span class="section-kicker">DEPARTURES</span><h4>Rời Phú Quốc</h4></div><div class="otp-summary"><b id="historyDepartureRate">-</b><span>ĐÚNG GIỜ ≤15'</span><small id="historyDepartureSample">- chuyến</small></div></div><div class="airline-table-wrap"><table class="airline-table"><thead><tr><th>Hãng</th><th>Mẫu đã bay</th><th>Đúng giờ</th><th>Trễ &gt;15'</th><th>Tỷ lệ đúng giờ</th><th>Tỷ lệ trễ</th><th>Trễ TB</th></tr></thead><tbody id="historyAirlineDepartureBody"></tbody></table></div></section>
+      <section class="otp-direction-card"><div class="otp-direction-head"><div><span class="section-kicker">ARRIVALS</span><h4>Đến Phú Quốc</h4></div><div class="otp-summary"><b id="historyArrivalRate">-</b><span>ON TIME ≤15'</span><small id="historyArrivalSample">- chuyến</small></div></div><div class="airline-table-wrap"><table class="airline-table"><thead><tr><th>Hãng</th><th>Mẫu đã bay</th><th>Đúng giờ</th><th>Trễ &gt;15'</th><th>Tỷ lệ đúng giờ</th><th>Tỷ lệ trễ</th><th>Trễ TB</th></tr></thead><tbody id="historyAirlineArrivalBody"></tbody></table></div></section>
+      <section class="otp-direction-card"><div class="otp-direction-head"><div><span class="section-kicker">DEPARTURES</span><h4>Rời Phú Quốc</h4></div><div class="otp-summary"><b id="historyDepartureRate">-</b><span>ON TIME ≤15'</span><small id="historyDepartureSample">- chuyến</small></div></div><div class="airline-table-wrap"><table class="airline-table"><thead><tr><th>Hãng</th><th>Mẫu đã bay</th><th>Đúng giờ</th><th>Trễ &gt;15'</th><th>Tỷ lệ đúng giờ</th><th>Tỷ lệ trễ</th><th>Trễ TB</th></tr></thead><tbody id="historyAirlineDepartureBody"></tbody></table></div></section>
     </div>
   </section>
 
@@ -67,6 +67,6 @@
   </section>
 </main>
 </div>
-<script src="./history-v3.js?v=20260916g"></script>
+<script src="./history-v3.js?v=20260916h"></script>
 </body>
 </html>
