@@ -3,11 +3,9 @@ name: Sun Airport flights
 on:
   workflow_dispatch:
   schedule:
-    # Morning D0 polling window - Asia/Ho_Chi_Minh 04:00-08:45.
+    # Airport Live polling window - Asia/Ho_Chi_Minh 04:00-23:45, every 15 minutes.
     - cron: '*/15 21-23 * * *'
-    - cron: '*/15 0-1 * * *'
-    # Evening refresh window - Asia/Ho_Chi_Minh 16:00-18:45.
-    - cron: '*/15 9-11 * * *'
+    - cron: '*/15 0-16 * * *'
   push:
     branches: [main]
     paths:

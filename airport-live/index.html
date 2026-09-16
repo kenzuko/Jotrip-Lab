@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7fbfd">
+<title>JoTrip Airport Live</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div id="app" class="app">
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-logo"><img src="data:image/png;base64,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" alt="JoTrip"></div>
+    <span class="brand-divider"></span>
+    <div><h1>Airport Live</h1><p>PQC operations dashboard</p></div>
+  </div>
+  <div class="top-actions">
+    <div class="mode-switch"><button class="active" data-mode="live">LIVE</button><button data-mode="analytics">ANALYTICS</button></div>
+    <button class="icon-button" id="refreshBtn" title="Làm mới">↻</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="content">
+    <div class="source-strip">
+      <span class="live-pill"><i></i> LIVE</span>
+      <span id="healthPill" class="health-pill loading">ĐANG TẢI</span>
+      <span class="source-label">Sun Airport - Phú Quốc</span>
+      <span id="updatedAt" class="updated-at">Đang đồng bộ dữ liệu...</span>
+    </div>
+    <div id="errorBox" class="error-box hidden"></div>
+
+    <section class="hero live-only">
+      <div class="hero-copy"><div class="eyebrow">PQC · PHÚ QUỐC INTERNATIONAL AIRPORT</div><h2>Hôm nay tại Phú Quốc</h2><p>3 giây để biết sân bay đang ra sao.</p></div>
+      <div class="hero-stats"><article><strong id="totalFlights">-</strong><span>Tổng chuyến</span></article><article><strong id="arrivalsCount">-</strong><span>Chuyến đến</span></article><article><strong id="departuresCount">-</strong><span>Chuyến đi</span></article><article><strong id="internationalCount">-</strong><span>Quốc tế đến</span></article></div>
+      <div id="opsState" class="ops-state">ĐANG ĐÁNH GIÁ</div><div class="hero-plane">✈</div>
+    </section>
+
+    <section class="card live-only">
+      <div class="card-head"><div><span class="section-kicker">FLIGHT BOARD</span><h3>Chuyến bay hôm nay</h3></div><button id="searchToggle" class="text-button">Tìm chuyến</button></div>
+      <div id="searchWrap" class="search-wrap hidden"><input id="flightSearch" placeholder="Nhập số hiệu hoặc thành phố, ví dụ VJ339 / INCHEON"></div>
+      <div class="segmented" id="directionTabs"><button class="active" data-direction="arrival">Chuyến đến</button><button data-direction="departure">Chuyến đi</button><button data-direction="all">Tất cả</button></div>
+      <div class="chips" id="filterChips"><button class="active" data-filter="all">Tất cả</button><button data-filter="next3">3 giờ tới</button><button data-filter="international">Quốc tế</button><button data-filter="domestic">Nội địa</button><button data-filter="changed">Có thay đổi</button></div>
+      <div id="flightList" class="flight-list"></div><button id="showMore" class="show-more hidden">Xem thêm</button>
+    </section>
+
+    <section class="card live-only">
+      <div class="card-head"><div><span class="section-kicker">NEXT 3 HOURS</span><h3>Nhịp sân bay sắp tới</h3></div><span class="muted" id="nextWindowText"></span></div>
+      <div class="metric-grid"><article><span>Chuyến đến</span><strong id="nextArrivals">-</strong><small>trong 3 giờ</small></article><article><span>Chuyến đi</span><strong id="nextDepartures">-</strong><small>trong 3 giờ</small></article><article><span>Quốc tế đến</span><strong id="nextInternational">-</strong><small>trong 3 giờ</small></article><article><span>Cần chú ý</span><strong id="nextWatch">-</strong><small>trạng thái khác chuẩn</small></article></div>
+    </section>
+
+    <section class="card analytics-only hidden">
+      <div class="card-head"><div><span class="section-kicker">TODAY ANALYTICS</span><h3>Cơ cấu chuyến bay</h3></div><span class="muted">Theo snapshot chính thức hiện tại</span></div>
+      <div class="metric-grid analytics-metrics"><article><span>Quốc tế đến</span><strong id="aIntlArr">-</strong><small id="aIntlArrPct"></small></article><article><span>Nội địa đến</span><strong id="aDomArr">-</strong><small id="aDomArrPct"></small></article><article><span>Quốc tế đi</span><strong id="aIntlDep">-</strong><small id="aIntlDepPct"></small></article><article><span>Nội địa đi</span><strong id="aDomDep">-</strong><small id="aDomDepPct"></small></article></div>
+      <div class="analytics-block"><h4>Top điểm đi / đến</h4><div id="routeBars" class="route-bars"></div></div>
+      <div class="analytics-block"><h4>Phân bố theo khung giờ</h4><div id="timeBankBars" class="time-bank"></div></div>
+    </section>
+  </section>
+
+  <aside class="sidebar">
+    <section class="side-card live-only"><div class="side-head"><h3>Operations Watch</h3><span id="watchCount" class="count-pill">0</span></div><div id="watchList" class="watch-list"></div></section>
+    <section class="side-card live-only"><div class="side-head"><h3>Next Arrivals</h3><span class="muted">PQC</span></div><div id="nextArrivalsList" class="arrival-list"></div></section>
+    <section class="side-card">
+      <div class="side-head"><h3>Data Health</h3><span id="qaBadge" class="qa-badge">...</span></div>
+      <div class="health-summary"><div id="healthIcon" class="health-icon">⋯</div><div><strong id="healthTitle">Đang kiểm tra</strong><p id="healthDescription">Đang đọc trạng thái collector và độ mới của snapshot.</p></div></div>
+      <dl class="health-meta"><div><dt>Nguồn</dt><dd>Sun Airport / PQC</dd></div><div><dt>Collector</dt><dd>GitHub Actions</dd></div><div><dt>QA</dt><dd id="qaText">-</dd></div><div><dt>Tuổi dữ liệu</dt><dd id="dataAge">-</dd></div></dl>
+    </section>
+    <section class="side-card analytics-only hidden"><div class="side-head"><h3>Trạng thái bảng bay</h3></div><div id="statusSummary" class="status-summary"></div></section>
+  </aside>
+</main>
+
+<nav class="mobile-nav"><button class="active" data-mobile-mode="live"><span>⌂</span>Live</button><button id="mobileFlights"><span>✈</span>Flights</button><button data-mobile-mode="analytics"><span>▥</span>Analytics</button><button id="mobileRefresh"><span>↻</span>Làm mới</button></nav>
+</div>
+<div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
+<aside id="flightDrawer" class="flight-drawer hidden" aria-hidden="true"><div class="drawer-grab"></div><button id="drawerClose" class="drawer-close">×</button><div id="drawerContent"></div></aside>
+<script src="./app.js"></script>
+</body>
+</html>
