@@ -14,12 +14,8 @@ from pathlib import Path
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-POINTS = {
-    "duong_dong": (10.2172, 103.9593),
-    "an_thoi": (10.0191, 104.0150),
-    "ganh_dau": (10.3759, 103.9000),
-    "rach_gia": (10.00677, 105.07845),
-}
+from weather.points import POINTS
+
 API = "https://api.airvisual.com/v2/nearest_city"
 
 
@@ -85,7 +81,7 @@ def collect(key: str) -> dict:
             }
             if aqi is None:
                 errors[point_id] = "AQI missing in IQAir payload"
-        except Exception as exc:  # optional layer - preserve partial output
+        except Exception as exc:
             errors[point_id] = f"{type(exc).__name__}: {exc}"
 
     ready = sum(1 for p in points.values() if p.get("aqi_us") is not None)
