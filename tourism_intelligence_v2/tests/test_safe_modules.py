@@ -1,22 +1,27 @@
 from __future__ import annotations
 
 import json
+import tempfile
 import unittest
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from tourism_intelligence_v2.collectors.airfare.collector import parse_vietnam_airlines
 from tourism_intelligence_v2.collectors.airfare.processor import summarize as airfare_summary
 from tourism_intelligence_v2.collectors.hotel_forward.processor import summarize as hotel_summary
 from tourism_intelligence_v2.collectors.marine_ops.collector import parse_port_clearance_html, parse_thanh_thoi_html
+from tourism_intelligence_v2.readiness import build as build_readiness
 from tourism_intelligence_v2.registry import freshness, load_registry
 
 ROOT = Path(__file__).resolve().parents[2]
+VN = ZoneInfo("Asia/Ho_Chi_Minh")
 
 
 class SafeModuleTests(unittest.TestCase):
     def test_registry(self):
         registry = load_registry(ROOT / "config/tourism_v2/source-registry.v1.json")
-        self.assertGreaterEqual(len(registry["sources"]), 9)
+        self.assertGreaterEqual(len(registry["sources"]), 11)
         self.assertFalse(any(source.get("paid") for source in registry["sources"]))
 
     def test_freshness_formula(self):
@@ -71,6 +76,80 @@ class SafeModuleTests(unittest.TestCase):
         self.assertEqual(hotel["fallback_mode"], "RESEARCH_ON_DEMAND")
         self.assertIn("trend without comparable historical snapshots", hotel["forbidden_outputs"])
         self.assertIn("Airfare Pressure score from public deal pages", airfare["forbidden_outputs"])
+
+    def test_module_registry_declares_research_and_live_fallbacks(self):
+        config = json.loads((ROOT / "config/tourism_v2/module-registry.v1.json").read_text(encoding="utf-8"))
+        modules = {item["module_id"]: item for item in config["modules"]}
+        self.assertEqual(modules["hotel_forward"]["automation_state"], "RESEARCH_ON_DEMAND")
+        self.assertEqual(modules["social_intent"]["automation_state"], "RESEARCH_ON_DEMAND")
+        self.assertEqual(modules["airfare"]["automation_state"], "FALLBACK_LIVE")
+        self.assertEqual(modules["forward_airlift"]["automation_state"], "PARTIAL_LIVE")
+
+    def test_readiness_does_not_promote_fallback_to_core_ready(self):
+        now = datetime.now(VN).isoformat()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            weather = root / "weather.json"
+            sun = root / "sun.json"
+            marine = root / "marine.json"
+            airfare = root / "airfare.json"
+            forward = root / "forward.json"
+
+            weather.write_text(json.dumps({
+                "cutoff_time": now,
+                "data_mode": "B",
+                "direct_ingest_status": {"ecmwf": {"qc": "PASS"}},
+                "critical_data_gaps": [],
+            }), encoding="utf-8")
+            sun.write_text(json.dumps({
+                "state": "REPORT_READY",
+                "qa_passed": True,
+                "collected_at_vn": now,
+                "source_date": "2026-09-16",
+            }), encoding="utf-8")
+            marine.write_text(json.dumps({
+                "state": "REPORT_READY",
+                "qa_passed": True,
+                "collected_at_vn": now,
+                "sources": {"PORT_CLEARANCE_KGG": "OK", "THANH_THOI_OPERATOR": "OK"},
+            }), encoding="utf-8")
+            airfare.write_text(json.dumps({
+                "state": "PARTIAL_READY",
+                "qa_passed": True,
+                "last_successful_run": now,
+                "source_coverage": 0.75,
+            }), encoding="utf-8")
+            forward.write_text(json.dumps({
+                "state": "PARTIAL_READY",
+                "qa_passed": True,
+                "last_successful_run": now,
+                "market_coverage": 0.3333,
+                "direct_market_coverage": 0.1667,
+                "direct_source_count": 2,
+                "score_gate_passed": False,
+            }), encoding="utf-8")
+
+            result = build_readiness(
+                ROOT / "config/tourism_v2/source-registry.v1.json",
+                ROOT / "config/tourism_v2/module-registry.v1.json",
+                weather,
+                sun,
+                marine,
+                airfare,
+                forward,
+            )
+
+        self.assertEqual(result["overall_completeness_percent"], 60.0)
+        self.assertEqual(result["direct_evidence_coverage_percent"], 60.0)
+        self.assertEqual(result["run_status"], "DEGRADED")
+        self.assertEqual(result["modules"]["hotel_forward"]["state"], "RESEARCH_ON_DEMAND")
+        self.assertEqual(result["modules"]["airfare"]["state"], "FALLBACK_READY")
+        self.assertFalse(result["modules"]["airfare"]["fixed_basket_ready"])
+        self.assertFalse(result["modules"]["airfare"]["airfare_pressure_eligible"])
+        self.assertIn("airfare", result["missing_core_modules"])
+        self.assertIn("hotel_forward", result["missing_core_modules"])
+        self.assertEqual(result["modules"]["forward_airlift"]["state"], "PARTIAL_READY")
+        self.assertFalse(result["modules"]["forward_airlift"]["forward_airlift_signal_eligible"])
 
     def test_forward_projects_not_in_current_hotel_index(self):
         config = json.loads((ROOT / "config/tourism_v2/hotel-basket.v1.json").read_text(encoding="utf-8"))
