@@ -4,6 +4,9 @@ on:
   push:
     paths:
       - 'weather.html'
+      - 'weather-history.html'
+      - 'weather-history.css'
+      - 'weather-history.js'
       - 'weather-dashboard.css'
       - 'weather-dashboard-base.css'
       - 'weather-dashboard.js'
@@ -11,6 +14,7 @@ on:
       - 'weather-dashboard-air-quality.js'
       - 'weather-dashboard-tide.js'
       - 'weather-dashboard-observation-status.js'
+      - 'weather-dashboard-history-link.js'
       - 'weather-dashboard-legacy.js'
       - 'weather/air-quality.json'
       - 'weather/tide.json'
@@ -24,6 +28,9 @@ on:
   pull_request:
     paths:
       - 'weather.html'
+      - 'weather-history.html'
+      - 'weather-history.css'
+      - 'weather-history.js'
       - 'weather-dashboard.css'
       - 'weather-dashboard-base.css'
       - 'weather-dashboard.js'
@@ -31,6 +38,7 @@ on:
       - 'weather-dashboard-air-quality.js'
       - 'weather-dashboard-tide.js'
       - 'weather-dashboard-observation-status.js'
+      - 'weather-dashboard-history-link.js'
       - 'weather-dashboard-legacy.js'
       - 'weather/air-quality.json'
       - 'weather/tide.json'
@@ -59,7 +67,7 @@ jobs:
         run: |
           python3 -m http.server 4173 >/tmp/weather-ui-http.log 2>&1 &
           sleep 2
-      - name: Check 390 / 430 / tablet / desktop
+      - name: Check Weather Lab and History on mobile / desktop
         run: node weather/ui-smoke.mjs
       - name: Upload visual QA screenshots
         if: always()
