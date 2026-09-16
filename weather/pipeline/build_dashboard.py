@@ -73,6 +73,20 @@ def _gust_kmh(bucket: dict) -> float | None:
     return round(value, 1) if 0 <= value <= 250 else None
 
 
+def _temperature_c(bucket: dict) -> float | None:
+    record = bucket.get("2t") or bucket.get("t2m")
+    if not record:
+        return None
+    try:
+        value = float(record["value"])
+        unit = str(record.get("unit", "")).strip().lower()
+    except (KeyError, TypeError, ValueError):
+        return None
+    if unit in {"k", "kelvin"} or value > 150:
+        value -= 273.15
+    return round(value, 1) if -90 <= value <= 65 else None
+
+
 def _wave_value(record: dict | None) -> float | None:
     if not record:
         return None
@@ -146,6 +160,7 @@ def _build_rows(records: list[dict]) -> dict[str, list[dict]]:
             rows.append({
                 "time": valid_dt.strftime("%d/%m %H:%M"),
                 "time_iso": valid_dt.isoformat(),
+                "temperature": _temperature_c(bucket),
                 "wind": _wind_kmh(bucket),
                 "gust": _gust_kmh(bucket),
                 "rain": rain,
@@ -280,6 +295,7 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
                 "RAYLEIGH_20MIN_PROXY_FROM_REGIONAL_HS" if regional_proxy is not None else nearest.get("wave_max_method")
             )
         )
+        temperature = nearest.get("temperature")
         values = {
             "wind": nearest.get("wind"),
             "gust": nearest.get("gust"),
@@ -293,6 +309,7 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
         points[point] = {
             "name": name,
             "status": "LIVE DIRECT MODEL",
+            "temperature": temperature,
             **values,
             "wave_regional_hs": regional_hs,
             "wave_max_method": hmax_method,
@@ -321,7 +338,7 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
     sources = {
         "ECMWF": {
             "status": "PASS" if atmosphere_ready and medium_ready else "FAIL",
-            "detail": f"IFS/Wave D0-D10 · short={len(ecmwf.get('steps', []))} bước · medium={len(ecmwf.get('medium_steps', []))} bước · {ecmwf.get('record_count', 0)} records · gust={gust_detail}/{medium_gust_detail} · hmax={hmax_detail}",
+            "detail": f"IFS/Wave D0-D10 · short={len(ecmwf.get('steps', []))} bước · medium={len(ecmwf.get('medium_steps', []))} bước · {ecmwf.get('record_count', 0)} records · temp=2t · gust={gust_detail}/{medium_gust_detail} · hmax={hmax_detail}",
         },
         "GEFS": {
             "status": "PARTIAL" if gefs_ready else "FAIL",
