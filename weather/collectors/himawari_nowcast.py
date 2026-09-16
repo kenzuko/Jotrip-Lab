@@ -11,8 +11,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
-import tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -26,7 +24,10 @@ POINTS = {
     "ganh_dau": (10.3759, 103.9000),
     "rach_gia": (10.00677, 105.07845),
 }
-RADIUS_PIXELS = 55  # ~110 km at 2 km nadir sampling; used as a regional envelope.
+# Keep the signal local enough for operations. At the nominal 2 km nadir
+# sampling this is about a 40 km radius-equivalent square. Himawari sampling is
+# coarser away from nadir, so the label is intentionally approximate.
+RADIUS_PIXELS = 20
 
 
 def _write(path: Path, payload: dict) -> None:
@@ -63,22 +64,19 @@ def _s3_client():
 def _recent_keys(client) -> list[dict]:
     now = datetime.now(timezone.utc)
     found: list[dict] = []
-    for days_back in range(0, 3):
-        day = now - timedelta(days=days_back)
-        prefix = f"{PREFIX_ROOT}/{day:%Y/%m/%d}/"
-        token = None
-        while True:
-            kwargs = {"Bucket": BUCKET, "Prefix": prefix, "MaxKeys": 1000}
-            if token:
-                kwargs["ContinuationToken"] = token
-            response = client.list_objects_v2(**kwargs)
-            for item in response.get("Contents", []):
-                key = item.get("Key", "")
-                if "/AHI-CHGT_" in key and key.endswith(".nc"):
-                    found.append({"key": key, "last_modified": item.get("LastModified")})
-            if not response.get("IsTruncated"):
-                break
-            token = response.get("NextContinuationToken")
+    # NOAA keys include an HHMM directory. Probe recent hours first instead of
+    # walking every Cloud product in an entire day.
+    for hours_back in range(0, 30):
+        stamp = now - timedelta(hours=hours_back)
+        hour_prefix = f"{PREFIX_ROOT}/{stamp:%Y/%m/%d/%H}"
+        response = client.list_objects_v2(Bucket=BUCKET, Prefix=hour_prefix, MaxKeys=1000)
+        for item in response.get("Contents", []):
+            key = item.get("Key", "")
+            if "/AHI-CHGT_" in key and key.endswith(".nc"):
+                found.append({"key": key, "last_modified": item.get("LastModified")})
+        # Two hours are enough to find a current and previous full-disk scan.
+        if len(found) >= 4:
+            break
     found.sort(key=lambda x: x.get("last_modified") or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
     return found
 
@@ -110,8 +108,6 @@ def _target_xy(ds, lat: float, lon: float) -> tuple[int, int]:
     x = np.asarray(ds["x"].values, dtype=float) if "x" in ds.variables else None
     y = np.asarray(ds["y"].values, dtype=float) if "y" in ds.variables else None
     if x is None or y is None or x.size != 5500 or y.size != 5500:
-        # Safe fallback from nominal 2 km full-disk grid. This is only used if
-        # NOAA omits x/y coordinate variables in a product revision.
         ix = int(round(2749.5 + x_m / 2000.0))
         iy = int(round(2749.5 - y_m / 2000.0))
         return max(0, min(5499, ix)), max(0, min(5499, iy))
@@ -126,23 +122,29 @@ def _target_xy(ds, lat: float, lon: float) -> tuple[int, int]:
     return ix, iy
 
 
-def _finite_stats(array, kind: str) -> tuple[float | None, float | None]:
+def _temp_stats(array) -> tuple[float | None, float | None, float | None]:
     import numpy as np
 
     values = np.asarray(array, dtype=float)
     values = values[np.isfinite(values)]
+    values = values[(values >= 180) & (values <= 340)]
     if not values.size:
-        return None, None
-    if kind == "temp":
-        # Kelvin expected.
-        values = values[(values >= 180) & (values <= 340)]
-        if not values.size:
-            return None, None
-        return float(values.min() - 273.15), float(np.nanmedian(values) - 273.15)
+        return None, None, None
+    c = values - 273.15
+    # Keep absolute minimum for diagnostics, but use p05 for operational signal
+    # so one noisy/extreme pixel cannot turn the whole local area HIGH.
+    return float(np.min(c)), float(np.nanpercentile(c, 5)), float(np.nanmedian(c))
+
+
+def _height_stats(array) -> tuple[float | None, float | None, float | None]:
+    import numpy as np
+
+    values = np.asarray(array, dtype=float)
+    values = values[np.isfinite(values)]
     values = values[(values >= -300) & (values <= 20000)]
     if not values.size:
-        return None, None
-    return float(values.max()), float(np.nanmedian(values))
+        return None, None, None
+    return float(np.max(values)), float(np.nanpercentile(values, 95)), float(np.nanmedian(values))
 
 
 def _sample(ds, lat: float, lon: float) -> dict:
@@ -155,14 +157,16 @@ def _sample(ds, lat: float, lon: float) -> dict:
     temp = ds[temp_key].isel(y=slice(y0, y1), x=slice(x0, x1)) if "y" in ds[temp_key].dims else ds[temp_key].isel(Rows=slice(y0, y1), Columns=slice(x0, x1))
     height = ds[height_key].isel(y=slice(y0, y1), x=slice(x0, x1)) if "y" in ds[height_key].dims else ds[height_key].isel(Rows=slice(y0, y1), Columns=slice(x0, x1))
 
-    min_temp_c, median_temp_c = _finite_stats(temp.values, "temp")
-    max_height_m, median_height_m = _finite_stats(height.values, "height")
+    min_temp_c, cold_temp_c, median_temp_c = _temp_stats(temp.values)
+    max_height_m, high_height_m, median_height_m = _height_stats(height.values)
     return {
         "pixel_x": ix,
         "pixel_y": iy,
         "regional_min_cloud_top_temp_c": round(min_temp_c, 1) if min_temp_c is not None else None,
+        "regional_cold_cloud_top_temp_c": round(cold_temp_c, 1) if cold_temp_c is not None else None,
         "regional_median_cloud_top_temp_c": round(median_temp_c, 1) if median_temp_c is not None else None,
         "regional_max_cloud_top_height_m": round(max_height_m) if max_height_m is not None else None,
+        "regional_high_cloud_top_height_m": round(high_height_m) if high_height_m is not None else None,
         "regional_median_cloud_top_height_m": round(median_height_m) if median_height_m is not None else None,
     }
 
@@ -203,13 +207,13 @@ def collect() -> dict:
             current = _sample(ds_now, lat, lon)
             earlier = _sample(ds_prev, lat, lon) if ds_prev is not None else {}
             cooling = None
-            cur = current.get("regional_min_cloud_top_temp_c")
-            old = earlier.get("regional_min_cloud_top_temp_c")
+            cur = current.get("regional_cold_cloud_top_temp_c")
+            old = earlier.get("regional_cold_cloud_top_temp_c")
             if cur is not None and old is not None:
                 cooling = round(cur - old, 1)
             signal = convective_signal(
-                current.get("regional_min_cloud_top_temp_c"),
-                current.get("regional_max_cloud_top_height_m"),
+                current.get("regional_cold_cloud_top_temp_c"),
+                current.get("regional_high_cloud_top_height_m"),
                 cooling,
             )
             points[point_id] = {
@@ -230,7 +234,8 @@ def collect() -> dict:
             "dataset": "AHI-L2-FLDK-Clouds/AHI-CHGT",
             "source_type": "OBSERVED_SATELLITE",
             "observation_resolution": "2 km at nadir; full-disk ~10 minute cadence",
-            "regional_envelope": "~110 km radius-equivalent square around each point",
+            "regional_envelope": "~40 km radius-equivalent local window around each point",
+            "robust_signal_sampling": "cloud-top temperature p05 + height p95; absolute extrema retained for diagnostics",
             "lightning_observed": {
                 "status": "NOT_CONNECTED",
                 "count_30m": None,
@@ -243,7 +248,7 @@ def collect() -> dict:
                 "detail": "Radar chính thức vẫn là lớp kiểm tra thủ công; không được dùng làm dependency của collector này.",
             },
             "points": points,
-            "method": "Observed Himawari cloud-top temperature/height + transparent heuristic convective signal; not lightning detection",
+            "method": "Observed Himawari cloud-top p05 temperature/p95 height + cooling heuristic; local ~40 km window; not lightning detection",
             "latest_object": latest["key"],
             "previous_object": previous["key"] if previous else None,
         }
