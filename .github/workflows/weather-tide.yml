@@ -1,0 +1,87 @@
+name: Weather Tide
+
+on:
+  push:
+    paths:
+      - "weather/collectors/copernicus_tide.py"
+      - "weather/tide.json"
+      - ".github/workflows/weather-tide.yml"
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      target_ref:
+        description: "Branch containing Weather Lab"
+        required: false
+        type: string
+        default: "feat/weather-lab-data-engine-v1"
+    secrets:
+      COPERNICUSMARINE_SERVICE_USERNAME:
+        required: false
+      COPERNICUSMARINE_SERVICE_PASSWORD:
+        required: false
+
+concurrency:
+  group: weather-tide-${{ inputs.target_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  tide:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      COPERNICUSMARINE_SERVICE_USERNAME: ${{ secrets.COPERNICUSMARINE_SERVICE_USERNAME }}
+      COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUSMARINE_SERVICE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Copernicus Marine and NetCDF clients
+        run: python -m pip install --quiet copernicusmarine xarray netCDF4 numpy
+      - name: Collect 72-hour astronomical tide layer
+        run: python -m weather.collectors.copernicus_tide --output /tmp/tide.json
+      - name: Validate tide layer
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/tide.json'))
+          assert p['status'] in {'POINT_NUMERIC_READY','AUTH_REQUIRED','UNAVAILABLE','PARTIAL_OR_FAILED'}, p
+          if p['status'] == 'POINT_NUMERIC_READY':
+              assert set(p['points']) == {'an_thoi','duong_dong','ganh_dau','rach_gia'}
+              for point in p['points'].values():
+                  assert point['current_height_m'] is not None
+                  assert point['trend'] in {'RISING','FALLING','TURNING'}
+                  assert len(point['series']) >= 24
+          PY
+      - name: Publish only a valid tide snapshot
+        shell: bash
+        run: |
+          STATUS=$(python -c 'import json; print(json.load(open("/tmp/tide.json"))["status"])')
+          if [[ "$STATUS" != "POINT_NUMERIC_READY" ]]; then
+            echo "Tide layer not ready ($STATUS); keeping last published tide.json"
+            cat /tmp/tide.json
+            exit 0
+          fi
+          cp /tmp/tide.json weather/tide.json
+          git config user.name "jotrip-weather-bot"
+          git config user.email "jotrip-weather-bot@users.noreply.github.com"
+          git add weather/tide.json
+          if git diff --cached --quiet; then
+            echo "Tide snapshot unchanged"
+            exit 0
+          fi
+          git commit -m "chore(weather): publish Copernicus tide snapshot [skip ci]"
+          git pull --rebase origin "${{ inputs.target_ref || github.ref_name }}"
+          git push origin "HEAD:${{ inputs.target_ref || github.ref_name }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: copernicus-tide
+          path: /tmp/tide.json
+          retention-days: 7
