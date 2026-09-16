@@ -3,7 +3,9 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import unicodedata
 from datetime import date, datetime, timedelta
+from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode
@@ -14,33 +16,29 @@ from tourism_intelligence_v2.storage import read_json, write_json_atomic
 
 VN = ZoneInfo("Asia/Ho_Chi_Minh")
 BOOKING_ORIGIN = "https://www.booking.com"
-BLOCK_PATTERNS = (
-    "verify you are human",
-    "captcha",
-    "access denied",
-    "unusual traffic",
-    "robot",
-)
+BLOCK_PATTERNS = ("verify you are human", "captcha", "access denied", "unusual traffic", "robot")
 UNAVAILABLE_PATTERNS = (
     "not available on our site for your dates",
+    "not available for your dates",
     "no availability",
     "sold out",
-    "not available for your dates",
     "hết phòng",
     "không còn phòng",
     "không có phòng trống",
 )
-PRICE_SELECTORS = (
-    '[data-testid="price-and-discounted-price"]',
-    '.hprt-price-price-standard',
-    '.prco-valign-middle-helper',
-    '.bui-price-display__value',
-)
-ROOM_TABLE_SELECTORS = ('#hprt-table', '.hprt-table', '[data-testid="availability-table"]')
 
 
 def _normalize_text(value: str) -> str:
     return " ".join((value or "").replace("\xa0", " ").split())
+
+
+def _fold(value: str) -> str:
+    decomposed = unicodedata.normalize("NFKD", _normalize_text(value)).encode("ascii", "ignore").decode("ascii")
+    return re.sub(r"[^a-z0-9]+", " ", decomposed.lower()).strip()
+
+
+def _similarity(left: str, right: str) -> float:
+    return SequenceMatcher(None, _fold(left), _fold(right)).ratio()
 
 
 def _parse_vnd(text: str) -> list[int]:
@@ -55,8 +53,9 @@ def _parse_vnd(text: str) -> list[int]:
     return values
 
 
-def _build_url(path: str, checkin: date, checkout: date, contract: dict[str, Any]) -> str:
+def _build_search_url(hotel_name: str, checkin: date, checkout: date, contract: dict[str, Any]) -> str:
     params = {
+        "ss": hotel_name,
         "checkin": checkin.isoformat(),
         "checkout": checkout.isoformat(),
         "group_adults": int(contract.get("adults", 2)),
@@ -65,27 +64,64 @@ def _build_url(path: str, checkin: date, checkout: date, contract: dict[str, Any
         "selected_currency": contract.get("currency", "VND"),
         "lang": "en-us",
     }
-    return f"{BOOKING_ORIGIN}{path}?{urlencode(params)}"
+    return f"{BOOKING_ORIGIN}/searchresults.html?{urlencode(params)}"
 
 
 def _click_consent(page: Any) -> None:
-    candidates = (
-        'button:has-text("Accept")',
-        'button:has-text("Accept all")',
-        'button:has-text("I agree")',
-    )
-    for selector in candidates:
+    for selector in ('button:has-text("Accept")', 'button:has-text("Accept all")', 'button:has-text("I agree")'):
         try:
             locator = page.locator(selector).first
-            if locator.is_visible(timeout=800):
+            if locator.is_visible(timeout=700):
                 locator.click(timeout=1500)
                 return
         except Exception:
             continue
 
 
+def _date_context_verified(page_url: str, body: str, checkin: date, checkout: date) -> bool:
+    if checkin.isoformat() in page_url and checkout.isoformat() in page_url:
+        return True
+    lower = body.lower()
+    check_tokens = {
+        checkin.strftime("%b %d").lower(),
+        checkin.strftime("%B %d").lower(),
+        checkin.strftime("%a, %b %d").lower(),
+    }
+    out_tokens = {
+        checkout.strftime("%b %d").lower(),
+        checkout.strftime("%B %d").lower(),
+        checkout.strftime("%a, %b %d").lower(),
+    }
+    return any(token in lower for token in check_tokens) and any(token in lower for token in out_tokens)
+
+
+def _best_card(page: Any, target_name: str) -> tuple[Any | None, str | None, float]:
+    try:
+        cards = page.locator('[data-testid="property-card"]')
+        count = min(cards.count(), 80)
+    except Exception:
+        return None, None, 0.0
+    best_card = None
+    best_title = None
+    best_score = 0.0
+    for index in range(count):
+        card = cards.nth(index)
+        title = ""
+        try:
+            title = _normalize_text(card.locator('[data-testid="title"]').first.inner_text(timeout=1000))
+        except Exception:
+            try:
+                title = _normalize_text(card.inner_text(timeout=1000).split("\n", 1)[0])
+            except Exception:
+                continue
+        score = _similarity(target_name, title)
+        if score > best_score:
+            best_card, best_title, best_score = card, title, score
+    return best_card, best_title, best_score
+
+
 def _collect_one(page: Any, hotel: dict[str, Any], checkin: date, checkout: date, contract: dict[str, Any], diagnostics_dir: Path) -> dict[str, Any]:
-    url = _build_url(hotel["booking_path"], checkin, checkout, contract)
+    url = _build_search_url(hotel["hotel_name"], checkin, checkout, contract)
     started = datetime.now(VN)
     observation: dict[str, Any] = {
         "hotel_id": hotel["hotel_id"],
@@ -110,6 +146,7 @@ def _collect_one(page: Any, hotel: dict[str, Any], checkin: date, checkout: date
         "date_context_verified": False,
         "evidence_class": "DIRECT",
     }
+    body = ""
     try:
         response = page.goto(url, wait_until="domcontentloaded", timeout=45_000)
         _click_consent(page)
@@ -122,65 +159,50 @@ def _collect_one(page: Any, hotel: dict[str, Any], checkin: date, checkout: date
         observation["http_status"] = response.status if response else None
         observation["final_url"] = page.url
         observation["page_title"] = page.title()
-        observation["date_context_verified"] = checkin.isoformat() in page.url and checkout.isoformat() in page.url
+        observation["date_context_verified"] = _date_context_verified(page.url, body, checkin, checkout)
 
         if any(pattern in lower for pattern in BLOCK_PATTERNS):
             observation["availability_state"] = "BLOCKED"
             observation["error"] = "Booking page presented anti-bot/access challenge"
         elif not observation["date_context_verified"]:
             observation["availability_state"] = "DATE_CONTEXT_UNVERIFIED"
-            observation["error"] = "Requested check-in/check-out were not preserved in final URL"
+            observation["error"] = "Requested stay dates could not be verified on the rendered search page"
         else:
-            price_texts: list[str] = []
-            for selector in PRICE_SELECTORS:
-                try:
-                    locator = page.locator(selector)
-                    count = min(locator.count(), 80)
-                    for index in range(count):
-                        try:
-                            text = _normalize_text(locator.nth(index).inner_text(timeout=800))
-                            if text:
-                                price_texts.append(text)
-                        except Exception:
-                            continue
-                except Exception:
-                    continue
-            values: list[int] = []
-            for text in price_texts:
-                values.extend(_parse_vnd(text))
-
-            room_table_visible = False
-            for selector in ROOM_TABLE_SELECTORS:
-                try:
-                    if page.locator(selector).first.is_visible(timeout=600):
-                        room_table_visible = True
-                        break
-                except Exception:
-                    continue
-
-            if values:
-                observation["availability_state"] = "AVAILABLE"
-                observation["available"] = True
-                observation["rate_all_in_vnd"] = min(values)
-                observation["rate_observation_method"] = "VISIBLE_BOOKING_PRICE_ELEMENT"
-                observation["price_candidates_vnd"] = sorted(set(values))[:20]
-            elif any(pattern in lower for pattern in UNAVAILABLE_PATTERNS):
-                observation["availability_state"] = "EXPLICITLY_UNAVAILABLE"
-                observation["available"] = False
-                observation["rate_observation_method"] = "EXPLICIT_UNAVAILABLE_TEXT"
-            elif room_table_visible:
-                observation["availability_state"] = "ROOM_TABLE_WITHOUT_VND_PRICE"
-                observation["rate_observation_method"] = "PARSE_INCOMPLETE"
+            card, matched_title, match_score = _best_card(page, hotel["hotel_name"])
+            observation["matched_title"] = matched_title
+            observation["title_match_score"] = round(match_score, 4)
+            if card is None or match_score < 0.62:
+                observation["availability_state"] = "TARGET_NOT_RETURNED"
+                observation["rate_observation_method"] = "NO_MATCHING_PROPERTY_CARD"
             else:
-                observation["availability_state"] = "UNKNOWN_PARSE"
-                observation["rate_observation_method"] = "NO_RELIABLE_AVAILABILITY_SIGNAL"
+                card_text = _normalize_text(card.inner_text(timeout=3000))
+                card_lower = card_text.lower()
+                values = _parse_vnd(card_text)
+                explicit_unavailable = any(pattern in card_lower for pattern in UNAVAILABLE_PATTERNS)
+                if values:
+                    observation["availability_state"] = "AVAILABLE"
+                    observation["available"] = True
+                    observation["rate_all_in_vnd"] = min(values)
+                    observation["price_candidates_vnd"] = sorted(set(values))[:20]
+                    observation["rate_observation_method"] = "MATCHED_PROPERTY_CARD_VND_PRICE"
+                elif explicit_unavailable:
+                    observation["availability_state"] = "EXPLICITLY_UNAVAILABLE"
+                    observation["available"] = False
+                    observation["rate_observation_method"] = "MATCHED_PROPERTY_CARD_EXPLICIT_UNAVAILABLE"
+                else:
+                    observation["availability_state"] = "MATCHED_CARD_NO_RELIABLE_RATE"
+                    observation["rate_observation_method"] = "MATCHED_PROPERTY_CARD_PARSE_INCOMPLETE"
+                observation["breakfast_text_visible"] = "breakfast" in card_lower
+                observation["free_cancellation_text_visible"] = "free cancellation" in card_lower
+                observation["taxes_and_fees_text_visible"] = "taxes and fees" in card_lower
+                try:
+                    href = card.locator('a[data-testid="title-link"]').first.get_attribute("href")
+                    observation["matched_property_url"] = href
+                except Exception:
+                    pass
 
-            observation["breakfast_text_visible"] = "breakfast" in lower
-            observation["free_cancellation_text_visible"] = "free cancellation" in lower
-            observation["taxes_and_fees_text_visible"] = "taxes and fees" in lower
-
-        safe_name = re.sub(r"[^a-zA-Z0-9_.-]+", "_", hotel["hotel_id"])
         diagnostics_dir.mkdir(parents=True, exist_ok=True)
+        safe_name = re.sub(r"[^a-zA-Z0-9_.-]+", "_", hotel["hotel_id"])
         (diagnostics_dir / f"{safe_name}.txt").write_text(body[:150_000], encoding="utf-8")
         page.screenshot(path=str(diagnostics_dir / f"{safe_name}.png"), full_page=False)
     except Exception as exc:
@@ -189,12 +211,7 @@ def _collect_one(page: Any, hotel: dict[str, Any], checkin: date, checkout: date
     return observation
 
 
-def collect(
-    config_path: str | Path,
-    output_dir: str | Path,
-    horizon_days: int,
-    hotel_limit: int | None = None,
-) -> dict[str, Any]:
+def collect(config_path: str | Path, output_dir: str | Path, horizon_days: int, hotel_limit: int | None = None) -> dict[str, Any]:
     from playwright.sync_api import sync_playwright
 
     config = read_json(config_path)
@@ -202,7 +219,7 @@ def collect(
     today = datetime.now(VN).date()
     checkin = today + timedelta(days=horizon_days)
     checkout = checkin + timedelta(days=int(contract.get("length_of_stay_nights", 2)))
-    hotels = [item for item in config.get("hotels", []) if item.get("currently_open") and item.get("booking_path")]
+    hotels = [item for item in config.get("hotels", []) if item.get("currently_open")]
     if hotel_limit is not None:
         hotels = hotels[:hotel_limit]
 
@@ -211,11 +228,7 @@ def collect(
     observations: list[dict[str, Any]] = []
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True)
-        context = browser.new_context(
-            locale="en-US",
-            timezone_id="Asia/Ho_Chi_Minh",
-            viewport={"width": 1440, "height": 900},
-        )
+        context = browser.new_context(locale="en-US", timezone_id="Asia/Ho_Chi_Minh", viewport={"width": 1440, "height": 900})
         page = context.new_page()
         for hotel in hotels:
             observations.append(_collect_one(page, hotel, checkin, checkout, contract, diagnostics))
@@ -227,7 +240,7 @@ def collect(
     fetch_errors = [row for row in observations if row["availability_state"] == "FETCH_ERROR"]
     coverage = len(reliable) / len(hotels) if hotels else 0.0
     latest = {
-        "schema_version": "hotel-forward-shadow-0.1",
+        "schema_version": "hotel-forward-shadow-0.2",
         "mode": "SHADOW",
         "eligible_for_master": False,
         "basket_version": config.get("basket_version"),
@@ -241,13 +254,13 @@ def collect(
         "blocked_count": len(blocked),
         "fetch_error_count": len(fetch_errors),
         "observations": observations,
-        "interpretation_rule": "TARGET_NOT_RETURNED or parse failure is never treated as sold out. Only explicit unavailability text may set available=false.",
+        "interpretation_rule": "TARGET_NOT_RETURNED, date failure or parse failure is never treated as sold out. Only matched-card explicit unavailability may set available=false.",
     }
     if hotels and len(blocked) == len(hotels):
         state = "BLOCKED"
     elif coverage >= 0.65:
         state = "OK"
-    elif reliable or (len(observations) - len(fetch_errors) - len(blocked)) > 0:
+    elif observations:
         state = "DEGRADED"
     else:
         state = "FAILED"
@@ -268,8 +281,8 @@ def collect(
     health["coverage"] = coverage
     manifest = {
         "schema_version": "1.0",
-        "module_schema_version": "hotel-forward-shadow-0.1",
-        "collector_version": "booking-playwright-shadow-0.1.0",
+        "module_schema_version": "hotel-forward-shadow-0.2",
+        "collector_version": "booking-playwright-shadow-0.2.0",
         "basket_version": config.get("basket_version"),
         "source_registry_version": "1.0",
         "paid_services_used": False,
