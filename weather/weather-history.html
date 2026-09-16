@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#087fb8">
-  <title>JoTrip Weather History</title>
+  <title>JoTrip Weather Lab - Lịch sử và so sánh</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;650;700&family=Manrope:wght@500;550;600;650;700&display=swap" rel="stylesheet">
@@ -15,8 +15,8 @@
     <div>
       <a class="back-link" href="/Jotrip-Lab/weather/">← Weather Lab</a>
       <p class="eyebrow">JOTRIP WEATHER LAB</p>
-      <h1>History & Compare</h1>
-      <p class="lead">Tra cứu lịch sử nowcast quan sát, sự kiện thay đổi và so sánh ngày mà không lưu mọi snapshot.</p>
+      <h1>Lịch sử & so sánh</h1>
+      <p class="lead">Tra cứu lịch sử quan sát, các thay đổi đáng chú ý và so sánh giữa các ngày mà không cần lưu mọi lần quét dữ liệu.</p>
     </div>
     <div id="archiveHealth" class="health-pill">ĐANG TẢI</div>
   </header>
@@ -24,21 +24,21 @@
   <main class="shell">
     <section class="panel search-panel">
       <div class="panel-head">
-        <div><span>ARCHIVE SEARCH</span><h2>Tìm dữ liệu</h2></div>
+        <div><span>TRA CỨU LỊCH SỬ</span><h2>Tìm dữ liệu</h2></div>
         <strong id="archiveCount">—</strong>
       </div>
       <div class="filters">
-        <label><span>Tìm nhanh</span><input id="historySearch" type="search" placeholder="Ngày, An Thới, HIGH, Rạch Giá..."></label>
+        <label><span>Tìm nhanh</span><input id="historySearch" type="search" placeholder="Ngày, An Thới, mức cao, Rạch Giá..."></label>
         <label><span>Khu vực</span><select id="pointFilter"><option value="all">Tất cả khu vực</option><option value="an_thoi">An Thới</option><option value="duong_dong">Dương Đông</option><option value="ganh_dau">Gành Dầu</option><option value="rach_gia">Rạch Giá</option></select></label>
-        <label><span>Mức cao nhất</span><select id="levelFilter"><option value="all">Tất cả mức</option><option>LOW</option><option>WATCH</option><option>ELEVATED</option><option>HIGH</option></select></label>
+        <label><span>Mức cao nhất</span><select id="levelFilter"><option value="all">Tất cả mức</option><option value="LOW">Thấp</option><option value="WATCH">Theo dõi</option><option value="ELEVATED">Tăng</option><option value="HIGH">Cao</option></select></label>
       </div>
-      <div id="archiveList" class="archive-list"><div class="empty">Đang đọc catalog...</div></div>
+      <div id="archiveList" class="archive-list"><div class="empty">Đang đọc danh mục dữ liệu...</div></div>
     </section>
 
     <section class="panel compare-panel">
       <div class="panel-head">
-        <div><span>DAY-TO-DAY</span><h2>So sánh hai ngày</h2></div>
-        <strong id="compareState">READY</strong>
+        <div><span>SO SÁNH THEO NGÀY</span><h2>So sánh hai ngày</h2></div>
+        <strong id="compareState">SẴN SÀNG</strong>
       </div>
       <div class="compare-controls">
         <label><span>Ngày A</span><select id="dateA"></select></label>
@@ -51,22 +51,22 @@
 
     <section class="panel timeline-panel">
       <div class="panel-head">
-        <div><span>MATERIAL EVENTS</span><h2>Những lần thay đổi đáng kể</h2></div>
+        <div><span>THAY ĐỔI ĐÁNG CHÚ Ý</span><h2>Những lần dữ liệu thay đổi rõ rệt</h2></div>
         <strong id="timelineMeta">—</strong>
       </div>
       <div class="timeline-controls">
         <label><span>Ngày</span><select id="eventDate"></select></label>
         <label><span>Khu vực</span><select id="eventPoint"><option value="all">Tất cả khu vực</option><option value="an_thoi">An Thới</option><option value="duong_dong">Dương Đông</option><option value="ganh_dau">Gành Dầu</option><option value="rach_gia">Rạch Giá</option></select></label>
       </div>
-      <div id="eventList" class="event-list"><div class="empty">Chọn ngày để xem thay đổi.</div></div>
+      <div id="eventList" class="event-list"><div class="empty">Chọn ngày để xem các thay đổi đáng chú ý.</div></div>
     </section>
 
     <section class="method-note">
-      <b>Archive mode</b>
-      <span>Daily raw + material change events + daily summary. Latest state được ghi đè, không lưu toàn bộ polling snapshot. Summary vẫn tích lũy mọi lần quan sát thành công để phục vụ so sánh dài hạn.</span>
+      <b>Cách lưu dữ liệu</b>
+      <span>Mỗi ngày chỉ giữ dữ liệu gốc cần thiết, các lần thay đổi đáng kể và bản tóm tắt ngày. Trạng thái mới nhất được ghi đè thay vì lưu mọi lần quét; bản tóm tắt vẫn tích lũy các lần quan sát thành công để phục vụ so sánh dài hạn.</span>
     </section>
   </main>
 
-  <script src="/Jotrip-Lab/weather/weather-history.js?v=20260916-2" defer></script>
+  <script src="/Jotrip-Lab/weather/weather-history.js?v=20260916-3" defer></script>
 </body>
 </html>
