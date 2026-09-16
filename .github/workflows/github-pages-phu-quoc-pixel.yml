@@ -25,7 +25,7 @@ env:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout Pixel source
@@ -40,10 +40,10 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install and build
+      - name: Install and build reproducibly
         working-directory: source/phu-quoc-pixel
         run: |
-          npm install --no-audit --no-fund
+          npm ci --no-audit --no-fund
           npm run build
 
       - name: Checkout existing GitHub Pages branch
@@ -126,8 +126,22 @@ jobs:
             --window-size=1440,900 --virtual-time-budget=3000 \
             --screenshot=/tmp/pixel-desktop.png "$PREVIEW_URL"
 
+      - name: Install browser interaction harness
+        working-directory: source/phu-quoc-pixel
+        run: npm install --no-save --package-lock=false --no-audit --no-fund playwright-core@1.55.0
+
+      - name: Production interaction E2E
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          test -n "$CHROME"
+          PREVIEW_URL="$PREVIEW_URL" CHROME_BIN="$CHROME" E2E_OUT=/tmp/pixel-e2e \
+            node source/phu-quoc-pixel/e2e/production.mjs
+
       - name: Upload production smoke evidence
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: phu-quoc-pixel-production-smoke
           path: |
@@ -135,4 +149,5 @@ jobs:
             /tmp/pixel-desktop.png
             /tmp/pixel-mobile-dom.html
             /tmp/pixel-desktop-dom.html
+            /tmp/pixel-e2e
           retention-days: 7
