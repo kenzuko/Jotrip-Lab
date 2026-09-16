@@ -1,4 +1,5 @@
 const DATA_BASE='https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast';
+const API_BASE='https://api.github.com/repos/kenzuko/Jotrip-Lab/contents/data/weather-nowcast';
 const POINTS={an_thoi:'An Thới',duong_dong:'Dương Đông',ganh_dau:'Gành Dầu',rach_gia:'Rạch Giá'};
 const LEVEL_ORDER={LOW:0,WATCH:1,ELEVATED:2,HIGH:3};
 const $=s=>document.querySelector(s);
@@ -10,8 +11,11 @@ function fmt(v,d=1){const n=Number(v);return Number.isFinite(n)?Number(n.toFixed
 function dateVN(s){const p=String(s||'').split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:s||'—'}
 function clock(s){try{return new Date(s).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Ho_Chi_Minh'})}catch{return'--:--'}}
 function levelClass(v){return String(v||'').toLowerCase()}
-function fetchJson(url){return fetch(`${url}?t=${Date.now()}`,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()})}
-async function fetchEvents(date){if(state.eventCache.has(date))return state.eventCache.get(date);const r=await fetch(`${DATA_BASE}/history/${date}/events.jsonl?t=${Date.now()}`,{cache:'no-store'});if(r.status===404){state.eventCache.set(date,[]);return[]}if(!r.ok)throw new Error(`events HTTP ${r.status}`);const rows=(await r.text()).split('\n').filter(Boolean).map(x=>{try{return JSON.parse(x)}catch{return null}}).filter(Boolean);state.eventCache.set(date,rows);return rows}
+function apiPath(url){return String(url).replace(DATA_BASE+'/','')}
+function decodeBase64Utf8(value){const raw=atob(String(value||'').replace(/\s+/g,'')),bytes=Uint8Array.from(raw,c=>c.charCodeAt(0));return new TextDecoder('utf-8').decode(bytes)}
+async function fetchText(url){try{const r=await fetch(`${url}?t=${Date.now()}`,{cache:'no-store'});if(r.ok)return r.text();throw new Error(`raw HTTP ${r.status}`)}catch(rawError){const path=apiPath(url),r=await fetch(`${API_BASE}/${path}?ref=data-weather&t=${Date.now()}`,{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});if(!r.ok)throw new Error(`${rawError.message}; api HTTP ${r.status}`);const meta=await r.json();if(meta.type!=='file'||!meta.content)throw new Error('GitHub API không trả file content');return decodeBase64Utf8(meta.content)}}
+async function fetchJson(url){return JSON.parse(await fetchText(url))}
+async function fetchEvents(date){if(state.eventCache.has(date))return state.eventCache.get(date);try{const text=await fetchText(`${DATA_BASE}/history/${date}/events.jsonl`),rows=text.split('\n').filter(Boolean).map(x=>{try{return JSON.parse(x)}catch{return null}}).filter(Boolean);state.eventCache.set(date,rows);return rows}catch(e){if(/404/.test(e.message)){state.eventCache.set(date,[]);return[]}throw e}}
 async function summary(date){if(!date)return null;if(state.summaryCache.has(date))return state.summaryCache.get(date);const data=await fetchJson(`${DATA_BASE}/summary/${date}.json`);state.summaryCache.set(date,data);return data}
 
 function matchingDates(){const rows=[...(state.catalog?.dates||[])];const q=fold(state.query);return rows.filter(r=>{if(state.point!=='all'&&!r.peak_levels?.[state.point])return false;if(state.level!=='all'){if(state.point==='all'){if(!Object.values(r.peak_levels||{}).includes(state.level))return false}else if(r.peak_levels?.[state.point]!==state.level)return false}if(q){const hay=fold([r.date,dateVN(r.date),...Object.entries(r.peak_levels||{}).flatMap(([k,v])=>[POINTS[k],v]),...Object.values(r.max_scores||{})].join(' '));if(!hay.includes(q))return false}return true}).sort((a,b)=>b.date.localeCompare(a.date))}
