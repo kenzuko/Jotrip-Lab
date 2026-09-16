@@ -1,0 +1,72 @@
+name: Tourism V2 Phase2 Shadow
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/tourism-v2-phase2-safe-v1
+    paths:
+      - 'tourism_intelligence_v2/collectors/airfare/**'
+      - 'tourism_intelligence_v2/collectors/forward_airlift/**'
+      - 'tourism_intelligence_v2/collectors/social_intent/**'
+      - 'config/tourism_v2/airfare-sources.v1.json'
+      - 'config/tourism_v2/forward-airlift-sources.v1.json'
+      - 'config/tourism_v2/social-intent-sources.v1.json'
+      - '.github/workflows/tourism-v2-phase2-shadow.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tourism-v2-phase2-shadow
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install free parser dependencies
+        run: python -m pip install --quiet requests beautifulsoup4
+      - name: Collect public airfare fallback
+        run: python -m tourism_intelligence_v2.collectors.airfare.collector --output /tmp/airfare
+      - name: Collect forward airlift evidence
+        run: python -m tourism_intelligence_v2.collectors.forward_airlift.collector --output /tmp/forward_airlift
+      - name: Collect multilingual social intent evidence
+        run: python -m tourism_intelligence_v2.collectors.social_intent.collector --output /tmp/social_intent
+      - name: Enforce no-overclaim gates
+        run: |
+          python - <<'PY'
+          import json
+          a=json.load(open('/tmp/airfare/latest.json', encoding='utf-8'))
+          f=json.load(open('/tmp/forward_airlift/latest.json', encoding='utf-8'))
+          s=json.load(open('/tmp/social_intent/latest.json', encoding='utf-8'))
+          assert a['eligible_for_airfare_pressure'] is False
+          assert a['fixed_basket_compatible'] is False
+          if not f['score_gate_passed']:
+              assert f['forward_airlift_signal'] is None
+          assert all(x.get('booking_demand_inference_allowed') is False for x in s['evidence'])
+          print(json.dumps({
+              'airfare_state': a['schema_version'],
+              'airfare_observations': len(a['observations']),
+              'forward_state': f['state'],
+              'forward_market_coverage': f['market_coverage'],
+              'social_state': s['state'],
+              'social_evidence_count': s['evidence_count'],
+          }, ensure_ascii=False, indent=2))
+          PY
+      - name: Upload shadow evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tourism-v2-phase2-shadow-${{ github.run_id }}
+          path: |
+            /tmp/airfare/**
+            /tmp/forward_airlift/**
+            /tmp/social_intent/**
+          if-no-files-found: error
+          retention-days: 7
