@@ -1,59 +1,6 @@
 import { getAirportLivePayload } from '../../server/airport-live-core.mjs';
 
-const CACHE_TTL_SECONDS = 45;
-const CORS_HEADERS = {
-  'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'GET,OPTIONS',
-  'access-control-allow-headers': 'Content-Type',
-  'access-control-max-age': '86400'
-};
-
-function jsonResponse(body, status = 200, extraHeaders = {}) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': `public, max-age=${CACHE_TTL_SECONDS}, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=30`,
-      ...CORS_HEADERS,
-      ...extraHeaders
-    }
-  });
-}
-
-export default {
-  async fetch(request, env, ctx) {
-    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS_HEADERS });
-    if (request.method !== 'GET') return jsonResponse({ error: 'method_not_allowed' }, 405, { 'cache-control': 'no-store' });
-
-    const url = new URL(request.url);
-    if (url.pathname !== '/' && url.pathname !== '/api/airport-live') {
-      return jsonResponse({ error: 'not_found' }, 404, { 'cache-control': 'no-store' });
-    }
-
-    const cache = caches.default;
-    const cacheUrl = new URL(request.url);
-    cacheUrl.search = '';
-    const cacheKey = new Request(cacheUrl.toString(), { method: 'GET' });
-
-    const cached = await cache.match(cacheKey);
-    if (cached) {
-      const out = new Response(cached.body, cached);
-      out.headers.set('x-jotrip-cache', 'HIT');
-      Object.entries(CORS_HEADERS).forEach(([k, v]) => out.headers.set(k, v));
-      return out;
-    }
-
-    try {
-      const payload = await getAirportLivePayload();
-      const response = jsonResponse(payload, 200, { 'x-jotrip-cache': 'MISS' });
-      ctx.waitUntil(cache.put(cacheKey, response.clone()));
-      return response;
-    } catch (error) {
-      return jsonResponse({
-        error: 'live_upstream_failed',
-        message: error?.message || String(error),
-        fallback: 'Frontend should use GitHub AutoSync snapshot'
-      }, 502, { 'cache-control': 'no-store', 'x-jotrip-cache': 'ERROR' });
-    }
-  }
-};
+const CACHE_TTL_SECONDS=45;
+const CORS_HEADERS={'access-control-allow-origin':'*','access-control-allow-methods':'GET,OPTIONS','access-control-allow-headers':'Content-Type','access-control-max-age':'86400'};
+function jsonResponse(body,status=200,extraHeaders={}){return new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':`public, max-age=${CACHE_TTL_SECONDS}, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=30`,...CORS_HEADERS,...extraHeaders}})}
+export default{async fetch(request,env,ctx){if(request.method==='OPTIONS')return new Response(null,{status:204,headers:CORS_HEADERS});if(request.method!=='GET')return jsonResponse({error:'method_not_allowed'},405,{'cache-control':'no-store'});const url=new URL(request.url);if(url.pathname!=='/'&&url.pathname!=='/api/airport-live')return jsonResponse({error:'not_found'},404,{'cache-control':'no-store'});const date=url.searchParams.get('date')||null;const cache=caches.default,cacheUrl=new URL(request.url);cacheUrl.search='';if(date)cacheUrl.searchParams.set('date',date);const cacheKey=new Request(cacheUrl.toString(),{method:'GET'});const cached=await cache.match(cacheKey);if(cached){const out=new Response(cached.body,cached);out.headers.set('x-jotrip-cache','HIT');Object.entries(CORS_HEADERS).forEach(([k,v])=>out.headers.set(k,v));return out}try{const payload=await getAirportLivePayload(date);const response=jsonResponse(payload,200,{'x-jotrip-cache':'MISS'});ctx.waitUntil(cache.put(cacheKey,response.clone()));return response}catch(error){const message=error?.message||String(error);const status=message==='board_date_out_of_range'?400:502;return jsonResponse({error:status===400?'board_date_out_of_range':'live_upstream_failed',message,allowed:'yesterday,today,tomorrow',fallback:'Frontend should use GitHub AutoSync snapshot'},status,{'cache-control':'no-store','x-jotrip-cache':'ERROR'})}}};
