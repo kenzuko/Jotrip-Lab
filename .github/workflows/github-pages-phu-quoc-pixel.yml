@@ -1,0 +1,86 @@
+name: Phu Quoc Pixel - GitHub Pages
+
+on:
+  push:
+    branches:
+      - 'feat/phu-quoc-pixel-architecture-v1'
+    paths:
+      - 'phu-quoc-pixel/**'
+      - '.github/workflows/github-pages-phu-quoc-pixel.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pixel-pages-writer
+  cancel-in-progress: true
+
+env:
+  SOURCE_REF: feat/phu-quoc-pixel-architecture-v1
+  PAGES_REF: gh-pages
+  PAGES_DIR: phu-quoc-pixel
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Pixel source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SOURCE_REF }}
+          path: source
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install and build
+        working-directory: source/phu-quoc-pixel
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+
+      - name: Checkout existing GitHub Pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.PAGES_REF }}
+          path: pages
+          fetch-depth: 0
+
+      - name: Publish isolated Pixel folder to gh-pages
+        shell: bash
+        working-directory: pages
+        run: |
+          set -euo pipefail
+          rm -rf "$PAGES_DIR"
+          mkdir -p "$PAGES_DIR"
+          cp -a ../source/phu-quoc-pixel/dist/. "$PAGES_DIR"/
+
+          git config user.name "jotrip-pixel-bot"
+          git config user.email "jotrip-pixel-bot@users.noreply.github.com"
+          git add "$PAGES_DIR"
+
+          if git diff --cached --quiet; then
+            echo "Pixel Pages already current"
+            exit 0
+          fi
+
+          git commit -m "deploy(pixel): refresh GitHub Pages preview"
+
+          for attempt in 1 2 3; do
+            if git pull --rebase origin "$PAGES_REF" && git push origin "HEAD:$PAGES_REF"; then
+              echo "Pixel preview published to gh-pages on attempt $attempt"
+              exit 0
+            fi
+            echo "Publish attempt $attempt failed; retrying"
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 3))
+          done
+
+          echo "Pixel gh-pages publish failed after 3 attempts"
+          exit 1
