@@ -1,0 +1,78 @@
+name: Weather Air Quality
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      target_ref:
+        description: "Branch containing Weather Lab"
+        required: false
+        type: string
+        default: "feat/weather-lab-data-engine-v1"
+    secrets:
+      ADS_API_KEY:
+        required: false
+
+concurrency:
+  group: weather-air-quality-${{ inputs.target_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  cams-air-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ADS_API_KEY: ${{ secrets.ADS_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ADS and NetCDF clients
+        run: python -m pip install --quiet "cdsapi>=0.7.7" xarray netCDF4 numpy
+      - name: Collect CAMS PM2.5 and PM10
+        run: python -m weather.collectors.cams_air_quality --output /tmp/air-quality.json
+      - name: Validate environmental layer
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/air-quality.json'))
+          assert p['status'] in {'POINT_NUMERIC_READY','CREDENTIALS_MISSING','UNAVAILABLE'}, p
+          if p['status'] == 'POINT_NUMERIC_READY':
+              assert set(p['points']) == {'an_thoi','duong_dong','ganh_dau','rach_gia'}
+              assert all(p['points'][k]['aqi_us'] is not None for k in p['points'])
+              assert all(p['points'][k]['pm25_ugm3'] is not None for k in p['points'])
+              assert all(p['points'][k]['pm10_ugm3'] is not None for k in p['points'])
+          PY
+      - name: Publish only a valid CAMS snapshot
+        shell: bash
+        run: |
+          STATUS=$(python -c 'import json; print(json.load(open("/tmp/air-quality.json"))["status"])')
+          if [[ "$STATUS" != "POINT_NUMERIC_READY" ]]; then
+            echo "CAMS layer not ready ($STATUS); keeping last published air-quality.json"
+            cat /tmp/air-quality.json
+            exit 0
+          fi
+          cp /tmp/air-quality.json weather/air-quality.json
+          git config user.name "jotrip-weather-bot"
+          git config user.email "jotrip-weather-bot@users.noreply.github.com"
+          git add weather/air-quality.json
+          if git diff --cached --quiet; then
+            echo "Air-quality snapshot unchanged"
+            exit 0
+          fi
+          git commit -m "chore(weather): publish CAMS air quality snapshot [skip ci]"
+          git pull --rebase origin "${{ inputs.target_ref || github.ref_name }}"
+          git push origin "HEAD:${{ inputs.target_ref || github.ref_name }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cams-air-quality
+          path: /tmp/air-quality.json
+          retention-days: 7
