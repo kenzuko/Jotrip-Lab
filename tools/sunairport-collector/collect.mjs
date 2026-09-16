@@ -56,11 +56,7 @@ function parseText(text, direction) {
     const i = flightLineIndexes[n];
     const next = flightLineIndexes[n + 1] ?? lines.length;
     let rowLines = lines.slice(i, next);
-
-    // Sun Airport renders the next row ordinal immediately before the next flight line.
-    // Drop that ordinal so status/time extraction belongs only to this physical flight row.
     if (rowLines.length > 1 && /^\d{1,3}$/.test(rowLines[rowLines.length - 1])) rowLines = rowLines.slice(0, -1);
-
     const numbers = flightHits(lines[i]);
     const context = clean(rowLines.join(' | '));
     const times = [...new Set(rowLines.flatMap(line => line.match(/\b(?:[01]?\d|2[0-3]):[0-5]\d\b/g) || []))];
@@ -102,11 +98,13 @@ try {
       const request = response.request();
       const type = request.resourceType();
       if (!['xhr', 'fetch'].includes(type)) return;
+      const headers = response.headers();
       network.push({
         url: response.url(),
         status: response.status(),
         resource_type: type,
-        content_type: response.headers()['content-type'] || ''
+        content_type: headers['content-type'] || '',
+        access_control_allow_origin: headers['access-control-allow-origin'] || ''
       });
     } catch {}
   });
@@ -118,6 +116,15 @@ try {
   const boardDate = parseBoardDate(bodyText);
   const arrivalText = await boardText(page, 'Bay đến');
   const departureText = await boardText(page, 'Bay đi');
+
+  const apiProbe = await page.evaluate(async ({ day }) => {
+    const fetchOne = async type => {
+      const u = `/phuquoc/cms/api/flights?type=${type}&date=${day}&limit=100&_t=${Date.now()}`;
+      const r = await fetch(u, { cache: 'no-store' });
+      return { type, url: new URL(u, location.origin).href, status: r.status, headers: Object.fromEntries(r.headers.entries()), body: await r.json() };
+    };
+    return { arrival: await fetchOne('A'), departure: await fetchOne('D') };
+  }, { day: s.day });
 
   const raw = {
     schema_version: '2.2-raw',
@@ -138,7 +145,8 @@ try {
 
   await fs.writeFile(path.join(workDir, 'raw.json'), JSON.stringify(raw, null, 2) + '\n');
   await fs.writeFile(path.join(workDir, 'network.json'), JSON.stringify({ collected_at_vn: s.iso, requests: network }, null, 2) + '\n');
-  console.log(JSON.stringify({ board_date: boardDate, arrivals_raw: raw.arrivals_raw.length, departures_raw: raw.departures_raw.length, api_requests: network.length }));
+  await fs.writeFile(path.join(workDir, 'api-probe.json'), JSON.stringify({ collected_at_vn: s.iso, ...apiProbe }, null, 2) + '\n');
+  console.log(JSON.stringify({ board_date: boardDate, arrivals_raw: raw.arrivals_raw.length, departures_raw: raw.departures_raw.length, api_requests: network.length, api_probe: true }));
 } catch (error) {
   const errorInfo = {
     collected_at_vn: s.iso,
