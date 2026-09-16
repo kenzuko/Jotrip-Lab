@@ -1,6 +1,6 @@
 name: Weather Air Quality
 # Environmental layer is isolated from weather/marine GO-HOLD logic.
-# Secret validation trigger: 2026-09-16
+# Live snapshots are persisted on data-weather so data refreshes do not trigger UI deploys.
 
 on:
   push:
@@ -9,7 +9,6 @@ on:
       - "weather/collectors/iqair_air_quality.py"
       - "weather/processing/air_quality.py"
       - "weather/processing/merge_air_quality.py"
-      - "weather/air-quality.json"
       - ".github/workflows/weather-air-quality.yml"
   workflow_dispatch:
   workflow_call:
@@ -31,6 +30,10 @@ concurrency:
 
 permissions:
   contents: write
+
+env:
+  DATA_BRANCH: data-weather
+  DATA_ROOT: data/weather-aqi
 
 jobs:
   air-quality:
@@ -80,26 +83,40 @@ jobs:
               assert all(p['points'][k]['aqi_us'] is not None for k in p['points'])
               assert all(p['points'][k]['aqi_source'] in {'IQAIR_COMMUNITY_REALTIME','CAMS_GLOBAL_ANALYSIS'} for k in p['points'])
           PY
-      - name: Publish only a usable AQI snapshot
+      - name: Persist usable AQI snapshot to isolated data branch
         shell: bash
         run: |
           STATUS=$(python -c 'import json; print(json.load(open("/tmp/air-quality.json"))["status"])')
           if [[ "$STATUS" != "POINT_NUMERIC_READY" ]]; then
-            echo "AQI layer not fully ready ($STATUS); keeping last published air-quality.json"
+            echo "AQI layer not fully ready ($STATUS); keeping last data-weather snapshot"
             cat /tmp/air-quality.json
             exit 0
           fi
-          cp /tmp/air-quality.json weather/air-quality.json
+
+          cp /tmp/air-quality.json /tmp/weather-aqi-latest.json
+          git reset --hard HEAD
+          git fetch origin "$DATA_BRANCH"
+          git checkout -B "$DATA_BRANCH" "origin/$DATA_BRANCH"
+          mkdir -p "$DATA_ROOT"
+          cp /tmp/weather-aqi-latest.json "$DATA_ROOT/latest.json"
           git config user.name "jotrip-weather-bot"
           git config user.email "jotrip-weather-bot@users.noreply.github.com"
-          git add weather/air-quality.json
+          git add "$DATA_ROOT/latest.json"
           if git diff --cached --quiet; then
-            echo "Air-quality snapshot unchanged"
+            echo "Air-quality live snapshot unchanged"
             exit 0
           fi
-          git commit -m "chore(weather): publish observed-first air quality snapshot [skip ci]"
-          git pull --rebase origin "${{ inputs.target_ref || github.ref_name }}"
-          git push origin "HEAD:${{ inputs.target_ref || github.ref_name }}"
+          git commit -m "data: update observed-first AQI latest"
+          for attempt in 1 2 3; do
+            if git pull --rebase origin "$DATA_BRANCH" && git push origin "HEAD:$DATA_BRANCH"; then
+              echo "AQI latest persisted on data-weather attempt $attempt"
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+          echo "Failed to persist AQI latest after 3 attempts"
+          exit 1
       - uses: actions/upload-artifact@v4
         if: always()
         with:
