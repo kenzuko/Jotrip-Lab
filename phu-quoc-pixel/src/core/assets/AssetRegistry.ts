@@ -1,3 +1,5 @@
+import Phaser from 'phaser';
+
 export type AssetType = 'image' | 'spritesheet' | 'audio';
 
 export interface AssetRecord {
@@ -34,6 +36,31 @@ export class AssetRegistry {
 
   has(key: string): boolean {
     return this.records.has(key);
+  }
+
+  queueGroup(scene: Phaser.Scene, group: string): void {
+    for (const record of this.listGroup(group)) {
+      if (!record.approved) continue;
+
+      if (record.type === 'image') {
+        if (!scene.textures.exists(record.key)) scene.load.image(record.key, record.src);
+        continue;
+      }
+
+      if (record.type === 'spritesheet') {
+        if (scene.textures.exists(record.key)) continue;
+        if (!record.frameWidth || !record.frameHeight) {
+          throw new Error(`Spritesheet ${record.key} is missing frame dimensions`);
+        }
+        scene.load.spritesheet(record.key, record.src, {
+          frameWidth: record.frameWidth,
+          frameHeight: record.frameHeight
+        });
+        continue;
+      }
+
+      if (!scene.cache.audio.exists(record.key)) scene.load.audio(record.key, record.src);
+    }
   }
 }
 
