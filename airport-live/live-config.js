@@ -1,3 +1,3 @@
 // JoTrip Airport Live runtime endpoint.
-// Keep blank until an independent edge/serverless endpoint is deployed.
-window.JOTRIP_LIVE_API_URL = window.JOTRIP_LIVE_API_URL || '';
+// Primary near-live source: Cloudflare Worker. Frontend falls back to JoTrip AutoSync snapshots if unavailable.
+window.JOTRIP_LIVE_API_URL = 'https://jotrip-airport-live.kenzuko.workers.dev';
