@@ -1,1 +1,1 @@
-# Jotrip-Lab
+JoTrip Lab
