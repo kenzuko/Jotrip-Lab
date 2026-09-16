@@ -39,18 +39,32 @@ function flightNo(token) {
   return /[A-Z]/.test(prefix) ? x : null;
 }
 
+function flightHits(line='') {
+  const hits = String(line).toUpperCase().match(/\b[A-Z0-9]{2,3}\s?\d{2,4}[A-Z]?\b/g) || [];
+  return [...new Set(hits.map(flightNo).filter(Boolean))];
+}
+
 function parseText(text, direction) {
   const lines = text.split(/\n+/).map(clean).filter(Boolean);
-  const records = [];
+  const flightLineIndexes = [];
   for (let i = 0; i < lines.length; i++) {
-    const hits = lines[i].toUpperCase().match(/\b[A-Z0-9]{2,3}\s?\d{2,4}[A-Z]?\b/g) || [];
-    for (const hit of hits) {
-      const number = flightNo(hit);
-      if (!number) continue;
-      const context = clean(lines.slice(Math.max(0, i - 3), Math.min(lines.length, i + 5)).join(' | '));
-      const times = [...new Set(context.match(/\b(?:[01]?\d|2[0-3]):[0-5]\d\b/g) || [])];
-      records.push({ direction, flight_number: number, times, context });
-    }
+    if (flightHits(lines[i]).length) flightLineIndexes.push(i);
+  }
+
+  const records = [];
+  for (let n = 0; n < flightLineIndexes.length; n++) {
+    const i = flightLineIndexes[n];
+    const next = flightLineIndexes[n + 1] ?? lines.length;
+    let rowLines = lines.slice(i, next);
+
+    // Sun Airport renders the next row ordinal immediately before the next flight line.
+    // Drop that ordinal so status/time extraction belongs only to this physical flight row.
+    if (rowLines.length > 1 && /^\d{1,3}$/.test(rowLines[rowLines.length - 1])) rowLines = rowLines.slice(0, -1);
+
+    const numbers = flightHits(lines[i]);
+    const context = clean(rowLines.join(' | '));
+    const times = [...new Set(rowLines.flatMap(line => line.match(/\b(?:[01]?\d|2[0-3]):[0-5]\d\b/g) || []))];
+    for (const number of numbers) records.push({ direction, flight_number: number, times, context });
   }
   return records;
 }
@@ -90,7 +104,7 @@ try {
   const departureText = await boardText(page, 'Bay đi');
 
   const raw = {
-    schema_version: '2.1-raw',
+    schema_version: '2.2-raw',
     collected_at_vn: s.iso,
     collected_day_vn: s.day,
     collected_hhmm_vn: s.hhmm,
