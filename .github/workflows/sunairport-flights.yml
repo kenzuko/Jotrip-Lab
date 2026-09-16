@@ -49,12 +49,14 @@ jobs:
         working-directory: tools/sunairport-collector
         run: node collect.mjs
 
-      - name: Normalize, deduplicate and QA
+      - name: Normalize, archive events and finalize live data
         id: normalize
         if: steps.collect.outcome == 'success'
         continue-on-error: true
         working-directory: tools/sunairport-collector
-        run: node normalize.mjs
+        run: |
+          node normalize.mjs
+          node compat.mjs
 
       - name: Record collection failure health
         if: steps.collect.outcome == 'failure'
