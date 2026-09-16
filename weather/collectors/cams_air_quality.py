@@ -13,15 +13,11 @@ import zipfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-POINTS = {
-    "duong_dong": (10.2172, 103.9593),
-    "an_thoi": (10.0191, 104.0150),
-    "ganh_dau": (10.3759, 103.9000),
-    "rach_gia": (10.00677, 105.07845),
-}
+from weather.points import POINTS
+
 DATASET = "cams-global-atmospheric-composition-forecasts"
 ADS_URL = "https://ads.atmosphere.copernicus.eu/api"
-AREA = [10.6, 103.5, 9.7, 105.4]  # north, west, south, east
+AREA = [10.6, 103.5, 9.7, 105.4]
 VARIABLES = ["particulate_matter_2.5um", "particulate_matter_10um"]
 TIMES = ["00:00", "06:00", "12:00", "18:00"]
 
@@ -119,7 +115,6 @@ def _open_download(path: Path):
 
 
 def _client(api_key: str):
-    """Use ECMWF's current Data Stores client so ADS Personal Access Tokens work directly."""
     from ecmwf.datastores import Client
     return Client(url=ADS_URL, key=api_key)
 
