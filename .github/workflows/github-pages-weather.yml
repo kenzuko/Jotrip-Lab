@@ -108,8 +108,11 @@ jobs:
               if not path.is_file() or path.suffix not in text_ext:
                   continue
               text = path.read_text(encoding='utf-8')
+              # Rewrite only same-origin string literals. Never rewrite a path
+              # that merely appears inside an external https:// URL.
               for old, new in replacements.items():
-                  text = text.replace(old, new)
+                  for quote in ('"', "'", '`'):
+                      text = text.replace(quote + old, quote + new)
               text = text.replace('{scope:"/"}', '{scope:"/Jotrip-Lab/weather/"}')
               text = text.replace("{scope:'/' }", "{scope:'/Jotrip-Lab/weather/'}")
               path.write_text(text, encoding='utf-8')
@@ -117,6 +120,9 @@ jobs:
           html = (root / 'index.html').read_text(encoding='utf-8')
           assert '/Jotrip-Lab/weather/weather-dashboard.css' in html
           assert '/Jotrip-Lab/weather/data/dashboard-data.json' in (root / 'weather-dashboard-enhancements.js').read_text(encoding='utf-8')
+          history_js = (root / 'weather-history.js').read_text(encoding='utf-8')
+          assert 'raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast' in history_js
+          assert 'data-weather/Jotrip-Lab/weather/' not in history_js
           PY
 
       - name: Publish only Weather folder to gh-pages
