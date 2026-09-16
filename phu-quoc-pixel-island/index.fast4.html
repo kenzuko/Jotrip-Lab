@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#052b42">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>PHU QUOC: PIXEL ISLAND</title>
+<link rel="stylesheet" href="./style.css?v=fast4">
+<script src="./runtime/asset-map.js?v=fast4"></script>
+<script defer src="./app.js?v=fast4"></script>
+</head>
+<body>
+<div id="app">
+  <button id="soundBtn" class="sound" type="button">SOUND ON</button>
+  <div class="build">REBUILD V1 · CLEAN</div>
+  <section id="landing" class="screen active landing">
+    <div class="water-grid"></div><div class="cloud c1"></div><div class="cloud c2"></div>
+    <div class="logo"><small>WELCOME TO</small><h1>PHU QUOC:<br><span>PIXEL ISLAND</span></h1><em>EXPLORE · DISCOVER · PLAY</em></div>
+    <img id="landingIsland" class="island" alt="Phu Quoc Island">
+    <div class="landing-actions"><p>One island. Many bad decisions.</p><button class="btn primary" data-go="airport">ENTER THE ISLAND</button><small>Play free. No download required.</small></div>
+  </section>
+  <section id="airport" class="screen airport">
+    <div id="airportBg" class="airport-bg"></div><div class="shade"></div>
+    <div class="scene-title"><small>PHU QUOC INTERNATIONAL AIRPORT</small><h2>YOU MADE IT.</h2></div>
+    <img id="ken" class="ken" alt="Ken local guide">
+    <div class="dialog"><b>KEN · LOCAL GUIDE</b><p>Welcome to Phu Quoc. Where would you like to go?</p><button class="btn primary" data-go="characters">CHOOSE A TRAVELER</button></div>
+  </section>
+  <section id="characters" class="screen characters">
+    <header><small>CHARACTER SELECT</small><h2>WHO ARE YOU TODAY?</h2><p>Choose your island character.</p></header>
+    <div id="characterGrid" class="character-grid"></div>
+    <footer><label for="playerName">YOUR NAME</label><input id="playerName" maxlength="18" value="Traveler" autocomplete="off"><button id="openMapBtn" class="btn primary">OPEN ISLAND MAP</button></footer>
+  </section>
+  <section id="map" class="screen map">
+    <div class="water-grid"></div>
+    <header><small id="mapHello">WELCOME, TRAVELER</small><h2>PHU QUOC ISLAND</h2><p>JO <b id="mapJo">0</b> · MAP PIECES <b id="mapPieces">0/1</b></p></header>
+    <div class="map-wrap">
+      <img id="mapIsland" class="map-island" alt="Phu Quoc Island">
+      <button id="sunsetPin" class="pin live" style="left:29%;top:73%"><b>SUNSET TOWN</b><small id="sunsetState">PLAY NOW</small></button>
+      <button class="pin locked" disabled style="left:49%;top:92%"><b>HON THOM</b><small>COMING SOON</small></button>
+      <button class="pin locked" disabled style="left:61%;top:69%"><b>BAI SAO</b><small>COMING SOON</small></button>
+      <button class="pin locked" disabled style="left:33%;top:50%"><b>NIGHT MARKET</b><small>COMING SOON</small></button>
+      <button class="pin locked" disabled style="left:42%;top:24%"><b>GRAND WORLD</b><small>COMING SOON</small></button>
+      <button class="pin locked" disabled style="left:49%;top:15%"><b>SAFARI</b><small>COMING SOON</small></button>
+    </div>
+    <button class="back" data-go="characters">BACK TO CHARACTER</button>
+  </section>
+  <section id="game" class="screen game">
+    <div id="gameAmbient" class="game-ambient"></div>
+    <div class="canvas-wrap"><canvas id="gameCanvas" width="540" height="960"></canvas></div>
+    <div id="loadGame" class="modal"><div class="card"><small>SUNSET TOWN</small><h2>LOADING RIDE</h2><p id="loadText">0%</p></div></div>
+    <div id="tutorial" class="modal"><div class="card"><small>SUNSET TOWN</small><h2>NO BRAKES</h2><p>The scooter moves by itself.<br><b>TAP · CLICK · SPACE = HOP</b></p><em>The first 2 obstacles are training-safe.</em><button id="startRide" class="btn primary">START RIDE</button><button class="btn ghost backMap">BACK TO MAP</button></div></div>
+    <div id="gameOver" class="modal"><div class="card"><small>SUNSET TOWN</small><h2>GAME OVER</h2><p id="gameOverText"></p><button id="retry" class="btn primary">RETRY</button><button class="btn ghost backMap">BACK TO MAP</button></div></div>
+    <div id="clear" class="modal"><div class="card"><small>MAP PIECE FOUND</small><h2>SUNSET TOWN CLEARED</h2><p>SCORE <b>100</b><br>MAP PIECE <b>+1</b></p><button id="endless" class="btn primary">ENDLESS MODE</button><button class="btn ghost backMap">BACK TO MAP</button></div></div>
+  </section>
+</div>
+</body>
+</html>
