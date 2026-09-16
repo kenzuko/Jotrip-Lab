@@ -1,5 +1,5 @@
 (()=>{
-const POINTS={an_thoi:{name:'An Thới',lat:10.0191,lon:104.0150},duong_dong:{name:'Dương Đông',lat:10.2172,lon:103.9593},ganh_dau:{name:'Gành Dầu',lat:10.3759,lon:103.9000},rach_gia:{name:'Rạch Giá',lat:10.00677,lon:105.07845}};
+const POINTS={an_thoi:{name:'An Thới',lat:10.0191,lon:104.0150},duong_dong:{name:'Dương Đông',lat:10.2172,lon:103.9593},ganh_dau:{name:'Gành Dầu',lat:10.37077,lon:103.84472},rach_gia:{name:'Rạch Giá',lat:10.00677,lon:105.07845}};
 const RAW='https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/';
 const SOURCES={weather:['/weather/dashboard-data.json'],aqi:[RAW+'weather-aqi/latest.json','/weather/air-quality.json'],tide:['/weather/tide.json'],nowcast:[RAW+'weather-nowcast/latest.json','/weather/nowcast.json']};
 let map=null,provider='none',markers={},active='weather',data={weather:null,aqi:null,tide:null,nowcast:null},tileErrors=0;
