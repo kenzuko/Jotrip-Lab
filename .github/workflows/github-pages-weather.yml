@@ -10,21 +10,22 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: weather-pages
-  cancel-in-progress: true
+  group: weather-pages-writer
+  cancel-in-progress: false
 
 env:
   WEATHER_REF: feat/weather-lab-data-engine-v1
   DATA_REF: data-weather
+  PAGES_REF: gh-pages
+  PAGES_DIR: weather
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout Weather Lab source
         uses: actions/checkout@v4
@@ -40,90 +41,113 @@ jobs:
           path: live-data
           fetch-depth: 1
 
-      - name: Build static Pages bundle
+      - name: Checkout existing GitHub Pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.PAGES_REF }}
+          path: pages
+          fetch-depth: 0
+
+      - name: Build isolated Weather Lab sub-site
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf _site
-          mkdir -p _site/weather _site/data
+          rm -rf /tmp/weather-pages
+          mkdir -p /tmp/weather-pages/data
 
-          cp source/weather.html _site/index.html
-          cp source/weather.html _site/weather.html
-          cp source/weather-history.html _site/
-          cp source/weather-history.css _site/
-          cp source/weather-history.js _site/
-          cp source/weather-dashboard*.js _site/
-          cp source/weather-dashboard*.css _site/
-          cp source/weather-app-icon.svg _site/
-          cp source/weather-manifest.webmanifest _site/
-          cp source/weather-sw.js _site/
+          cp source/weather.html /tmp/weather-pages/index.html
+          cp source/weather.html /tmp/weather-pages/weather.html
+          cp source/weather-history.html /tmp/weather-pages/
+          cp source/weather-history.css /tmp/weather-pages/
+          cp source/weather-history.js /tmp/weather-pages/
+          cp source/weather-dashboard*.js /tmp/weather-pages/
+          cp source/weather-dashboard*.css /tmp/weather-pages/
+          cp source/weather-app-icon.svg /tmp/weather-pages/
+          cp source/weather-manifest.webmanifest /tmp/weather-pages/
+          cp source/weather-sw.js /tmp/weather-pages/
 
           for f in dashboard-data.json air-quality.json tide.json nowcast.json; do
             if [ -f "source/weather/$f" ]; then
-              cp "source/weather/$f" "_site/weather/$f"
+              cp "source/weather/$f" "/tmp/weather-pages/data/$f"
             fi
           done
 
           if [ -d live-data/data/weather-aqi ]; then
-            cp -a live-data/data/weather-aqi _site/data/
+            cp -a live-data/data/weather-aqi /tmp/weather-pages/data/
           fi
           if [ -d live-data/data/weather-nowcast ]; then
-            cp -a live-data/data/weather-nowcast _site/data/
+            cp -a live-data/data/weather-nowcast /tmp/weather-pages/data/
           fi
 
-          touch _site/.nojekyll
-
-      - name: Make Weather Lab project-path safe
-        env:
-          REPO_NAME: ${{ github.event.repository.name }}
+      - name: Make Weather Lab safe under /Jotrip-Lab/weather/
+        shell: bash
         run: |
           python - <<'PY'
-          import os
           from pathlib import Path
 
-          root = Path('_site')
-          base = f"/{os.environ['REPO_NAME']}/"
+          root = Path('/tmp/weather-pages')
+          base = '/Jotrip-Lab/weather/'
           text_ext = {'.html', '.js', '.css', '.webmanifest'}
+
+          replacements = {
+              '/weather/dashboard-data.json': base + 'data/dashboard-data.json',
+              '/weather/air-quality.json': base + 'data/air-quality.json',
+              '/weather/tide.json': base + 'data/tide.json',
+              '/weather/nowcast.json': base + 'data/nowcast.json',
+              '/data/weather-aqi/': base + 'data/weather-aqi/',
+              '/data/weather-nowcast/': base + 'data/weather-nowcast/',
+              '/weather-history.html': base + 'weather-history.html',
+              '/weather.html': base,
+              '/weather-dashboard': base + 'weather-dashboard',
+              '/weather-app-icon.svg': base + 'weather-app-icon.svg',
+              '/weather-manifest.webmanifest': base + 'weather-manifest.webmanifest',
+              '/weather-sw.js': base + 'weather-sw.js',
+          }
 
           for path in root.rglob('*'):
               if not path.is_file() or path.suffix not in text_ext:
                   continue
               text = path.read_text(encoding='utf-8')
-              original = text
+              for old, new in replacements.items():
+                  text = text.replace(old, new)
+              text = text.replace('{scope:"/"}', '{scope:"/Jotrip-Lab/weather/"}')
+              text = text.replace("{scope:'/' }", "{scope:'/Jotrip-Lab/weather/'}")
+              path.write_text(text, encoding='utf-8')
 
-              for quote in ('"', "'"):
-                  text = text.replace(f'{quote}/weather-', f'{quote}{base}weather-')
-                  text = text.replace(f'{quote}/weather/', f'{quote}{base}weather/')
-                  text = text.replace(f'{quote}/weather.html', f'{quote}{base}weather.html')
-
-              text = text.replace('{scope:"/"}', f'{{scope:"{base}"}}')
-              text = text.replace("{scope:'/' }", f"{{scope:'{base}'}}")
-
-              if text != original:
-                  path.write_text(text, encoding='utf-8')
-
-          index = root / 'index.html'
-          assert index.exists()
-          assert f'{base}weather-dashboard.css' in index.read_text(encoding='utf-8')
+          html = (root / 'index.html').read_text(encoding='utf-8')
+          assert '/Jotrip-Lab/weather/weather-dashboard.css' in html
+          assert '/Jotrip-Lab/weather/data/dashboard-data.json' in (root / 'weather-dashboard-enhancements.js').read_text(encoding='utf-8')
           PY
 
-      - name: Configure or enable GitHub Pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
+      - name: Publish only Weather folder to gh-pages
+        shell: bash
+        working-directory: pages
+        run: |
+          set -euo pipefail
+          rm -rf "$PAGES_DIR"
+          mkdir -p "$PAGES_DIR"
+          cp -a /tmp/weather-pages/. "$PAGES_DIR"/
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: _site
+          git config user.name "jotrip-weather-bot"
+          git config user.email "jotrip-weather-bot@users.noreply.github.com"
+          git add "$PAGES_DIR"
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: weather-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          if git diff --cached --quiet; then
+            echo "Weather Pages already current"
+            exit 0
+          fi
+
+          git commit -m "deploy(weather): refresh GitHub Pages snapshot"
+
+          for attempt in 1 2 3; do
+            if git pull --rebase origin "$PAGES_REF" && git push origin "HEAD:$PAGES_REF"; then
+              echo "Weather Lab published to gh-pages on attempt $attempt"
+              exit 0
+            fi
+            echo "Publish attempt $attempt failed; retrying"
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+
+          echo "Weather Lab gh-pages publish failed after 3 attempts"
+          exit 1
