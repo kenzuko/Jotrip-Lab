@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - feat/tourism-intelligence-v2-safe-modules-v1
+      - main
     paths:
       - 'tourism_intelligence_v2/collectors/marine_ops/**'
       - 'tourism_intelligence_v2/contracts.py'
@@ -12,7 +12,6 @@ on:
       - 'config/tourism_v2/marine-ops.v1.json'
       - '.github/workflows/tourism-marine-ops.yml'
   schedule:
-    # Runs only after this workflow reaches the default branch.
     # Asia/Ho_Chi_Minh morning 04:00-09:30.
     - cron: '*/30 21-23 * * *'
     - cron: '*/30 0-2 * * *'
