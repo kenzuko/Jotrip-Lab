@@ -48,9 +48,12 @@ function extractStation(context, flightNumbers) {
 
 function extractStatus(context) {
   const u = String(context || '').toUpperCase();
+  // Sun Airport uses “ĐỔI GIỜ” when a revised time is published. For the
+  // operations UI this is normalized to TRỄ while the raw context is retained.
+  if (u.includes('ĐỔI GIỜ')) return 'TRỄ';
   const known = [
     'QUẦY THỦ TỤC ĐÃ ĐÓNG','ĐANG LÀM THỦ TỤC','LÀM THỦ TỤC LÚC',
-    'ĐÃ HẠ CÁNH','ĐÃ CẤT CÁNH','ĐỔI GIỜ','ĐÚNG GIỜ','TRỄ','HỦY','HOÃN',
+    'ĐÃ HẠ CÁNH','ĐÃ CẤT CÁNH','ĐÚNG GIỜ','TRỄ','HỦY','HOÃN',
     'BÃI ĐỖ','RESCHEDULED','CANCELLED','DELAYED','BOARDING'
   ];
   return known.find(x => u.includes(x)) || '';
@@ -70,7 +73,7 @@ function diffMinutes(from, to) {
 
 function timingFields(times, status) {
   const scheduled_time = times?.[0] || null;
-  const changed = /TRỄ|HOÃN|ĐỔI GIỜ|DELAYED|RESCHEDULED/i.test(status || '');
+  const changed = /TRỄ|HOÃN|DELAYED|RESCHEDULED/i.test(status || '');
   const candidate = changed && times?.length > 1 ? times[times.length - 1] : null;
   const estimated_time = candidate && candidate !== scheduled_time ? candidate : null;
   const delay_minutes = estimated_time ? diffMinutes(scheduled_time, estimated_time) : null;
