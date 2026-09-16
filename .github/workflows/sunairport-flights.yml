@@ -3,10 +3,10 @@ name: Sun Airport flights
 on:
   workflow_dispatch:
   schedule:
-    # Airport Live polling window - Asia/Ho_Chi_Minh roughly 04:03-23:53.
-    # Use off-round minutes to reduce GitHub scheduler congestion.
-    - cron: '3,13,23,33,43,53 21-23 * * *'
-    - cron: '3,13,23,33,43,53 0-16 * * *'
+    # Airport Live polling window - Asia/Ho_Chi_Minh roughly 04:03-23:58.
+    # GitHub scheduled workflows are best-effort; 5-minute cadence reduces snapshot age.
+    - cron: '3,8,13,18,23,28,33,38,43,48,53,58 21-23 * * *'
+    - cron: '3,8,13,18,23,28,33,38,43,48,53,58 0-16 * * *'
   push:
     branches: [main]
     paths:
