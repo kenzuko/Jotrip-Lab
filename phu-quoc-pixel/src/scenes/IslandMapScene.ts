@@ -18,15 +18,15 @@ export class IslandMapScene extends Phaser.Scene {
     const progress = progressStore.getProgress();
 
     this.add
-      .text(width / 2, 55, `WELCOME, ${profile.displayName.toUpperCase()}`, {
+      .text(width / 2, 48, `WELCOME, ${profile.displayName.toUpperCase()}`, {
         fontFamily: 'monospace',
-        fontSize: '18px',
+        fontSize: '17px',
         color: '#fcbd22'
       })
       .setOrigin(0.5);
 
     this.add
-      .text(width / 2, 95, 'PHU QUOC ISLAND MAP', {
+      .text(width / 2, 88, 'PHU QUOC ISLAND MAP', {
         fontFamily: 'monospace',
         fontSize: '27px',
         fontStyle: 'bold',
@@ -35,19 +35,25 @@ export class IslandMapScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(width / 2, 137, `JO ${progress.totalJo} · CHARACTER ${profile.characterId.toUpperCase()}`, {
+      .text(width / 2, 130, `JO ${progress.totalJo} · CHARACTER ${profile.characterId.toUpperCase()}`, {
         fontFamily: 'monospace',
         fontSize: '12px',
         color: '#d5eef5'
       })
       .setOrigin(0.5);
 
-    this.add.ellipse(width / 2, 480, 270, 560, 0x6f934f).setStrokeStyle(8, 0xf3dfaa, 0.7);
+    const mapWidth = 360;
+    const mapHeight = mapWidth * (293 / 240);
+    const mapLeft = width / 2 - mapWidth / 2;
+    const mapTop = 180;
 
-    const mapLeft = width / 2 - 135;
-    const mapTop = 200;
-    const mapWidth = 270;
-    const mapHeight = 560;
+    this.add
+      .rectangle(width / 2, mapTop + mapHeight / 2, mapWidth + 24, mapHeight + 24, 0x06394b, 0.78)
+      .setStrokeStyle(2, 0xf3dfaa, 0.35);
+
+    this.add
+      .image(width / 2, mapTop + mapHeight / 2, 'island-map')
+      .setDisplaySize(mapWidth, mapHeight);
 
     let notice: Phaser.GameObjects.Text | undefined;
 
@@ -56,14 +62,16 @@ export class IslandMapScene extends Phaser.Scene {
       const y = mapTop + location.mapPosition.y * mapHeight;
       const available = location.status === 'available';
 
-      const pin = this.add.circle(x, y, available ? 15 : 10, available ? 0xfcbd22 : 0x31565d);
+      const pin = this.add.circle(x, y, available ? 14 : 9, available ? 0xfcbd22 : 0x31565d);
+      pin.setStrokeStyle(2, available ? 0xffffff : 0x78949b, 0.9);
+
       const label = this.add
-        .text(x, y + 20, location.label, {
+        .text(x, y + 17, location.label, {
           fontFamily: 'monospace',
-          fontSize: available ? '12px' : '9px',
+          fontSize: available ? '11px' : '8px',
           fontStyle: 'bold',
-          color: available ? '#ffffff' : '#b8ced3',
-          backgroundColor: '#06394bcc',
+          color: available ? '#ffffff' : '#c4d7da',
+          backgroundColor: '#06394bd9',
           padding: { x: 4, y: 3 }
         })
         .setOrigin(0.5, 0);
@@ -74,9 +82,9 @@ export class IslandMapScene extends Phaser.Scene {
         const open = (): void => {
           if (notice) notice.destroy();
           notice = this.add
-            .text(width / 2, 805, 'SUNSET TOWN · NO BRAKES', {
+            .text(width / 2, 690, 'SUNSET TOWN · NO BRAKES', {
               fontFamily: 'monospace',
-              fontSize: '17px',
+              fontSize: '16px',
               fontStyle: 'bold',
               color: '#05263a',
               backgroundColor: '#fcbd22',
@@ -84,12 +92,20 @@ export class IslandMapScene extends Phaser.Scene {
             })
             .setOrigin(0.5);
 
-          this.time.delayedCall(260, () => flowController.go(this, SceneKeys.NoBrakes));
+          this.time.delayedCall(220, () => flowController.go(this, SceneKeys.NoBrakes));
         };
         pin.on('pointerdown', open);
         label.on('pointerdown', open);
       }
     });
+
+    this.add
+      .text(width / 2, 742, 'ONE LOCATION OPEN · MORE ISLAND STORIES LATER', {
+        fontFamily: 'monospace',
+        fontSize: '10px',
+        color: '#bfe0e7'
+      })
+      .setOrigin(0.5);
 
     createButton(
       this,
