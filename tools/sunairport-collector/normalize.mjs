@@ -20,7 +20,7 @@ const raw = JSON.parse(await fs.readFile(workPath, 'utf8'));
 const allRaw = [...(raw.arrivals_raw || []), ...(raw.departures_raw || [])];
 
 function physicalKey(r) {
-  const t = r.times?.[r.times.length - 1] || r.times?.[0] || '';
+  const t = r.times?.[0] || '';
   return `${r.direction}|${t}|${r.context}`;
 }
 
@@ -39,8 +39,8 @@ function extractStation(context, flightNumbers) {
   }
   for (let i = start; i < Math.min(parts.length, start + 5); i++) {
     const c = clean(parts[i]);
-    if (!c || flightRe.test(c) || timeRe.test(c)) continue;
-    if (/^(ĐÚNG GIỜ|TRỄ|HỦY|HOÃN|ĐÃ HẠ CÁNH|ĐÃ CẤT CÁNH|ĐANG LÀM THỦ TỤC|QUẦY THỦ TỤC ĐÃ ĐÓNG|LÀM THỦ TỤC LÚC|BÃI ĐỖ)$/i.test(c)) continue;
+    if (!c || flightRe.test(c) || timeRe.test(c) || /^\d{1,3}$/.test(c)) continue;
+    if (/^(ĐÚNG GIỜ|TRỄ|HỦY|HOÃN|ĐỔI GIỜ|ĐÃ HẠ CÁNH|ĐÃ CẤT CÁNH|ĐANG LÀM THỦ TỤC|QUẦY THỦ TỤC ĐÃ ĐÓNG|LÀM THỦ TỤC LÚC|BÃI ĐỖ|BOARDING|DELAYED|CANCELLED|RESCHEDULED)$/i.test(c)) continue;
     return c;
   }
   return '';
@@ -49,25 +49,54 @@ function extractStation(context, flightNumbers) {
 function extractStatus(context) {
   const u = String(context || '').toUpperCase();
   const known = [
-    'ĐÃ HẠ CÁNH','ĐÃ CẤT CÁNH','ĐÚNG GIỜ','TRỄ','HỦY','HOÃN',
-    'ĐANG LÀM THỦ TỤC','QUẦY THỦ TỤC ĐÃ ĐÓNG','LÀM THỦ TỤC LÚC',
-    'BÃI ĐỖ','BOARDING','DELAYED','CANCELLED','RESCHEDULED'
+    'QUẦY THỦ TỤC ĐÃ ĐÓNG','ĐANG LÀM THỦ TỤC','LÀM THỦ TỤC LÚC',
+    'ĐÃ HẠ CÁNH','ĐÃ CẤT CÁNH','ĐỔI GIỜ','ĐÚNG GIỜ','TRỄ','HỦY','HOÃN',
+    'BÃI ĐỖ','RESCHEDULED','CANCELLED','DELAYED','BOARDING'
   ];
   return known.find(x => u.includes(x)) || '';
+}
+
+function diffMinutes(from, to) {
+  const toMin = t => {
+    const m = String(t || '').match(/^(\d{1,2}):(\d{2})$/);
+    return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+  };
+  const a = toMin(from), b = toMin(to);
+  if (a == null || b == null) return null;
+  let d = b - a;
+  if (d < 0) d += 1440;
+  return d >= 0 && d <= 720 ? d : null;
+}
+
+function timingFields(times, status) {
+  const scheduled_time = times?.[0] || null;
+  const changed = /TRỄ|HOÃN|ĐỔI GIỜ|DELAYED|RESCHEDULED/i.test(status || '');
+  const candidate = changed && times?.length > 1 ? times[times.length - 1] : null;
+  const estimated_time = candidate && candidate !== scheduled_time ? candidate : null;
+  const delay_minutes = estimated_time ? diffMinutes(scheduled_time, estimated_time) : null;
+  return {
+    scheduled_time,
+    estimated_time,
+    delay_minutes,
+    timing_source: estimated_time ? 'SUN_AIRPORT_ROW' : (changed ? 'STATUS_ONLY' : 'SCHEDULED_ONLY')
+  };
 }
 
 const records = [...groups.values()].map(group => {
   const first = group[0];
   const flightNumbers = [...new Set(group.map(r => String(r.flight_number || '').toUpperCase()).filter(Boolean))];
   const station = extractStation(first.context, flightNumbers);
+  const status = extractStatus(first.context);
+  const timing = timingFields(first.times || [], status);
   return {
     direction: first.direction,
     operating_flight_number: flightNumbers[0] || '',
     marketing_flight_numbers: flightNumbers.slice(1),
     times: first.times || [],
+    ...timing,
     station,
     market: station ? (domesticStations.has(station.toUpperCase()) ? 'domestic' : 'international') : 'unknown',
-    status: extractStatus(first.context),
+    status,
     context: first.context
   };
 });
@@ -84,7 +113,7 @@ const countBy = (items, fn) => {
   return Object.fromEntries(Object.entries(out).sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0])));
 };
 const bank = items => countBy(items, r => {
-  const t = r.times?.[r.times.length - 1] || r.times?.[0] || '';
+  const t = r.estimated_time || r.scheduled_time || r.times?.[0] || '';
   const h = Number(t.slice(0,2));
   if (!Number.isInteger(h)) return '';
   if (h < 6) return '00:00-05:59';
@@ -108,9 +137,9 @@ else if (usable && raw.board_date && raw.board_date !== raw.collected_day_vn) st
 else if (usable && !raw.board_date) state = 'QA_FAILED';
 
 const output = {
-  schema_version: '2.1',
-  parser_version: 'sunairport-physical-v2.1',
-  normalization_version: 'codeshare-row-v2.1',
+  schema_version: '2.2',
+  parser_version: 'sunairport-row-v2.2',
+  normalization_version: 'codeshare-timing-v2.2',
   report_state: state,
   collected_at_vn: raw.collected_at_vn,
   source_date: raw.board_date,
@@ -131,7 +160,9 @@ const output = {
     usable,
     board_date_matches_collection_date: raw.board_date === raw.collected_day_vn,
     physical_movement_dedup: true,
-    codeshare_method: 'same rendered row + direction + scheduled time'
+    row_scoped_status_parse: true,
+    codeshare_method: 'same rendered row + direction + scheduled time',
+    revised_time_method: 'second row time only when row status indicates delay/reschedule'
   },
   records
 };
