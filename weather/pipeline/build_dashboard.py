@@ -15,14 +15,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from weather.points import POINT_NAMES, POINTS
 from weather.processing.units import speed_to_kmh
 
-POINT_NAMES = {
-    "an_thoi": "An Thới",
-    "duong_dong": "Dương Đông",
-    "ganh_dau": "Gành Dầu",
-    "rach_gia": "Rạch Giá",
-}
 VN = ZoneInfo("Asia/Ho_Chi_Minh")
 GUST_KEYS = ("10fg", "10fg3", "i10fg", "max_i10fg")
 HMAX_KEYS = ("hmax", "max_wave_height")
@@ -249,6 +244,48 @@ def _copernicus_wave(copernicus: dict, point: str) -> tuple[float | None, float 
     return wave_out, period_out, regional_out, sampled_time
 
 
+def _sample_location(record: dict | None) -> dict | None:
+    if not isinstance(record, dict) or record.get("status") != "PASS":
+        return None
+    try:
+        lat = float(record["sampled_lat"])
+        lon = float(record["sampled_lon"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    distance = record.get("distance_km")
+    try:
+        distance = round(float(distance), 3) if distance is not None else None
+    except (TypeError, ValueError):
+        distance = None
+    return {
+        "sampled_lat": lat,
+        "sampled_lon": lon,
+        "distance_km": distance,
+        "sampled_time": record.get("sampled_time"),
+    }
+
+
+def _marine_sampling(copernicus: dict, point: str) -> dict:
+    try:
+        wave_record = copernicus["wave"]["variables"]["VHM0"]["points"][point]
+    except (KeyError, TypeError):
+        wave_record = None
+    try:
+        current_record = copernicus["current"]["derived_vectors"][point]
+        current_location = {
+            "sampled_lat": float(current_record["sampled_lat"]),
+            "sampled_lon": float(current_record["sampled_lon"]),
+            "distance_km": round(float(current_record.get("distance_km")), 3) if current_record.get("distance_km") is not None else None,
+            "sampled_time": current_record.get("sampled_time"),
+        }
+    except (KeyError, TypeError, ValueError):
+        current_location = None
+    return {
+        "wave": _sample_location(wave_record),
+        "current": current_location,
+    }
+
+
 def _icon_cycle(field_url: str | None) -> str | None:
     if not field_url:
         return None
@@ -306,9 +343,12 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
             "current": current,
         }
         present += sum(value is not None for value in values.values())
+        ref_lat, ref_lon = POINTS[point]
         points[point] = {
             "name": name,
             "status": "LIVE DIRECT MODEL",
+            "reference_point": {"lat": ref_lat, "lon": ref_lon, "type": "AREA_REFERENCE"},
+            "marine_sampling": _marine_sampling(copernicus, point),
             "temperature": temperature,
             **values,
             "wave_regional_hs": regional_hs,
