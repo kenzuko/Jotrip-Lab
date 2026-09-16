@@ -9,12 +9,13 @@
 <link rel="stylesheet" href="./typography.css">
 <link rel="stylesheet" href="./history.css">
 <link rel="stylesheet" href="./ui-fixes.css?v=20260916k">
+<link rel="stylesheet" href="./mobile-logo-fix.css?v=20260916m">
 </head>
 <body>
 <div class="history-app">
 <header class="topbar">
   <div class="brand">
-    <a class="brand-home" href="./index.html" aria-label="Về trang chủ JoTrip Airport Live"><div class="brand-logo"><picture><source srcset="./jotrip-logo.webp?v=20260916j" type="image/webp"><img src="./jotrip-logo-master.png?v=20260916j" alt="JoTrip" decoding="async" fetchpriority="high"></picture></div></a>
+    <a class="brand-home" href="./index.html" aria-label="Về trang chủ JoTrip Airport Live"><div class="brand-logo"><img src="./jotrip-logo-master.png?v=20260916m" alt="JoTrip" decoding="async" fetchpriority="high"></div></a>
     <span class="brand-divider"></span>
     <div><h1>Airport History</h1><p>PQC historical flight intelligence</p></div>
   </div>
@@ -67,6 +68,7 @@
   </section>
 </main>
 </div>
+<nav class="mobile-nav"><button onclick="location.href='./index.html'"><span>⌂</span>Live</button><button onclick="location.href='./index.html#flightBoard'"><span>✈</span>Flights</button><button class="active"><span>◷</span>History</button><button onclick="location.href='./index.html#analytics'"><span>▥</span>Analytics</button><button onclick="location.reload()"><span>↻</span>Refresh</button></nav>
 <script src="./history-v3.js?v=20260916h"></script>
 </body>
 </html>
