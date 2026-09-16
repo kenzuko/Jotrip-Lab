@@ -1,11 +1,73 @@
 {
-  "status": "CREDENTIALS_MISSING",
+  "status": "POINT_NUMERIC_READY",
   "source": "CAMS_GLOBAL_ANALYSIS",
   "dataset": "cams-global-atmospheric-composition-forecasts",
   "grid_resolution": "0.4deg",
   "method": "MODEL_ANALYSIS_INSTANT_PM_US_AQI_PROXY",
   "aqi_standard": "US EPA 2024 PM breakpoints applied to instantaneous CAMS model concentration; not observed/regulatory AQI",
-  "sampled_time": null,
-  "points": {},
-  "detail": "Waiting for ADS_API_KEY GitHub Actions secret and CAMS dataset licence acceptance"
+  "requested_date": "2026-09-15",
+  "sampled_time": "2026-09-15T12:00:00Z",
+  "points": {
+    "duong_dong": {
+      "pm25_ugm3": 12.9,
+      "pm10_ugm3": 15.1,
+      "aqi_us": 58,
+      "category": "MODERATE",
+      "dominant_pollutant": "PM2.5",
+      "subindices": {
+        "PM2.5": 58,
+        "PM10": 14
+      },
+      "sampled_time": "2026-09-15T12:00:00Z",
+      "grid_lat": 10.4,
+      "grid_lon": 104.0,
+      "source_type": "MODEL"
+    },
+    "an_thoi": {
+      "pm25_ugm3": 18.7,
+      "pm10_ugm3": 21.8,
+      "aqi_us": 69,
+      "category": "MODERATE",
+      "dominant_pollutant": "PM2.5",
+      "subindices": {
+        "PM2.5": 69,
+        "PM10": 19
+      },
+      "sampled_time": "2026-09-15T12:00:00Z",
+      "grid_lat": 10.0,
+      "grid_lon": 104.0,
+      "source_type": "MODEL"
+    },
+    "ganh_dau": {
+      "pm25_ugm3": 12.9,
+      "pm10_ugm3": 15.1,
+      "aqi_us": 58,
+      "category": "MODERATE",
+      "dominant_pollutant": "PM2.5",
+      "subindices": {
+        "PM2.5": 58,
+        "PM10": 14
+      },
+      "sampled_time": "2026-09-15T12:00:00Z",
+      "grid_lat": 10.4,
+      "grid_lon": 104.0,
+      "source_type": "MODEL"
+    },
+    "rach_gia": {
+      "pm25_ugm3": 46.8,
+      "pm10_ugm3": 48.9,
+      "aqi_us": 129,
+      "category": "UNHEALTHY_FOR_SENSITIVE_GROUPS",
+      "dominant_pollutant": "PM2.5",
+      "subindices": {
+        "PM2.5": 129,
+        "PM10": 44
+      },
+      "sampled_time": "2026-09-15T12:00:00Z",
+      "grid_lat": 10.0,
+      "grid_lon": 105.2,
+      "source_type": "MODEL"
+    }
+  },
+  "detail": "CAMS global analysis PM2.5/PM10; coarse-grid model estimate"
 }
