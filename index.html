@@ -8,12 +8,13 @@
 <link rel="stylesheet" href="./style.css">
 <link rel="stylesheet" href="./ui-fixes.css?v=20260916k">
 <link rel="stylesheet" href="./board-days.css?v=20260916h">
+<link rel="stylesheet" href="./mobile-logo-fix.css?v=20260916m">
 </head>
 <body>
 <div id="app" class="app">
 <header class="topbar">
   <div class="brand">
-    <a class="brand-home" href="./index.html" aria-label="Về trang chủ JoTrip Airport Live"><div class="brand-logo"><picture><source srcset="./jotrip-logo.webp?v=20260916j" type="image/webp"><img src="./jotrip-logo-master.png?v=20260916j" alt="JoTrip" decoding="async" fetchpriority="high"></picture></div></a>
+    <a class="brand-home" href="./index.html" aria-label="Về trang chủ JoTrip Airport Live"><div class="brand-logo"><img src="./jotrip-logo-master.png?v=20260916m" alt="JoTrip" decoding="async" fetchpriority="high"></div></a>
     <span class="brand-divider"></span>
     <div><h1>Airport Live</h1><p>PQC operations dashboard</p></div>
   </div>
@@ -39,7 +40,7 @@
       <div id="opsState" class="ops-state">CHECKING</div><div class="hero-plane">✈</div>
     </section>
 
-    <section class="card live-only">
+    <section class="card live-only" id="flightBoard">
       <div class="card-head"><div><span class="section-kicker">FLIGHT BOARD</span><h3>Chuyến bay hôm nay</h3></div><button id="searchToggle" class="text-button">Tìm chuyến</button></div>
       <div id="searchWrap" class="search-wrap hidden"><input id="flightSearch" placeholder="Tìm số chuyến, hãng hoặc nơi đi/đến: VJ339, Hà Nội, Da Nang..."></div>
       <div class="segmented" id="directionTabs"><button class="active" data-direction="arrival">Chuyến đến</button><button data-direction="departure">Chuyến đi</button><button data-direction="all">Tất cả</button></div>
@@ -52,7 +53,7 @@
       <div class="metric-grid"><article><span>Chuyến đến</span><strong id="nextArrivals">-</strong><small>trong 3 giờ</small></article><article><span>Chuyến đi</span><strong id="nextDepartures">-</strong><small>trong 3 giờ</small></article><article><span>Quốc tế đến</span><strong id="nextInternational">-</strong><small>trong 3 giờ</small></article><article><span>Cần chú ý</span><strong id="nextWatch">-</strong><small>trạng thái khác thường</small></article></div>
     </section>
 
-    <section class="card analytics-only hidden">
+    <section class="card analytics-only hidden" id="analytics">
       <div class="card-head"><div><span class="section-kicker">ANALYTICS</span><h3>Cơ cấu chuyến bay</h3></div><span class="muted">Dữ liệu hiện tại</span></div>
       <div class="metric-grid analytics-metrics"><article><span>Quốc tế đến</span><strong id="aIntlArr">-</strong><small id="aIntlArrPct"></small></article><article><span>Nội địa đến</span><strong id="aDomArr">-</strong><small id="aDomArrPct"></small></article><article><span>Quốc tế đi</span><strong id="aIntlDep">-</strong><small id="aIntlDepPct"></small></article><article><span>Nội địa đi</span><strong id="aDomDep">-</strong><small id="aDomDepPct"></small></article></div>
       <div class="analytics-block"><h4>Top điểm đi / đến</h4><div id="routeBars" class="route-bars"></div></div>
@@ -83,5 +84,6 @@
 <script src="./board-days.js?v=20260916h"></script>
 <script src="./app-copy.js?v=20260916h"></script>
 <script src="./analytics-v3.js?v=20260916h"></script>
+<script>window.addEventListener('load',()=>{if(location.hash==='#analytics'){document.querySelector('[data-mode="analytics"]')?.click();setTimeout(()=>document.getElementById('analytics')?.scrollIntoView({block:'start'}),50)}else if(location.hash==='#flightBoard'){setTimeout(()=>document.getElementById('flightBoard')?.scrollIntoView({block:'start'}),50)}});</script>
 </body>
 </html>
