@@ -1,0 +1,41 @@
+name: Weather Ground Truth VRain Public Probe
+
+on:
+  push:
+    branches:
+      - research/ground-truth-probe-20260917
+    paths:
+      - 'weather/research/probe_vrain_public.mjs'
+      - '.github/workflows/ground-truth-vrain-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/ground-truth-probe-20260917
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Probe only the public VRain page
+        run: node weather/research/probe_vrain_public.mjs
+      - name: Persist public diagnostic
+        shell: bash
+        run: |
+          git config user.name 'jotrip-weather-bot'
+          git config user.email 'jotrip-weather-bot@users.noreply.github.com'
+          git add weather/research/ground-truth-probe/vrain-public.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'research(weather): capture VRain public transport [skip ci]'
+          git push origin HEAD:research/ground-truth-probe-20260917
