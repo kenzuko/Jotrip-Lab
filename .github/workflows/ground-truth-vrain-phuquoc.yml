@@ -1,0 +1,35 @@
+name: Weather Ground Truth VRain Phu Quoc
+
+on:
+  push:
+    branches:
+      - research/ground-truth-probe-20260917
+    paths:
+      - 'weather/research/fetch_vrain_phuquoc_public.mjs'
+      - '.github/workflows/ground-truth-vrain-phuquoc.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/ground-truth-probe-20260917
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node weather/research/fetch_vrain_phuquoc_public.mjs
+      - shell: bash
+        run: |
+          git config user.name 'jotrip-weather-bot'
+          git config user.email 'jotrip-weather-bot@users.noreply.github.com'
+          git add weather/research/ground-truth-probe/vrain-phuquoc.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'research(weather): sample public VRain Phu Quoc [skip ci]'
+          git push origin HEAD:research/ground-truth-probe-20260917
