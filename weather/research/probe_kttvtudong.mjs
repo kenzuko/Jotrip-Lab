@@ -1,155 +1,142 @@
 import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
-import path from 'node:path';
 
 const targets = [
-  { key: 'phu_quoc_60018', url: 'https://kttvtudong.net/kttv/detail/view?sid=33' },
-  { key: 'rach_gia_089907', url: 'https://kttvtudong.net/kttv/detail/view?sid=464' },
-  { key: 'rain_control_DM6100', url: 'https://kttvtudong.net/kttv/detail/view?sid=482' },
+  { key: 'phu_quoc_60018', sid: 33, url: 'https://kttvtudong.net/kttv/detail/view?sid=33' },
+  { key: 'rach_gia_089907', sid: 464, url: 'https://kttvtudong.net/kttv/detail/view?sid=464' },
+  { key: 'rain_control_DM6100', sid: 482, url: 'https://kttvtudong.net/kttv/detail/view?sid=482' },
 ];
 
 const outDir = 'weather/research/ground-truth-probe';
 await fs.mkdir(outDir, { recursive: true });
-
 const browser = await chromium.launch({ headless: true });
-const collected = {
+const report = {
   generated_at: new Date().toISOString(),
-  purpose: 'Public-browser diagnostic only. Discover public numeric observation transport without bypassing authentication.',
+  scope: 'Public pages only; no auth bypass; cookies/headers are not persisted.',
   targets: {},
 };
 
 for (const target of targets) {
   const context = await browser.newContext({ acceptDownloads: true });
   const page = await context.newPage();
-  const requests = [];
-  const responses = [];
-
-  page.on('request', req => {
-    const type = req.resourceType();
-    if (['xhr', 'fetch', 'document'].includes(type)) {
-      requests.push({
-        url: req.url(),
-        method: req.method(),
-        resource_type: type,
-        post_data: (req.postData() || '').slice(0, 4000),
-      });
-    }
-  });
+  const transactions = [];
 
   page.on('response', async res => {
     const req = res.request();
-    const type = req.resourceType();
-    if (!['xhr', 'fetch', 'document'].includes(type)) return;
+    const u = new URL(res.url());
+    if (u.hostname !== 'kttvtudong.net' && u.hostname !== 'www.kttvtudong.net') return;
+    if (!/\/kttv\/(report|detail|export)\//.test(u.pathname) && !/\/kttv\/detail\/view/.test(u.pathname)) return;
     const headers = await res.allHeaders().catch(() => ({}));
     const contentType = headers['content-type'] || '';
-    const item = {
+    let body = '';
+    if (/json|text|csv|html|javascript|xml/i.test(contentType)) {
+      body = await res.text().catch(() => '');
+    }
+    transactions.push({
       url: res.url(),
       status: res.status(),
       method: req.method(),
-      resource_type: type,
+      resource_type: req.resourceType(),
+      post_data: req.postData() || '',
       content_type: contentType,
-    };
-    if (/json|text|javascript|xml|csv|html/i.test(contentType)) {
-      try {
-        const body = await res.text();
-        item.body_preview = body.slice(0, 12000);
-        item.body_length = body.length;
-      } catch {}
-    }
-    responses.push(item);
+      body_length: body.length,
+      body_preview: body.slice(0, 10000),
+    });
   });
 
   let navigation_error = null;
   try {
     await page.goto(target.url, { waitUntil: 'domcontentloaded', timeout: 45000 });
-    await page.waitForTimeout(7000);
+    await page.waitForTimeout(9000);
   } catch (err) {
     navigation_error = String(err);
   }
 
-  const dom = await page.evaluate(() => {
-    const inputs = [...document.querySelectorAll('input')].map((el, index) => ({
-      index,
-      type: el.type,
-      name: el.name,
-      id: el.id,
-      value: el.value,
-      placeholder: el.placeholder,
-      className: el.className,
-    }));
-    const forms = [...document.querySelectorAll('form')].map((form, index) => ({
-      index,
-      action: form.action,
-      method: form.method,
-      id: form.id,
-      className: form.className,
-      text: (form.innerText || '').trim().slice(0, 1500),
-      controls: [...form.querySelectorAll('input,button,select')].map(el => ({
+  const discovered = await page.evaluate(() => {
+    const inline = [...document.scripts].filter(s => !s.src).map(s => s.textContent || '').join('\n');
+    const postCalls = [];
+    const re = /\$\.post\(\s*['\"]([^'\"]+)['\"]\s*,\s*\{([^}]*)\}/g;
+    let m;
+    while ((m = re.exec(inline)) !== null) {
+      const sd = /['\"]?sdid['\"]?\s*:\s*(\d+)/.exec(m[2]);
+      postCalls.push({ endpoint: m[1], args_preview: m[2].trim(), sdid: sd ? Number(sd[1]) : null });
+    }
+    const uniq = [...new Map(postCalls.map(x => [`${x.endpoint}|${x.sdid}`, x])).values()];
+    const forms = [...document.forms].map(f => ({
+      action: f.action,
+      method: f.method,
+      controls: [...f.querySelectorAll('input,button')].map(el => ({
         tag: el.tagName,
         type: el.type || null,
         name: el.name || null,
         id: el.id || null,
-        value: el.value || null,
-        text: (el.innerText || '').trim().slice(0, 300),
+        placeholder: el.placeholder || null,
+        text: (el.innerText || '').trim(),
       })),
     }));
-    const scripts = [...document.scripts].map(s => ({ src: s.src, inline_preview: s.src ? '' : (s.textContent || '').slice(0, 6000) }));
-    const links = [...document.querySelectorAll('a')]
-      .map(a => ({ text: (a.innerText || '').trim(), href: a.href }))
-      .filter(x => /6h|12h|24h|36h|48h|60h|72h|240h|360h|480h|600h|720h|excel|xuất|bao cao|report/i.test(`${x.text} ${x.href}`));
-    const table_text = [...document.querySelectorAll('table')].map(t => (t.innerText || '').trim().slice(0, 12000));
-    return { title: document.title, inputs, forms, scripts, links, table_text };
-  }).catch(err => ({ evaluation_error: String(err) }));
+    const headers = [...document.querySelectorAll('table th')].map(x => (x.innerText || '').trim()).filter(Boolean);
+    const vvClasses = [...new Set([...inline.matchAll(/vv(\d+)/g)].map(m => Number(m[1])))];
+    return { post_calls: uniq, forms, table_headers: headers, variable_ids: vvClasses };
+  }).catch(err => ({ error: String(err), post_calls: [], forms: [], table_headers: [], variable_ids: [] }));
 
-  // Probe the public export control if it can be identified. Do not attempt login or protected routes.
-  const exportProbe = { attempted: false, result: null };
-  try {
-    const button = page.getByRole('button', { name: /xuất báo cáo/i }).first();
-    if (await button.count()) {
-      exportProbe.attempted = true;
-      const form = button.locator('xpath=ancestor::form[1]');
-      if (await form.count()) {
-        const dateInputs = form.locator('input');
-        const n = await dateInputs.count();
-        const today = new Date();
-        const yesterday = new Date(today.getTime() - 86400000);
-        const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-        if (n >= 2) {
-          await dateInputs.nth(0).fill(fmt(yesterday)).catch(() => {});
-          await dateInputs.nth(1).fill(fmt(today)).catch(() => {});
-        }
-        const before = page.url();
-        const downloadPromise = page.waitForEvent('download', { timeout: 12000 }).catch(() => null);
-        await button.click().catch(() => {});
-        await page.waitForTimeout(4000);
-        const download = await downloadPromise;
-        exportProbe.result = {
-          before_url: before,
-          after_url: page.url(),
-          download: download ? {
-            suggested_filename: download.suggestedFilename(),
-            url: download.url(),
-          } : null,
-        };
-      }
+  // Replay only POST routes that the public page itself disclosed, preserving the browser's public session.
+  const directProbes = [];
+  for (const call of discovered.post_calls || []) {
+    if (!call.endpoint.startsWith('/kttv/report/') || !call.sdid) continue;
+    try {
+      const r = await page.evaluate(async ({ endpoint, sdid }) => {
+        const body = new URLSearchParams({ sdid: String(sdid) });
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest' },
+          body,
+          credentials: 'same-origin',
+        });
+        const text = await res.text();
+        return { endpoint, sdid, status: res.status, content_type: res.headers.get('content-type'), body_length: text.length, body_preview: text.slice(0, 12000) };
+      }, { endpoint: call.endpoint, sdid: call.sdid });
+      directProbes.push(r);
+    } catch (err) {
+      directProbes.push({ endpoint: call.endpoint, sdid: call.sdid, error: String(err) });
     }
-  } catch (err) {
-    exportProbe.result = { error: String(err) };
   }
 
-  collected.targets[target.key] = {
-    url: target.url,
+  // Exercise the exact public Excel form for the previous day -> today and record only download metadata.
+  const exportProbe = { attempted: false };
+  try {
+    const form = page.locator(`form[action*="/kttv/export/excelexport?sid=${target.sid}"]`).first();
+    if (await form.count()) {
+      exportProbe.attempted = true;
+      const inputs = form.locator('input');
+      const n = await inputs.count();
+      const today = new Date();
+      const yesterday = new Date(today.getTime() - 86400000);
+      const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+      if (n >= 2) {
+        await inputs.nth(0).fill(fmt(yesterday)).catch(() => {});
+        await inputs.nth(1).fill(fmt(today)).catch(() => {});
+      }
+      const dlPromise = page.waitForEvent('download', { timeout: 15000 }).catch(() => null);
+      await form.locator('button[type="submit"]').click().catch(() => {});
+      const dl = await dlPromise;
+      exportProbe.download = dl ? { suggested_filename: dl.suggestedFilename(), url: dl.url() } : null;
+    }
+  } catch (err) {
+    exportProbe.error = String(err);
+  }
+
+  report.targets[target.key] = {
+    sid: target.sid,
     navigation_error,
     final_url: page.url(),
-    dom,
-    requests,
-    responses,
+    discovered,
+    transactions,
+    direct_probes: directProbes,
     export_probe: exportProbe,
   };
-
   await context.close();
 }
 
 await browser.close();
-await fs.writeFile(path.join(outDir, 'latest.json'), JSON.stringify(collected, null, 2) + '\n');
-console.log(JSON.stringify({ status: 'OK', output: path.join(outDir, 'latest.json'), generated_at: collected.generated_at }));
+await fs.writeFile(`${outDir}/summary.json`, JSON.stringify(report, null, 2) + '\n');
+console.log(JSON.stringify({ status: 'OK', output: `${outDir}/summary.json`, generated_at: report.generated_at }));
