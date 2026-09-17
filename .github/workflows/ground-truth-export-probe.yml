@@ -1,0 +1,82 @@
+name: Weather Ground Truth Export Probe
+
+on:
+  push:
+    branches:
+      - research/ground-truth-probe-20260917
+    paths:
+      - 'weather/research/probe_kttv_exports.mjs'
+      - '.github/workflows/ground-truth-export-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  export-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/ground-truth-probe-20260917
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser and workbook reader
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+          python -m pip install --quiet openpyxl
+      - name: Download public station reports
+        run: node weather/research/probe_kttv_exports.mjs
+      - name: Inspect workbook contents
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os, math
+          from pathlib import Path
+          from openpyxl import load_workbook
+
+          root=Path('/tmp/gt-exports')
+          meta=json.loads((root/'meta.json').read_text())
+          out={'generated_at':meta['generated_at'],'window':'16/09/2026 -> 17/09/2026','targets':{}}
+          for key,t in meta['targets'].items():
+              item={k:v for k,v in t.items() if k!='path'}
+              if not t.get('ok'):
+                  out['targets'][key]=item; continue
+              p=Path(t['path'])
+              try:
+                  wb=load_workbook(p,read_only=True,data_only=True)
+                  sheets=[]
+                  for ws in wb.worksheets:
+                      rows=[]; numeric=0; nonempty=0
+                      for row in ws.iter_rows(values_only=True):
+                          vals=list(row)
+                          nonempty += sum(v not in (None,'') for v in vals)
+                          numeric += sum(isinstance(v,(int,float)) and not isinstance(v,bool) and math.isfinite(float(v)) for v in vals if v is not None)
+                          if any(v not in (None,'') for v in vals):
+                              rows.append([str(v) if v is not None else None for v in vals])
+                      sheets.append({'title':ws.title,'max_row':ws.max_row,'max_column':ws.max_column,'nonempty_cells':nonempty,'numeric_cells':numeric,'first_nonempty_rows':rows[:8],'last_nonempty_rows':rows[-12:]})
+                  item['workbook']={'sheet_count':len(wb.sheetnames),'sheets':sheets}
+              except Exception as e:
+                  item['workbook_error']=repr(e)
+              out['targets'][key]=item
+          dest=Path('weather/research/ground-truth-probe/export-inspection.json')
+          dest.parent.mkdir(parents=True,exist_ok=True)
+          dest.write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print(json.dumps(out,ensure_ascii=False,indent=2))
+          PY
+      - name: Persist inspection only
+        shell: bash
+        run: |
+          git config user.name 'jotrip-weather-bot'
+          git config user.email 'jotrip-weather-bot@users.noreply.github.com'
+          git add weather/research/ground-truth-probe/export-inspection.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'research(weather): inspect KTTV export reports [skip ci]'
+          git push origin HEAD:research/ground-truth-probe-20260917
