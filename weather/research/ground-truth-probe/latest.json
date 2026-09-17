@@ -1,0 +1,955 @@
+{
+  "generated_at": "2026-09-17T03:04:46.737Z",
+  "purpose": "Public-browser diagnostic only. Discover public numeric observation transport without bypassing authentication.",
+  "targets": {
+    "phu_quoc_60018": {
+      "url": "https://kttvtudong.net/kttv/detail/view?sid=33",
+      "navigation_error": null,
+      "final_url": "https://kttvtudong.net/kttv/detail/view?sid=33",
+      "dom": {
+        "title": "KT HẢI VĂN PHÚ QUỐC",
+        "inputs": [
+          {
+            "index": 0,
+            "type": "text",
+            "name": "page-header-search-input",
+            "id": "page-header-search-input",
+            "value": "",
+            "placeholder": "Search your network..",
+            "className": "form-control border-0"
+          },
+          {
+            "index": 1,
+            "type": "text",
+            "name": "fd",
+            "id": "fd",
+            "value": "",
+            "placeholder": "Từ ngày",
+            "className": "form-control"
+          },
+          {
+            "index": 2,
+            "type": "text",
+            "name": "td",
+            "id": "td",
+            "value": "",
+            "placeholder": "Đến ngày",
+            "className": "form-control"
+          }
+        ],
+        "forms": [
+          {
+            "index": 0,
+            "action": "https://kttvtudong.net/kttv/detail/be_pages_generic_search.html",
+            "method": "post",
+            "id": "",
+            "className": "w-100",
+            "text": "",
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "text",
+                "name": "page-header-search-input",
+                "id": "page-header-search-input",
+                "value": null,
+                "text": ""
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "name": null,
+                "id": null,
+                "value": null,
+                "text": ""
+              }
+            ]
+          },
+          {
+            "index": 1,
+            "action": "https://kttvtudong.net/kttv/export/excelexport?sid=33",
+            "method": "post",
+            "id": "",
+            "className": "w-100",
+            "text": "Xuất báo cáo",
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "text",
+                "name": "fd",
+                "id": "fd",
+                "value": null,
+                "text": ""
+              },
+              {
+                "tag": "INPUT",
+                "type": "text",
+                "name": "td",
+                "id": "td",
+                "value": null,
+                "text": ""
+              },
+              {
+                "tag": "BUTTON",
+                "type": "submit",
+                "name": null,
+                "id": null,
+                "value": null,
+                "text": "Xuất báo cáo"
+              }
+            ]
+          }
+        ],
+        "scripts": [
+          {
+            "src": "",
+            "inline_preview": "\n    <tr data-id=\"{0}\">\n        <td class=\"hv{0}\">{1}</td>\n        <td>{2}</td>\n                <td class=\"vv423 ktype2\"></td>\n                <td class=\"vv422 ktype0\"></td>\n                <td class=\"vv425 ktype1\"></td>\n                <td class=\"vv424 ktype0\"></td>\n                <td class=\"vv426 ktype0\"></td>\n                <td class=\"vv428 ktype1\"></td>\n                <td class=\"vv427 ktype0\"></td>\n                <td class=\"vv429 ktype0\"></td>\n                <td class=\"vv421 ktype0\"></td>\n                <td class=\"vv433 ktype1\"></td>\n                <td class=\"vv432 ktype1\"></td>\n                <td class=\"vv434 ktype1\"></td>\n                <td class=\"vv431 ktype1\"></td>\n                <td class=\"vv430 ktype0\"></td>\n    </tr>\n"
+          },
+          {
+            "src": "https://kttvtudong.net/assets/js/dashmix.core.min.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://kttvtudong.net/assets/js/dashmix.app.min.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://kttvtudong.net/assets/js/ColorTheme.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://kttvtudong.net/assets/js/kAdmin.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/highcharts.src.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/highcharts-more.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/modules/data.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/modules/windbarb.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/modules/exporting.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/modules/export-data.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "",
+            "inline_preview": "\n    var chartdogio2457_1 = $('#chartdogio2457_1');\n    if (chartdogio2457_1.length) {\n        $.post('/kttv/report/huonggio?hour=', { 'sdid': 2457},\n            function (item) {\n                if (item != \"\") {\n                    chartdogio2457_1.highcharts(\n                        {\n                            data: { \"csv\": item },\n                            chart: { polar: true, type: 'column' },\n                            title: { text: 'TỶ LỆ HƯỚNG GIÓ VÀ CƯỜNG ĐỘ GIÓ' },\n                            subtitle: { text: null },\n                            pane: { size: '85%' },\n                            legend: { align: 'left', verticalAlign: 'top', y: 50, layout: 'vertical' },\n                            xAxis: { tickmarkPlacement: 'on' },\n                            yAxis: {\n                                min: 0, endOnTick: false, showLastLabel: true, title: { text: 'Tỷ lệ (%)' }, labels: {\n                                    formatter: function () {\n                                        return this.value + '%';\n                                    }\n                                },\n                                reversedStacks: false\n                            },\n                            tooltip: { valueSuffix: '%' },\n                            plotOptions: {\n                                series: {\n                                    stacking: 'normal',\n                                    shadow: false,\n                                    groupPadding: 0,\n                                    pointPlacement: 'on'\n                                }\n                            }\n                        });\n                }\n            });\n    }\n\n    var chartdogio2457_2 = $('#chartdogio2457_2');\n    if (chartdogio2457_2.length) {\n        $.post('/kttv/report/tocdogio?hour=', {'sdid': 2457},\n            function (item) {\n                if (item == null) return; if (item.err == 0) {\n                    chartdogio2457_2.highcharts({\n                        title: { text: 'BIỀU ĐỒ HƯỚNG GIÓ VÀ TỐC ĐỘ GIÓ' },\n                        xAxis: { type: 'datetime', offset: 40 },\n                        plotOptions: { series: { pointStart: item.data[0].l[0], pointInterval: 600000 } },\n                        series: [{\n                            type: 'windbarb',\n                            //key: ['x'],\n                            data: item.data[0].data,\n                            name: 'Hướng gió',\n                            color: bgDanger,\n                            showInLegend: false,\n                            tooltip: {\n                                valueSuffix: ' độ'\n                            }\n                        }, {\n                            type: 'area',\n                            keys: ['y', 'rotation'],\n                            data: item.data[0].data,\n                            color: bgSuccess,\n                            name: 'Tốc độ gió',\n                            tooltip: {\n                                valueSuffix: ' m/s'\n                            }\n                        }]\n                    });\n                }\n            }, 'json').fail(function () {\n                console.log(\"Có lỗi trong quá trình gửi dữ liệu!\");\n            });\n    }\n"
+          },
+          {
+            "src": "",
+            "inline_preview": "\n    $(function () {\n        var chartdosong2458 = $('#chartdosong2458');\n        if (chartdosong2458.length) {\n        $.post('/kttv/report/mucnuochaivan?hour=', { 'sdid': 2458},\n            function (item) {\n                if (item == null) return; if (item.err == 0) {\n                    chartdosong2458.highcharts({\n                        credits: false,\n                        colors: [bgPrimary],\n                        chart: { backgroundColor: '#fff', className: 'br-r', type: 'areaspline', zoomType: 'x', panning: true, panKey: 'shift', marginTop: 25, marginRight: 1, },\n                        title: { text: 'BIỂU ĐỒ MỰC NƯỚC BIỂN' },\n                        subtitle: { text: '' },\n                        xAxis: { type: 'datetime', tickInterval: 25200000, gridLineColor: '#EEE', lineColor: '#EEE', tickColor: '#EEE' },\n                        yAxis: { tickInterval: 100, gridLineColor: '#EEE', title: { text: 'Giá trị mực nước', }, labels: { format: '{value} cm' } },\n                        plotOptions: { spline: { lineWidth: 3, }, area: { fillOpacity: 0.2 } },\n                        tooltip: {\n                            formatter: function () {\n                                var point = this.points[0];\n                                return '<b>' +\n                                    point.series.name +\n                                    '</b><br/>' +\n                                    Highcharts.dateFormat(\n                                        '<b>%H:%M</b> %d/%m/%Y ',\n                                        point.x) +\n                                    '<br/>' +\n                                    '' +\n                                    Highcharts.numberFormat(\n                                        point.y, 0) +\n                                    ' cm';\n                            },\n                            shared: true\n                        },\n                        legend: { enabled: false, },\n                        series: [{ name: item.data[0].name, data: item.data[0].data }]\n                    });\n                } else { console.log(item.msg); }\n                    }, 'json').fail(function () {\n                    console.log(\"Có lỗi trong quá trình gửi dữ liệu!\");\n                });\n            }\n        });\n"
+          },
+          {
+            "src": "",
+            "inline_preview": "\n    var chartdogio57_1 = $('#chartdogio57_1');\n    if (chartdogio57_1.length) {\n        $.post('/kttv/report/huonggio?hour=', { 'sdid': 57},\n            function (item) {\n                if (item != \"\") {\n                    chartdogio57_1.highcharts(\n                        {\n                            data: { \"csv\": item },\n                            chart: { polar: true, type: 'column' },\n                            title: { text: 'TỶ LỆ HƯỚNG GIÓ VÀ CƯỜNG ĐỘ GIÓ' },\n                            subtitle: { text: null },\n                            pane: { size: '85%' },\n                            legend: { align: 'left', verticalAlign: 'top', y: 50, layout: 'vertical' },\n                            xAxis: { tickmarkPlacement: 'on' },\n                            yAxis: {\n                                min: 0, endOnTick: false, showLastLabel: true, title: { text: 'Tỷ lệ (%)' }, labels: {\n                                    formatter: function () {\n                                        return this.value + '%';\n                                    }\n                                },\n                                reversedStacks: false\n                            },\n                            tooltip: { valueSuffix: '%' },\n                            plotOptions: {\n                                series: {\n                                    stacking: 'normal',\n                                    shadow: false,\n                                    groupPadding: 0,\n                                    pointPlacement: 'on'\n                                }\n                            }\n                        });\n                }\n            });\n    }\n\n    var chartdogio57_2 = $('#chartdogio57_2');\n    if (chartdogio57_2.length) {\n        $.post('/kttv/report/tocdogio?hour=', {'sdid': 57},\n            function (item) {\n                if (item == null) return; if (item.err == 0) {\n                    chartdogio57_2.highcharts({\n                        title: { text: 'BIỀU ĐỒ HƯỚNG GIÓ VÀ TỐC ĐỘ GIÓ' },\n                        xAxis: { type: 'datetime', offset: 40 },\n                        plotOptions: { series: { pointStart: item.data[0].l[0], pointInterval: 600000 } },\n                        series: [{\n                            type: 'windbarb',\n                            //key: ['x'],\n                            data: item.data[0].data,\n                            name: 'Hướng gió',\n                            color: bgDanger,\n                            showInLegend: false,\n                            tooltip: {\n                                valueSuffix: ' độ'\n                            }\n                        }, {\n                            type: 'area',\n                            keys: ['y', 'rotation'],\n                            data: item.data[0].data,\n                            color: bgSuccess,\n                            name: 'Tốc độ gió',\n                            tooltip: {\n                                valueSuffix: ' m/s'\n                            }\n                        }]\n                    });\n                }\n            }, 'json').fail(function () {\n                console.log(\"Có lỗi trong quá trình gửi dữ liệu!\");\n            });\n    }\n"
+          },
+          {
+            "src": "",
+            "inline_preview": "\n    $(function () {\n        var chartdosong58 = $('#chartdosong58');\n        if (chartdosong58.length) {\n        $.post('/kttv/report/mucnuochaivan?hour=', { 'sdid': 58},\n            function (item) {\n                if (item == null) return; if (item.err == 0) {\n                    chartdosong58.highcharts({\n                        credits: false,\n                        colors: [bgPrimary],\n                        chart: { backgroundColor: '#fff', className: 'br-r', type: 'areaspline', zoomType: 'x', panning: true, panKey: 'shift', marginTop: 25, marginRight: 1, },\n                        title: { text: 'BIỂU ĐỒ MỰC NƯỚC BIỂN' },\n                        subtitle: { text: '' },\n                        xAxis: { type: 'datetime', tickInterval: 25200000, gridLineColor: '#EEE', lineColor: '#EEE', tickColor: '#EEE' },\n                        yAxis: { tickInterval: 100, gridLineColor: '#EEE', title: { text: 'Giá trị mực nước', }, labels: { format: '{value} cm' } },\n                        plotOptions: { spline: { lineWidth: 3, }, area: { fillOpacity: 0.2 } },\n                        tooltip: {\n                            formatter: function () {\n                                var point = this.points[0];\n                                return '<b>' +\n                                    point.series.name +\n                                    '</b><br/>' +\n                                    Highcharts.dateFormat(\n                                        '<b>%H:%M</b> %d/%m/%Y ',\n                                        point.x) +\n                                    '<br/>' +\n                                    '' +\n                                    Highcharts.numberFormat(\n                                        point.y, 0) +\n                                    ' cm';\n                            },\n                            shared: true\n                        },\n                        legend: { enabled: false, },\n                        series: [{ name: item.data[0].name, data: item.data[0].data }]\n                    });\n                } else { console.log(item.msg); }\n                    }, 'json').fail(function () {\n                    console.log(\"Có lỗi trong quá trình gửi dữ liệu!\");\n                });\n            }\n        });\n"
+          },
+          {
+            "src": "",
+            "inline_preview": "\n        var stationid = 33\n        var localtime = 1789639800;\n        var realtime = 1789640088;\n        for (var i = 0; i < 48; i++) {\n            $('#tbody').append($('#tempDevice').html().format(localtime, '', Unix_timestamp(localtime)));\n            localtime -= 600;\n        }\n\n        window.setInterval(function () {\n            realtime++;\n            if (realtime % 600 == 0) {\n                $('#tbody').prepend($('#tempDevice').html().format(realtime, '', Unix_timestamp(realtime)));\n                //console.log('...');\n            }\n            //console.log(realtime);\n        }, 1000);\n\n    "
+          },
+          {
+            "src": "https://kttvtudong.net/Areas/KTTV/Content/js/kWeb.KTTVDetail.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://kttvtudong.net/assets/js/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "",
+            "inline_preview": "jQuery(function () { Dashmix.helpers(['datepicker']); });"
+          }
+        ],
+        "links": [
+          {
+            "text": "6h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=6&hour_hv="
+          },
+          {
+            "text": "12h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=12&hour_hv="
+          },
+          {
+            "text": "24h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=24&hour_hv="
+          },
+          {
+            "text": "36h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=36&hour_hv="
+          },
+          {
+            "text": "48h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=48&hour_hv="
+          },
+          {
+            "text": "60h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=60&hour_hv="
+          },
+          {
+            "text": "72h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=72&hour_hv="
+          },
+          {
+            "text": "24h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv=24"
+          },
+          {
+            "text": "36h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv=36"
+          },
+          {
+            "text": "48h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv=48"
+          },
+          {
+            "text": "60h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv=60"
+          },
+          {
+            "text": "72h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv=72"
+          },
+          {
+            "text": "240h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv=240"
+          },
+          {
+            "text": "360h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv=360"
+          },
+          {
+            "text": "480h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv=480"
+          },
+          {
+            "text": "600h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv=600"
+          },
+          {
+            "text": "720h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv=720"
+          },
+          {
+            "text": "6h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv="
+          },
+          {
+            "text": "12h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv="
+          },
+          {
+            "text": "24h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv="
+          },
+          {
+            "text": "36h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv="
+          },
+          {
+            "text": "48h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv="
+          },
+          {
+            "text": "60h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv="
+          },
+          {
+            "text": "72h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=33&hour=&hour_hv="
+          }
+        ],
+        "table_text": [
+          "Thời gian\tKT HẢI VĂN PHÚ QUỐC (DG60018)\tKT HẢI VĂN PHÚ QUỐC (DS60018)\nNgày\tGiờ\tff\tdd\tfxfx2m\tdxdx2m\tTGXH2m\tfxfx2s\tdxdx2s\tTGXH2s\tAc:\tH\tTM02\tHmax\tHM0\tAc\n\t10:10\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t10:00\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t9:50\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t9:40\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t9:30\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t9:20\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t9:10\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t9:00\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t8:50\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t8:40\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t8:30\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t8:20\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t8:10\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t8:00\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t7:50\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t7:40\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t7:30\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t7:20\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t7:10\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t7:00\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t6:50\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t6:40\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t6:30\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t6:20\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t6:10\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t6:00\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t5:50\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t5:40\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t5:30\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t5:20\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t5:10\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t5:00\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t4:50\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t4:40\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t4:30\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t4:20\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t4:10\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t4:00\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t3:50\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t3:40\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t3:30\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t3:20\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t3:10\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t3:00\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t2:50\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t2:40\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t2:30\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t2:20"
+        ]
+      },
+      "requests": [
+        {
+          "url": "https://kttvtudong.net/kttv/detail/view?sid=33",
+          "method": "GET",
+          "resource_type": "document",
+          "post_data": ""
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/report/huonggio?hour=",
+          "method": "POST",
+          "resource_type": "xhr",
+          "post_data": "sdid=57"
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/report/tocdogio?hour=",
+          "method": "POST",
+          "resource_type": "xhr",
+          "post_data": "sdid=57"
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/report/mucnuochaivan?hour=",
+          "method": "POST",
+          "resource_type": "xhr",
+          "post_data": "sdid=58"
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/export/excelexport?sid=33",
+          "method": "POST",
+          "resource_type": "document",
+          "post_data": "fd=&td="
+        }
+      ],
+      "responses": [
+        {
+          "url": "https://kttvtudong.net/kttv/detail/view?sid=33",
+          "status": 200,
+          "method": "GET",
+          "resource_type": "document",
+          "content_type": "text/html; charset=utf-8",
+          "body_preview": "<!DOCTYPE html>\r\n\r\n<html>\r\n<head>\r\n    <meta charset=\"utf-8\" />\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, shrink-to-fit=no\" />\r\n\r\n    <title>KT HẢI VĂN PH&#218; QUỐC</title>\r\n\r\n    \r\n\r\n    <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,400i,600,700\">\r\n    <link href=\"/assets/css/dashmix.min.css\" rel=\"stylesheet\" />\r\n\r\n    \r\n    <link rel=\"stylesheet\" href=\"/assets/js/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css\">\r\n\r\n</head>\r\n<body>\r\n    <div id=\"page-container\" class=\"page-header-dark\">\r\n\r\n        <aside id=\"side-overlay\">\r\n    \r\n</aside>\r\n\r\n        \r\n<nav id=\"sidebar\" aria-label=\"Main Navigation\">\r\n    \r\n</nav>\r\n\r\n        \r\n\r\n<header id=\"page-header\">\r\n    <div class=\"content-header\">\r\n        <div class=\"d-flex align-items-center\">\r\n            <a class=\"link-fx font-size-lg text-dual\" href=\"/kttv\">\r\n                <img src=\"/files/logo.png\" style=\"height: 60px\" />\r\n            </a>\r\n            <div class=\"font-size-h4 d-none d-md-block pl-1 text-white\">HỆ THỐNG GIÁM SÁT KHÍ TƯỢNG THỦY VĂN TỰ ĐỘNG</div>\r\n\r\n            \r\n\r\n<ul class=\"nav nav-tabs nav-tabs-alt border-bottom-0 justify-content-center justify-content-md-start\">\r\n    <li class=\"nav-item\">\r\n        <a class=\"nav-link text-white py-3 active\" href=\"/kttv\">\r\n            <i class=\"fa fa-home fa-fw text-gray\"></i> <span class=\"d-none d-md-inline ml-1\">Trang chủ</span>\r\n        </a>\r\n    </li>\r\n    <li class=\"nav-item\">\r\n        <a class=\"nav-link text-white py-3\" href=\"/kttv\">\r\n            <i class=\"fa fa-building fa-fw text-gray\"></i> <span class=\"d-none d-md-inline ml-1\">Thuộc tính</span>\r\n        </a>\r\n    </li>\r\n    \r\n    \r\n</ul>\r\n\r\n        </div>\r\n        <div>\r\n            <a class=\"btn btn-dual d-none d-sm-inline-block\" href=\"javascript:void(0)\">\r\n                <i class=\"fa fa-wifi mr-1\"></i> <span id=\"messages\"></span>\r\n            </a>\r\n            <div class=\"dropdown d-inline-block\">\r\n                <button type=\"button\" class=\"btn btn-dual\" id=\"page-header-user-dropdown\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">\r\n                    <img class=\"img-avatar img-avatar32 img-avatar-thumb mr-2\" src=\"/files/user/50x\" alt=\"\">\r\n                    \r\n                    <i class=\"fa fa-fw fa-angle-down ml-1\"></i>\r\n                </button>\r\n                <div class=\"dropdown-menu dropdown-menu-right dropdown-menu-lg p-0\" aria-labelledby=\"page-header-user-dropdown\">\r\n                    <div class=\"rounded-top font-w600 text-center p-3 border-bottom\">\r\n                        <img class=\"img-avatar img-avatar48\" src=\"/files/user/50x\" alt=\"\">\r\n                        <div class=\"pt-2\">\r\n\r\n                        </div>\r\n                        <a class=\"font-w600 text-dark\" href=\"javascript:void(0)\"></a>\r\n                        <div class=\"font-size-sm text-muted\">@</div>\r\n                    </div>\r\n                    <div class=\"p-2\">\r\n                        <a class=\"dropdown-item\" href=\"javascript:void(0)\">\r\n                            <i class=\"fa fa-fw fa-cog text-gray mr-1\"></i> Cài đặt\r\n                        </a>\r\n                        <a class=\"dropdown-item mb-0\" href=\"javascript:void(0)\">\r\n                            <i class=\"fa fa-fw fa-envelope-open text-gray mr-1\"></i> Hỗ trợ\r\n                        </a>\r\n                    </div>\r\n                    <div class=\"p-2\">\r\n                        <a class=\"dropdown-item mb-0\" href=\"/login/logout\">\r\n                            <i class=\"fa fa-fw fa-arrow-alt-circle-left text-gray mr-1\"></i> Thoát\r\n                        </a>\r\n                    </div>\r\n                </div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n    <div id=\"page-header-search\" class=\"overlay-header bg-primary\">\r\n        <div class=\"content-header\">\r\n            <form class=\"w-100\" action=\"be_pages_generic_search.html\" method=\"POST\">\r\n                <div class=\"input-group\">\r\n                    <input type=\"text\" class=\"form-control border-0\" placeholder=\"Search your network..\" id=\"page-header-search-input\" name=\"page-header-search-input\">\r\n                    <div class=\"input-group-append\">\r\n                        <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"layout\" data-action=\"header_search_off\">\r\n                            <i class=\"fa fa-fw fa-times-circle\"></i>\r\n                        </button>\r\n                    </div>\r\n                </div>\r\n            </form>\r\n        </div>\r\n    </div>\r\n    <div id=\"page-header-loader\" class=\"overlay-header bg-primary-darker\">\r\n        <div class=\"content-header\">\r\n            <div class=\"w-100 text-center\">\r\n                <i class=\"fa fa-fw fa-2x fa-sun fa-spin text-white\"></i>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</header>\r\n\r\n        <main id=\"main-container\">\r\n            <div class=\"bg-white border-bottom\">\r\n                <div class=\"content py-2\">\r\n                    <ul class=\"nav nav-pills justify-content-center\">\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link\" href=\"/kttv\">\r\n                                <i class=\"fa fa-newspaper fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Bảng tin</span>\r\n                            </a>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link\" href=\"/kttv/maps\">\r\n                                <i class=\"fa fa-map fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Bản đồ</span>\r\n                            </a>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link\" href=\"/kttv/detail\">\r\n                                <i class=\"fa fa-list-alt fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Chi tiết</span>\r\n                            </a>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/default/khituong\">\r\n                                <i class=\"fa fa-list-alt fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Khí tượng</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/default/khituong\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/maps/khituong\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/detail/khituong\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/default/thuyvan\">\r\n                                <i class=\"fa fa-list-alt fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Thủy văn</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/default/thuyvan\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/maps/thuyvan\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/detail/thuyvan\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/default/mua\">\r\n                                <i class=\"fa fa-list-alt fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Mưa</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/default/mua\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/maps/mua\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/detail/mua\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                        \r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link\" href=\"/kttv/book/shv1\">\r\n                                <i class=\"fa fa-book fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">SHV1</span>\r\n                            </a>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link\" href=\"/kttv/book\">\r\n                                <i class=\"fa fa-book fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">BHV1</span>\r\n                            </a>\r\n                        </li>\r\n                        <li class=\"nav-item dropdown mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/book/s\">\r\n                                <i class=\"fa fa-book fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Đo mặn</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/book/s\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewcharts\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewdetails\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                        <li class=\"nav-item dropdown mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/book/hngot\">\r\n                                <i class=\"fa fa-book fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">HNgot</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/book/hngot\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewcharthngot\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewdetailhngot\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                        <li class=\"nav-item dropdown mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/book/hman\">\r\n                                <i class=\"fa fa-book fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">HTrieu</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/book/hman\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewcharthman\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewdetailhngot\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                    </ul>\r\n                </div>\r\n            </div>\r\n            \r\n\r\n\r\n<div class=\"content\">\r\n    <h2>KT HẢI VĂN PH&#218; QUỐC</h2>\r\n    <hr />\r\n\r\n\r\n\r\n<div class=\"block block-rounded block-bordered\">\r\n    <div class=\"block-header block-header-primary\">\r\n        <h3 class=\"block-title\"></h3>\r\n        <div class=\"block-options\">\r\n            <div class=\"dropdown\">\r\n                <button type=\"button\" class=\"btn-block-option dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">\r\n                    <i class=\"si si-calendar\"></i>\r\n                </button>\r\n                <div class=\"dropdown-menu dropdown-menu-right\">\r\n                    <a class=\"btn btn-sm btn-block btn-alt-secondary\" href=\"/kttv/detail/view?sid=33&hour=6&hour_hv=\">\r\n                        <strong>6h</strong>\r\n                    </a>\r\n                    <a ",
+          "body_length": 39136
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/report/mucnuochaivan?hour=",
+          "status": 200,
+          "method": "POST",
+          "resource_type": "xhr",
+          "content_type": "text/html; charset=utf-8",
+          "body_preview": "{\"err\":0,\"id\":null,\"topic\":null,\"msg\":\"Successful\",\"current\":1789614290,\"data\":[{\"name\":\"Mực nước\",\"l\":null,\"data\":[]}]}",
+          "body_length": 120
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/report/huonggio?hour=",
+          "status": 200,
+          "method": "POST",
+          "resource_type": "xhr",
+          "content_type": "text/html; charset=utf-8",
+          "body_preview": "\"Category\",\"< 0.5 m/s\",\"0.5-2 m/s\",\"2-4 m/s\",\"4-6 m/s\",\"6-8 m/s\",\"8-10 m/s\",\"> 10 m/s\"\n\"N\",0,0,0,0,0,0,0\n\"NNE\",0,0,0,0,0,0,0\n\"NE\",0,0,0,0,0,0,0\n\"ENE\",0,0,0,0,0,0,0\n\"E\",0,0,0,0,0,0,0\n\"ESE\",0,0,0,0,0,0,0\n\"SE\",0,0,0,0,0,0,0\n\"SSE\",0,0,0,0,0,0,0\n\"S\",0,0,0,0,0,0,0\n\"SSW\",0,0,0,0,0,0,0\n\"SW\",0,0,0,0,0,0,0\n\"WSW\",0,0,0,0,0,0,0\n\"W\",0,0,0,0,0,0,0\n\"WNW\",0,0,0,0,0,0,0\n\"NW\",0,0,0,0,0,0,0\n\"NNW\",0,0,0,0,0,0,0\n",
+          "body_length": 395
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/report/tocdogio?hour=",
+          "status": 200,
+          "method": "POST",
+          "resource_type": "xhr",
+          "content_type": "text/html; charset=utf-8",
+          "body_preview": "{\"err\":0,\"id\":null,\"topic\":null,\"msg\":\"Successful\",\"current\":1789614290,\"data\":[{\"name\":\"Tốc độ gió\",\"l\":[1789618200000,1789618800000,1789619400000,1789620000000,1789620600000,1789621200000,1789621800000,1789622400000,1789623000000,1789623600000,1789624200000,1789624800000,1789625400000,1789626000000,1789626600000,1789627200000,1789627800000,1789628400000,1789629000000,1789629600000,1789630200000,1789630800000,1789631400000,1789632000000,1789632600000,1789633200000,1789633800000,1789634400000,1789635000000,1789635600000,1789636200000,1789636800000,1789637400000,1789638000000,1789638600000,1789639200000],\"data\":[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]}]}",
+          "body_length": 838
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/export/excelexport?sid=33",
+          "status": 200,
+          "method": "POST",
+          "resource_type": "document",
+          "content_type": "application/octet-stream"
+        }
+      ],
+      "export_probe": {
+        "attempted": true,
+        "result": {
+          "before_url": "https://kttvtudong.net/kttv/detail/view?sid=33",
+          "after_url": "https://kttvtudong.net/kttv/detail/view?sid=33",
+          "download": {
+            "suggested_filename": "6001817-09-2026-10-04-59.xlsx",
+            "url": "https://kttvtudong.net/kttv/export/excelexport?sid=33"
+          }
+        }
+      }
+    },
+    "rach_gia_089907": {
+      "url": "https://kttvtudong.net/kttv/detail/view?sid=464",
+      "navigation_error": null,
+      "final_url": "https://kttvtudong.net/kttv/detail/view?sid=464",
+      "dom": {
+        "title": "KT RẠCH GIÁ",
+        "inputs": [
+          {
+            "index": 0,
+            "type": "text",
+            "name": "page-header-search-input",
+            "id": "page-header-search-input",
+            "value": "",
+            "placeholder": "Search your network..",
+            "className": "form-control border-0"
+          },
+          {
+            "index": 1,
+            "type": "text",
+            "name": "fd",
+            "id": "fd",
+            "value": "",
+            "placeholder": "Từ ngày",
+            "className": "form-control"
+          },
+          {
+            "index": 2,
+            "type": "text",
+            "name": "td",
+            "id": "td",
+            "value": "",
+            "placeholder": "Đến ngày",
+            "className": "form-control"
+          }
+        ],
+        "forms": [
+          {
+            "index": 0,
+            "action": "https://kttvtudong.net/kttv/detail/be_pages_generic_search.html",
+            "method": "post",
+            "id": "",
+            "className": "w-100",
+            "text": "",
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "text",
+                "name": "page-header-search-input",
+                "id": "page-header-search-input",
+                "value": null,
+                "text": ""
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "name": null,
+                "id": null,
+                "value": null,
+                "text": ""
+              }
+            ]
+          },
+          {
+            "index": 1,
+            "action": "https://kttvtudong.net/kttv/export/excelexport?sid=464",
+            "method": "post",
+            "id": "",
+            "className": "w-100",
+            "text": "Xuất báo cáo",
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "text",
+                "name": "fd",
+                "id": "fd",
+                "value": null,
+                "text": ""
+              },
+              {
+                "tag": "INPUT",
+                "type": "text",
+                "name": "td",
+                "id": "td",
+                "value": null,
+                "text": ""
+              },
+              {
+                "tag": "BUTTON",
+                "type": "submit",
+                "name": null,
+                "id": null,
+                "value": null,
+                "text": "Xuất báo cáo"
+              }
+            ]
+          }
+        ],
+        "scripts": [
+          {
+            "src": "",
+            "inline_preview": "\n    <tr data-id=\"{0}\">\n        <td class=\"hv{0}\">{1}</td>\n        <td>{2}</td>\n                <td class=\"vv9480 ktype2\"></td>\n                <td class=\"vv9481 ktype0\"></td>\n                <td class=\"vv9482 ktype1\"></td>\n                <td class=\"vv9483 ktype0\"></td>\n                <td class=\"vv9484 ktype3\"></td>\n                <td class=\"vv9485 ktype1\"></td>\n                <td class=\"vv9486 ktype0\"></td>\n                <td class=\"vv9487 ktype3\"></td>\n                <td class=\"vv9488 ktype0\"></td>\n    </tr>\n"
+          },
+          {
+            "src": "https://kttvtudong.net/assets/js/dashmix.core.min.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://kttvtudong.net/assets/js/dashmix.app.min.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://kttvtudong.net/assets/js/ColorTheme.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://kttvtudong.net/assets/js/kAdmin.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/highcharts.src.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/highcharts-more.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/modules/data.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/modules/windbarb.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/modules/exporting.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/modules/export-data.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "",
+            "inline_preview": "\n    var chartdogio2464_1 = $('#chartdogio2464_1');\n    if (chartdogio2464_1.length) {\n        $.post('/kttv/report/huonggio?hour=', { 'sdid': 2464},\n            function (item) {\n                if (item != \"\") {\n                    chartdogio2464_1.highcharts(\n                        {\n                            data: { \"csv\": item },\n                            chart: { polar: true, type: 'column' },\n                            title: { text: 'TỶ LỆ HƯỚNG GIÓ VÀ CƯỜNG ĐỘ GIÓ' },\n                            subtitle: { text: null },\n                            pane: { size: '85%' },\n                            legend: { align: 'left', verticalAlign: 'top', y: 50, layout: 'vertical' },\n                            xAxis: { tickmarkPlacement: 'on' },\n                            yAxis: {\n                                min: 0, endOnTick: false, showLastLabel: true, title: { text: 'Tỷ lệ (%)' }, labels: {\n                                    formatter: function () {\n                                        return this.value + '%';\n                                    }\n                                },\n                                reversedStacks: false\n                            },\n                            tooltip: { valueSuffix: '%' },\n                            plotOptions: {\n                                series: {\n                                    stacking: 'normal',\n                                    shadow: false,\n                                    groupPadding: 0,\n                                    pointPlacement: 'on'\n                                }\n                            }\n                        });\n                }\n            });\n    }\n\n    var chartdogio2464_2 = $('#chartdogio2464_2');\n    if (chartdogio2464_2.length) {\n        $.post('/kttv/report/tocdogio?hour=', {'sdid': 2464},\n            function (item) {\n                if (item == null) return; if (item.err == 0) {\n                    chartdogio2464_2.highcharts({\n                        title: { text: 'BIỀU ĐỒ HƯỚNG GIÓ VÀ TỐC ĐỘ GIÓ' },\n                        xAxis: { type: 'datetime', offset: 40 },\n                        plotOptions: { series: { pointStart: item.data[0].l[0], pointInterval: 600000 } },\n                        series: [{\n                            type: 'windbarb',\n                            //key: ['x'],\n                            data: item.data[0].data,\n                            name: 'Hướng gió',\n                            color: bgDanger,\n                            showInLegend: false,\n                            tooltip: {\n                                valueSuffix: ' độ'\n                            }\n                        }, {\n                            type: 'area',\n                            keys: ['y', 'rotation'],\n                            data: item.data[0].data,\n                            color: bgSuccess,\n                            name: 'Tốc độ gió',\n                            tooltip: {\n                                valueSuffix: ' m/s'\n                            }\n                        }]\n                    });\n                }\n            }, 'json').fail(function () {\n                console.log(\"Có lỗi trong quá trình gửi dữ liệu!\");\n            });\n    }\n"
+          },
+          {
+            "src": "",
+            "inline_preview": "\n        var stationid = 464\n        var localtime = 1789639800;\n        var realtime = 1789640104;\n        for (var i = 0; i < 48; i++) {\n            $('#tbody').append($('#tempDevice').html().format(localtime, '', Unix_timestamp(localtime)));\n            localtime -= 600;\n        }\n\n        window.setInterval(function () {\n            realtime++;\n            if (realtime % 600 == 0) {\n                $('#tbody').prepend($('#tempDevice').html().format(realtime, '', Unix_timestamp(realtime)));\n                //console.log('...');\n            }\n            //console.log(realtime);\n        }, 1000);\n\n    "
+          },
+          {
+            "src": "https://kttvtudong.net/Areas/KTTV/Content/js/kWeb.KTTVDetail.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://kttvtudong.net/assets/js/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "",
+            "inline_preview": "jQuery(function () { Dashmix.helpers(['datepicker']); });"
+          }
+        ],
+        "links": [
+          {
+            "text": "6h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=464&hour=6&hour_hv="
+          },
+          {
+            "text": "12h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=464&hour=12&hour_hv="
+          },
+          {
+            "text": "24h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=464&hour=24&hour_hv="
+          },
+          {
+            "text": "36h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=464&hour=36&hour_hv="
+          },
+          {
+            "text": "48h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=464&hour=48&hour_hv="
+          },
+          {
+            "text": "60h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=464&hour=60&hour_hv="
+          },
+          {
+            "text": "72h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=464&hour=72&hour_hv="
+          },
+          {
+            "text": "6h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=464&hour=&hour_hv="
+          },
+          {
+            "text": "12h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=464&hour=&hour_hv="
+          },
+          {
+            "text": "24h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=464&hour=&hour_hv="
+          },
+          {
+            "text": "36h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=464&hour=&hour_hv="
+          },
+          {
+            "text": "48h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=464&hour=&hour_hv="
+          },
+          {
+            "text": "60h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=464&hour=&hour_hv="
+          },
+          {
+            "text": "72h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=464&hour=&hour_hv="
+          }
+        ],
+        "table_text": [
+          "Thời gian\tKT RẠCH GIÁ (089907 RachGia)\nNgày\tGiờ\tff\tdd\tfxfx2m\tdxdx2m\tTGXH2m\tfxfx2s\tdxdx2s\tTGXH2s\tAc:\n\t10:10\t\t\t\t\t\t\t\t\t\n\t10:00\t\t\t\t\t\t\t\t\t\n\t9:50\t\t\t\t\t\t\t\t\t\n\t9:40\t\t\t\t\t\t\t\t\t\n\t9:30\t\t\t\t\t\t\t\t\t\n\t9:20\t\t\t\t\t\t\t\t\t\n\t9:10\t\t\t\t\t\t\t\t\t\n\t9:00\t\t\t\t\t\t\t\t\t\n\t8:50\t\t\t\t\t\t\t\t\t\n\t8:40\t\t\t\t\t\t\t\t\t\n\t8:30\t\t\t\t\t\t\t\t\t\n\t8:20\t\t\t\t\t\t\t\t\t\n\t8:10\t\t\t\t\t\t\t\t\t\n\t8:00\t\t\t\t\t\t\t\t\t\n\t7:50\t\t\t\t\t\t\t\t\t\n\t7:40\t\t\t\t\t\t\t\t\t\n\t7:30\t\t\t\t\t\t\t\t\t\n\t7:20\t\t\t\t\t\t\t\t\t\n\t7:10\t\t\t\t\t\t\t\t\t\n\t7:00\t\t\t\t\t\t\t\t\t\n\t6:50\t\t\t\t\t\t\t\t\t\n\t6:40\t\t\t\t\t\t\t\t\t\n\t6:30\t\t\t\t\t\t\t\t\t\n\t6:20\t\t\t\t\t\t\t\t\t\n\t6:10\t\t\t\t\t\t\t\t\t\n\t6:00\t\t\t\t\t\t\t\t\t\n\t5:50\t\t\t\t\t\t\t\t\t\n\t5:40\t\t\t\t\t\t\t\t\t\n\t5:30\t\t\t\t\t\t\t\t\t\n\t5:20\t\t\t\t\t\t\t\t\t\n\t5:10\t\t\t\t\t\t\t\t\t\n\t5:00\t\t\t\t\t\t\t\t\t\n\t4:50\t\t\t\t\t\t\t\t\t\n\t4:40\t\t\t\t\t\t\t\t\t\n\t4:30\t\t\t\t\t\t\t\t\t\n\t4:20\t\t\t\t\t\t\t\t\t\n\t4:10\t\t\t\t\t\t\t\t\t\n\t4:00\t\t\t\t\t\t\t\t\t\n\t3:50\t\t\t\t\t\t\t\t\t\n\t3:40\t\t\t\t\t\t\t\t\t\n\t3:30\t\t\t\t\t\t\t\t\t\n\t3:20\t\t\t\t\t\t\t\t\t\n\t3:10\t\t\t\t\t\t\t\t\t\n\t3:00\t\t\t\t\t\t\t\t\t\n\t2:50\t\t\t\t\t\t\t\t\t\n\t2:40\t\t\t\t\t\t\t\t\t\n\t2:30\t\t\t\t\t\t\t\t\t\n\t2:20"
+        ]
+      },
+      "requests": [
+        {
+          "url": "https://kttvtudong.net/kttv/detail/view?sid=464",
+          "method": "GET",
+          "resource_type": "document",
+          "post_data": ""
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/report/huonggio?hour=",
+          "method": "POST",
+          "resource_type": "xhr",
+          "post_data": "sdid=2464"
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/report/tocdogio?hour=",
+          "method": "POST",
+          "resource_type": "xhr",
+          "post_data": "sdid=2464"
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/export/excelexport?sid=464",
+          "method": "POST",
+          "resource_type": "document",
+          "post_data": "fd=&td="
+        }
+      ],
+      "responses": [
+        {
+          "url": "https://kttvtudong.net/kttv/detail/view?sid=464",
+          "status": 200,
+          "method": "GET",
+          "resource_type": "document",
+          "content_type": "text/html; charset=utf-8",
+          "body_preview": "<!DOCTYPE html>\r\n\r\n<html>\r\n<head>\r\n    <meta charset=\"utf-8\" />\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, shrink-to-fit=no\" />\r\n\r\n    <title>KT RẠCH GI&#193;</title>\r\n\r\n    \r\n\r\n    <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,400i,600,700\">\r\n    <link href=\"/assets/css/dashmix.min.css\" rel=\"stylesheet\" />\r\n\r\n    \r\n    <link rel=\"stylesheet\" href=\"/assets/js/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css\">\r\n\r\n</head>\r\n<body>\r\n    <div id=\"page-container\" class=\"page-header-dark\">\r\n\r\n        <aside id=\"side-overlay\">\r\n    \r\n</aside>\r\n\r\n        \r\n<nav id=\"sidebar\" aria-label=\"Main Navigation\">\r\n    \r\n</nav>\r\n\r\n        \r\n\r\n<header id=\"page-header\">\r\n    <div class=\"content-header\">\r\n        <div class=\"d-flex align-items-center\">\r\n            <a class=\"link-fx font-size-lg text-dual\" href=\"/kttv\">\r\n                <img src=\"/files/logo.png\" style=\"height: 60px\" />\r\n            </a>\r\n            <div class=\"font-size-h4 d-none d-md-block pl-1 text-white\">HỆ THỐNG GIÁM SÁT KHÍ TƯỢNG THỦY VĂN TỰ ĐỘNG</div>\r\n\r\n            \r\n\r\n<ul class=\"nav nav-tabs nav-tabs-alt border-bottom-0 justify-content-center justify-content-md-start\">\r\n    <li class=\"nav-item\">\r\n        <a class=\"nav-link text-white py-3 active\" href=\"/kttv\">\r\n            <i class=\"fa fa-home fa-fw text-gray\"></i> <span class=\"d-none d-md-inline ml-1\">Trang chủ</span>\r\n        </a>\r\n    </li>\r\n    <li class=\"nav-item\">\r\n        <a class=\"nav-link text-white py-3\" href=\"/kttv\">\r\n            <i class=\"fa fa-building fa-fw text-gray\"></i> <span class=\"d-none d-md-inline ml-1\">Thuộc tính</span>\r\n        </a>\r\n    </li>\r\n    \r\n    \r\n</ul>\r\n\r\n        </div>\r\n        <div>\r\n            <a class=\"btn btn-dual d-none d-sm-inline-block\" href=\"javascript:void(0)\">\r\n                <i class=\"fa fa-wifi mr-1\"></i> <span id=\"messages\"></span>\r\n            </a>\r\n            <div class=\"dropdown d-inline-block\">\r\n                <button type=\"button\" class=\"btn btn-dual\" id=\"page-header-user-dropdown\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">\r\n                    <img class=\"img-avatar img-avatar32 img-avatar-thumb mr-2\" src=\"/files/user/50x\" alt=\"\">\r\n                    \r\n                    <i class=\"fa fa-fw fa-angle-down ml-1\"></i>\r\n                </button>\r\n                <div class=\"dropdown-menu dropdown-menu-right dropdown-menu-lg p-0\" aria-labelledby=\"page-header-user-dropdown\">\r\n                    <div class=\"rounded-top font-w600 text-center p-3 border-bottom\">\r\n                        <img class=\"img-avatar img-avatar48\" src=\"/files/user/50x\" alt=\"\">\r\n                        <div class=\"pt-2\">\r\n\r\n                        </div>\r\n                        <a class=\"font-w600 text-dark\" href=\"javascript:void(0)\"></a>\r\n                        <div class=\"font-size-sm text-muted\">@</div>\r\n                    </div>\r\n                    <div class=\"p-2\">\r\n                        <a class=\"dropdown-item\" href=\"javascript:void(0)\">\r\n                            <i class=\"fa fa-fw fa-cog text-gray mr-1\"></i> Cài đặt\r\n                        </a>\r\n                        <a class=\"dropdown-item mb-0\" href=\"javascript:void(0)\">\r\n                            <i class=\"fa fa-fw fa-envelope-open text-gray mr-1\"></i> Hỗ trợ\r\n                        </a>\r\n                    </div>\r\n                    <div class=\"p-2\">\r\n                        <a class=\"dropdown-item mb-0\" href=\"/login/logout\">\r\n                            <i class=\"fa fa-fw fa-arrow-alt-circle-left text-gray mr-1\"></i> Thoát\r\n                        </a>\r\n                    </div>\r\n                </div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n    <div id=\"page-header-search\" class=\"overlay-header bg-primary\">\r\n        <div class=\"content-header\">\r\n            <form class=\"w-100\" action=\"be_pages_generic_search.html\" method=\"POST\">\r\n                <div class=\"input-group\">\r\n                    <input type=\"text\" class=\"form-control border-0\" placeholder=\"Search your network..\" id=\"page-header-search-input\" name=\"page-header-search-input\">\r\n                    <div class=\"input-group-append\">\r\n                        <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"layout\" data-action=\"header_search_off\">\r\n                            <i class=\"fa fa-fw fa-times-circle\"></i>\r\n                        </button>\r\n                    </div>\r\n                </div>\r\n            </form>\r\n        </div>\r\n    </div>\r\n    <div id=\"page-header-loader\" class=\"overlay-header bg-primary-darker\">\r\n        <div class=\"content-header\">\r\n            <div class=\"w-100 text-center\">\r\n                <i class=\"fa fa-fw fa-2x fa-sun fa-spin text-white\"></i>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</header>\r\n\r\n        <main id=\"main-container\">\r\n            <div class=\"bg-white border-bottom\">\r\n                <div class=\"content py-2\">\r\n                    <ul class=\"nav nav-pills justify-content-center\">\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link\" href=\"/kttv\">\r\n                                <i class=\"fa fa-newspaper fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Bảng tin</span>\r\n                            </a>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link\" href=\"/kttv/maps\">\r\n                                <i class=\"fa fa-map fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Bản đồ</span>\r\n                            </a>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link\" href=\"/kttv/detail\">\r\n                                <i class=\"fa fa-list-alt fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Chi tiết</span>\r\n                            </a>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/default/khituong\">\r\n                                <i class=\"fa fa-list-alt fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Khí tượng</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/default/khituong\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/maps/khituong\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/detail/khituong\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/default/thuyvan\">\r\n                                <i class=\"fa fa-list-alt fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Thủy văn</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/default/thuyvan\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/maps/thuyvan\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/detail/thuyvan\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/default/mua\">\r\n                                <i class=\"fa fa-list-alt fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Mưa</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/default/mua\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/maps/mua\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/detail/mua\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                        \r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link\" href=\"/kttv/book/shv1\">\r\n                                <i class=\"fa fa-book fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">SHV1</span>\r\n                            </a>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link\" href=\"/kttv/book\">\r\n                                <i class=\"fa fa-book fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">BHV1</span>\r\n                            </a>\r\n                        </li>\r\n                        <li class=\"nav-item dropdown mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/book/s\">\r\n                                <i class=\"fa fa-book fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Đo mặn</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/book/s\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewcharts\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewdetails\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                        <li class=\"nav-item dropdown mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/book/hngot\">\r\n                                <i class=\"fa fa-book fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">HNgot</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/book/hngot\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewcharthngot\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewdetailhngot\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                        <li class=\"nav-item dropdown mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/book/hman\">\r\n                                <i class=\"fa fa-book fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">HTrieu</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/book/hman\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewcharthman\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewdetailhngot\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                    </ul>\r\n                </div>\r\n            </div>\r\n            \r\n\r\n\r\n<div class=\"content\">\r\n    <h2>KT RẠCH GI&#193;</h2>\r\n    <hr />\r\n\r\n\r\n\r\n<div class=\"block block-rounded block-bordered\">\r\n    <div class=\"block-header block-header-primary\">\r\n        <h3 class=\"block-title\"></h3>\r\n        <div class=\"block-options\">\r\n            <div class=\"dropdown\">\r\n                <button type=\"button\" class=\"btn-block-option dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">\r\n                    <i class=\"si si-calendar\"></i>\r\n                </button>\r\n                <div class=\"dropdown-menu dropdown-menu-right\">\r\n                    <a class=\"btn btn-sm btn-block btn-alt-secondary\" href=\"/kttv/detail/view?sid=464&hour=6&hour_hv=\">\r\n                        <strong>6h</strong>\r\n                    </a>\r\n                    <a class=\"btn btn-",
+          "body_length": 26953
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/report/huonggio?hour=",
+          "status": 200,
+          "method": "POST",
+          "resource_type": "xhr",
+          "content_type": "text/html; charset=utf-8",
+          "body_preview": "\"Category\",\"< 0.5 m/s\",\"0.5-2 m/s\",\"2-4 m/s\",\"4-6 m/s\",\"6-8 m/s\",\"8-10 m/s\",\"> 10 m/s\"\n\"N\",0,0,0,0,0,0,0\n\"NNE\",0,0,0,0,0,0,0\n\"NE\",0,0,0,0,0,0,0\n\"ENE\",0,0,0,0,0,0,0\n\"E\",0,0,0,0,0,0,0\n\"ESE\",0,0,0,0,0,0,0\n\"SE\",0,0,0,0,0,0,0\n\"SSE\",0,0,0,0,0,0,0\n\"S\",0,0,0,0,0,0,0\n\"SSW\",0,0,0,0,0,0,0\n\"SW\",0,0,0,0,0,0,0\n\"WSW\",0,0,0,0,0,0,0\n\"W\",0,0,0,0,0,0,0\n\"WNW\",0,0,0,0,0,0,0\n\"NW\",0,0,0,0,0,0,0\n\"NNW\",0,0,0,0,0,0,0\n",
+          "body_length": 395
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/report/tocdogio?hour=",
+          "status": 200,
+          "method": "POST",
+          "resource_type": "xhr",
+          "content_type": "text/html; charset=utf-8",
+          "body_preview": "{\"err\":0,\"id\":null,\"topic\":null,\"msg\":\"Successful\",\"current\":1789614306,\"data\":[{\"name\":\"Tốc độ gió\",\"l\":[1789618200000,1789618800000,1789619400000,1789620000000,1789620600000,1789621200000,1789621800000,1789622400000,1789623000000,1789623600000,1789624200000,1789624800000,1789625400000,1789626000000,1789626600000,1789627200000,1789627800000,1789628400000,1789629000000,1789629600000,1789630200000,1789630800000,1789631400000,1789632000000,1789632600000,1789633200000,1789633800000,1789634400000,1789635000000,1789635600000,1789636200000,1789636800000,1789637400000,1789638000000,1789638600000,1789639200000],\"data\":[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]}]}",
+          "body_length": 838
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/export/excelexport?sid=464",
+          "status": 200,
+          "method": "POST",
+          "resource_type": "document",
+          "content_type": "application/octet-stream"
+        }
+      ],
+      "export_probe": {
+        "attempted": true,
+        "result": {
+          "before_url": "https://kttvtudong.net/kttv/detail/view?sid=464",
+          "after_url": "https://kttvtudong.net/kttv/detail/view?sid=464",
+          "download": {
+            "suggested_filename": "089907 RachGia17-09-2026-10-05-13.xlsx",
+            "url": "https://kttvtudong.net/kttv/export/excelexport?sid=464"
+          }
+        }
+      }
+    },
+    "rain_control_DM6100": {
+      "url": "https://kttvtudong.net/kttv/detail/view?sid=482",
+      "navigation_error": null,
+      "final_url": "https://kttvtudong.net/kttv/detail/view?sid=482",
+      "dom": {
+        "title": "Mưa Xuân Trường",
+        "inputs": [
+          {
+            "index": 0,
+            "type": "text",
+            "name": "page-header-search-input",
+            "id": "page-header-search-input",
+            "value": "",
+            "placeholder": "Search your network..",
+            "className": "form-control border-0"
+          },
+          {
+            "index": 1,
+            "type": "text",
+            "name": "fd",
+            "id": "fd",
+            "value": "",
+            "placeholder": "Từ ngày",
+            "className": "form-control"
+          },
+          {
+            "index": 2,
+            "type": "text",
+            "name": "td",
+            "id": "td",
+            "value": "",
+            "placeholder": "Đến ngày",
+            "className": "form-control"
+          }
+        ],
+        "forms": [
+          {
+            "index": 0,
+            "action": "https://kttvtudong.net/kttv/detail/be_pages_generic_search.html",
+            "method": "post",
+            "id": "",
+            "className": "w-100",
+            "text": "",
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "text",
+                "name": "page-header-search-input",
+                "id": "page-header-search-input",
+                "value": null,
+                "text": ""
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "name": null,
+                "id": null,
+                "value": null,
+                "text": ""
+              }
+            ]
+          },
+          {
+            "index": 1,
+            "action": "https://kttvtudong.net/kttv/export/excelexport?sid=482",
+            "method": "post",
+            "id": "",
+            "className": "w-100",
+            "text": "Xuất báo cáo",
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "text",
+                "name": "fd",
+                "id": "fd",
+                "value": null,
+                "text": ""
+              },
+              {
+                "tag": "INPUT",
+                "type": "text",
+                "name": "td",
+                "id": "td",
+                "value": null,
+                "text": ""
+              },
+              {
+                "tag": "BUTTON",
+                "type": "submit",
+                "name": null,
+                "id": null,
+                "value": null,
+                "text": "Xuất báo cáo"
+              }
+            ]
+          }
+        ],
+        "scripts": [
+          {
+            "src": "",
+            "inline_preview": "\n    <tr data-id=\"{0}\">\n        <td class=\"hv{0}\">{1}</td>\n        <td>{2}</td>\n                <td class=\"vv9844 ktype0\"></td>\n                <td class=\"vv9845 ktype0\"></td>\n                <td class=\"vv9846 ktype0\"></td>\n                <td class=\"vv9847 ktype0\"></td>\n                <td class=\"vv9848 ktype0\"></td>\n                <td class=\"vv9849 ktype0\"></td>\n                <td class=\"vv9850 ktype0\"></td>\n                <td class=\"vv9852 ktype0\"></td>\n                <td class=\"vv9853 ktype0\"></td>\n                <td class=\"vv9851 ktype0\"></td>\n    </tr>\n"
+          },
+          {
+            "src": "https://kttvtudong.net/assets/js/dashmix.core.min.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://kttvtudong.net/assets/js/dashmix.app.min.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://kttvtudong.net/assets/js/ColorTheme.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://kttvtudong.net/assets/js/kAdmin.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/highcharts.src.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/highcharts-more.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/modules/data.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/modules/windbarb.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/modules/exporting.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://code.highcharts.com/modules/export-data.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "",
+            "inline_preview": "\n    var chartdomua2497 = $('#chartdomua2497');\n    if (chartdomua2497.length) {\n        $.post('/kttv/report/domua?hour=', { 'sdid': 2497},\n            function (item) {\n                if (item == null) return; if (item.err == 0) {\n                    chartdomua2497.highcharts({\n                        credits: false,\n                        colors: [bgSuccess],\n                        chart: { backgroundColor: '#ffffff', className: 'br-r', type: 'column', zoomType: 'x', panning: true, panKey: 'shift', marginTop: 25, marginRight: 1, },\n                        title: { text: item.data[0].title },\n                        subtitle: { text: '' },\n                        //xAxis: { gridLineColor: '#EEE', lineColor: '#EEE', tickColor: '#EEE', categories: item.data[0].xCategory },\n                        xAxis: { type: 'datetime', offset: 40 },\n                        plotOptions: { series: { pointStart: item.data[0].xCategory[0], pointInterval: 21600000 } },\n                        yAxis: { min: 0, gridLineColor: '#EEE', title: { text: null } },\n                        //plotOptions: { column: { stacking: 'normal'} },\n                        legend: { enabled: false, },\n                        series: item.data[0].ySeries\n                    });\n                } else { console.log(item.msg); }\n            }, 'json').fail(function () {\n                console.log(\"Có lỗi trong quá trình gửi dữ liệu!\");\n            });\n            \n    }\n"
+          },
+          {
+            "src": "",
+            "inline_preview": "\n        var stationid = 482\n        var localtime = 1789639800;\n        var realtime = 1789640118;\n        for (var i = 0; i < 48; i++) {\n            $('#tbody').append($('#tempDevice').html().format(localtime, '', Unix_timestamp(localtime)));\n            localtime -= 600;\n        }\n\n        window.setInterval(function () {\n            realtime++;\n            if (realtime % 600 == 0) {\n                $('#tbody').prepend($('#tempDevice').html().format(realtime, '', Unix_timestamp(realtime)));\n                //console.log('...');\n            }\n            //console.log(realtime);\n        }, 1000);\n\n    "
+          },
+          {
+            "src": "https://kttvtudong.net/Areas/KTTV/Content/js/kWeb.KTTVDetail.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "https://kttvtudong.net/assets/js/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js",
+            "inline_preview": ""
+          },
+          {
+            "src": "",
+            "inline_preview": "jQuery(function () { Dashmix.helpers(['datepicker']); });"
+          }
+        ],
+        "links": [
+          {
+            "text": "6h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=482&hour=6&hour_hv="
+          },
+          {
+            "text": "12h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=482&hour=12&hour_hv="
+          },
+          {
+            "text": "24h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=482&hour=24&hour_hv="
+          },
+          {
+            "text": "36h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=482&hour=36&hour_hv="
+          },
+          {
+            "text": "48h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=482&hour=48&hour_hv="
+          },
+          {
+            "text": "60h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=482&hour=60&hour_hv="
+          },
+          {
+            "text": "72h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=482&hour=72&hour_hv="
+          },
+          {
+            "text": "6h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=482&hour=&hour_hv="
+          },
+          {
+            "text": "12h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=482&hour=&hour_hv="
+          },
+          {
+            "text": "24h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=482&hour=&hour_hv="
+          },
+          {
+            "text": "36h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=482&hour=&hour_hv="
+          },
+          {
+            "text": "48h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=482&hour=&hour_hv="
+          },
+          {
+            "text": "60h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=482&hour=&hour_hv="
+          },
+          {
+            "text": "72h",
+            "href": "https://kttvtudong.net/kttv/detail/view?sid=482&hour=&hour_hv="
+          }
+        ],
+        "table_text": [
+          "Thời gian\tMưa Xuân Trường (DM6100)\nNgày\tGiờ\tMưa hiện tại (RR):\tMưa 24 giờ (R24h):\tMưa ngày (R19h):\tAc\tMưa lúc 10 phút:\tMưa lúc 20 phút:\tMưa lúc 30 phút:\tMưa lúc 50 phút:\tMưa lúc 60 phút:\tMưa lúc 40 phút:\n\t10:10\t\t\t\t\t\t\t\t\t\t\n\t10:00\t\t\t\t\t\t\t\t\t\t\n\t9:50\t\t\t\t\t\t\t\t\t\t\n\t9:40\t\t\t\t\t\t\t\t\t\t\n\t9:30\t\t\t\t\t\t\t\t\t\t\n\t9:20\t\t\t\t\t\t\t\t\t\t\n\t9:10\t\t\t\t\t\t\t\t\t\t\n\t9:00\t\t\t\t\t\t\t\t\t\t\n\t8:50\t\t\t\t\t\t\t\t\t\t\n\t8:40\t\t\t\t\t\t\t\t\t\t\n\t8:30\t\t\t\t\t\t\t\t\t\t\n\t8:20\t\t\t\t\t\t\t\t\t\t\n\t8:10\t\t\t\t\t\t\t\t\t\t\n\t8:00\t\t\t\t\t\t\t\t\t\t\n\t7:50\t\t\t\t\t\t\t\t\t\t\n\t7:40\t\t\t\t\t\t\t\t\t\t\n\t7:30\t\t\t\t\t\t\t\t\t\t\n\t7:20\t\t\t\t\t\t\t\t\t\t\n\t7:10\t\t\t\t\t\t\t\t\t\t\n\t7:00\t\t\t\t\t\t\t\t\t\t\n\t6:50\t\t\t\t\t\t\t\t\t\t\n\t6:40\t\t\t\t\t\t\t\t\t\t\n\t6:30\t\t\t\t\t\t\t\t\t\t\n\t6:20\t\t\t\t\t\t\t\t\t\t\n\t6:10\t\t\t\t\t\t\t\t\t\t\n\t6:00\t\t\t\t\t\t\t\t\t\t\n\t5:50\t\t\t\t\t\t\t\t\t\t\n\t5:40\t\t\t\t\t\t\t\t\t\t\n\t5:30\t\t\t\t\t\t\t\t\t\t\n\t5:20\t\t\t\t\t\t\t\t\t\t\n\t5:10\t\t\t\t\t\t\t\t\t\t\n\t5:00\t\t\t\t\t\t\t\t\t\t\n\t4:50\t\t\t\t\t\t\t\t\t\t\n\t4:40\t\t\t\t\t\t\t\t\t\t\n\t4:30\t\t\t\t\t\t\t\t\t\t\n\t4:20\t\t\t\t\t\t\t\t\t\t\n\t4:10\t\t\t\t\t\t\t\t\t\t\n\t4:00\t\t\t\t\t\t\t\t\t\t\n\t3:50\t\t\t\t\t\t\t\t\t\t\n\t3:40\t\t\t\t\t\t\t\t\t\t\n\t3:30\t\t\t\t\t\t\t\t\t\t\n\t3:20\t\t\t\t\t\t\t\t\t\t\n\t3:10\t\t\t\t\t\t\t\t\t\t\n\t3:00\t\t\t\t\t\t\t\t\t\t\n\t2:50\t\t\t\t\t\t\t\t\t\t\n\t2:40\t\t\t\t\t\t\t\t\t\t\n\t2:30\t\t\t\t\t\t\t\t\t\t\n\t2:20"
+        ]
+      },
+      "requests": [
+        {
+          "url": "https://kttvtudong.net/kttv/detail/view?sid=482",
+          "method": "GET",
+          "resource_type": "document",
+          "post_data": ""
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/report/domua?hour=",
+          "method": "POST",
+          "resource_type": "xhr",
+          "post_data": "sdid=2497"
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/export/excelexport?sid=482",
+          "method": "POST",
+          "resource_type": "document",
+          "post_data": "fd=&td="
+        }
+      ],
+      "responses": [
+        {
+          "url": "https://kttvtudong.net/kttv/detail/view?sid=482",
+          "status": 200,
+          "method": "GET",
+          "resource_type": "document",
+          "content_type": "text/html; charset=utf-8",
+          "body_preview": "<!DOCTYPE html>\r\n\r\n<html>\r\n<head>\r\n    <meta charset=\"utf-8\" />\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, shrink-to-fit=no\" />\r\n\r\n    <title>Mưa Xu&#226;n Trường</title>\r\n\r\n    \r\n\r\n    <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,400i,600,700\">\r\n    <link href=\"/assets/css/dashmix.min.css\" rel=\"stylesheet\" />\r\n\r\n    \r\n    <link rel=\"stylesheet\" href=\"/assets/js/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css\">\r\n\r\n</head>\r\n<body>\r\n    <div id=\"page-container\" class=\"page-header-dark\">\r\n\r\n        <aside id=\"side-overlay\">\r\n    \r\n</aside>\r\n\r\n        \r\n<nav id=\"sidebar\" aria-label=\"Main Navigation\">\r\n    \r\n</nav>\r\n\r\n        \r\n\r\n<header id=\"page-header\">\r\n    <div class=\"content-header\">\r\n        <div class=\"d-flex align-items-center\">\r\n            <a class=\"link-fx font-size-lg text-dual\" href=\"/kttv\">\r\n                <img src=\"/files/logo.png\" style=\"height: 60px\" />\r\n            </a>\r\n            <div class=\"font-size-h4 d-none d-md-block pl-1 text-white\">HỆ THỐNG GIÁM SÁT KHÍ TƯỢNG THỦY VĂN TỰ ĐỘNG</div>\r\n\r\n            \r\n\r\n<ul class=\"nav nav-tabs nav-tabs-alt border-bottom-0 justify-content-center justify-content-md-start\">\r\n    <li class=\"nav-item\">\r\n        <a class=\"nav-link text-white py-3 active\" href=\"/kttv\">\r\n            <i class=\"fa fa-home fa-fw text-gray\"></i> <span class=\"d-none d-md-inline ml-1\">Trang chủ</span>\r\n        </a>\r\n    </li>\r\n    <li class=\"nav-item\">\r\n        <a class=\"nav-link text-white py-3\" href=\"/kttv\">\r\n            <i class=\"fa fa-building fa-fw text-gray\"></i> <span class=\"d-none d-md-inline ml-1\">Thuộc tính</span>\r\n        </a>\r\n    </li>\r\n    \r\n    \r\n</ul>\r\n\r\n        </div>\r\n        <div>\r\n            <a class=\"btn btn-dual d-none d-sm-inline-block\" href=\"javascript:void(0)\">\r\n                <i class=\"fa fa-wifi mr-1\"></i> <span id=\"messages\"></span>\r\n            </a>\r\n            <div class=\"dropdown d-inline-block\">\r\n                <button type=\"button\" class=\"btn btn-dual\" id=\"page-header-user-dropdown\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">\r\n                    <img class=\"img-avatar img-avatar32 img-avatar-thumb mr-2\" src=\"/files/user/50x\" alt=\"\">\r\n                    \r\n                    <i class=\"fa fa-fw fa-angle-down ml-1\"></i>\r\n                </button>\r\n                <div class=\"dropdown-menu dropdown-menu-right dropdown-menu-lg p-0\" aria-labelledby=\"page-header-user-dropdown\">\r\n                    <div class=\"rounded-top font-w600 text-center p-3 border-bottom\">\r\n                        <img class=\"img-avatar img-avatar48\" src=\"/files/user/50x\" alt=\"\">\r\n                        <div class=\"pt-2\">\r\n\r\n                        </div>\r\n                        <a class=\"font-w600 text-dark\" href=\"javascript:void(0)\"></a>\r\n                        <div class=\"font-size-sm text-muted\">@</div>\r\n                    </div>\r\n                    <div class=\"p-2\">\r\n                        <a class=\"dropdown-item\" href=\"javascript:void(0)\">\r\n                            <i class=\"fa fa-fw fa-cog text-gray mr-1\"></i> Cài đặt\r\n                        </a>\r\n                        <a class=\"dropdown-item mb-0\" href=\"javascript:void(0)\">\r\n                            <i class=\"fa fa-fw fa-envelope-open text-gray mr-1\"></i> Hỗ trợ\r\n                        </a>\r\n                    </div>\r\n                    <div class=\"p-2\">\r\n                        <a class=\"dropdown-item mb-0\" href=\"/login/logout\">\r\n                            <i class=\"fa fa-fw fa-arrow-alt-circle-left text-gray mr-1\"></i> Thoát\r\n                        </a>\r\n                    </div>\r\n                </div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n    <div id=\"page-header-search\" class=\"overlay-header bg-primary\">\r\n        <div class=\"content-header\">\r\n            <form class=\"w-100\" action=\"be_pages_generic_search.html\" method=\"POST\">\r\n                <div class=\"input-group\">\r\n                    <input type=\"text\" class=\"form-control border-0\" placeholder=\"Search your network..\" id=\"page-header-search-input\" name=\"page-header-search-input\">\r\n                    <div class=\"input-group-append\">\r\n                        <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"layout\" data-action=\"header_search_off\">\r\n                            <i class=\"fa fa-fw fa-times-circle\"></i>\r\n                        </button>\r\n                    </div>\r\n                </div>\r\n            </form>\r\n        </div>\r\n    </div>\r\n    <div id=\"page-header-loader\" class=\"overlay-header bg-primary-darker\">\r\n        <div class=\"content-header\">\r\n            <div class=\"w-100 text-center\">\r\n                <i class=\"fa fa-fw fa-2x fa-sun fa-spin text-white\"></i>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</header>\r\n\r\n        <main id=\"main-container\">\r\n            <div class=\"bg-white border-bottom\">\r\n                <div class=\"content py-2\">\r\n                    <ul class=\"nav nav-pills justify-content-center\">\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link\" href=\"/kttv\">\r\n                                <i class=\"fa fa-newspaper fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Bảng tin</span>\r\n                            </a>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link\" href=\"/kttv/maps\">\r\n                                <i class=\"fa fa-map fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Bản đồ</span>\r\n                            </a>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link\" href=\"/kttv/detail\">\r\n                                <i class=\"fa fa-list-alt fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Chi tiết</span>\r\n                            </a>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/default/khituong\">\r\n                                <i class=\"fa fa-list-alt fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Khí tượng</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/default/khituong\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/maps/khituong\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/detail/khituong\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/default/thuyvan\">\r\n                                <i class=\"fa fa-list-alt fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Thủy văn</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/default/thuyvan\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/maps/thuyvan\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/detail/thuyvan\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/default/mua\">\r\n                                <i class=\"fa fa-list-alt fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Mưa</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/default/mua\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/maps/mua\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/detail/mua\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                        \r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link\" href=\"/kttv/book/shv1\">\r\n                                <i class=\"fa fa-book fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">SHV1</span>\r\n                            </a>\r\n                        </li>\r\n                        <li class=\"nav-item mr-1\">\r\n                            <a class=\"nav-link\" href=\"/kttv/book\">\r\n                                <i class=\"fa fa-book fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">BHV1</span>\r\n                            </a>\r\n                        </li>\r\n                        <li class=\"nav-item dropdown mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/book/s\">\r\n                                <i class=\"fa fa-book fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">Đo mặn</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/book/s\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewcharts\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewdetails\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                        <li class=\"nav-item dropdown mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/book/hngot\">\r\n                                <i class=\"fa fa-book fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">HNgot</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/book/hngot\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewcharthngot\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewdetailhngot\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                        <li class=\"nav-item dropdown mr-1\">\r\n                            <a class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\" href=\"/kttv/book/hman\">\r\n                                <i class=\"fa fa-book fa-fw\"></i> <span class=\"d-none d-md-inline ml-1\">HTrieu</span>\r\n                            </a>\r\n                            <div class=\"dropdown-menu\">\r\n                                <a class=\"dropdown-item\" href=\"/kttv/book/hman\">Danh sách trạm</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewcharthman\">Biểu đồ</a>\r\n                                <a class=\"dropdown-item\" href=\"/kttv/bookchart/viewdetailhngot\">Chi tiết</a>\r\n                            </div>\r\n                        </li>\r\n                    </ul>\r\n                </div>\r\n            </div>\r\n            \r\n\r\n\r\n<div class=\"content\">\r\n    <h2>Mưa Xu&#226;n Trường</h2>\r\n    <hr />\r\n\r\n\r\n\r\n<div class=\"block block-rounded block-bordered\">\r\n    <div class=\"block-header block-header-primary\">\r\n        <h3 class=\"block-title\"></h3>\r\n        <div class=\"block-options\">\r\n            <div class=\"dropdown\">\r\n                <button type=\"button\" class=\"btn-block-option dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">\r\n                    <i class=\"si si-calendar\"></i>\r\n                </button>\r\n                <div class=\"dropdown-menu dropdown-menu-right\">\r\n                    <a class=\"btn btn-sm btn-block btn-alt-secondary\" href=\"/kttv/detail/view?sid=482&hour=6&hour_hv=\">\r\n                        <strong>6h</strong>\r\n                    </a>\r\n                    <a class=\"",
+          "body_length": 25036
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/report/domua?hour=",
+          "status": 200,
+          "method": "POST",
+          "resource_type": "xhr",
+          "content_type": "text/html; charset=utf-8",
+          "body_preview": "{\"err\":0,\"id\":null,\"topic\":null,\"msg\":\"Successful\",\"current\":1789614320,\"data\":[{\"title\":\"THỐNG KÊ LƯỢNG MƯA\",\"xCategory\":[1787490000000,1787511600000,1787533200000,1787554800000,1787576400000,1787598000000,1787619600000,1787641200000,1787662800000,1787684400000,1787706000000,1787727600000,1787749200000,1787770800000,1787792400000,1787814000000,1787835600000,1787857200000,1787878800000,1787900400000,1787922000000,1787943600000,1787965200000,1787986800000,1788008400000,1788030000000,1788051600000,1788073200000,1788094800000,1788116400000,1788138000000,1788159600000,1788181200000,1788202800000,1788224400000,1788246000000,1788267600000,1788289200000,1788310800000,1788332400000,1788354000000,1788375600000,1788397200000,1788418800000,1788440400000,1788462000000,1788483600000,1788505200000,1788526800000,1788548400000,1788570000000,1788591600000,1788613200000,1788634800000,1788656400000,1788678000000,1788699600000,1788721200000,1788742800000,1788764400000,1788786000000,1788807600000,1788829200000,1788850800000,1788872400000,1788894000000,1788915600000,1788937200000,1788958800000,1788980400000,1789002000000,1789023600000,1789045200000,1789066800000,1789088400000,1789110000000,1789131600000,1789153200000,1789174800000,1789196400000,1789218000000,1789239600000,1789261200000,1789282800000,1789304400000,1789326000000,1789347600000,1789369200000,1789390800000,1789412400000,1789434000000,1789455600000,1789477200000,1789498800000,1789520400000,1789542000000,1789563600000,1789585200000,1789606800000,1789628400000],\"ySeries\":[{\"name\":\"Lượng mưa\",\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}]}]}",
+          "body_length": 1768
+        },
+        {
+          "url": "https://kttvtudong.net/kttv/export/excelexport?sid=482",
+          "status": 200,
+          "method": "POST",
+          "resource_type": "document",
+          "content_type": "application/octet-stream"
+        }
+      ],
+      "export_probe": {
+        "attempted": true,
+        "result": {
+          "before_url": "https://kttvtudong.net/kttv/detail/view?sid=482",
+          "after_url": "https://kttvtudong.net/kttv/detail/view?sid=482",
+          "download": {
+            "suggested_filename": "09034117-09-2026-10-05-28.xlsx",
+            "url": "https://kttvtudong.net/kttv/export/excelexport?sid=482"
+          }
+        }
+      }
+    }
+  }
+}
