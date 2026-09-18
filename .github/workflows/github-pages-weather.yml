@@ -55,7 +55,6 @@ jobs:
           rm -rf /tmp/weather-pages
           mkdir -p /tmp/weather-pages/data
 
-          cp source/weather.html /tmp/weather-pages/classic.html
           cp source/weather-v2.html /tmp/weather-pages/index.html
           cp source/weather-v2.html /tmp/weather-pages/weather.html
           cp source/weather-v2.html /tmp/weather-pages/v2.html
@@ -65,17 +64,9 @@ jobs:
           cp source/weather-history.html /tmp/weather-pages/
           cp source/weather-history.css /tmp/weather-pages/
           cp source/weather-history.js /tmp/weather-pages/
-          cp source/weather-dashboard*.js /tmp/weather-pages/
-          cp source/weather-dashboard*.css /tmp/weather-pages/
           cp source/weather-app-icon.svg /tmp/weather-pages/
           cp source/weather-manifest.webmanifest /tmp/weather-pages/
           cp source/weather-sw.js /tmp/weather-pages/
-
-          for f in dashboard-data.json air-quality.json tide.json nowcast.json; do
-            if [ -f "source/weather/$f" ]; then
-              cp "source/weather/$f" "/tmp/weather-pages/data/$f"
-            fi
-          done
 
           if [ -d live-data/data/weather-aqi ]; then
             cp -a live-data/data/weather-aqi /tmp/weather-pages/data/
@@ -116,15 +107,12 @@ jobs:
           text_ext = {'.html', '.js', '.css', '.webmanifest'}
 
           replacements = {
-              '/weather/dashboard-data.json': base + 'data/dashboard-data.json',
               '/weather/critical.json': base + 'data/critical.json',
               '/weather/jotrip-forecast.json': base + 'jotrip-forecast.json',
               '/weather-v2.css': base + 'weather-v2.css',
               '/weather-v2.js': base + 'weather-v2.js',
               '/weather-brand.svg': base + 'weather-brand.svg',
-              '/weather/air-quality.json': base + 'data/air-quality.json',
               '/weather/tide.json': base + 'data/tide.json',
-              '/weather/nowcast.json': base + 'data/nowcast.json',
               '/data/weather-aqi/': base + 'data/weather-aqi/',
               '/data/weather-nowcast/': base + 'data/weather-nowcast/',
               '/data/weather-groundtruth/': base + 'data/weather-groundtruth/',
@@ -133,7 +121,6 @@ jobs:
               '/weather-history.css': base + 'weather-history.css',
               '/weather-history.js': base + 'weather-history.js',
               '/weather.html': base,
-              '/weather-dashboard': base + 'weather-dashboard',
               '/weather-app-icon.svg': base + 'weather-app-icon.svg',
               '/weather-manifest.webmanifest': base + 'weather-manifest.webmanifest',
               '/weather-sw.js': base + 'weather-sw.js',
@@ -154,14 +141,13 @@ jobs:
 
           html = (root / 'index.html').read_text(encoding='utf-8')
           weather_html = (root / 'weather.html').read_text(encoding='utf-8')
-          classic_html = (root / 'classic.html').read_text(encoding='utf-8')
           history_html = (root / 'weather-history.html').read_text(encoding='utf-8')
           assert '/Jotrip-Lab/weather/weather-v2.css' in html
           assert '/Jotrip-Lab/weather/weather-v2.js' in html
           assert '/Jotrip-Lab/weather/weather-v2.css' in weather_html
           assert '/Jotrip-Lab/weather/weather-dashboard.css' not in html
-          assert '/Jotrip-Lab/weather/weather-dashboard.css' in classic_html
-          assert '/Jotrip-Lab/weather/data/dashboard-data.json' in (root / 'weather-dashboard-enhancements.js').read_text(encoding='utf-8')
+          assert not (root / 'classic.html').exists()
+          assert not any(root.glob('weather-dashboard*'))
           assert '/Jotrip-Lab/weather/weather-history.css' in history_html
           assert '/Jotrip-Lab/weather/weather-history.js' in history_html
           history_js = (root / 'weather-history.js').read_text(encoding='utf-8')
@@ -230,3 +216,5 @@ jobs:
 # v2-homepage-final-refresh
 
 # v2-homepage-sw-final
+
+# v2-only-production-cutover
