@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#f4f8fb">
   <title>JoTrip Weather - Phú Quốc</title>
   <meta name="description" content="Thời tiết Phú Quốc: quan trắc thực tế, PQ Local Now, hải văn, AQI và dự báo ensemble. Miễn phí, phi thương mại.">
-  <link rel="stylesheet" href="/weather-v2.css?v=20260918-6">
+  <link rel="stylesheet" href="/weather-v2.css?v=20260918-7">
   <link rel="preload" as="fetch" href="/weather/critical.json" crossorigin="anonymous">
   <link rel="manifest" href="/weather-manifest.webmanifest">
-  <script defer src="/weather-v2.js?v=20260918-6"></script>
+  <script defer src="/weather-v2.js?v=20260918-7"></script>
 </head>
 <body>
 <header class="topbar">
@@ -35,18 +35,16 @@
     </div>
   </section>
 
-  <section class="status-strip" aria-label="Trạng thái hệ thống">
-    <div><span>Quyết định</span><b id="decisionNow">-</b></div>
-    <div><span>Độ phủ</span><b id="completenessNow">-</b></div>
-    <div><span>Độ tin cậy</span><b id="confidenceNow">-</b></div>
-    <div><span>Horizon</span><b id="horizonNow">-</b></div>
+  <section class="status-strip" aria-label="Tổng quan toàn đảo">
+    <div><span>Khuyến nghị chung</span><b id="decisionNow">-</b></div>
+    <div><span>Độ phủ dữ liệu</span><b id="completenessNow">-</b></div>
+    <div><span>Tin cậy dữ liệu</span><b id="confidenceNow">-</b></div>
+    <div><span>Tầm dự báo</span><b id="horizonNow">-</b></div>
   </section>
+  <div id="islandSummary" class="island-summary">Đang tổng hợp tình hình toàn đảo...</div>
 
-  <nav class="point-tabs" aria-label="Điểm xem thời tiết">
-    <button class="active" data-point="duong_dong">Dương Đông</button>
-    <button data-point="an_thoi">An Thới</button>
-    <button data-point="ganh_dau">Gành Dầu</button>
-    <button data-point="rach_gia">Rạch Giá</button>
+  <nav id="pointTabs" class="point-tabs" aria-label="Điểm theo dõi thời tiết">
+    <span class="inline-loader">Đang tải danh sách điểm...</span>
   </nav>
 
   <section class="now-grid" aria-label="Tình hình hiện tại">
@@ -84,16 +82,28 @@
     </article>
   </section>
 
+  <details class="number-guide">
+    <summary>Các con số phía trên nghĩa là gì?</summary>
+    <div class="number-guide-grid">
+      <span><b>Mưa mm/h</b> - cường độ mưa ước tính hiện tại của PQ Local Now. % tin cậy là độ tin cậy của phép ước tính, không phải xác suất mưa.</span>
+      <span><b>Gió giật</b> - giá trị dự báo gió giật của mô hình, khác với gió trung bình tại chỗ.</span>
+      <span><b>Hs</b> - chiều cao sóng có ý nghĩa, dùng mô tả trạng thái biển nền. Đây không phải con sóng lớn nhất.</span>
+      <span><b>Hmax</b> - biên sóng lớn để nhìn rủi ro. Có lúc là giá trị mô hình, có lúc là proxy thống kê và luôn được ghi rõ.</span>
+      <span><b>Chu kỳ sóng</b> - khoảng thời gian giữa các đỉnh sóng. Cùng chiều cao nhưng chu kỳ khác nhau có thể cho cảm giác biển rất khác.</span>
+      <span><b>Dòng chảy</b> - tốc độ dòng chảy mô hình gần điểm biển hợp lệ nhất, không phải phép đo tại bờ.</span>
+    </div>
+  </details>
+
   <section class="panel actual-panel">
     <div class="panel-head">
-      <div><span class="eyebrow">GROUND TRUTH</span><h2>Quan trắc thực tế</h2></div>
+      <div><span class="eyebrow">QUAN TRẮC THỰC TẾ</span><h2>Dữ liệu đo được</h2></div>
       <small id="actualState">ĐANG TẢI</small>
     </div>
     <div id="actualStrip" class="actual-strip"><div class="skeleton wide"></div></div>
 
     <div class="field-strip" aria-label="Phản hồi thực địa">
       <div class="field-strip-head">
-        <span><b>Thực địa</b> · giúp kiểm tra PQ Local Now</span>
+        <span><b>Phản hồi tại chỗ</b> · giúp kiểm tra PQ Local Now</span>
         <select id="feedbackPoint" aria-label="Khu vực phản hồi"></select>
       </div>
       <div class="feedback-actions compact">
@@ -106,15 +116,6 @@
       </div>
       <small id="feedbackState">Không thu GPS · phản hồi lưu trên thiết bị.</small>
     </div>
-  </section>
-
-  <section class="panel island-watch-panel">
-    <div class="panel-head">
-      <div><span class="eyebrow">ISLAND WATCH</span><h2>Theo dõi toàn đảo</h2></div>
-      <span class="badge estimated">ESTIMATED + ACTUAL ANCHORS</span>
-    </div>
-    <p class="panel-note">Các điểm đại diện Bắc - Tây - Đông - Nam đảo. Nhấn một điểm để chuyển toàn bộ dashboard sang khu vực đó.</p>
-    <div id="islandWatchGrid" class="island-watch-grid"><div class="skeleton wide"></div></div>
   </section>
 
   <div class="two-col">
@@ -140,17 +141,26 @@
 
   <section class="panel nowcast-panel">
     <div class="panel-head">
-      <div><span class="eyebrow">REMOTE OBSERVED</span><h2>Himawari nowcast</h2></div>
+      <div><span class="eyebrow">QUAN SÁT VỆ TINH</span><h2>Himawari - mây đối lưu</h2></div>
       <span id="nowcastBadge" class="badge remote">HIMAWARI</span>
     </div>
     <div id="nowcastQuick" class="quick-grid quick-grid-4"><div class="skeleton wide"></div></div>
     <small id="nowcastAge" class="panel-foot"></small>
+    <figure id="satellitePreview" class="satellite-preview" hidden>
+      <img id="nowcastImage" alt="Ảnh quan sát hồng ngoại Himawari khu vực Đông Nam Á" loading="lazy">
+      <figcaption id="nowcastImageCaption">Ảnh vệ tinh quan sát thực tế gần nhất.</figcaption>
+    </figure>
+    <div class="explain-box">
+      <b>Hiểu nhanh</b>
+      <span><strong>Điểm đối lưu 0-100</strong> là chỉ số nội bộ từ độ lạnh, độ cao và xu hướng phát triển của đỉnh mây - không phải xác suất mưa hay xác suất có sét.</span>
+      <span><strong>Đỉnh mây càng lạnh và càng cao</strong> thường cho thấy mây phát triển mạnh hơn. Giá trị 20 phút âm nghĩa là đỉnh mây đang lạnh thêm.</span>
+    </div>
   </section>
 
   <section class="panel map-panel">
     <div class="panel-head">
-      <div><span class="eyebrow">REMOTE OBSERVED + MAP</span><h2>Bản đồ thời tiết</h2></div>
-      <span id="mapState" class="badge deferred">LAZY LOAD</span>
+      <div><span class="eyebrow">BẢN ĐỒ QUAN SÁT</span><h2>Thời tiết quanh Phú Quốc</h2></div>
+      <span id="mapState" class="badge deferred">CHƯA TẢI</span>
     </div>
     <div class="map-tabs">
       <button class="active" data-map="radar">Radar</button>
@@ -170,8 +180,8 @@
 
   <section class="panel forecast-panel">
     <div class="panel-head">
-      <div><span class="eyebrow">FORECAST</span><h2>Dự báo D0-D10</h2></div>
-      <span class="badge model">MODEL FORECAST</span>
+      <div><span class="eyebrow">DỰ BÁO</span><h2>Dự báo D0-D10</h2></div>
+      <span class="badge model">MÔ HÌNH</span>
     </div>
     <div id="hourlyStrip" class="hourly-strip"><div class="skeleton hour"></div><div class="skeleton hour"></div><div class="skeleton hour"></div></div>
     <div class="horizon-tabs">
@@ -188,17 +198,35 @@
 
   <section class="panel ensemble-panel">
     <div class="panel-head">
-      <div><span class="eyebrow">PROBABILISTIC</span><h2>PQ Ensemble Local</h2></div>
-      <span id="ensembleState" class="badge learning">LEARNING</span>
+      <div><span class="eyebrow">DỰ BÁO XÁC SUẤT</span><h2>PQ Ensemble Local</h2></div>
+      <span id="ensembleState" class="badge learning">ĐANG HIỆU CHỈNH</span>
     </div>
-    <p class="panel-note">Distribution hiện trước từ payload nhẹ. Ma trận member đầy đủ được nạp sau và không chặn giao diện.</p>
-    <div id="ensembleQuick" class="ensemble-table-shell"><span class="inline-loader">Đang đọc ensemble summary...</span></div>
+    <p class="panel-note">Nhiều thành viên dự báo cùng một thời điểm để nhìn mức độ đồng thuận và phần rủi ro ở phía cao.</p>
+    <div id="ensembleQuick" class="ensemble-table-shell"><span class="inline-loader">Đang đọc phân bố ensemble...</span></div>
     <small id="ensembleMeta" class="panel-foot"></small>
+    <div class="explain-box">
+      <b>Cách đọc q50, q90 và xác suất</b>
+      <span><strong>q50</strong> là giá trị trung vị. <strong>q90</strong> là mức cao mà chỉ khoảng 10% thành viên còn vượt qua.</span>
+      <span><strong>P(gió ≥ 30)</strong> hoặc <strong>P(mưa ≥ 5)</strong> là tỷ lệ thành viên vượt ngưỡng đó - không phải lời khẳng định chắc chắn sẽ xảy ra.</span>
+    </div>
+  </section>
+
+  <section class="panel about-panel">
+    <div class="panel-head">
+      <div><span class="eyebrow">VỀ DỰ ÁN</span><h2>JoTrip Weather - Phú Quốc</h2></div>
+      <span class="badge actual">MIỄN PHÍ</span>
+    </div>
+    <p class="about-copy">Một dự án dữ liệu thời tiết riêng cho Phú Quốc, làm miễn phí và không có kế hoạch thu phí. Mục tiêu là gom quan trắc thực tế, vệ tinh, mô hình khí quyển - biển và ensemble thành một trang dễ đọc hơn cho người dân, khách du lịch và anh em làm nghề trên đảo.</p>
+    <p class="about-copy">Nếu bạn đang ở Phú Quốc và thấy thời tiết ngoài thực tế khác số trên trang, hãy chọn đúng khu vực ở phần <b>Phản hồi tại chỗ</b>. Bản thử nghiệm hiện lưu phản hồi trên thiết bị. Nếu trang hữu ích, bạn có thể chia sẻ cho người khác cùng xem và góp ý để tụi mình tiếp tục kiểm tra công thức.</p>
+    <div class="about-actions">
+      <button id="shareWeather" class="secondary-button">Chia sẻ trang</button>
+      <a class="secondary-button link" href="https://github.com/kenzuko/Jotrip-Lab" target="_blank" rel="noopener noreferrer">Xem mã nguồn ↗</a>
+    </div>
   </section>
 
   <section class="panel health-panel" id="dataHealth">
     <div class="panel-head">
-      <div><span class="eyebrow">DATA HEALTH</span><h2>Nguồn dữ liệu & khoảng trống</h2></div>
+      <div><span class="eyebrow">TÌNH TRẠNG DỮ LIỆU</span><h2>Nguồn dữ liệu & phần còn thiếu</h2></div>
       <span id="dataMode" class="badge deferred">-</span>
     </div>
     <div id="sourceGrid" class="source-grid"><div class="skeleton wide"></div></div>
