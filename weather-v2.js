@@ -331,6 +331,11 @@ function renderHealth(){
   }).join("")||'<div class="lazy-status">Chưa có source health.</div>';
   $("gapGrid").innerHTML=(critical.gaps||[]).length?(critical.gaps||[]).map(g=>'<div class="gap-card"><b>'+esc(g.name||"Data gap")+'</b><span>'+esc(g.detail||"")+'</span></div>').join(""):'<div class="gap-card"><b>Không có critical gap</b><span>Cycle hiện tại không khai báo khoảng trống nghiêm trọng.</span></div>';
   $("cycleGrid").innerHTML=Object.entries(critical.source_cycles||{}).map(([k,v])=>'<span class="cycle-chip">'+esc(k)+' · '+localTime(v)+'</span>').join("");
+  $("auditGrid").innerHTML=
+    '<div class="audit-item"><span>Snapshot ID</span><b>'+esc(critical.snapshot_id||"-")+'</b></div>'+
+    '<div class="audit-item"><span>Commit</span><b>'+esc(critical.git_commit_sha||"-")+'</b></div>'+
+    '<div class="audit-item wide"><span>Headline hệ thống</span><b>'+esc(critical.headline||"-")+'</b></div>'+
+    '<div class="audit-item wide"><span>Lần đọc tiếp</span><b>'+esc(critical.next_review||"-")+'</b></div>';
 }
 
 function renderAll(){
