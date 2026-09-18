@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f4f8fb">
+  <title>JoTrip Weather - Phú Quốc</title>
+  <meta name="description" content="Thời tiết Phú Quốc: quan trắc thực tế, PQ Local Now và dự báo ensemble. Miễn phí, phi thương mại.">
+  <link rel="stylesheet" href="/weather-v2.css?v=20260918-1">
+  <link rel="preload" as="fetch" href="/weather/critical.json" crossorigin="anonymous">
+  <link rel="manifest" href="/weather-manifest.webmanifest">
+  <script defer src="/weather-v2.js?v=20260918-1"></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/weather.html" aria-label="JoTrip Weather">
+    <img src="/weather-brand.svg" alt="JoTrip">
+    <span><strong>Weather</strong><small>PHÚ QUỐC</small></span>
+  </a>
+  <div class="health"><i id="liveDot"></i><span id="liveLabel">ĐANG TẢI</span></div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">PHÚ QUỐC WEATHER SYSTEM · V2</span>
+      <h1 id="placeName">Dương Đông</h1>
+      <p id="heroSummary">Đang đọc dữ liệu quan trắc và phân tích địa phương...</p>
+      <div class="updated" id="updatedAt">-</div>
+    </div>
+    <div class="hero-now">
+      <span>NHIỆT ĐỘ ĐỊA PHƯƠNG</span>
+      <b id="heroTemp">--</b>
+      <small id="heroTempClass">ESTIMATED</small>
+    </div>
+  </section>
+
+  <nav class="point-tabs" aria-label="Điểm xem thời tiết">
+    <button class="active" data-point="duong_dong">Dương Đông</button>
+    <button data-point="an_thoi">An Thới</button>
+    <button data-point="ganh_dau">Gành Dầu</button>
+    <button data-point="rach_gia">Rạch Giá</button>
+  </nav>
+
+  <section class="now-grid" aria-label="Tình hình hiện tại">
+    <article class="metric-card">
+      <div><span>Gió địa phương</span><em id="windClass" class="badge estimated">ESTIMATED</em></div>
+      <b id="windNow">--</b><small>km/h</small>
+    </article>
+    <article class="metric-card">
+      <div><span>Mưa hiện tại</span><em id="rainClass" class="badge estimated">ESTIMATED</em></div>
+      <b id="rainNow">--</b><small>mm/h · <span id="rainConfidence">--</span>% tin cậy</small>
+    </article>
+    <article class="metric-card">
+      <div><span>Đối lưu</span><em class="badge remote">REMOTE</em></div>
+      <b id="convectiveNow">--</b><small>Himawari score /100</small>
+    </article>
+    <article class="metric-card">
+      <div><span>Biển nền</span><em id="marineClass" class="badge model">MODEL</em></div>
+      <b id="waveNow">--</b><small>m · Hs</small>
+    </article>
+  </section>
+
+  <section class="panel actual-panel">
+    <div class="panel-head">
+      <div><span class="eyebrow">GROUND TRUTH</span><h2>Quan trắc thực tế</h2></div>
+      <small id="actualState">ĐANG TẢI</small>
+    </div>
+    <div id="actualStrip" class="actual-strip"><div class="skeleton wide"></div></div>
+  </section>
+
+  <section class="panel forecast-panel">
+    <div class="panel-head">
+      <div><span class="eyebrow">NEXT 24 HOURS</span><h2>24 giờ tới</h2></div>
+      <span class="badge model">MODEL FORECAST</span>
+    </div>
+    <div id="hourlyStrip" class="hourly-strip"><div class="skeleton hour"></div><div class="skeleton hour"></div><div class="skeleton hour"></div></div>
+    <button class="secondary-button" id="openForecast">Mở dự báo chi tiết D0-D10</button>
+    <div id="forecastDetail" class="lazy-area" hidden></div>
+  </section>
+
+  <section class="panel ensemble-panel">
+    <div class="panel-head">
+      <div><span class="eyebrow">PROBABILISTIC</span><h2>PQ Ensemble Local</h2></div>
+      <span id="ensembleState" class="badge learning">LEARNING</span>
+    </div>
+    <p class="panel-note">GEFS / ECMWF ENS / ICON-EPS được xử lý theo từng họ model. Hiệu chỉnh địa phương chỉ kích hoạt khi đủ ground truth.</p>
+    <button class="secondary-button" id="openEnsemble">Xem xác suất ensemble</button>
+    <div id="ensembleDetail" class="lazy-area" hidden></div>
+  </section>
+
+  <section class="panel map-panel">
+    <div class="panel-head">
+      <div><span class="eyebrow">REMOTE OBSERVED + MAP</span><h2>Bản đồ thời tiết</h2></div>
+      <span class="badge deferred">TẢI KHI MỞ</span>
+    </div>
+    <p class="panel-note">Bản đồ không tham gia first paint. Windy, Himawari và radar chỉ tải khi bạn mở phần này.</p>
+    <button class="primary-button" id="openMap">Mở bản đồ</button>
+    <div id="mapArea" class="lazy-area" hidden></div>
+  </section>
+
+  <section class="panel extras-panel">
+    <div class="panel-head">
+      <div><span class="eyebrow">MORE DATA</span><h2>Triều, AQI & nguồn dữ liệu</h2></div>
+      <span class="badge deferred">TẢI SAU</span>
+    </div>
+    <div class="extra-actions">
+      <button class="secondary-button" data-extra="tide">Triều & đổi nước</button>
+      <button class="secondary-button" data-extra="aqi">Chất lượng không khí</button>
+      <a class="secondary-button link" href="/weather-history.html">Lịch sử & đối chiếu</a>
+    </div>
+    <div id="extraDetail" class="lazy-area" hidden></div>
+  </section>
+
+  <section class="panel feedback-panel">
+    <div class="panel-head"><div><span class="eyebrow">FIELD FEEDBACK</span><h2>Chỗ bạn đang thế nào?</h2></div></div>
+    <p class="panel-note">Phản hồi giúp đánh giá PQ Local Now. Không thu GPS và không biến phản hồi định tính thành số đo trạm.</p>
+    <div class="feedback-actions">
+      <button data-feedback="MATCH">Khớp</button>
+      <button data-feedback="RAIN_MORE">Mưa nhiều hơn</button>
+      <button data-feedback="RAIN_LESS">Mưa ít hơn</button>
+      <button data-feedback="WIND_MORE">Gió mạnh hơn</button>
+      <button data-feedback="WIND_LESS">Gió yếu hơn</button>
+      <button data-feedback="THUNDER">Có dông</button>
+    </div>
+    <small id="feedbackState">Chưa gửi phản hồi.</small>
+  </section>
+
+  <footer>
+    <b>JoTrip Weather · Phú Quốc</b>
+    <span>Miễn phí · Phi thương mại · Không thay thế bản tin/cảnh báo chính thức.</span>
+  </footer>
+</main>
+</body>
+</html>
