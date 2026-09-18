@@ -43,7 +43,7 @@ for(const [name,width,height] of sizes){
     numberGuide:!!document.querySelector(".number-guide"),
     aboutPanel:!!document.querySelector(".about-panel"),
     compactFeedback:!!document.querySelector(".field-strip")&&!document.querySelector(".feedback-panel"),
-    mapBeforeForecast:(document.querySelector(".map-panel")?.compareDocumentPosition(document.querySelector(".forecast-panel"))&Node.DOCUMENT_POSITION_FOLLOWING)!==0,
+    mapBeforeForecast:(document.querySelector(".map-panel")?.compareDocumentPosition(document.querySelector(".jotrip-forecast-panel"))&Node.DOCUMENT_POSITION_FOLLOWING)!==0,
     innerOverflow:[...document.querySelectorAll(".panel")].flatMap(panel=>{
       const pr=panel.getBoundingClientRect();
       return [...panel.querySelectorAll("*")].filter(el=>{
