@@ -36,7 +36,11 @@ for(const [name,width,height] of sizes){
     sourceCards:document.querySelectorAll("#sourceGrid .source-card").length,
     mapDeferred:!document.querySelector("#mapBox iframe")&&!document.querySelector("#mapBox img"),
     horizonTabs:document.querySelectorAll(".horizon-tabs button").length,
-    islandWatch:document.querySelectorAll(".island-watch-card").length,
+    pointTabs:document.querySelectorAll("#pointTabs [data-point]").length,
+    islandWatchRemoved:!document.querySelector(".island-watch-panel"),
+    islandSummary:!!document.querySelector("#islandSummary"),
+    numberGuide:!!document.querySelector(".number-guide"),
+    aboutPanel:!!document.querySelector(".about-panel"),
     compactFeedback:!!document.querySelector(".field-strip")&&!document.querySelector(".feedback-panel"),
     mapBeforeForecast:(document.querySelector(".map-panel")?.compareDocumentPosition(document.querySelector(".forecast-panel"))&Node.DOCUMENT_POSITION_FOLLOWING)!==0,
     innerOverflow:[...document.querySelectorAll(".panel")].flatMap(panel=>{
@@ -81,7 +85,11 @@ for(const [name,width,height] of sizes){
     checks.sourceCards>=1&&
     checks.mapDeferred&&
     checks.horizonTabs===4&&
-    checks.islandWatch>=3&&
+    checks.pointTabs>=8&&
+    checks.islandWatchRemoved&&
+    checks.islandSummary&&
+    checks.numberGuide&&
+    checks.aboutPanel&&
     checks.compactFeedback&&
     checks.mapBeforeForecast&&
     checks.innerOverflow.length===0&&
