@@ -301,6 +301,9 @@ function renderHero(){
   $("heroTempClass").textContent=l.available?"ƯỚC TÍNH":"MÔ HÌNH";
   $("heroSummary").textContent=summary(p);
   $("updatedAt").textContent="Cập nhật "+localTime(critical.generated_at)+" · "+ageText(critical.generated_at);
+  if($("scenePoint"))$("scenePoint").textContent=p.name||current;
+  if($("sceneTemp"))$("sceneTemp").textContent=t===null?"--":fmt(t,1)+"°";
+  if($("sceneUpdated"))$("sceneUpdated").textContent="JoTrip Local Now · "+ageText(critical.generated_at);
   const rain=num(l.rain_rate_mm_h)||0,conv=num(n.convective_score??l.convection_score)||0,wind=num(l.wind_kmh??m.wind_kmh)||0;
   const mood=(conv>=70||rain>=3)?"storm":(conv>=50||rain>=.5||wind>=28)?"watch":"calm";
   document.querySelector(".hero")?.setAttribute("data-mood",mood);
