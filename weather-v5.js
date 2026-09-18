@@ -29,7 +29,7 @@ const state={
   layer:"wind",
   frameIndex:0,
   selected:{lat:10.2172,lon:103.9593,anchor:"duong_dong"},
-  ensemble:true,
+  ensemble:false,
   risk:true,
   actual:false,
   riskLayer:null,
