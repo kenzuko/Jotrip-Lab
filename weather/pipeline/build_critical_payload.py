@@ -142,7 +142,11 @@ def compact_ensemble(ensemble:dict,key:str)->dict:
     if isinstance(rows,list):
         for row in rows:
             lead=row.get("lead_hours")
-            if lead not in {6,12,24,48,72}:
+            try:
+                lead_num=int(lead)
+            except Exception:
+                continue
+            if lead_num <= 0 or lead_num > 72:
                 continue
             vars=row.get("variables") or {}
             item={"lead_hours":lead,"valid_time":row.get("valid_time"),"members":row.get("member_count")}
@@ -158,8 +162,6 @@ def compact_ensemble(ensemble:dict,key:str)->dict:
                     "members":v.get("member_count"),
                 }
             out.append(item)
-            if len(out)>=5:
-                break
     return {
         "status":ensemble.get("status","UNAVAILABLE"),
         "readiness":ensemble.get("readiness","UNAVAILABLE"),
