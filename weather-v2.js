@@ -5,6 +5,7 @@ const CRITICAL="/weather/critical.json";
 const TIDE="/weather/tide.json";
 const AQI=["/data/weather-aqi/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-aqi/latest.json","/weather/air-quality.json"];
 const NOWCAST=["/data/weather-nowcast/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast/latest.json","/weather/nowcast.json"];
+const JOTRIP_FORECAST="/weather/jotrip-forecast.json";
 const WINDY={
   radar:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=radar&product=radar&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1",
   wind:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=wind&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C",
@@ -24,6 +25,8 @@ let current="duong_dong";
 let fullAQI=null;
 let fullTide=null;
 let fullNowcast=null;
+let regionalForecast=null;
+let currentRegion="central_west";
 let mapStarted=false;
 let mapLayer="radar";
 
@@ -245,8 +248,9 @@ function renderStatus(){
   $("decisionNow").textContent=assessment.label;
   $("completenessNow").textContent=coverage+"% · "+islandIds().length+"/"+islandIds().length+" điểm";
   $("confidenceNow").textContent=(confidence>=80?"CAO":confidence>=60?"KHÁ":"THẤP")+" · "+confidence+"/100";
-  const maxLead=Math.max(0,...islandIds().flatMap(id=>(critical.points[id]?.ensemble?.rows||[]).map(r=>Number(r.lead_hours)||0)));
-  $("horizonNow").textContent=maxLead?maxLead+" giờ":"CHƯA CÓ";
+  const fallbackLead=Math.max(0,...islandIds().flatMap(id=>(critical.points[id]?.ensemble?.rows||[]).map(r=>Number(r.lead_hours)||0)));
+  const maxLead=Number(regionalForecast?.horizon_hours||fallbackLead||0);
+  $("horizonNow").textContent=maxLead?(maxLead>=240?"10 NGÀY":maxLead+" giờ"):"CHƯA CÓ";
   $("completenessNow").parentElement.title="Tỷ lệ các lớp Local Now, forecast, AQI, triều, Himawari và ensemble đang có dữ liệu trên 7 điểm đảo.";
   $("confidenceNow").parentElement.title="Điểm chất lượng gói dữ liệu hiện tại, không phải xác suất dự báo đúng.";
   const summary=$("islandSummary");
@@ -416,43 +420,12 @@ function effectiveNowcast(){
     lightning:p.lightning_observed||fullNowcast.lightning_observed?.status
   };
 }
-function renderNowcast(){
-  const n=effectiveNowcast(),root=$("nowcastQuick"),preview=$("satellitePreview");
-  if(num(n.convective_score)===null&&num(n.cloud_top_cold_c)===null&&num(n.cloud_top_high_m)===null){
-    root.innerHTML='<div class="data-empty"><b>CHƯA CÓ DỮ LIỆU HIMAWARI</b><span>Điểm này chưa có cửa sổ quan sát vệ tinh trong chu kỳ hiện tại.</span></div>';
-    $("nowcastAge").textContent="Không dùng forecast để thay thế quan sát vệ tinh.";
-    if(preview)preview.hidden=true;
-    return;
-  }
-  const cards=[];
-  if(num(n.convective_score)!==null)cards.push('<div class="quick-item"><span>Mức đối lưu</span><b>'+fmt(n.convective_score,0)+'/100</b><small>'+esc(viLevel(n.convective_level))+'</small></div>');
-  if(num(n.cloud_top_cold_c)!==null)cards.push('<div class="quick-item"><span>Đỉnh mây lạnh nhất</span><b>'+fmt(n.cloud_top_cold_c,1)+'°C</b><small>quan sát hồng ngoại</small></div>');
-  if(num(n.cloud_top_high_m)!==null)cards.push('<div class="quick-item"><span>Đỉnh mây cao</span><b>'+fmt(num(n.cloud_top_high_m)/1000,1)+' km</b><small>cửa sổ khu vực</small></div>');
-  if(num(n.cooling_c_per_20m)!==null)cards.push('<div class="quick-item"><span>Biến thiên 20 phút</span><b>'+fmt(n.cooling_c_per_20m,1)+'°C</b><small>âm = đỉnh mây lạnh thêm</small></div>');
-  if(n.lightning&&String(n.lightning).toUpperCase()!=="NOT_CONNECTED")cards.push('<div class="quick-item"><span>Sét quan sát</span><b class="small-value">'+esc(n.lightning)+'</b><small>nguồn sét trực tiếp</small></div>');
-  root.innerHTML=cards.join("");
-  $("nowcastAge").textContent="Himawari quan sát "+ageText(n.sampled_time)+" · "+esc(n.source||"JMA Himawari")+". Đây là quan sát vệ tinh, không phải trạm mưa.";
-  if(preview){preview.hidden=false;defer(installSatellitePreviewObserver,1400)}
-}
-
-let satellitePreviewStarted=false;
-function startSatellitePreview(){
-  if(satellitePreviewStarted)return;satellitePreviewStarted=true;
-  const box=$("satellitePreview"),img=$("nowcastImage"),cap=$("nowcastImageCaption");
-  if(!box||!img)return;
-  const list=mapCandidates();let i=0;
-  img.onerror=()=>{i++;if(i<list.length){img.src=list[i]+"?t="+Date.now()}else{box.hidden=true;img.onerror=null}};
-  img.onload=()=>{
-    box.hidden=false;
-    if(cap)cap.textContent="Ảnh Himawari B13 quan sát thực tế gần nhất từ JMA. Màu tối/sáng là bức xạ hồng ngoại, không phải ảnh màu tự nhiên.";
-  };
-  img.src=list[0]+"?t="+Date.now();
-}
-function installSatellitePreviewObserver(){
-  const target=$("satellitePreview");if(!target||satellitePreviewStarted)return;
-  if(!("IntersectionObserver" in window)){defer(startSatellitePreview,1000);return}
-  const ob=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){startSatellitePreview();ob.disconnect()}},{rootMargin:"250px 0px"});
-  ob.observe(target);
+function renderMapConvective(){
+  const n=effectiveNowcast();
+  const score=$("mapConvectiveScore"),cloud=$("mapCloudTop"),cool=$("mapCooling");
+  if(score)score.textContent=num(n.convective_score)===null?"-":fmt(n.convective_score,0)+"/100";
+  if(cloud)cloud.textContent=num(n.cloud_top_cold_c)===null?"-":fmt(n.cloud_top_cold_c,1)+"°C";
+  if(cool)cool.textContent=num(n.cooling_c_per_20m)===null?"-":fmt(n.cooling_c_per_20m,1)+"°C";
 }
 
 function ensembleData(){
@@ -472,48 +445,80 @@ function forecastCardState(windProb,rainProb){
   if(windProb>=0.10||rainProb>=0.25)return {label:"CÓ DAO ĐỘNG",cls:"variable"};
   return {label:"KHÁ ỔN ĐỊNH",cls:"stable"};
 }
+function regionRows(){
+  return regionalForecast?.regions?.[currentRegion]?.rows||[];
+}
+function regionMeta(){
+  return regionalForecast?.regions?.[currentRegion]||null;
+}
+function renderForecastRegionTabs(){
+  const nav=$("forecastRegionTabs");if(!nav)return;
+  const regions=regionalForecast?.regions||{};
+  nav.innerHTML=Object.entries(regions).map(([id,r])=>
+    '<button class="'+(id===currentRegion?'active':'')+'" data-region="'+esc(id)+'">'+esc(r.name||id)+'</button>'
+  ).join("")||'<span class="inline-loader">Đang chờ dữ liệu vùng...</span>';
+}
 function renderJoTripForecast(){
-  const e=ensembleData(),rows=(e.rows||[]).filter(r=>Number(r.lead_hours)>0&&Number(r.lead_hours)<=72).sort((a,b)=>Number(a.lead_hours)-Number(b.lead_hours));
-  setBadge("ensembleState",e.calibration_status||"LEARNING",viCal(e.calibration_status||"LEARNING"));
-  const title=$("jotripForecastTitle");if(title)title.textContent="72 giờ tới - "+(point().name||"địa điểm đang chọn");
+  const title=$("jotripForecastTitle");
+  const body=$("jotripForecastRows");
+  const meta=regionMeta();
+  const rows=regionRows();
+  const cal=regionalForecast?.calibration_status||point().ensemble?.calibration_status||"LEARNING";
+  setBadge("ensembleState",cal,viCal(cal));
+
+  if(title)title.textContent=(regionalForecast?.horizon_hours>=240?"10 ngày tới":"Dự báo đang có")+" - "+(meta?.name||"theo vùng");
+
+  if(!regionalForecast||!meta){
+    if(body)body.innerHTML='<tr><td colspan="9"><span class="inline-loader">Đang tải dự báo JoTrip theo vùng...</span></td></tr>';
+    $("jotripForecastSummary").textContent="Dữ liệu 10 ngày tải sau để không làm chậm phần quan trắc hiện tại.";
+    $("ensembleMeta").textContent="Đang chờ sản phẩm dự báo vùng.";
+    return;
+  }
+
+  renderForecastRegionTabs();
+  const metaBox=$("forecastRegionMeta");
+  if(metaBox)metaBox.innerHTML='<b>'+esc(meta.name)+'</b><span>Điểm đại diện: '+esc((meta.points||[]).join(" · "))+'</span>';
 
   if(!rows.length){
-    $("jotripForecastRows").innerHTML='<tr><td colspan="8"><div class="data-empty"><b>CHƯA ĐỦ DỮ LIỆU ENSEMBLE</b><span>Dự báo JoTrip chỉ hiển thị khi ma trận ensemble đủ dữ liệu.</span></div></td></tr>';
-    $("jotripForecastSummary").textContent="Hệ thống đang chờ đủ thành viên ensemble cho điểm này.";
+    body.innerHTML='<tr><td colspan="9"><div class="data-empty"><b>CHƯA ĐỦ DỮ LIỆU 10 NGÀY</b><span>Vùng này chưa có đủ ma trận ensemble để công bố.</span></div></td></tr>';
+    $("jotripForecastSummary").textContent="Không dùng forecast thô của một mô hình để lấp chỗ trống.";
     $("ensembleMeta").textContent="Dự báo JoTrip chưa sẵn sàng.";
     return;
   }
 
-  let watchCount=0;
-  $("jotripForecastRows").innerHTML=rows.map(r=>{
-    const w=r.wind||{},rain=r.rain||{},temp=r.temperature||{};
-    const state=forecastCardState(w.prob,rain.prob);
-    const variation=variationLevel(w,rain);
-    if(state.cls==="watch"||variation.score>=3)watchCount++;
-    const bft=beaufort(w.q50);
-    const valid=r.valid_time?localTime(r.valid_time):("+"+fmt(r.lead_hours,0)+" giờ");
+  let watch=0;
+  body.innerHTML=rows.map(r=>{
+    const state=forecastCardState(r.wind_prob_30,r.rain_prob_5);
+    const variation=variationLevel({spread:r.wind_spread},{spread:r.rain_spread});
+    if(state.cls==="watch"||variation.score>=3)watch++;
+    const bft=beaufort(r.wind_kmh);
+    const driver=[r.risk_driver?.rain,r.risk_driver?.wind].filter(Boolean);
+    const driverText=[...new Set(driver)].join(" / ")||"-";
     return '<tr class="'+state.cls+'">'+
-      '<td><b>'+esc(valid)+'</b><small>+'+fmt(r.lead_hours,0)+' giờ</small></td>'+
-      '<td>'+fmt(temp.q50,1)+'°C</td>'+
-      '<td>'+fmt(w.q50,0)+' km/h</td>'+
+      '<td><b>'+esc(r.valid_time?localTime(r.valid_time):("+"+fmt(r.lead_hours,0)+" giờ"))+'</b><small>+'+fmt(r.lead_hours,0)+' giờ</small></td>'+
+      '<td>'+fmt(r.temperature_c,1)+'°C</td>'+
+      '<td><b>'+fmt(r.wind_kmh,0)+' km/h</b><small>q90 '+fmt(r.wind_q90_kmh,0)+'</small></td>'+
       '<td><b>Bft '+bft.force+'</b><small>'+esc(bft.label)+'</small></td>'+
-      '<td>'+forecastBand(rain.prob)+'</td>'+
-      '<td>'+forecastBand(w.prob)+'</td>'+
+      '<td>'+forecastBand(r.rain_prob_5)+'</td>'+
+      '<td>'+forecastBand(r.wind_prob_30)+'</td>'+
       '<td>'+variation.label+'</td>'+
-      '<td><span class="forecast-state '+state.cls+'">'+state.label+'</span></td>'+
+      '<td>'+esc(r.confidence_band||"-")+'</td>'+
+      '<td>'+esc(driverText)+'</td>'+
     '</tr>';
   }).join("");
 
-  $("jotripForecastSummary").textContent=watchCount
-    ? "Có "+watchCount+" mốc thời gian cần theo dõi thêm tại "+(point().name||"địa điểm này")+". Bảng dùng kết quả Dự báo JoTrip đã tổng hợp, không phải forecast thô của một mô hình đơn lẻ."
-    : "Các mốc 72 giờ hiện tương đối đồng thuận tại "+(point().name||"địa điểm này")+". Hệ thống vẫn tiếp tục đối chiếu với quan trắc và phản hồi thực địa.";
+  const horizon=regionalForecast.horizon_hours||0;
+  $("jotripForecastSummary").textContent=(horizon>=240
+    ? "D0-D3 mỗi 6 giờ; D4-D10 mỗi 12 giờ. "
+    : "Nguồn hiện tại mới đủ "+Math.round(horizon/24)+" ngày. ")+
+    (watch?watch+" mốc trong vùng có rủi ro hoặc độ phân kỳ đáng theo dõi. ":"")+
+    "Số vùng được tổng hợp từ nhiều điểm địa phương thay vì lấy riêng Dương Đông.";
 
-  $("ensembleMeta").textContent="Dự báo JoTrip · "+rows.length+" mốc · hoàn tất "+
-    (num(e.completion_ratio)===null?"-":Math.round(e.completion_ratio*100)+"%")+
-    " · hiệu chỉnh: "+viCal(e.calibration_status||"LEARNING").toLowerCase()+
-    " · Beaufort quy đổi từ gió trung tâm của ensemble.";
+  $("ensembleMeta").textContent="Dự báo JoTrip theo vùng · hoàn tất "+
+    (num(regionalForecast.ensemble_completion_ratio)===null?"-":Math.round(regionalForecast.ensemble_completion_ratio*100)+"%")+
+    " · "+viCal(regionalForecast.calibration_status||"LEARNING").toLowerCase()+
+    " · càng xa ngày càng giảm độ tin cậy.";
 }
-
 
 function renderHealth(){
   const src=critical.sources||{};
@@ -536,7 +541,7 @@ function renderHealth(){
 
 function renderAll(){
   if(!critical)return;
-  renderPointTabs();renderStatus();renderHero();renderCurrent();renderActual();renderFeedbackPoint();renderAQI();renderTide();renderNowcast();
+  renderPointTabs();renderStatus();renderHero();renderCurrent();renderActual();renderFeedbackPoint();renderAQI();renderTide();renderMapConvective();
   renderJoTripForecast();renderHealth();
 }
 
@@ -547,7 +552,18 @@ async function loadTide(){
   try{fullTide=await getJSON(TIDE);renderTide()}catch(e){console.warn("[Weather V2] tide",e)}
 }
 async function loadNowcast(){
-  try{fullNowcast=await getFirst(NOWCAST);renderNowcast();renderCurrent()}catch(e){console.warn("[Weather V2] nowcast",e)}
+  try{fullNowcast=await getFirst(NOWCAST);renderMapConvective();renderCurrent();renderStatus()}catch(e){console.warn("[Weather V2] nowcast",e)}
+}
+async function loadRegionalForecast(){
+  try{
+    regionalForecast=await getJSON(JOTRIP_FORECAST);
+    const ids=Object.keys(regionalForecast.regions||{});
+    if(!ids.includes(currentRegion))currentRegion=ids[0]||currentRegion;
+    renderJoTripForecast();renderStatus();
+  }catch(e){
+    console.warn("[Weather V2] regional forecast",e);
+    $("jotripForecastRows").innerHTML='<tr><td colspan="9"><div class="data-empty"><b>CHƯA TẢI ĐƯỢC DỰ BÁO VÙNG</b><span>Phần quan trắc hiện tại vẫn hoạt động bình thường.</span></div></td></tr>';
+  }
 }
 
 function mapCandidates(){
@@ -627,6 +643,10 @@ function events(){
     current=b.dataset.point;renderAll();
   });
   document.querySelectorAll("[data-map]").forEach(b=>b.addEventListener("click",()=>{startMap();setMap(b.dataset.map)}));
+  $("forecastRegionTabs")?.addEventListener("click",e=>{
+    const b=e.target.closest("[data-region]");if(!b)return;
+    currentRegion=b.dataset.region;renderJoTripForecast();
+  });
   document.querySelectorAll("[data-feedback]").forEach(b=>b.addEventListener("click",()=>feedback(b.dataset.feedback)));
   $("shareWeather")?.addEventListener("click",shareWeather);
 }
@@ -640,7 +660,8 @@ async function boot(){
     installMapObserver();
     defer(loadAQI,850);
     defer(loadTide,1000);
-    defer(loadNowcast,1150);
+    defer(loadNowcast,1050);
+    defer(loadRegionalForecast,1250);
   }catch(e){
     $("heroSummary").textContent="Không tải được payload nhanh. Hãy thử tải lại trang.";
     $("liveLabel").textContent="LỖI DỮ LIỆU";$("liveDot").className="warn";
