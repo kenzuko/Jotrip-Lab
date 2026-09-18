@@ -106,3 +106,40 @@ main,.panel,.hero,.two-col,.now-grid,.quick-grid,.source-grid,.audit-grid,.statu
 .data-empty{grid-column:1/-1;border:1px dashed #dbe6ec;border-radius:13px;background:#fafcfd;padding:14px;min-width:0}
 .data-empty b{display:block;font-size:8px;letter-spacing:.06em;color:#617986}
 .data-empty span{display:block;margin-top:4px;font-size:8px;line-height:1.45;color:#8999a2;overflow-wrap:anywhere}
+
+/* V2.3 all-island summary, explainers and community section */
+.status-strip b{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.25}
+.island-summary{margin:8px 0 0;border:1px solid #dfe9ee;border-radius:13px;background:#f8fbfc;padding:9px 11px;font-size:8px;line-height:1.5;color:#657f8e;overflow-wrap:anywhere}
+.island-summary b{color:#2e5368}
+.island-summary small{display:block;margin-top:3px;font-size:7px;color:#8a9aa3}
+.point-tabs{padding-top:9px}
+.point-tabs button.off-island{border-style:dashed;margin-left:5px}
+.number-guide{margin-top:10px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.85);overflow:hidden}
+.number-guide summary{cursor:pointer;list-style:none;padding:11px 13px;font-size:8px;font-weight:800;color:#3e6073}
+.number-guide summary::-webkit-details-marker{display:none}
+.number-guide summary:after{content:"+";float:right;color:#7f929d}
+.number-guide[open] summary:after{content:"−"}
+.number-guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:0 12px 12px}
+.number-guide-grid span{border-top:1px solid #e8eff3;padding-top:8px;font-size:7.5px;line-height:1.45;color:#758a96;min-width:0}
+.number-guide-grid b{color:#365c71}
+.explain-box{display:grid;gap:5px;margin-top:10px;padding:10px 11px;border-radius:12px;background:#f7fafb;border:1px solid #e3ecef}
+.explain-box>b{font-size:8px;color:#365b70}
+.explain-box>span{font-size:7.5px;line-height:1.45;color:#7b8e99;overflow-wrap:anywhere}
+.explain-box strong{color:#4e6d7f}
+.satellite-preview{margin:12px 0 0;border:1px solid #dce7ed;border-radius:15px;overflow:hidden;background:#071018}
+.satellite-preview[hidden]{display:none}
+.satellite-preview img{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#071018}
+.satellite-preview figcaption{padding:8px 10px;background:#f8fbfc;color:#728894;font-size:7.5px;line-height:1.4}
+.about-copy{font-size:9px;line-height:1.6;color:#6d838f;margin:11px 0 0}
+.about-copy b{color:#365a6f}
+.about-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.about-actions button{cursor:pointer}
+.health-panel{margin-bottom:0}
+@media(max-width:760px){
+  .number-guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:430px){
+  .number-guide-grid{grid-template-columns:1fr}
+  .status-strip b{font-size:10px}
+  .point-tabs button{padding:8px 11px;font-size:8px}
+}
