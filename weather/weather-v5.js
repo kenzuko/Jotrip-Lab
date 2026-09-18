@@ -112,6 +112,7 @@ function initMap(){
 function ecmwfFrames(){return state.ecmwf?.spatial?.frames||[]}
 function gefsFrames(){return state.gefs?.spatial?.frames||[]}
 function cloudFrames(){return state.nowcast?.spatial?.frames||[]}
+function baseFrames(){return ecmwfFrames().length?ecmwfFrames():gefsFrames()}
 
 function nearestFrame(frames,targetTime){
   if(!frames?.length)return null;
@@ -228,6 +229,11 @@ function activeECMWFFrame(){
   if(!frames.length)return null;
   return frames[clamp(state.frameIndex,0,frames.length-1)];
 }
+function activeBaseFrame(){
+  const frames=baseFrames();
+  if(!frames.length)return null;
+  return frames[clamp(state.frameIndex,0,frames.length-1)];
+}
 function activeValidTime(){
   if(state.layer==="storm"){
     const f=cloudFrames()[clamp(state.frameIndex,0,Math.max(0,cloudFrames().length-1))];
@@ -237,7 +243,7 @@ function activeValidTime(){
     const f=state.radarMeta?.frames?.[state.radarIndex];
     return f?f.time*1000:Date.now();
   }
-  return parseTime(activeECMWFFrame()?.valid_time);
+  return parseTime(activeBaseFrame()?.valid_time);
 }
 function activeRows(){
   if(state.layer==="storm"){
@@ -246,7 +252,7 @@ function activeRows(){
   }
   const frame=activeECMWFFrame();
   if(frame?.cells?.length)return frame.cells;
-  const gf=nearestFrame(gefsFrames(),Date.now());
+  const gf=gefsFrames()[clamp(state.frameIndex,0,Math.max(0,gefsFrames().length-1))];
   return genericRowsFromGEFS(gf,state.layer);
 }
 
@@ -470,9 +476,29 @@ function futureRisk(row){
   if(rp>=.65||(r90!==null&&r90>=20)){level=3;reasons.push("mưa cao")}else if(rp>=.35||(r90!==null&&r90>=8)){level=Math.max(level,2);reasons.push("mưa tăng")}else if(rp>=.15)level=Math.max(level,1);
   return {level,reasons};
 }
+function regionalRiskAt(id,lead){
+  if(!state.forecast)return {level:0,reasons:["D4-D10 trend only"]};
+  const regionId=POINTS[id]?.region||"central_west";
+  const rows=state.forecast.regions?.[regionId]?.rows||[];
+  let best=null,d=Infinity;
+  rows.forEach(r=>{const dd=Math.abs((num(r.lead_hours)||0)-lead);if(dd<d){d=dd;best=r}});
+  if(!best)return {level:0,reasons:["D4-D10 trend only"]};
+  const wp=num(best.wind_prob_30)||0,rp=num(best.rain_prob_5)||0;
+  const w90=num(best.wind_q90_kmh),r90=num(best.rain_q90_mm),vari=num(best.variability_score)||0;
+  let level=0,reasons=[];
+  if(wp>=.45||(w90!==null&&w90>=39)){level=3;reasons.push("ensemble gió mạnh")}
+  else if(wp>=.20||(w90!==null&&w90>=30)){level=Math.max(level,2);reasons.push("ensemble gió cần theo dõi")}
+  else if(wp>=.08)level=Math.max(level,1);
+  if(rp>=.65||(r90!==null&&r90>=20)){level=3;reasons.push("ensemble mưa cao")}
+  else if(rp>=.35||(r90!==null&&r90>=8)){level=Math.max(level,2);reasons.push("ensemble mưa tăng")}
+  else if(rp>=.15)level=Math.max(level,1);
+  if(vari>=70){level=Math.max(level,2);reasons.push("độ phân tán cao")}
+  return {level,reasons,confidence:num(best.confidence_score),variability:vari};
+}
 function riskAt(id){
   const p=state.critical?.points?.[id]||{};
   const lead=currentLeadHours();
+  if(lead>72)return regionalRiskAt(id,lead);
   return lead>0?futureRisk(nearestEnsembleRow(p,lead)):currentRisk(p);
 }
 function riskClass(v){return v>=3?"alert":v>=1?"watch":"ok"}
@@ -480,7 +506,7 @@ function riskLabel(v){return v>=3?"CAO":v>=2?"THEO DÕI":v>=1?"LƯU Ý":"ỔN"}
 
 function currentLeadHours(){
   if(state.layer==="storm"||state.layer==="radar")return 0;
-  const f=activeECMWFFrame();
+  const f=activeBaseFrame();
   if(f&&num(f.lead_hours)!==null)return num(f.lead_hours);
   const t=activeValidTime();return Number.isFinite(t)?Math.max(0,Math.round((t-Date.now())/3600000)):0;
 }
@@ -554,7 +580,7 @@ function configureTimeline(){
     $("timelineTicks").innerHTML=fs.length?'<span>-60m</span><span>-40m</span><span>-20m</span><span>NOW</span>':"";
     $("timeLabel").textContent="NOW";
   }else{
-    const fs=ecmwfFrames();
+    const fs=baseFrames();
     slider.min=0;slider.max=Math.max(0,fs.length-1);slider.step=1;state.frameIndex=clamp(state.frameIndex,0,Math.max(0,fs.length-1));slider.value=state.frameIndex;
     const idxs=[0,Math.floor((fs.length-1)*.25),Math.floor((fs.length-1)*.5),Math.floor((fs.length-1)*.75),fs.length-1].filter((v,i,a)=>a.indexOf(v)===i);
     $("timelineTicks").innerHTML=idxs.map(i=>"<span>"+(fs[i]?dayLabel(fs[i].valid_time):"-")+"</span>").join("");
@@ -563,7 +589,7 @@ function configureTimeline(){
   updateConfidence();
 }
 function selectNearestNowFrame(){
-  const fs=ecmwfFrames();if(!fs.length){state.frameIndex=0;return}
+  const fs=baseFrames();if(!fs.length){state.frameIndex=0;return}
   let best=0,d=Infinity;
   fs.forEach((f,i)=>{const dd=Math.abs(parseTime(f.valid_time)-Date.now());if(dd<d){d=dd;best=i}});
   state.frameIndex=best;
@@ -616,6 +642,10 @@ function renderAll(redrawTimeline=true){
   if(state.layer==="storm"){
     const ef=nearestFrame(ecmwfFrames(),activeValidTime()||Date.now());
     if(ef)startParticles(ef.cells||[],"wind");
+    else{
+      const gf=nearestFrame(gefsFrames(),activeValidTime()||Date.now());
+      if(gf)startParticles(genericRowsFromGEFS(gf,"wind"),"wind");
+    }
   }
   renderRisk();renderActual();renderScale();updateReadout();updateModelBadge();updateConfidence();
   if(redrawTimeline&&state.layer!=="radar")configureTimeline();
@@ -656,11 +686,32 @@ function showMapProbe(lat,lon){
   const ens=ensembleAt(lat,lon);
   const anchor=nearestAnchor(lat,lon),p=state.critical?.points?.[anchor]||{},l=p.local||{},m=p.model||{},t=p.tide||{},aq=p.aqi||{};
   const items=[];
-  if(state.layer==="wind")items.push(["ECMWF",fmt(row?.wind_kmh,0)+" km/h"],["GEFS p50",fmt(ens?.wind?.q50,0)+" km/h"],["GEFS p90",fmt(ens?.wind?.q90,0)+" km/h"],["P ≥30",ens?.wind?.prob==null?"-":Math.round(ens.wind.prob*100)+"%"]);
-  else if(state.layer==="rain")items.push(["ECMWF",fmt(row?.rain_mm,1)+" mm"],["GEFS p50",fmt(ens?.rain?.q50,1)+" mm"],["GEFS p90",fmt(ens?.rain?.q90,1)+" mm"],["P ≥5",ens?.rain?.prob==null?"-":Math.round(ens.rain.prob*100)+"%"]);
+  if(state.layer==="wind")items.push(
+    ["ECMWF",fmt(row?.wind_kmh,0)+" km/h"],
+    ["GEFS p50",fmt(ens?.wind?.q50,0)+" km/h"],
+    ["GEFS p90",fmt(ens?.wind?.q90,0)+" km/h"],
+    ["GEFS p95",fmt(ens?.wind?.q95,0)+" km/h"],
+    ["P ≥30",ens?.wind?.prob==null?"-":Math.round(ens.wind.prob*100)+"%"],
+    ["Spread",fmt(ens?.wind?.spread,1)+" km/h"]
+  );
+  else if(state.layer==="rain")items.push(
+    ["ECMWF",fmt(row?.rain_mm,1)+" mm"],
+    ["GEFS p50",fmt(ens?.rain?.q50,1)+" mm"],
+    ["GEFS p90",fmt(ens?.rain?.q90,1)+" mm"],
+    ["GEFS p95",fmt(ens?.rain?.q95,1)+" mm"],
+    ["P ≥5",ens?.rain?.prob==null?"-":Math.round(ens.rain.prob*100)+"%"],
+    ["Spread",fmt(ens?.rain?.spread,1)+" mm"]
+  );
   else if(state.layer==="waves")items.push(["Hs",fmt(row?.wave_hs_m,1)+" m"],["Hướng",fmt(row?.wave_direction_deg,0)+"°"],["Chu kỳ",fmt(row?.wave_period_s,1)+" s"],["Hmax anchor",fmt(m.wave_hmax_m,1)+" m"]);
   else items.push(["Đối lưu",fmt(row?.convective_score,0)+"/100"],["Đỉnh mây",fmt(row?.cloud_top_cold_c,1)+"°C"],["Độ cao",fmt(row?.cloud_top_high_m,0)+" m"],["Δ20p",fmt(row?.cooling_c_per_20m_proxy,1)+"°C"]);
-  const extra=(POINTS[anchor]?.name||anchor)+" · Local Now gió "+fmt(l.wind_kmh,0)+" km/h · dòng "+fmt(m.current_kmh,2)+" km/h · triều "+fmt(t.height_m,2)+" m · AQI "+fmt(aq.aqi_us,0);
+  const regional=regionalForecastRow();
+  const extra=(POINTS[anchor]?.name||anchor)+
+    " · Local Now gió "+fmt(l.wind_kmh,0)+" km/h"+
+    " · Hmax "+fmt(m.wave_hmax_m,1)+" m"+
+    " · dòng "+fmt(m.current_kmh,2)+" km/h"+
+    " · triều "+fmt(t.height_m,2)+" m"+
+    " · AQI "+fmt(aq.aqi_us,0)+
+    (regional?" · confidence "+fmt(regional.confidence_score,0)+"/100 · variability "+fmt(regional.variability_score,0)+"/100":"");
   showProbe("Điểm trên bản đồ",state.layer==="storm"?"HIMAWARI":"SPATIAL + ENSEMBLE",items,extra);
 }
 function showAnchorProbe(id){
