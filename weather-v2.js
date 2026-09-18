@@ -82,16 +82,114 @@ function point(){return critical?.points?.[current]||{}}
 function localPoint(){return point().local||{}}
 function modelPoint(){return point().model||{}}
 
+function islandIds(){
+  return (critical?.island_watch_order||[]).filter(id=>critical?.points?.[id]);
+}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function viLevel(v){
+  return ({LOW:"THẤP",WATCH:"THEO DÕI",ELEVATED:"TĂNG",HIGH:"CAO"}[String(v||"").toUpperCase()]||String(v||""));
+}
+function viCal(v){
+  return String(v||"").toUpperCase()==="LEARNING"?"ĐANG HIỆU CHỈNH":String(v||"").replaceAll("_"," ");
+}
+function sourceReady(v){
+  const x=String(v||"").toUpperCase();
+  return ["FRESH","READY","POINT_NUMERIC_READY","MEMBER_MATRIX_READY","PASS","LIVE"].includes(x);
+}
+function pointLayerCoverage(p){
+  const l=p.local||{},a=p.aqi||{},t=p.tide||{},n=p.nowcast||{},e=p.ensemble||{};
+  return [
+    [l.temperature_c,l.wind_kmh,l.rain_rate_mm_h].every(v=>num(v)!==null),
+    (p.next24h||[]).length>=3,
+    num(a.aqi_us)!==null,
+    num(t.height_m)!==null,
+    num(n.convective_score)!==null,
+    (e.rows||[]).length>=3
+  ];
+}
+function coverageScore(){
+  const ids=islandIds();if(!ids.length)return 0;
+  let ok=0,total=0;
+  ids.forEach(id=>pointLayerCoverage(critical.points[id]).forEach(v=>{total++;if(v)ok++}));
+  return total?Math.round(100*ok/total):0;
+}
+function confidenceScore(){
+  const ids=islandIds();if(!ids.length)return 0;
+  const coverage=coverageScore()/100;
+  const confs=ids.map(id=>num(critical.points[id]?.local?.rain_confidence)).filter(v=>v!==null);
+  const local=confs.length?confs.reduce((a,b)=>a+b,0)/confs.length:0.35;
+  const fresh=clamp(1-ageMinutes(critical.generated_at)/180,0,1);
+  const ens=ids.map(id=>num(critical.points[id]?.ensemble?.completion_ratio)).filter(v=>v!==null);
+  const ensemble=ens.length?ens.reduce((a,b)=>a+b,0)/ens.length:0;
+  const g=critical.actual?.rain_gauges||[];
+  const actual=(sourceReady(critical.source_state?.vvpq)?0.45:0)+(g.filter(x=>x.qc==="PASS"||num(x.accum_mm)!==null).length>=3?0.55:0);
+  let score=100*(0.25*coverage+0.30*local+0.15*fresh+0.15*ensemble+0.15*actual);
+  const learning=ids.some(id=>String(critical.points[id]?.ensemble?.calibration_status||"").toUpperCase()==="LEARNING");
+  if(learning)score*=0.88;
+  return Math.round(clamp(score,0,100));
+}
+function pointRisk(p){
+  const m=p.model||{},n=p.nowcast||{},rows=p.ensemble?.rows||[];
+  const conv=num(n.convective_score),gust=num(m.gust_kmh),rain=num(m.rain_3h_mm),hs=num(m.wave_hs_m);
+  const windProb=Math.max(0,...rows.map(x=>num(x.wind?.prob)).filter(v=>v!==null));
+  const rainProb=Math.max(0,...rows.map(x=>num(x.rain?.prob)).filter(v=>v!==null));
+  let level=0,reasons=[];
+  if(conv!==null&&conv>=75){level=Math.max(level,2);reasons.push("đối lưu cao")}
+  else if(conv!==null&&conv>=60){level=Math.max(level,1);reasons.push("đối lưu tăng")}
+  if(gust!==null&&gust>=39){level=Math.max(level,3);reasons.push("gió giật mạnh")}
+  else if(gust!==null&&gust>=29){level=Math.max(level,2);reasons.push("gió giật cần theo dõi")}
+  if(rain!==null&&rain>=25){level=Math.max(level,3);reasons.push("mưa 3 giờ lớn")}
+  else if(rain!==null&&rain>=10){level=Math.max(level,2);reasons.push("mưa 3 giờ tăng")}
+  if(hs!==null&&hs>=2){level=Math.max(level,3);reasons.push("sóng nền cao")}
+  else if(hs!==null&&hs>=1.5){level=Math.max(level,2);reasons.push("sóng tăng")}
+  if(windProb>=0.25){level=Math.max(level,2);reasons.push("ensemble còn đuôi gió mạnh")}
+  else if(windProb>=0.10){level=Math.max(level,1)}
+  if(rainProb>=0.50){level=Math.max(level,2);reasons.push("ensemble nghiêng về mưa")}
+  else if(rainProb>=0.25){level=Math.max(level,1)}
+  return {level,reasons};
+}
+function islandAssessment(){
+  const rows=islandIds().map(id=>({id,p:critical.points[id],risk:pointRisk(critical.points[id])}));
+  rows.sort((a,b)=>b.risk.level-a.risk.level);
+  const worst=rows[0]?.risk.level||0;
+  const label=worst>=3?"NÊN ĐIỀU CHỈNH":worst>=2?"THEO DÕI SÁT":worst>=1?"CÓ ĐIỂM CẦN LƯU Ý":"TƯƠNG ĐỐI ỔN";
+  const attention=rows.filter(x=>x.risk.level>=2).slice(0,4);
+  return {label,attention,rows};
+}
+function renderPointTabs(){
+  const nav=$("pointTabs");if(!nav||!critical)return;
+  const ids=[...islandIds()];
+  if(critical.points?.rach_gia)ids.push("rach_gia");
+  nav.innerHTML=ids.map(id=>{
+    const off=id==="rach_gia";
+    return '<button class="'+(id===current?'active ':'')+(off?'off-island':'')+'" data-point="'+esc(id)+'">'+esc(critical.points[id]?.name||id)+(off?' · đối chiếu':'')+'</button>';
+  }).join("");
+}
+
 function renderStatus(){
   if(!critical)return;
   const m=ageMinutes(critical.generated_at);
   const stale=m>180,delayed=m>90;
   $("liveDot").className=stale||delayed?"warn":"ok";
-  $("liveLabel").textContent=(stale?"STALE":delayed?"DELAYED":critical.report_status==="LIVE"?"LIVE":"DEGRADED")+" · "+ageText(critical.generated_at);
-  $("decisionNow").textContent=String(critical.decision||"NOT_ISSUED").replaceAll("_"," ");
-  $("completenessNow").textContent=num(critical.completeness)===null?"-":fmt(critical.completeness,0)+"%";
-  $("confidenceNow").textContent=num(critical.confidence)===null?"-":fmt(critical.confidence,0)+"/100";
+  $("liveLabel").textContent=(stale?"DỮ LIỆU CŨ":delayed?"CẬP NHẬT CHẬM":critical.report_status==="LIVE"?"ĐANG HOẠT ĐỘNG":"SUY GIẢM")+" · "+ageText(critical.generated_at);
+
+  const assessment=islandAssessment();
+  const coverage=coverageScore();
+  const confidence=confidenceScore();
+  $("decisionNow").textContent=assessment.label;
+  $("completenessNow").textContent=coverage+"% · "+islandIds().length+"/"+islandIds().length+" điểm";
+  $("confidenceNow").textContent=(confidence>=80?"CAO":confidence>=60?"KHÁ":"THẤP")+" · "+confidence+"/100";
   $("horizonNow").textContent=num(critical.forecast_horizon_hours)===null?"-":"D+"+Math.round(critical.forecast_horizon_hours/24);
+  $("completenessNow").parentElement.title="Tỷ lệ các lớp Local Now, forecast, AQI, triều, Himawari và ensemble đang có dữ liệu trên 7 điểm đảo.";
+  $("confidenceNow").parentElement.title="Điểm chất lượng gói dữ liệu hiện tại, không phải xác suất dự báo đúng.";
+  const summary=$("islandSummary");
+  if(summary){
+    if(assessment.attention.length){
+      summary.innerHTML="<b>Cần chú ý:</b> "+assessment.attention.map(x=>esc(x.p.name)+" - "+esc(x.risk.reasons.slice(0,2).join(", "))).join(" · ")+"<small>Đánh giá thời tiết tham khảo. Hạn chế/cấm tàu thuyền vẫn theo thông báo chính thức.</small>";
+    }else{
+      summary.innerHTML="<b>Toàn đảo:</b> chưa thấy lớp dữ liệu hiện có vượt ngưỡng theo dõi chính.<small>Tin cậy dữ liệu không đồng nghĩa dự báo chắc chắn đúng.</small>";
+    }
+  }
   $("dataMode").textContent=critical.data_mode||"-";
 }
 
@@ -137,47 +235,6 @@ function renderActual(){
   $("actualState").textContent=(critical.source_state?.vvpq==="FRESH"&&critical.source_state?.vrain==="FRESH")?"VVPQ + VRAIN FRESH":"CÓ NGUỒN CHẬM";
 }
 
-function islandHasRainActual(name){
-  const target=String(name||"").toLowerCase();
-  return (critical.actual?.rain_gauges||[]).some(g=>String(g.name||"").toLowerCase().includes(target)||target.includes(String(g.name||"").toLowerCase()));
-}
-function watchAvailability(p){
-  const l=p.local||{},m=p.model||{},n=p.nowcast||{};
-  return [l.temperature_c,l.wind_kmh,l.rain_rate_mm_h,m.temperature_c,m.wind_kmh,n.convective_score].some(v=>num(v)!==null);
-}
-function renderIslandWatch(){
-  const root=$("islandWatchGrid");if(!root)return;
-  const ids=(critical.island_watch_order||[]).filter(id=>critical.points?.[id]);
-  root.innerHTML=ids.map(id=>{
-    const p=critical.points[id]||{},l=p.local||{},m=p.model||{},n=p.nowcast||{};
-    const ready=watchAvailability(p);
-    const rainActual=islandHasRainActual(p.name);
-    const temp=num(l.temperature_c)??num(m.temperature_c);
-    const wind=num(l.wind_kmh)??num(m.wind_kmh);
-    const rain=num(l.rain_rate_mm_h);
-    const conv=num(n.convective_score)??num(l.convection_score);
-    const aqi=num(p.aqi?.aqi_us);
-    const partial=ready&&(temp===null||wind===null);
-    const lead=temp!==null?fmt(temp,1)+'°':rain!==null?'Mưa '+fmt(rain,2):conv!==null?'Đối lưu '+fmt(conv,0)+'/100':'Đang cập nhật';
-    const meta=[];
-    if(wind!==null)meta.push('<span>Gió <b>'+fmt(wind,0)+'</b></span>');
-    if(rain!==null)meta.push('<span>Mưa <b>'+fmt(rain,2)+'</b></span>');
-    if(conv!==null)meta.push('<span>Đối lưu <b>'+fmt(conv,0)+'</b></span>');
-    if(aqi!==null)meta.push('<span>AQI <b>'+fmt(aqi,0)+'</b></span>');
-    if(temp===null)meta.push('<span>Nhiệt độ <b>chờ model</b></span>');
-    if(wind===null)meta.push('<span>Gió <b>chờ model</b></span>');
-    return '<button class="island-watch-card '+(id===current?'active':'')+'" data-watch-point="'+esc(id)+'">'+
-      '<header><b>'+esc(p.name||id)+'</b><span class="'+(rainActual?'watch-actual':'watch-est')+'">'+(rainActual?'RAIN ACTUAL':partial?'PARTIAL':ready?'ESTIMATED':'CHỜ CYCLE')+'</span></header>'+
-      (ready?'<div class="watch-temp">'+lead+'</div><div class="watch-meta">'+meta.join('')+
-      '</div>':'<div class="lazy-status">Chưa đủ model/nowcast ở cycle hiện tại.</div>')+
-    '</button>';
-  }).join("")||'<div class="lazy-status">Island Watch đang chờ cycle dữ liệu mới.</div>';
-  root.querySelectorAll("[data-watch-point]").forEach(b=>b.addEventListener("click",()=>{
-    current=b.dataset.watchPoint;
-    renderAll();
-    document.querySelector(".hero")?.scrollIntoView({behavior:"smooth",block:"start"});
-  }));
-}
 function renderFeedbackPoint(){
   const sel=$("feedbackPoint");if(!sel)return;
   const ids=(critical.island_watch_order||[]).filter(id=>critical.points?.[id]);
@@ -292,20 +349,42 @@ function effectiveNowcast(){
   };
 }
 function renderNowcast(){
-  const n=effectiveNowcast();
-  if(num(n.convective_score)===null&&num(n.cloud_top_cold_c)===null){
-    $("nowcastQuick").innerHTML='<div class="data-empty"><b>CHỜ HIMAWARI</b><span>Điểm này chưa có pixel/window nowcast trong cycle hiện tại.</span></div>';
-    $("nowcastAge").textContent="Không dùng forecast để giả làm remote observation.";
+  const n=effectiveNowcast(),root=$("nowcastQuick"),preview=$("satellitePreview");
+  if(num(n.convective_score)===null&&num(n.cloud_top_cold_c)===null&&num(n.cloud_top_high_m)===null){
+    root.innerHTML='<div class="data-empty"><b>CHƯA CÓ DỮ LIỆU HIMAWARI</b><span>Điểm này chưa có cửa sổ quan sát vệ tinh trong chu kỳ hiện tại.</span></div>';
+    $("nowcastAge").textContent="Không dùng forecast để thay thế quan sát vệ tinh.";
+    if(preview)preview.hidden=true;
     return;
   }
-  $("nowcastQuick").innerHTML=
-    '<div class="quick-item"><span>Đối lưu</span><b>'+fmt(n.convective_score,0)+'/100</b><small>'+esc(n.convective_level||"-")+'</small></div>'+
-    '<div class="quick-item"><span>Cloud-top lạnh</span><b>'+fmt(n.cloud_top_cold_c,1)+'°C</b><small>Himawari remote observed</small></div>'+
-    '<div class="quick-item"><span>Cloud-top cao</span><b>'+fmt(num(n.cloud_top_high_m)/1000,1)+' km</b><small>p95 local window</small></div>'+
-    '<div class="quick-item"><span>Cooling 20 phút</span><b>'+fmt(n.cooling_c_per_20m,1)+'°C</b><small>proxy growth/decay</small></div>'+
-    '<div class="quick-item"><span>Sét trực tiếp</span><b class="small-value">'+esc(n.lightning||"NOT_CONNECTED")+'</b><small>không suy proxy thành lightning</small></div>'+
-    '<div class="quick-item"><span>Nguồn</span><b class="small-value">'+esc(n.source||"HIMAWARI")+'</b><small>remote observed</small></div>';
-  $("nowcastAge").textContent="Himawari sampled "+ageText(n.sampled_time)+". Đây là quan trắc vệ tinh, không phải rain gauge.";
+  const cards=[];
+  if(num(n.convective_score)!==null)cards.push('<div class="quick-item"><span>Mức đối lưu</span><b>'+fmt(n.convective_score,0)+'/100</b><small>'+esc(viLevel(n.convective_level))+'</small></div>');
+  if(num(n.cloud_top_cold_c)!==null)cards.push('<div class="quick-item"><span>Đỉnh mây lạnh nhất</span><b>'+fmt(n.cloud_top_cold_c,1)+'°C</b><small>quan sát hồng ngoại</small></div>');
+  if(num(n.cloud_top_high_m)!==null)cards.push('<div class="quick-item"><span>Đỉnh mây cao</span><b>'+fmt(num(n.cloud_top_high_m)/1000,1)+' km</b><small>cửa sổ khu vực</small></div>');
+  if(num(n.cooling_c_per_20m)!==null)cards.push('<div class="quick-item"><span>Biến thiên 20 phút</span><b>'+fmt(n.cooling_c_per_20m,1)+'°C</b><small>âm = đỉnh mây lạnh thêm</small></div>');
+  if(n.lightning&&String(n.lightning).toUpperCase()!=="NOT_CONNECTED")cards.push('<div class="quick-item"><span>Sét quan sát</span><b class="small-value">'+esc(n.lightning)+'</b><small>nguồn sét trực tiếp</small></div>');
+  root.innerHTML=cards.join("");
+  $("nowcastAge").textContent="Himawari quan sát "+ageText(n.sampled_time)+" · "+esc(n.source||"JMA Himawari")+". Đây là quan sát vệ tinh, không phải trạm mưa.";
+  if(preview){preview.hidden=false;installSatellitePreviewObserver()}
+}
+
+let satellitePreviewStarted=false;
+function startSatellitePreview(){
+  if(satellitePreviewStarted)return;satellitePreviewStarted=true;
+  const box=$("satellitePreview"),img=$("nowcastImage"),cap=$("nowcastImageCaption");
+  if(!box||!img)return;
+  const list=mapCandidates();let i=0;
+  img.onerror=()=>{i++;if(i<list.length){img.src=list[i]+"?t="+Date.now()}else{box.hidden=true;img.onerror=null}};
+  img.onload=()=>{
+    box.hidden=false;
+    if(cap)cap.textContent="Ảnh Himawari B13 quan sát thực tế gần nhất từ JMA. Màu tối/sáng là bức xạ hồng ngoại, không phải ảnh màu tự nhiên.";
+  };
+  img.src=list[0]+"?t="+Date.now();
+}
+function installSatellitePreviewObserver(){
+  const target=$("satellitePreview");if(!target||satellitePreviewStarted)return;
+  if(!("IntersectionObserver" in window)){defer(startSatellitePreview,1000);return}
+  const ob=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){startSatellitePreview();ob.disconnect()}},{rootMargin:"250px 0px"});
+  ob.observe(target);
 }
 
 function renderHours(rows){
@@ -370,46 +449,49 @@ function ensembleData(){
 function ensembleCell(v,key,d=1){return fmt(v?.[key],d)}
 function renderEnsemble(){
   const e=ensembleData(),rows=e.rows||[];
-  setBadge("ensembleState",e.calibration_status||"LEARNING",e.calibration_status||"LEARNING");
+  setBadge("ensembleState",e.calibration_status||"LEARNING",viCal(e.calibration_status||"LEARNING"));
   if(!rows.length){
-    $("ensembleQuick").innerHTML='<div class="lazy-status">Ensemble matrix đang xây. Forecast deterministic phía trên vẫn hoạt động bình thường.</div>';
-    $("ensembleMeta").textContent=esc(e.source||"NOAA GEFS / multi-model pipeline")+" · "+esc(e.status||"UNAVAILABLE");
+    $("ensembleQuick").innerHTML='<div class="lazy-status">Chưa có đủ ma trận ensemble cho điểm này. Dự báo mô hình phía trên vẫn hoạt động.</div>';
+    $("ensembleMeta").textContent=esc(e.source||"NOAA GEFS")+" · "+(e.status==="UNAVAILABLE"?"chưa sẵn sàng":"đang cập nhật");
     return;
   }
   const selected=rows.filter(r=>[6,12,24,48,72].includes(Number(r.lead_hours))).slice(0,5);
-  $("ensembleQuick").innerHTML='<table class="ensemble-table"><thead><tr><th>Lead</th><th>Members</th><th>Gió q50</th><th>Gió q90</th><th>P(gió≥30)</th><th>Mưa q50</th><th>Mưa q90</th><th>P(mưa≥5)</th></tr></thead><tbody>'+
+  $("ensembleQuick").innerHTML='<table class="ensemble-table"><thead><tr><th>Mốc</th><th>Thành viên</th><th>Gió q50</th><th>Gió q90</th><th>P(gió≥30)</th><th>Mưa q50</th><th>Mưa q90</th><th>P(mưa≥5)</th></tr></thead><tbody>'+
     selected.map(r=>{
       const vars=r.variables||{};
       const w=vars.wind?.corrected||vars.wind?.raw||r.wind||{};
       const rain=vars.rain?.corrected||vars.rain?.raw||r.rain||{};
       const members=r.member_count??w.member_count??r.members;
-      return '<tr><td>+'+fmt(r.lead_hours,0)+'h</td><td>'+fmt(members,0)+'</td><td>'+ensembleCell(w,"q50",0)+'</td><td>'+ensembleCell(w,"q90",0)+'</td><td>'+pct(w.exceedance_probability??w.prob)+'</td><td>'+ensembleCell(rain,"q50",1)+'</td><td>'+ensembleCell(rain,"q90",1)+'</td><td>'+pct(rain.exceedance_probability??rain.prob)+'</td></tr>';
+      return '<tr><td>+'+fmt(r.lead_hours,0)+' giờ</td><td>'+fmt(members,0)+'</td><td>'+ensembleCell(w,"q50",0)+'</td><td>'+ensembleCell(w,"q90",0)+'</td><td>'+pct(w.exceedance_probability??w.prob)+'</td><td>'+ensembleCell(rain,"q50",1)+'</td><td>'+ensembleCell(rain,"q90",1)+'</td><td>'+pct(rain.exceedance_probability??rain.prob)+'</td></tr>';
     }).join("")+'</tbody></table>';
-  $("ensembleMeta").textContent=(e.source||"ensemble")+" · run "+localTime(e.run_time)+" · completion "+(num(e.completion_ratio)===null?"-":Math.round(e.completion_ratio*100)+"%")+" · calibration "+(e.calibration_status||"LEARNING");
+  $("ensembleMeta").textContent=(e.source||"ensemble")+" · chu kỳ "+localTime(e.run_time)+" · hoàn tất "+(num(e.completion_ratio)===null?"-":Math.round(e.completion_ratio*100)+"%")+" · hiệu chỉnh: "+viCal(e.calibration_status||"LEARNING").toLowerCase();
 }
+
 function pct(v){v=num(v);return v===null?"-":Math.round(v*100)+"%"}
 
 function renderHealth(){
   const src=critical.sources||{};
+  const stLabel=st=>({PASS:"Sẵn sàng",PARTIAL:"Một phần",FAIL:"Chưa sẵn sàng",UNRESOLVED:"Chưa kết nối"}[st]||st.replaceAll("_"," ").toLowerCase());
   $("sourceGrid").innerHTML=Object.entries(src).map(([k,v])=>{
     const st=String(v.status||"UNRESOLVED").toUpperCase();
     const cls=st==="PASS"?"pass":st==="PARTIAL"?"partial":"fail";
-    return '<article class="source-card"><header><b>'+esc(k)+'</b><span class="source-state '+cls+'">'+esc(st)+'</span></header><p>'+esc(v.detail||"")+'</p></article>';
-  }).join("")||'<div class="lazy-status">Chưa có source health.</div>';
-  $("gapGrid").innerHTML=(critical.gaps||[]).length?(critical.gaps||[]).map(g=>'<div class="gap-card"><b>'+esc(g.name||"Data gap")+'</b><span>'+esc(g.detail||"")+'</span></div>').join(""):'<div class="gap-card"><b>Không có critical gap</b><span>Cycle hiện tại không khai báo khoảng trống nghiêm trọng.</span></div>';
+    return '<article class="source-card"><header><b>'+esc(k)+'</b><span class="source-state '+cls+'">'+esc(stLabel(st))+'</span></header><p>'+esc(v.detail||"")+'</p></article>';
+  }).join("")||'<div class="lazy-status">Chưa có thông tin tình trạng nguồn.</div>';
+  $("gapGrid").innerHTML=(critical.gaps||[]).length?(critical.gaps||[]).map(g=>'<div class="gap-card"><b>'+esc(g.name||"Phần còn thiếu")+'</b><span>'+esc(g.detail||"")+'</span></div>').join(""):'<div class="gap-card"><b>Không có khoảng trống nghiêm trọng</b><span>Chu kỳ hiện tại chưa ghi nhận lớp dữ liệu bắt buộc bị thiếu.</span></div>';
   $("cycleGrid").innerHTML=Object.entries(critical.source_cycles||{}).map(([k,v])=>'<span class="cycle-chip">'+esc(k)+' · '+localTime(v)+'</span>').join("");
+  const headline=String(critical.headline||"").includes("Live D0-D10")?"Dữ liệu D0-D10 đã cập nhật. D4-D10 dùng để theo dõi xu hướng, không tự phát quyết định vận hành.":(critical.headline||"-");
+  const next=String(critical.next_review||"").includes("watch cycle")?"Hệ thống tự kiểm tra chu kỳ mô hình mới mỗi 30 phút.":(critical.next_review||"-");
   $("auditGrid").innerHTML=
-    '<div class="audit-item"><span>Snapshot ID</span><b>'+esc(critical.snapshot_id||"-")+'</b></div>'+
-    '<div class="audit-item"><span>Commit</span><b>'+esc(critical.git_commit_sha||"-")+'</b></div>'+
-    '<div class="audit-item wide"><span>Headline hệ thống</span><b>'+esc(critical.headline||"-")+'</b></div>'+
-    '<div class="audit-item wide"><span>Lần đọc tiếp</span><b>'+esc(critical.next_review||"-")+'</b></div>';
+    '<div class="audit-item"><span>Mã ảnh chụp dữ liệu</span><b>'+esc(critical.snapshot_id||"-")+'</b></div>'+
+    '<div class="audit-item"><span>Mã phiên bản</span><b>'+esc(critical.git_commit_sha||"-")+'</b></div>'+
+    '<div class="audit-item wide"><span>Tóm tắt hệ thống</span><b>'+esc(headline)+'</b></div>'+
+    '<div class="audit-item wide"><span>Lần kiểm tra tiếp</span><b>'+esc(next)+'</b></div>';
 }
 
 function renderAll(){
   if(!critical)return;
-  renderStatus();renderHero();renderCurrent();renderActual();renderFeedbackPoint();renderIslandWatch();renderAQI();renderTide();renderNowcast();
+  renderPointTabs();renderStatus();renderHero();renderCurrent();renderActual();renderFeedbackPoint();renderAQI();renderTide();renderNowcast();
   renderHours(point().next24h||[]);renderForecastTable();renderEnsemble();renderHealth();
-  document.querySelectorAll(".point-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.point===current));
 }
 
 async function loadFullForecast(){
@@ -440,20 +522,20 @@ function setMap(type){
   document.querySelectorAll("[data-map]").forEach(b=>b.classList.toggle("active",b.dataset.map===type));
   if(!mapStarted)return;
   const box=$("mapBox"),note=$("mapNote");
-  $("mapState").textContent="LOADING";$("mapState").className="badge deferred";
+  $("mapState").textContent="ĐANG TẢI";$("mapState").className="badge deferred";
   if(type==="himawari"){
     box.innerHTML='<img id="himawariImg" alt="JMA Himawari B13 infrared">';
     const img=$("himawariImg"),list=mapCandidates();let i=0;
-    img.onerror=()=>{i++;if(i<list.length)img.src=list[i]+"?t="+Date.now();else{note.textContent="Không tải được frame Himawari trực tiếp lúc này.";$("mapState").textContent="DEGRADED"}};
-    img.onload=()=>{note.textContent="JMA Himawari B13 · remote observed · frame gần nhất tải thành công.";$("mapState").textContent="READY";$("mapState").className="badge remote"};
+    img.onerror=()=>{i++;if(i<list.length)img.src=list[i]+"?t="+Date.now();else{note.textContent="Không tải được frame Himawari trực tiếp lúc này.";$("mapState").textContent="KHÔNG TẢI ĐƯỢC"}};
+    img.onload=()=>{note.textContent="JMA Himawari B13 · ảnh quan sát vệ tinh gần nhất tải thành công.";$("mapState").textContent="SẴN SÀNG";$("mapState").className="badge remote"};
     img.src=list[0]+"?t="+Date.now();
     return;
   }
   box.innerHTML='<iframe title="Weather map" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>';
   const frame=box.firstChild;
-  frame.onload=()=>{$("mapState").textContent="READY";$("mapState").className="badge remote"};
+  frame.onload=()=>{$("mapState").textContent="SẴN SÀNG";$("mapState").className="badge remote"};
   frame.src=WINDY[type]||WINDY.radar;
-  note.textContent=type==="radar"?"Radar/map là lớp trực quan độc lập, không phải ground truth số.":type==="wind"?"Windy/ECMWF để nhìn cấu trúc gió không gian.":"Mưa forecast để nhìn cấu trúc dự báo, không thay VRain actual.";
+  note.textContent=type==="radar"?"Radar dùng để nhìn vùng mưa theo không gian; số liệu tại điểm vẫn lấy từ pipeline riêng.":type==="wind"?"Windy/ECMWF giúp nhìn cấu trúc gió trên khu vực.":"Mưa dự báo giúp nhìn cấu trúc không gian; mưa đo thực tế vẫn ưu tiên VRain.";
 }
 function startMap(){
   if(mapStarted)return;
@@ -487,11 +569,20 @@ function feedback(kind){
   $("feedbackState").textContent="Đã lưu phản hồi trên thiết bị. Cảm ơn bạn.";
 }
 
+function shareWeather(){
+  const data={title:"JoTrip Weather - Phú Quốc",text:"Theo dõi thời tiết, biển, AQI và ensemble riêng cho Phú Quốc.",url:location.href};
+  if(navigator.share){navigator.share(data).catch(()=>{})}
+  else if(navigator.clipboard){navigator.clipboard.writeText(location.href).then(()=>{const b=$("shareWeather");if(b)b.textContent="Đã sao chép link"})}
+}
 function events(){
-  document.querySelectorAll(".point-tabs button").forEach(b=>b.addEventListener("click",()=>{current=b.dataset.point;renderAll()}));
+  $("pointTabs")?.addEventListener("click",e=>{
+    const b=e.target.closest("[data-point]");if(!b)return;
+    current=b.dataset.point;renderAll();
+  });
   document.querySelectorAll(".horizon-tabs button").forEach(b=>b.addEventListener("click",()=>{horizon=Number(b.dataset.horizon);renderForecastTable()}));
   document.querySelectorAll("[data-map]").forEach(b=>b.addEventListener("click",()=>{startMap();setMap(b.dataset.map)}));
   document.querySelectorAll("[data-feedback]").forEach(b=>b.addEventListener("click",()=>feedback(b.dataset.feedback)));
+  $("shareWeather")?.addEventListener("click",shareWeather);
 }
 
 async function boot(){
@@ -508,7 +599,7 @@ async function boot(){
     if(critical.source_state?.ensemble&&critical.source_state.ensemble!=="UNAVAILABLE")defer(loadEnsemble,1350);
   }catch(e){
     $("heroSummary").textContent="Không tải được payload nhanh. Hãy thử tải lại trang.";
-    $("liveLabel").textContent="DATA ERROR";$("liveDot").className="warn";
+    $("liveLabel").textContent="LỖI DỮ LIỆU";$("liveDot").className="warn";
     console.error(e);
   }
 }
