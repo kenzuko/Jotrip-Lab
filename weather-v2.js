@@ -32,7 +32,7 @@ function render(){
  $("liveDot").className=critical.report_status==="LIVE"?"ok":"warn";
  $("liveLabel").textContent=(critical.report_status==="LIVE"?"LIVE":"DEGRADED")+" · "+age(critical.generated_at);
  setMetric("windNow",l.wind_kmh??m.wind_kmh,1); setBadge("windClass",l.wind_class||"MODEL_ONLY");
- setMetric("rainNow",l.rain_rate_mm_h,2); $("rainConfidence").textContent=num(l.rain_confidence)===null?"-":Math.round(l.rain_confidence*100);setBadge("rainClass",l.rain_class||"ESTIMATED_NOW");
+ setMetric("rainNow",l.rain_rate_mm_h,2); $("rainConfidence").textContent=num(l.rain_confidence)===null?"-":Math.round(l.rain_confidence*100);setBadge("rainClass",l.available?(l.rain_class||"ESTIMATED_NOW"):"MODEL_ONLY");
  $("convectiveNow").textContent=num(l.convection_score)===null?"-":Math.round(l.convection_score);
  setMetric("waveNow",l.wave_hs_m??m.wave_hs_m,2);setBadge("marineClass",l.marine_class||"MODEL_ONLY");
  renderActual();renderHours(p.next24h||[]);
@@ -40,7 +40,7 @@ function render(){
  if(full&&!$("forecastDetail").hidden)renderForecastDetail();
 }
 function summary(p){const l=p.local||{},m=p.model||{},bits=[];const rain=num(l.rain_rate_mm_h),conv=num(l.convection_score),wind=num(l.wind_kmh??m.wind_kmh),wave=num(l.wave_hs_m??m.wave_hs_m);
- if(rain!==null)bits.push(rain>=3?"Mưa hiện tại đáng chú ý":rain>.2?"Có mưa nhẹ hoặc rải rác":"Mưa thực đo gần đây thấp");
+ if(rain!==null)bits.push(rain>=3?"Mưa hiện tại đáng chú ý":rain>.2?"Ước tính có mưa nhẹ hoặc rải rác":"Ước tính mưa hiện tại thấp");
  if(conv!==null&&conv>=70)bits.push("mây đối lưu đang hoạt động");
  if(wind!==null)bits.push("gió khoảng "+fmt(wind,0)+" km/h");
  if(wave!==null)bits.push("Hs nền khoảng "+fmt(wave,1)+" m");
