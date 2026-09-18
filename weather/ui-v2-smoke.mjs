@@ -45,6 +45,9 @@ for(const [name,width,height] of sizes){
     islandSummary:!!document.querySelector("#islandSummary"),
     numberGuide:!!document.querySelector(".number-guide"),
     aboutPanel:!!document.querySelector(".about-panel"),
+    commandCenter:!!document.querySelector(".command-center"),
+    heroStage:!!document.querySelector(".hero-stage"),
+    heroMood:document.querySelector(".hero")?.getAttribute("data-mood")||"",
     compactFeedback:!!document.querySelector(".field-strip")&&!document.querySelector(".feedback-panel"),
     mapBeforeForecast:(document.querySelector(".map-panel")?.compareDocumentPosition(document.querySelector(".jotrip-forecast-panel"))&Node.DOCUMENT_POSITION_FOLLOWING)!==0,
     innerOverflow:[...document.querySelectorAll(".panel")].flatMap(panel=>{
@@ -72,7 +75,8 @@ for(const [name,width,height] of sizes){
     forecastRegionTabs:document.querySelectorAll("#forecastRegionTabs [data-region]").length,
     jotripForecastRows:document.querySelectorAll("#jotripForecastRows tr").length,
     beaufortCells:[...document.querySelectorAll("#jotripForecastRows td")].filter(td=>/Bft\s+\d/.test(td.textContent||"")).length,
-    regionalTitle:document.querySelector("#jotripForecastTitle")?.textContent||""
+    regionalTitle:document.querySelector("#jotripForecastTitle")?.textContent||"",
+    forecastRibbon:document.querySelectorAll("#forecastDayRibbon .forecast-day").length
   }));
   const noRawForecastFetch=!requests.some(u=>/dashboard-data\.json/.test(u));
 
@@ -110,6 +114,10 @@ for(const [name,width,height] of sizes){
     checks.islandSummary&&
     checks.numberGuide&&
     checks.aboutPanel&&
+    checks.commandCenter&&
+    checks.heroStage&&
+    !!checks.heroMood&&
+    lateChecks.forecastRibbon>=7&&
     checks.compactFeedback&&
     checks.mapBeforeForecast&&
     checks.innerOverflow.length===0&&
