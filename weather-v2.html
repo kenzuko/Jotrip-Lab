@@ -108,6 +108,7 @@
         <span class="badge model">MODEL</span>
       </div>
       <div id="tideQuick" class="quick-grid"><div class="skeleton wide"></div></div>
+      <svg id="tideSpark" class="tide-spark" viewBox="0 0 600 120" preserveAspectRatio="none" aria-label="Triều 24 giờ"></svg>
       <small id="tideAge" class="panel-foot"></small>
     </section>
   </div>
@@ -127,6 +128,12 @@
       <span class="badge model">MODEL FORECAST</span>
     </div>
     <div id="hourlyStrip" class="hourly-strip"><div class="skeleton hour"></div><div class="skeleton hour"></div><div class="skeleton hour"></div></div>
+    <div class="horizon-tabs">
+      <button class="active" data-horizon="72">D0-D3</button>
+      <button data-horizon="120">D0-D5</button>
+      <button data-horizon="168">D0-D7</button>
+      <button data-horizon="240">D0-D10</button>
+    </div>
     <div id="forecastDetail" class="lazy-area">
       <div class="table-scroll"><table class="forecast-table"><thead><tr><th>Giờ</th><th>°C</th><th>Gió</th><th>Giật</th><th>Mưa</th><th>Hs</th><th>Hmax</th><th>T</th></tr></thead><tbody id="forecastRows"><tr><td colspan="8"><span class="inline-loader">Đang nạp bảng D0-D10...</span></td></tr></tbody></table></div>
       <div id="outlookCards" class="outlook-cards"></div>
