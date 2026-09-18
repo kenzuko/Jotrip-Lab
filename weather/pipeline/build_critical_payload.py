@@ -259,7 +259,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
     ens_ratio=num(ensemble.get("completion_ratio"))
     sources["GEFS"]={
         "status":ready_status(ensemble.get("readiness"),partial_ok=True),
-        "detail":f"NOAA GEFS D0-D10 · tối đa 31 thành viên · dữ liệu hiện đủ {round((ens_ratio or 0)*100)}%. JoTrip đang tiếp tục hiệu chỉnh lớp dự báo địa phương bằng dữ liệu thực tế trên đảo."
+        "detail":f"NOAA GEFS D0-D10 · tối đa 31 thành viên · dữ liệu hiện đủ {round((ens_ratio or 0)*100)}%. JoTrip tiếp tục đối chiếu và hiệu chỉnh dự báo địa phương bằng quan trắc thực tế trên đảo."
     }
     sources["VVPQ"]={
         "status":ready_status(v.get("status")),
@@ -288,12 +288,12 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
         if name=="D4-D10 ensemble consensus":
             gaps.append({
                 "name":"Độ đồng thuận nhiều mô hình từ ngày 4 đến ngày 10",
-                "detail":"GEFS đã có đủ horizon 10 ngày, nhưng các lớp ensemble dài hạn từ những họ mô hình khác vẫn chưa được tích hợp đầy đủ. Vì vậy dự báo xa ngày luôn được hạ mức tin cậy."
+                "detail":"GEFS đã có đủ 10 ngày, nhưng dự báo tổ hợp dài hạn từ các họ mô hình khác vẫn chưa được tích hợp đầy đủ. Vì vậy từ ngày 4 trở đi hệ thống chủ động hạ mức tin cậy."
             })
         elif name=="Hmax trực tiếp":
             gaps.append({
                 "name":"Sóng lớn Hmax",
-                "detail":"Nguồn ECMWF Open Data hiện không cung cấp trực tiếp Hmax cho pipeline này. Khi cần, JoTrip dùng ước tính thống kê từ Hs và luôn ghi rõ đây là giá trị ước tính."
+                "detail":"Nguồn ECMWF Open Data hiện chưa cung cấp trực tiếp Hmax cho chuỗi dữ liệu này. Khi cần, JoTrip ước tính Hmax từ Hs bằng phương pháp thống kê và luôn ghi rõ đây là giá trị ước tính."
             })
         elif name=="Nowcast offshore":
             gaps.append({
