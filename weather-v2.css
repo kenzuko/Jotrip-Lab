@@ -57,3 +57,48 @@ footer{display:flex;justify-content:space-between;gap:16px;color:#8a9aa3;font-si
 
 .audit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}.audit-item{border:1px solid #e4edf2;border-radius:12px;padding:9px 10px;background:#fbfcfd}.audit-item span{display:block;font-size:7px;color:#8597a1}.audit-item b{display:block;margin-top:3px;font-size:8px;color:#456273;word-break:break-word}.audit-item.wide{grid-column:1/-1}
 @media(max-width:520px){.audit-grid{grid-template-columns:1fr}}
+
+/* V2.2 field feedback + Island Watch + overflow hardening */
+main,.panel,.hero,.two-col,.now-grid,.quick-grid,.source-grid,.audit-grid,.status-strip{min-width:0}
+.panel>*,.two-col>* ,.metric-card,.quick-item,.source-card,.actual-card,.hour-card,.outlook-card,.audit-item{min-width:0}
+.panel p,.panel small,.source-card p,.audit-item b,.quick-item b,.quick-item small,.map-note,.panel-note{overflow-wrap:anywhere;word-break:normal}
+.table-scroll,.ensemble-table-shell,.actual-strip,.hourly-strip,.point-tabs,.map-tabs,.map-source-links{max-width:100%}
+.table-scroll,.ensemble-table-shell{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.forecast-table,.ensemble-table{width:max-content;min-width:100%}
+.map-box{max-width:100%;min-width:0}
+.map-box iframe,.map-box img{max-width:100%;display:block}
+.panel-head>div{min-width:0}
+.panel-head h2{overflow-wrap:anywhere}
+.field-strip{margin-top:12px;padding-top:11px;border-top:1px solid #e5edf2}
+.field-strip-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.field-strip-head>span{font-size:8px;color:#6f8491;min-width:0;overflow-wrap:anywhere}
+.field-strip-head b{color:#33566b}
+.field-strip select{max-width:150px;border:1px solid #dce7ed;border-radius:9px;background:#fff;color:#3e5f72;padding:6px 8px;font-size:8px}
+.feedback-actions.compact{gap:5px;margin-top:8px}
+.feedback-actions.compact button{padding:6px 8px;font-size:7.5px}
+.field-strip>small{display:block;margin-top:6px;color:#8b9ba4;font-size:7px}
+.island-watch-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.island-watch-card{appearance:none;width:100%;text-align:left;border:1px solid #e0eaf0;border-radius:14px;background:linear-gradient(180deg,#fff,#f8fbfc);padding:11px;color:var(--ink);min-width:0}
+.island-watch-card.active{border-color:#8fc7e5;box-shadow:0 0 0 2px rgba(8,123,182,.08)}
+.island-watch-card header{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;min-width:0}
+.island-watch-card header b{font-size:9px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.island-watch-card .watch-temp{font-size:20px;font-weight:850;letter-spacing:-.04em;margin:8px 0 6px;color:#234b63}
+.watch-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 7px}
+.watch-meta span{font-size:7px;color:#80939e;min-width:0}
+.watch-meta b{float:right;color:#3e6074;font-size:7.5px}
+.watch-actual{font-size:6px;border-radius:999px;padding:3px 5px;background:#e8f7ef;color:#23724a;font-weight:850;white-space:nowrap}
+.watch-est{font-size:6px;border-radius:999px;padding:3px 5px;background:#fff6d9;color:#80630a;font-weight:850;white-space:nowrap}
+.history-row{margin-top:12px;padding-top:10px;border-top:1px solid #e7eef2}
+.small-value{font-size:11px!important;line-height:1.2!important;overflow-wrap:anywhere}
+@media(max-width:900px){.island-watch-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){
+  .island-watch-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .field-strip-head{align-items:flex-start}
+  .field-strip select{max-width:132px}
+  .map-source-links a{flex:1 1 calc(50% - 7px);text-align:center;min-width:0}
+}
+@media(max-width:360px){
+  .island-watch-grid{grid-template-columns:1fr}
+  .field-strip-head{display:grid}
+  .field-strip select{max-width:100%;width:100%}
+}
