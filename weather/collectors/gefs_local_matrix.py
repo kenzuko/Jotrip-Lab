@@ -27,6 +27,8 @@ from typing import Any
 
 from weather.collectors.live_smoke import _candidate_cycles
 from weather.points import POINTS
+
+ISLAND_POINT_IDS = tuple(point_id for point_id in POINTS if point_id != "rach_gia")
 from weather.processing.ensemble import summarize_members
 from weather.processing.ensemble_local import correct_distribution
 
@@ -91,7 +93,7 @@ def _decode(path: Path, cycle: datetime, member: str) -> list[dict]:
                 except Exception:
                     start_step = None
                 valid = cycle + timedelta(hours=end_step)
-                for point_id in ("duong_dong", "an_thoi", "ganh_dau"):
+                for point_id in ISLAND_POINT_IDS:
                     lat, lon = POINTS[point_id]
                     nearest = codes_grib_find_nearest(gid, lat, lon)[0]
                     value = float(nearest["value"])
@@ -202,7 +204,7 @@ def _learning_calibration(variable: str) -> dict:
 
 
 def _summaries(vectors: dict) -> dict:
-    points: dict[str, list[dict]] = {"duong_dong": [], "an_thoi": [], "ganh_dau": []}
+    points: dict[str, list[dict]] = {point_id: [] for point_id in ISLAND_POINT_IDS}
     for item in sorted(vectors.values(), key=lambda x: (x["point_id"], x["lead_hours"])):
         members = item["members"]
         row = {
