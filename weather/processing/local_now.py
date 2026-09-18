@@ -152,7 +152,8 @@ def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model
             ratio = _clamp(obs_wind / anchor_model_wind, 0.35, 2.2)
             corrected = model_wind * (1.0 + wind_alpha * (ratio - 1.0))
             result["wind_kmh"] = round(max(0.0, corrected), 1)
-            result["wind_direction_deg"] = obs_dir
+            result["wind_direction_deg"] = None
+            result["wind_reference_direction_deg"] = obs_dir
             method = "PQ_LOCAL_NOW_V1_SPEED_RATIO"
         result["wind"] = {
             "data_class": "ESTIMATED_NOW",
@@ -208,7 +209,12 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
         conv_factor = _clamp(0.65 + score / 125.0, 0.65, 1.45)
         model_signal = model_rate * conv_factor
         estimate = 0.80 * gauge_rate + 0.20 * model_signal
-        confidence = _clamp(0.52 + 0.09 * min(len(anchors), 3) + 0.12 * min(weight_sum, 1.0), 0.0, 0.88)
+        nearest = min(a["distance_km"] for a in anchors)
+        spatial_support = math.exp(-nearest / 25.0)
+        network_support = min(1.0, weight_sum / 1.5)
+        convective_penalty = 1.0 - 0.30 * _clamp(score / 100.0, 0.0, 1.0)
+        confidence = (0.30 + 0.25 * spatial_support + 0.12 * network_support + 0.05 * min(len(anchors), 3)) * convective_penalty
+        confidence = _clamp(confidence, 0.25, 0.78)
         return {
             "rain_rate_mm_h": round(max(0.0, estimate), 2),
             "data_class": "ESTIMATED_NOW",
