@@ -67,11 +67,12 @@ jobs:
         run: |
           python - <<'PY'
           import json
+          from weather.points import POINTS
           p=json.load(open('/tmp/nowcast.json'))
           assert p['status'] in {'POINT_NUMERIC_READY','UNAVAILABLE'}, p
           assert p['lightning_observed']['status'] == 'NOT_CONNECTED', p
           if p['status'] == 'POINT_NUMERIC_READY':
-              assert set(p['points']) == {'an_thoi','duong_dong','ganh_dau','rach_gia'}
+              assert set(p['points']) == set(POINTS)
               for point in p['points'].values():
                   sig=point['convective_signal']
                   assert sig['level'] in {'LOW','WATCH','ELEVATED','HIGH'}
