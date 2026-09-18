@@ -1,0 +1,73 @@
+name: Weather Deep Ground Truth Probe
+
+on:
+  push:
+    branches:
+      - research/ground-truth-probe-20260917
+    paths:
+      - 'weather/research/deep_ground_truth_probe.mjs'
+      - '.github/workflows/deep-ground-truth-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deep-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/ground-truth-probe-20260917
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install probe dependencies
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+          python -m pip install --quiet openpyxl
+      - name: Run deep public probe
+        run: node weather/research/deep_ground_truth_probe.mjs
+      - name: Inspect exported workbooks
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, math
+          from pathlib import Path
+          from openpyxl import load_workbook
+          root=Path('/tmp/pq-groundtruth')
+          out={}
+          for p in root.glob('*.xlsx'):
+              item={'bytes':p.stat().st_size,'sheets':[]}
+              try:
+                  wb=load_workbook(p,read_only=True,data_only=True)
+                  for ws in wb.worksheets:
+                      rows=[]; numeric=0
+                      for row in ws.iter_rows(values_only=True):
+                          vals=list(row)
+                          if any(v not in (None,'') for v in vals):
+                              rows.append(vals)
+                          numeric += sum(isinstance(v,(int,float)) and not isinstance(v,bool) and math.isfinite(float(v)) for v in vals if v is not None)
+                      item['sheets'].append({'title':ws.title,'max_row':ws.max_row,'max_column':ws.max_column,'numeric_cells':numeric,'first_rows':rows[:10],'last_rows':rows[-20:]})
+              except Exception as e:
+                  item['error']=repr(e)
+              out[p.stem]=item
+          dest=Path('weather/research/ground-truth-probe/deep-probe/workbooks.json')
+          dest.write_text(json.dumps(out,ensure_ascii=False,indent=2,default=str)+'\n',encoding='utf-8')
+          print(dest.read_text())
+          PY
+      - name: Persist deep probe
+        shell: bash
+        run: |
+          git config user.name 'jotrip-weather-bot'
+          git config user.email 'jotrip-weather-bot@users.noreply.github.com'
+          git add weather/research/ground-truth-probe/deep-probe
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'research(weather): persist deep ground truth probe [skip ci]'
+          git push origin HEAD:research/ground-truth-probe-20260917
