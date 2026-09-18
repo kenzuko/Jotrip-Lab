@@ -25,20 +25,18 @@ for(const [name,width,height] of sizes){
     overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
     hero:document.querySelector("#heroTemp")?.textContent,
     actualCards:document.querySelectorAll(".actual-card").length,
-    jotripForecastRows:document.querySelectorAll("#jotripForecastRows tr").length,
-    beaufortCells:[...document.querySelectorAll("#jotripForecastRows td")].filter(td=>/Bft\s+\d/.test(td.textContent||"")).length,
+    forecastRegionTabs:document.querySelectorAll("#forecastRegionTabs [data-region]").length,
     hazardCards:document.querySelectorAll("#hazardBoard article").length,
     mapTabs:document.querySelectorAll(".map-tabs [data-map]").length,
     feedbackBeforeActual:(document.querySelector(".field-strip")?.compareDocumentPosition(document.querySelector("#actualStrip"))&Node.DOCUMENT_POSITION_FOLLOWING)!==0,
-    mapBeforeNowcast:(document.querySelector(".map-panel")?.compareDocumentPosition(document.querySelector(".nowcast-panel"))&Node.DOCUMENT_POSITION_FOLLOWING)!==0,
+    standaloneNowcastRemoved:!document.querySelector(".nowcast-panel"),
+    mapConvective:!!document.querySelector("#mapConvective"),
     rawForecastRemoved:!document.querySelector(".forecast-panel")&&!document.querySelector(".ensemble-panel"),
     rawForecastTableRemoved:!document.querySelector("#forecastRows")&&!document.querySelector(".horizon-tabs"),
     aqiItems:document.querySelectorAll("#aqiQuick .quick-item").length,
     tideItems:document.querySelectorAll("#tideQuick .quick-item").length,
-    nowcastItems:document.querySelectorAll("#nowcastQuick .quick-item").length,
     aqiEmpty:!!document.querySelector("#aqiQuick .data-empty"),
     tideEmpty:!!document.querySelector("#tideQuick .data-empty"),
-    nowcastEmpty:!!document.querySelector("#nowcastQuick .data-empty"),
     sourceCards:document.querySelectorAll("#sourceGrid .source-card").length,
     mapDeferred:!document.querySelector("#mapBox iframe")&&!document.querySelector("#mapBox img"),
     jotripForecastPanel:!!document.querySelector(".jotrip-forecast-panel"),
@@ -67,8 +65,15 @@ for(const [name,width,height] of sizes){
   const deferred={
     tide:requests.some(u=>/tide\.json/.test(u)),
     aqi:requests.some(u=>/weather-aqi|air-quality\.json/.test(u)),
-    nowcast:requests.some(u=>/weather-nowcast|nowcast\.json/.test(u))
+    nowcast:requests.some(u=>/weather-nowcast|nowcast\.json/.test(u)),
+    regionalForecast:requests.some(u=>/jotrip-forecast\.json/.test(u))
   };
+  const lateChecks=await page.evaluate(()=>({
+    forecastRegionTabs:document.querySelectorAll("#forecastRegionTabs [data-region]").length,
+    jotripForecastRows:document.querySelectorAll("#jotripForecastRows tr").length,
+    beaufortCells:[...document.querySelectorAll("#jotripForecastRows td")].filter(td=>/Bft\s+\d/.test(td.textContent||"")).length,
+    regionalTitle:document.querySelector("#jotripForecastTitle")?.textContent||""
+  }));
   const noRawForecastFetch=!requests.some(u=>/dashboard-data\.json/.test(u));
 
   let mapLoaded=true;
@@ -84,18 +89,20 @@ for(const [name,width,height] of sizes){
     checks.overflow<=2&&
     !!checks.hero&&
     checks.actualCards>=1&&
-    checks.jotripForecastRows>=5&&
-    checks.beaufortCells>=5&&
+    lateChecks.jotripForecastRows>=12&&
+    lateChecks.beaufortCells>=12&&
+    lateChecks.forecastRegionTabs===4&&
     checks.hazardCards===4&&
     checks.mapTabs>=5&&
     checks.feedbackBeforeActual&&
-    checks.mapBeforeNowcast&&
+    checks.standaloneNowcastRemoved&&
+    checks.mapConvective&&
     checks.jotripForecastPanel&&
     checks.rawForecastRemoved&&
     checks.rawForecastTableRemoved&&
     (checks.aqiItems>=3||checks.aqiEmpty)&&
     (checks.tideItems>=3||checks.tideEmpty)&&
-    (checks.nowcastItems>=4||checks.nowcastEmpty)&&
+
     checks.sourceCards>=1&&
     checks.mapDeferred&&
     checks.pointTabs>=8&&
@@ -107,12 +114,12 @@ for(const [name,width,height] of sizes){
     checks.mapBeforeForecast&&
     checks.innerOverflow.length===0&&
     heavyInitial.length===0&&
-    deferred.tide&&deferred.aqi&&deferred.nowcast&&
+    deferred.tide&&deferred.aqi&&deferred.nowcast&&deferred.regionalForecast&&
     noRawForecastFetch&&rawForecastRequests.length===0&&
     errors.length===0&&
     mapLoaded;
 
-  console.log(name,JSON.stringify({checks,heavyInitial,deferred,noRawForecastFetch,errors,initialRequests:initial.length,mapLoaded}));
+  console.log(name,JSON.stringify({checks,lateChecks,heavyInitial,deferred,noRawForecastFetch,errors,initialRequests:initial.length,mapLoaded}));
   if(!ok)failed=true;
   await page.close();
 }
