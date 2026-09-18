@@ -244,6 +244,8 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
         "generated_at":generated.isoformat(),
         "default_point":"duong_dong",
         "report_status":dashboard.get("report_status","UNAVAILABLE"),
+        "snapshot_id":dashboard.get("snapshot_id"),
+        "git_commit_sha":dashboard.get("git_commit_sha"),
         "decision":dashboard.get("decision","NOT_ISSUED"),
         "headline":dashboard.get("headline"),
         "next_review":dashboard.get("next_review"),
