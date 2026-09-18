@@ -13,7 +13,8 @@ function inside(r,w){
 }
 
 for(const [name,width,height] of sizes){
-  const page=await browser.newPage({viewport:{width,height}}),errors=[];
+  const context=await browser.newContext({viewport:{width,height},serviceWorkers:"block"});
+  const page=await context.newPage(),errors=[];
   await page.route("**/weather/critical.json*",route=>route.fulfill({status:200,contentType:"application/json",body:liveCritical}));
   await page.route("**/weather/jotrip-forecast.json*",route=>route.fulfill({status:200,contentType:"application/json",body:liveForecast}));
   page.on("pageerror",e=>errors.push(String(e)));
@@ -72,6 +73,7 @@ for(const [name,width,height] of sizes){
   console.log(name,JSON.stringify(checks),errors);
   if(!ok)failed=true;
   await page.close();
+  await context.close();
 }
 
 const catalog={dates:[{date:'2026-09-16',sample_count:12,material_event_count:5,first_sampled_time:'2026-09-16T00:20:00Z',last_sampled_time:'2026-09-16T05:20:00Z',peak_levels:{an_thoi:'HIGH',duong_dong:'HIGH',ganh_dau:'ELEVATED',rach_gia:'WATCH'},max_scores:{an_thoi:80,duong_dong:90,ganh_dau:65,rach_gia:45}}]};
@@ -80,7 +82,8 @@ const daily={points:{an_thoi:pointSummary,duong_dong:{...pointSummary,avg_score:
 const events=[{at:'2026-09-16T05:20:00Z',sampled_time:'2026-09-16T05:20:00Z',type:'CHANGED',point:'an_thoi',changes:{score:{from:65,to:80},level:{from:'ELEVATED',to:'HIGH'}},current:{score:80,level:'HIGH'},source:'JMA_HIMAWARI9_VIA_NOAA_OPEN_DATA'}];
 
 for(const [name,width,height] of [["history390",390,844],["historyDesktop",1440,1100]]){
-  const page=await browser.newPage({viewport:{width,height}}),errors=[];
+  const context=await browser.newContext({viewport:{width,height},serviceWorkers:"block"});
+  const page=await context.newPage(),errors=[];
   page.on("pageerror",e=>errors.push(String(e)));
   page.on("console",m=>{if(m.type()!=="error")return;const t=m.text();if(/Permissions policy violation: Geolocation access has been blocked/i.test(t))return;errors.push(t)});
   await page.route('https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast/**',async route=>{
@@ -111,6 +114,7 @@ for(const [name,width,height] of [["history390",390,844],["historyDesktop",1440,
   console.log(name,JSON.stringify(checks),errors);
   if(!ok)failed=true;
   await page.close();
+  await context.close();
 }
 
 await browser.close();
