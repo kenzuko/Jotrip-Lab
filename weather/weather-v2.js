@@ -56,11 +56,11 @@ function ageText(iso){
 }
 function localTime(iso){
   const d=new Date(iso);
-  return Number.isFinite(d.getTime())?d.toLocaleString("vi-VN",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}):"-";
+  return Number.isFinite(d.getTime())?d.toLocaleString("vi-VN",{timeZone:"Asia/Ho_Chi_Minh",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}):"-";
 }
 function hourLabel(iso){
   const d=new Date(iso);
-  return Number.isFinite(d.getTime())?d.toLocaleString("vi-VN",{weekday:"short",hour:"2-digit",minute:"2-digit",hour12:false}):"-";
+  return Number.isFinite(d.getTime())?d.toLocaleString("vi-VN",{timeZone:"Asia/Ho_Chi_Minh",weekday:"short",hour:"2-digit",minute:"2-digit",hour12:false}):"-";
 }
 function badgeClass(k){
   k=String(k||"").toUpperCase();
