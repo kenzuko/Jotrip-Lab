@@ -1,16 +1,17 @@
-const VERSION="weather-lab-2026.09.16.10";
+const VERSION="weather-lab-2026.09.18.01";
 const CACHE=`${VERSION}-static`;
 const STATIC=[
   "/Jotrip-Lab/weather/",
   "/Jotrip-Lab/weather/weather-dashboard.css",
   "/Jotrip-Lab/weather/weather-dashboard-base.css",
   "/Jotrip-Lab/weather/weather-dashboard-typography.css",
-  "/Jotrip-Lab/weather/weather-dashboard.js?v=20260916-16",
+  "/Jotrip-Lab/weather/weather-dashboard.js?v=20260918-01",
   "/Jotrip-Lab/weather/weather-dashboard-enhancements.js",
   "/Jotrip-Lab/weather/weather-dashboard-legacy.js",
   "/Jotrip-Lab/weather/weather-dashboard-air-quality.js",
   "/Jotrip-Lab/weather/weather-dashboard-tide.js",
-  "/Jotrip-Lab/weather/weather-dashboard-observation-status.js",
+  "/Jotrip-Lab/weather/weather-dashboard-local-now.js",
+  "/Jotrip-Lab/weather/weather-dashboard-weather-map.js",
   "/Jotrip-Lab/weather/weather-dashboard-history-link.js",
   "/Jotrip-Lab/weather/weather-app-icon.svg",
   "/Jotrip-Lab/weather/weather-manifest.webmanifest"
@@ -47,7 +48,8 @@ self.addEventListener("fetch",e=>{
     u.pathname.endsWith("/Jotrip-Lab/weather/data/dashboard-data.json")||
     u.pathname.endsWith("/Jotrip-Lab/weather/data/air-quality.json")||
     u.pathname.endsWith("/Jotrip-Lab/weather/data/tide.json")||
-    u.pathname.endsWith("/Jotrip-Lab/weather/data/nowcast.json")
+    u.pathname.endsWith("/Jotrip-Lab/weather/data/nowcast.json")||
+    u.pathname.includes("/Jotrip-Lab/weather/data/weather-groundtruth/")
   ){
     e.respondWith(fetch(r,{cache:"no-store"}).catch(()=>caches.match(r)));
     return;
