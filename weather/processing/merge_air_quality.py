@@ -12,7 +12,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-POINTS = ("an_thoi", "duong_dong", "ganh_dau", "rach_gia")
+from weather.points import POINTS
 
 
 def _read(path: Path) -> dict:
@@ -105,7 +105,7 @@ def merge(cams: dict, iqair: dict) -> dict:
         "iqair_status": iqair.get("status", "UNAVAILABLE"),
         "cams_status": cams.get("status", "UNAVAILABLE"),
         "points": points,
-        "detail": f"AQI ready {ready}/4; IQAir primary at {iqair_ready}/4 points; CAMS retained as fallback/model reference.",
+        "detail": f"AQI ready {ready}/{len(POINTS)}; IQAir primary at {iqair_ready}/{len(POINTS)} points; CAMS retained as fallback/model reference.",
     }
 
 
