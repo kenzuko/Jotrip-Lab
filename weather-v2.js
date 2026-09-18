@@ -757,6 +757,7 @@ async function refreshLive(){
   }catch(e){
     console.warn("[Weather V2] live refresh",e);
     renderStatus();
+    setTimeout(()=>{if(document.visibilityState==="visible")refreshLive()},60000);
   }finally{
     liveRefreshBusy=false;
   }
@@ -778,6 +779,9 @@ async function boot(){
     setInterval(refreshLive,LIVE_REFRESH_MS);
     document.addEventListener("visibilitychange",()=>{
       if(document.visibilityState==="visible"&&Date.now()-lastLiveRefreshAt>5*60*1000)refreshLive();
+    });
+    window.addEventListener("online",()=>{
+      if(Date.now()-lastLiveRefreshAt>2*60*1000)refreshLive();
     });
   }catch(e){
     $("heroSummary").textContent="Không tải được dữ liệu ban đầu. Bạn thử tải lại trang giúp mình.";
