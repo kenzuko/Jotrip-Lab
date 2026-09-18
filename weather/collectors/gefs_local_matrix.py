@@ -33,7 +33,7 @@ from weather.processing.ensemble import summarize_members
 from weather.processing.ensemble_local import correct_distribution
 
 FILTER = "https://nomads.ncep.noaa.gov/cgi-bin/filter_gefs_atmos_0p50a.pl"
-LEADS = list(range(6, 73, 6))
+LEADS = list(range(6, 241, 6))
 MEMBERS = ["c00"] + [f"p{i:02d}" for i in range(1, 31)]
 BOX = {"leftlon": 103.0, "rightlon": 104.75, "toplat": 11.0, "bottomlat": 9.0}
 UA = "JoTrip-WeatherLab/1.0 NOAA-GEFS-local-ensemble"
