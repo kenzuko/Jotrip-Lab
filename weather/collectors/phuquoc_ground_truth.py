@@ -201,6 +201,8 @@ def _vrain(current: Any, timing: Any, previous: dict | None, now: datetime) -> d
             "timestamp_semantics": "END_OF_WINDOW",
             "increment_mm": None,
             "increment_window_minutes": None,
+            "rain_observed": None,
+            "rain_intensity_mm_h": None,
             "increment_qc": "NO_PREVIOUS_SAMPLE",
             "qc": "PASS" if accum is not None else "MISSING",
             "provenance_url": VRAIN_CURRENT_URL,
@@ -216,8 +218,11 @@ def _vrain(current: Any, timing: Any, previous: dict | None, now: datetime) -> d
                 minutes = (end_dt - prev_end_dt).total_seconds() / 60.0
                 delta = accum - prev_accum
                 if -0.05 <= delta and minutes <= 120:
-                    item["increment_mm"] = round(max(0.0, delta), 3)
+                    increment = round(max(0.0, delta), 3)
+                    item["increment_mm"] = increment
                     item["increment_window_minutes"] = round(minutes, 1)
+                    item["rain_observed"] = increment > 0
+                    item["rain_intensity_mm_h"] = round(increment * 60.0 / minutes, 3) if minutes > 0 else None
                     item["increment_qc"] = "PASS"
                 elif delta < -0.05:
                     item["increment_qc"] = "ACCUMULATION_RESET"
