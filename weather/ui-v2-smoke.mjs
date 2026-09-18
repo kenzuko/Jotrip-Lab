@@ -25,8 +25,9 @@ for(const [name,width,height] of sizes){
     overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
     hero:document.querySelector("#heroTemp")?.textContent,
     actualCards:document.querySelectorAll(".actual-card").length,
-    hourly:document.querySelectorAll(".hour-card").length,
-    forecastRows:document.querySelectorAll("#forecastRows tr").length,
+    jotripForecastCards:document.querySelectorAll(".jotrip-forecast-card").length,
+    rawForecastRemoved:!document.querySelector(".forecast-panel")&&!document.querySelector(".ensemble-panel"),
+    rawForecastTableRemoved:!document.querySelector("#forecastRows")&&!document.querySelector(".horizon-tabs"),
     aqiItems:document.querySelectorAll("#aqiQuick .quick-item").length,
     tideItems:document.querySelectorAll("#tideQuick .quick-item").length,
     nowcastItems:document.querySelectorAll("#nowcastQuick .quick-item").length,
@@ -35,7 +36,7 @@ for(const [name,width,height] of sizes){
     nowcastEmpty:!!document.querySelector("#nowcastQuick .data-empty"),
     sourceCards:document.querySelectorAll("#sourceGrid .source-card").length,
     mapDeferred:!document.querySelector("#mapBox iframe")&&!document.querySelector("#mapBox img"),
-    horizonTabs:document.querySelectorAll(".horizon-tabs button").length,
+    jotripForecastPanel:!!document.querySelector(".jotrip-forecast-panel"),
     pointTabs:document.querySelectorAll("#pointTabs [data-point]").length,
     islandWatchRemoved:!document.querySelector(".island-watch-panel"),
     islandSummary:!!document.querySelector("#islandSummary"),
@@ -55,14 +56,15 @@ for(const [name,width,height] of sizes){
   }));
 
   const heavyInitial=initial.filter(u=>/embed\.windy|dashboard-data\.json|tide\.json|weather-aqi|weather-ensemble|weather-nowcast|himawari\/img/i.test(u));
+  const rawForecastRequests=initial.filter(u=>/dashboard-data\.json/.test(u));
 
   await page.waitForTimeout(1800);
   const deferred={
-    forecast:requests.some(u=>/dashboard-data\.json/.test(u)),
     tide:requests.some(u=>/tide\.json/.test(u)),
     aqi:requests.some(u=>/weather-aqi|air-quality\.json/.test(u)),
     nowcast:requests.some(u=>/weather-nowcast|nowcast\.json/.test(u))
   };
+  const noRawForecastFetch=!requests.some(u=>/dashboard-data\.json/.test(u));
 
   let mapLoaded=true;
   if(name==="iphone390"){
@@ -77,14 +79,15 @@ for(const [name,width,height] of sizes){
     checks.overflow<=2&&
     !!checks.hero&&
     checks.actualCards>=1&&
-    checks.hourly>=1&&
-    checks.forecastRows>=1&&
+    checks.jotripForecastCards>=1&&
+    checks.jotripForecastPanel&&
+    checks.rawForecastRemoved&&
+    checks.rawForecastTableRemoved&&
     (checks.aqiItems>=3||checks.aqiEmpty)&&
     (checks.tideItems>=3||checks.tideEmpty)&&
     (checks.nowcastItems>=4||checks.nowcastEmpty)&&
     checks.sourceCards>=1&&
     checks.mapDeferred&&
-    checks.horizonTabs===4&&
     checks.pointTabs>=8&&
     checks.islandWatchRemoved&&
     checks.islandSummary&&
@@ -94,11 +97,12 @@ for(const [name,width,height] of sizes){
     checks.mapBeforeForecast&&
     checks.innerOverflow.length===0&&
     heavyInitial.length===0&&
-    deferred.forecast&&deferred.tide&&deferred.aqi&&deferred.nowcast&&
+    deferred.tide&&deferred.aqi&&deferred.nowcast&&
+    noRawForecastFetch&&rawForecastRequests.length===0&&
     errors.length===0&&
     mapLoaded;
 
-  console.log(name,JSON.stringify({checks,heavyInitial,deferred,errors,initialRequests:initial.length,mapLoaded}));
+  console.log(name,JSON.stringify({checks,heavyInitial,deferred,noRawForecastFetch,errors,initialRequests:initial.length,mapLoaded}));
   if(!ok)failed=true;
   await page.close();
 }
