@@ -21,24 +21,21 @@
 </header>
 
 <main>
-  <section class="hero">
-    <div class="hero-copy">
-      <span class="eyebrow">HỆ THỐNG THỜI TIẾT PHÚ QUỐC · V2</span>
+  <section class="weather-scene weather-scene-hero" aria-label="Thời tiết Phú Quốc tại điểm đang chọn">
+    <img decoding="async" fetchpriority="high" src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Phu%20Quoc%20Beach.jpg?width=1600" alt="Bờ biển Phú Quốc gần Dương Đông">
+    <div class="weather-scene-shade"></div>
+    <div class="weather-scene-copy">
+      <span class="scene-badge">PHÚ QUỐC WEATHER INTELLIGENCE · V2</span>
+      <small>ẢNH THAM CHIẾU · BỜ TÂY GẦN DƯƠNG ĐÔNG</small>
       <h1 id="placeName">Dương Đông</h1>
       <p id="heroSummary">Đang đọc dữ liệu quan trắc và phân tích địa phương...</p>
       <div class="updated" id="updatedAt">-</div>
+      <span class="scene-credit">Ảnh: FrogsLegs71 · Wikimedia Commons · CC BY-SA 3.0 · không phải webcam trực tiếp</span>
     </div>
-    <div class="hero-stage">
-      <div class="weather-orbit" aria-hidden="true">
-        <i></i><i></i><i></i>
-        <span class="orbit-core"></span>
-      </div>
-      <div class="hero-now">
-        <span>NHIỆT ĐỘ ĐỊA PHƯƠNG</span>
-        <b id="heroTemp">--</b>
-        <small id="heroTempClass">ƯỚC TÍNH</small>
-      </div>
-      <div class="hero-signature">PHU QUOC · 10.2°N</div>
+    <div class="weather-scene-data">
+      <span>NHIỆT ĐỘ ĐỊA PHƯƠNG</span>
+      <strong id="heroTemp">--</strong>
+      <small id="heroTempClass">ƯỚC TÍNH</small>
     </div>
   </section>
 
@@ -152,24 +149,6 @@
       <small id="tideAge" class="panel-foot"></small>
     </section>
   </div>
-
-  <section class="weather-scene" aria-label="Ảnh tham chiếu Phú Quốc">
-    <img loading="lazy" decoding="async" src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Phu%20Quoc%20Beach.jpg?width=1600" alt="Bờ biển Phú Quốc gần Dương Đông">
-    <div class="weather-scene-shade"></div>
-    <div class="weather-scene-copy">
-      <span class="scene-badge">PHÚ QUỐC · ẢNH THẬT</span>
-      <small>ẢNH THAM CHIẾU ĐỊA PHƯƠNG</small>
-      <h2>Bờ Tây gần Dương Đông</h2>
-      <p>Không phải webcam trực tiếp. Ảnh dùng để giữ cảm giác địa phương trong sản phẩm thời tiết.</p>
-      <span class="scene-credit">FrogsLegs71 · Wikimedia Commons · CC BY-SA 3.0</span>
-    </div>
-    <div class="weather-scene-data">
-      <span>ĐIỂM ĐANG XEM</span>
-      <b id="scenePoint">Dương Đông</b>
-      <strong id="sceneTemp">--</strong>
-      <small id="sceneUpdated">Đang tải dữ liệu...</small>
-    </div>
-  </section>
 
   <section class="command-center" aria-label="Trung tâm theo dõi thời tiết">
     <div class="command-center-head">
