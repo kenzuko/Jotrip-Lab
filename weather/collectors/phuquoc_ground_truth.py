@@ -217,17 +217,19 @@ def _vrain(current: Any, timing: Any, previous: dict | None, now: datetime) -> d
             if prev_accum is not None and prev_start == period_start and prev_end_dt and end_dt and end_dt > prev_end_dt:
                 minutes = (end_dt - prev_end_dt).total_seconds() / 60.0
                 delta = accum - prev_accum
-                if -0.05 <= delta and minutes <= 120:
+                if -0.05 <= delta and 5 <= minutes <= 20:
                     increment = round(max(0.0, delta), 3)
                     item["increment_mm"] = increment
                     item["increment_window_minutes"] = round(minutes, 1)
                     item["rain_observed"] = increment > 0
-                    item["rain_intensity_mm_h"] = round(increment * 60.0 / minutes, 3) if minutes > 0 else None
+                    item["rain_intensity_mm_h"] = round(increment * 60.0 / minutes, 3)
                     item["increment_qc"] = "PASS"
                 elif delta < -0.05:
                     item["increment_qc"] = "ACCUMULATION_RESET"
-                elif minutes > 120:
-                    item["increment_qc"] = "PREVIOUS_SAMPLE_TOO_OLD"
+                elif minutes < 5:
+                    item["increment_qc"] = "WINDOW_TOO_SHORT"
+                elif minutes > 20:
+                    item["increment_qc"] = "WINDOW_TOO_OLD_FOR_CURRENT_RAIN"
         stations[key] = item
 
     return {
