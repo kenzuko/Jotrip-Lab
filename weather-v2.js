@@ -2,10 +2,11 @@
 "use strict";
 
 const CRITICAL="/weather/critical.json";
-const TIDE="/weather/tide.json";
+const TIDE=["/weather/tide.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/tide.json"];
 const AQI=["/data/weather-aqi/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-aqi/latest.json","/weather/air-quality.json"];
 const NOWCAST=["/data/weather-nowcast/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast/latest.json","/weather/nowcast.json"];
 const JOTRIP_FORECAST="/weather/jotrip-forecast.json";
+const LIVE_REFRESH_MS=10*60*1000;
 const WINDY={
   radar:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=radar&product=radar&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1",
   wind:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=wind&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C",
@@ -29,6 +30,8 @@ let regionalForecast=null;
 let currentRegion="central_west";
 let mapStarted=false;
 let mapLayer="radar";
+let liveRefreshBusy=false;
+let lastLiveRefreshAt=0;
 
 async function getJSON(url){
   const sep=url.includes("?")?"&":"?";
@@ -123,7 +126,7 @@ function confidenceScore(){
   const coverage=coverageScore()/100;
   const confs=ids.map(id=>num(critical.points[id]?.local?.rain_confidence)).filter(v=>v!==null);
   const local=confs.length?confs.reduce((a,b)=>a+b,0)/confs.length:0.35;
-  const fresh=clamp(1-ageMinutes(critical.generated_at)/180,0,1);
+  const fresh=clamp(1-ageMinutes(critical.generated_at)/90,0,1);
   const ens=ids.map(id=>num(critical.points[id]?.ensemble?.completion_ratio)).filter(v=>v!==null);
   const ensemble=ens.length?ens.reduce((a,b)=>a+b,0)/ens.length:0;
   const g=critical.actual?.rain_gauges||[];
@@ -256,7 +259,7 @@ function renderPointTabs(){
 function renderStatus(){
   if(!critical)return;
   const m=ageMinutes(critical.generated_at);
-  const stale=m>180,delayed=m>90;
+  const stale=m>60,delayed=m>25;
   $("liveDot").className=stale||delayed?"warn":"ok";
   $("liveLabel").textContent=(stale?"DỮ LIỆU CŨ":delayed?"CẬP NHẬT CHẬM":critical.report_status==="LIVE"?"ĐANG HOẠT ĐỘNG":"SUY GIẢM")+" · "+ageText(critical.generated_at);
 
@@ -611,7 +614,7 @@ function renderHealth(){
   $("gapGrid").innerHTML=(critical.gaps||[]).length?(critical.gaps||[]).map(g=>'<div class="gap-card"><b>'+esc(g.name||"Phần còn thiếu")+'</b><span>'+esc(g.detail||"")+'</span></div>').join(""):'<div class="gap-card"><b>Không có khoảng trống nghiêm trọng</b><span>Chu kỳ hiện tại chưa ghi nhận lớp dữ liệu bắt buộc bị thiếu.</span></div>';
   $("cycleGrid").innerHTML=Object.entries(critical.source_cycles||{}).map(([k,v])=>'<span class="cycle-chip">'+esc(k)+' · '+localTime(v)+'</span>').join("");
   const headline=String(critical.headline||"").includes("Live D0-D10")?"Các nguồn đầu vào đã cập nhật. Trang chỉ công bố Dự báo JoTrip đã tổng hợp, không hiển thị riêng dự báo nguyên bản của từng mô hình.":(critical.headline||"-");
-  const next=String(critical.next_review||"").includes("watch cycle")?"Hệ thống tự kiểm tra dữ liệu mới mỗi 30 phút.":(critical.next_review||"-");
+  const next=String(critical.next_review||"").includes("watch cycle")?"Trang public làm mới dữ liệu khoảng mỗi 10 phút; mô hình nặng cập nhật theo chu kỳ nguồn.":(critical.next_review||"-");
   $("auditGrid").innerHTML=
     '<div class="audit-item"><span>Mã lần cập nhật</span><b>'+esc(critical.snapshot_id||"-")+'</b></div>'+
     '<div class="audit-item"><span>Mã phiên bản</span><b>'+esc(critical.git_commit_sha||"-")+'</b></div>'+
@@ -629,7 +632,10 @@ async function loadAQI(){
   try{fullAQI=await getFirst(AQI);renderAQI()}catch(e){console.warn("[Weather V2] AQI",e)}
 }
 async function loadTide(){
-  try{fullTide=await getJSON(TIDE);renderTide()}catch(e){console.warn("[Weather V2] tide",e)}
+  try{fullTide=await getFirst(TIDE);renderTide()}catch(e){
+    console.warn("[Weather V2] tide",e);
+    const el=$("tideSpark");if(el)el.innerHTML='<text x="300" y="65" text-anchor="middle" fill="#8b9ba5" font-size="10">Chưa tải được chuỗi triều 24h</text>';
+  }
 }
 async function loadNowcast(){
   try{fullNowcast=await getFirst(NOWCAST);renderMapConvective();renderCurrent();renderStatus()}catch(e){console.warn("[Weather V2] nowcast",e)}
@@ -735,18 +741,38 @@ function registerWeatherWorker(){
   if(!("serviceWorker" in navigator))return;
   navigator.serviceWorker.register("/weather-sw.js",{scope:"/"}).catch(e=>console.warn("[Weather] service worker",e));
 }
+async function refreshLive(){
+  if(liveRefreshBusy)return;
+  liveRefreshBusy=true;
+  try{
+    const next=await getJSON(CRITICAL);
+    critical=next;
+    if(!critical?.points?.[current])current=critical.default_point||"duong_dong";
+    renderAll();
+    lastLiveRefreshAt=Date.now();
+    await Promise.allSettled([loadTide(),loadAQI(),loadNowcast(),loadRegionalForecast()]);
+  }catch(e){
+    console.warn("[Weather V2] live refresh",e);
+    renderStatus();
+  }finally{
+    liveRefreshBusy=false;
+  }
+}
 async function boot(){
   registerWeatherWorker();
   events();
   try{
     critical=await getJSON(CRITICAL);
     current=critical.default_point||"duong_dong";
+    lastLiveRefreshAt=Date.now();
     renderAll();
     installMapObserver();
-    defer(loadAQI,850);
-    defer(loadTide,1000);
-    defer(loadNowcast,1050);
-    defer(loadRegionalForecast,1250);
+    Promise.allSettled([loadTide(),loadAQI(),loadNowcast(),loadRegionalForecast()]);
+    setInterval(()=>{renderStatus();renderHero()},60000);
+    setInterval(refreshLive,LIVE_REFRESH_MS);
+    document.addEventListener("visibilitychange",()=>{
+      if(document.visibilityState==="visible"&&Date.now()-lastLiveRefreshAt>5*60*1000)refreshLive();
+    });
   }catch(e){
     $("heroSummary").textContent="Không tải được dữ liệu ban đầu. Bạn thử tải lại trang giúp mình.";
     $("liveLabel").textContent="LỖI DỮ LIỆU";$("liveDot").className="warn";
