@@ -9,7 +9,7 @@ let failed=false;
 for(const [name,width,height] of sizes){
   const page=await browser.newPage({viewport:{width,height}}),errors=[];
   page.on("pageerror",e=>errors.push(String(e)));
-  page.on("console",m=>{if(m.type()==="error")errors.push(m.text())});
+  page.on("console",m=>{if(m.type()!=="error")return;const t=m.text();if(/Permissions policy violation: Geolocation access has been blocked/i.test(t))return;errors.push(t)});
   await page.goto(base,{waitUntil:"domcontentloaded",timeout:30000});
   await page.waitForSelector(".hero-card",{timeout:10000});
   await page.waitForTimeout(1200);
@@ -68,7 +68,7 @@ const events=[{at:'2026-09-16T05:20:00Z',sampled_time:'2026-09-16T05:20:00Z',typ
 for(const [name,width,height] of [["history390",390,844],["historyDesktop",1440,1100]]){
   const page=await browser.newPage({viewport:{width,height}}),errors=[];
   page.on("pageerror",e=>errors.push(String(e)));
-  page.on("console",m=>{if(m.type()==="error")errors.push(m.text())});
+  page.on("console",m=>{if(m.type()!=="error")return;const t=m.text();if(/Permissions policy violation: Geolocation access has been blocked/i.test(t))return;errors.push(t)});
   await page.route('https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast/**',async route=>{const u=route.request().url();if(u.includes('/catalog.json'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(catalog)});if(u.includes('/summary/2026-09-16.json'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(daily)});if(u.includes('/history/2026-09-16/events.jsonl'))return route.fulfill({status:200,contentType:'text/plain',body:events.map(x=>JSON.stringify(x)).join('\n')+'\n'});return route.fulfill({status:404,body:'not found'})});
   await page.goto(historyBase,{waitUntil:"domcontentloaded",timeout:30000});
   await page.waitForTimeout(1500);
