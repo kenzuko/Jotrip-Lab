@@ -631,6 +631,7 @@ async function selectLayer(layer){
     configureTimeline();
   }
   renderAll();
+  if(layer==="storm"&&cloudFrames().length>1)togglePlay();
 }
 
 function renderAll(redrawTimeline=true){
