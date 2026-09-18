@@ -1,0 +1,116 @@
+name: Weather GEFS Local Matrix
+
+on:
+  push:
+    paths:
+      - "weather/collectors/gefs_local_matrix.py"
+      - "weather/processing/ensemble_local.py"
+      - "weather/tests/test_gefs_local_matrix.py"
+      - ".github/workflows/weather-gefs-local-matrix.yml"
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      target_ref:
+        required: false
+        type: string
+        default: "feat/weather-lab-data-engine-v1"
+      smoke:
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: weather-gefs-local-${{ inputs.target_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  ensemble:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --quiet eccodes
+      - name: Unit contract
+        run: |
+          python -m unittest weather.tests.test_ensemble_local -v
+          python -m unittest weather.tests.test_gefs_local_matrix -v
+      - name: Collect local GEFS member matrix
+        shell: bash
+        run: |
+          if [[ "${{ inputs.smoke }}" == "true" || "${{ github.event_name }}" == "push" ]]; then
+            python -m weather.collectors.gefs_local_matrix --members 3 --lead 6 --lead 12 --workers 2 --output /tmp/gefs-local.json
+          else
+            python -m weather.collectors.gefs_local_matrix --members 31 --workers 3 --output /tmp/gefs-local.json
+          fi
+      - name: Validate ensemble semantics
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/gefs-local.json'))
+          assert p['readiness'] in {'MEMBER_MATRIX_READY','PARTIAL_ENSEMBLE'}, p
+          assert p['source']=='NOAA_NOMADS_GEFS_GRIB_FILTER'
+          assert p['calibration_engine']=='PQ_ENSEMBLE_LOCAL_V1'
+          assert p['calibration_status']=='LEARNING'
+          assert set(p['points'])=={'duong_dong','an_thoi','ganh_dau'}
+          for rows in p['points'].values():
+              assert rows, p
+              for row in rows:
+                  assert {'temperature','wind','rain'}.issubset(row['variables'])
+                  for v in row['variables'].values():
+                      assert v['status']=='LEARNING'
+                      assert v['raw']['q50']==v['corrected']['q50']
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gefs-local-ensemble
+          path: /tmp/gefs-local.json
+          retention-days: 7
+      - name: Persist production matrix
+        if: ${{ github.event_name != 'push' && inputs.smoke != true }}
+        shell: bash
+        run: |
+          rm -rf /tmp/gefs-export
+          mkdir -p /tmp/gefs-export
+          cp /tmp/gefs-local.json /tmp/gefs-export/latest.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.load(open('/tmp/gefs-local.json'))
+          Path('/tmp/gefs-export/health.json').write_text(json.dumps({
+            'module':'JoTrip GEFS Local Ensemble',
+            'state':p['status'],
+            'run_time':p['run_time'],
+            'generated_at':p['generated_at'],
+            'completion_ratio':p['completion_ratio'],
+            'horizon_hours':p['horizon_hours'],
+            'calibration_status':p['calibration_status'],
+          },ensure_ascii=False,indent=2)+'\n')
+          PY
+
+          git reset --hard HEAD
+          git fetch origin data-weather
+          git checkout -B data-weather origin/data-weather
+          mkdir -p data/weather-ensemble
+          cp -a /tmp/gefs-export/. data/weather-ensemble/
+          git config user.name "jotrip-weather-bot"
+          git config user.email "jotrip-weather-bot@users.noreply.github.com"
+          git add data/weather-ensemble
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "data: update Phu Quoc GEFS local ensemble"
+          for attempt in 1 2 3; do
+            if git pull --rebase origin data-weather && git push origin HEAD:data-weather; then exit 0; fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+          exit 1
