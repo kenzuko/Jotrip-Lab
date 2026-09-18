@@ -1,5 +1,5 @@
 (()=>{
-  const V="20260916-16";
+  const V="20260918-01";
   const style=href=>{
     const l=document.createElement("link");
     l.rel="stylesheet";
@@ -43,7 +43,8 @@
 
     await optional("/weather-dashboard-air-quality.js","chất lượng không khí",()=>window.WeatherLabAirQuality?.install?.());
     await optional("/weather-dashboard-tide.js","thủy triều",()=>window.WeatherLabTide?.install?.());
-    await optional("/weather-dashboard-observation-status.js","trạng thái quan sát",()=>window.WeatherLabObservationStatus?.install?.());
+    await optional("/weather-dashboard-local-now.js","PQ Local Now",()=>window.PQLocalNow?.install?.());
+    await optional("/weather-dashboard-weather-map.js","bản đồ thời tiết",()=>window.PQWeatherMap?.install?.());
 
     // OpenStreetMap/Leaflet đã tắt. Không tải tile, Leaflet hoặc mô-đun bản đồ.
     // Mô-đun polish động cũng tạm ngưng để ưu tiên tải trang ổn định;
