@@ -335,8 +335,8 @@ function renderActual(){
   g.forEach(x=>{
     const observed=x.rain_observed===true?"CÓ MƯA":x.rain_observed===false?"KHÔNG MƯA":"CHƯA RÕ";
     const win=num(x.increment_min),inc=num(x.increment_mm),rate=num(x.rain_intensity_mm_h);
-    let detail="Chưa đủ 2 mẫu liên tiếp để xác định mưa hiện tại";
-    if(win!==null&&inc!==null){
+    let detail="Chưa có cửa sổ quan trắc 5-20 phút hợp lệ để xác định mưa hiện tại";
+    if(x.increment_qc==="PASS"&&win!==null&&inc!==null){
       detail="Lượng mưa "+fmt(inc,2)+" mm / "+fmt(win,0)+" phút";
       if(rate!==null)detail+=" · cường độ "+fmt(rate,2)+" mm/h";
     }
