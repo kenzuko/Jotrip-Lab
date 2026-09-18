@@ -61,7 +61,7 @@ jobs:
           assert p['source']=='NOAA_NOMADS_GEFS_GRIB_FILTER'
           assert p['calibration_engine']=='PQ_ENSEMBLE_LOCAL_V1'
           assert p['calibration_status']=='LEARNING'
-          assert set(p['points'])=={'duong_dong','an_thoi','ganh_dau'}
+          assert {'duong_dong','an_thoi','ganh_dau','cua_can','bai_thom','ham_ninh','bai_sao'}.issubset(set(p['points']))
           for rows in p['points'].values():
               assert rows, p
               for row in rows:
