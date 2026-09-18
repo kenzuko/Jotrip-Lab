@@ -115,7 +115,7 @@ function hourlyRow(raw,step){
   times.forEach((t,i)=>{const tt=parseUTC(t);const dd=Math.abs(tt-target);if(Number.isFinite(tt)&&dd<d){d=dd;idx=i}});
   return {
     lat:raw.lat,lon:raw.lon,gridLat:raw.gridLat,gridLon:raw.gridLon,time:times[idx],
-    precip:num(h.precipitation?.[idx]),wind:num(h.wind_speed_10m?.[idx]),dir:num(h.wind_direction_10m?.[idx]),gust:num(h.wind_gusts_10m?.[idx]),
+    precip:num(h.precipitation?.[idx]),wind:num(h.wind_speed_10m?.[idx]),dir:num(h.wind_direction_10m?.[idx]??h.wave_direction?.[idx]),gust:num(h.wind_gusts_10m?.[idx]),
     wave:num(h.wave_height?.[idx]),period:num(h.wave_period?.[idx])
   };
 }
@@ -127,7 +127,7 @@ function initMap(){
   L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{maxZoom:19,subdomains:"abcd",attribution:"&copy; OpenStreetMap &copy; CARTO"}).addTo(state.map);
   L.control.zoom({position:"bottomright"}).addTo(state.map);
   state.markerLayer=L.layerGroup().addTo(state.map);state.valueLayer=L.layerGroup().addTo(state.map);state.actualLayer=L.layerGroup().addTo(state.map);
-  state.map.on("moveend zoomend",()=>{redrawField();resetParticles()});
+  state.map.on("moveend zoomend",()=>{redrawField();resetParticles()});\n  state.map.on("click",e=>{\n    if(state.mode!=="source"||state.layer==="radar")return;\n    const rows=state.layer==="waves"?marineRows():weatherRows();\n    renderProbeSource(nearestRow(rows,e.latlng.lat,e.latlng.lng),state.layer);\n  });
 }
 function clearRadar(){
   if(state.radarTimer){clearInterval(state.radarTimer);state.radarTimer=null}
