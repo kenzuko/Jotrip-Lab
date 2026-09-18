@@ -46,7 +46,7 @@ jobs:
       - name: Collect local GEFS member matrix
         shell: bash
         run: |
-          if [[ "${{ inputs.smoke }}" == "true" || "${{ github.event_name }}" == "push" ]]; then
+          if [[ "${{ inputs.smoke }}" == "true" || ( "${{ github.event_name }}" == "push" && "${{ github.ref_name }}" != "main" ) ]]; then
             python -m weather.collectors.gefs_local_matrix --members 3 --lead 6 --lead 12 --workers 2 --output /tmp/gefs-local.json
           else
             python -m weather.collectors.gefs_local_matrix --members 31 --workers 3 --output /tmp/gefs-local.json
@@ -77,7 +77,7 @@ jobs:
           path: /tmp/gefs-local.json
           retention-days: 7
       - name: Persist production matrix
-        if: ${{ github.event_name != 'push' && inputs.smoke != true }}
+        if: ${{ github.ref_name == 'main' && inputs.smoke != true }}
         shell: bash
         run: |
           rm -rf /tmp/gefs-export
