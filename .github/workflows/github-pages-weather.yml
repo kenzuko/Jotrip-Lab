@@ -164,9 +164,14 @@ jobs:
           mkdir -p "$PAGES_DIR"
           cp -a /tmp/weather-pages/. "$PAGES_DIR"/
 
+          # Backward-compatible root aliases for weather.openphuquoc.com
+          # or any older redirect that still targets /Jotrip-Lab/weather.html.
+          cp /tmp/weather-pages/index.html weather.html
+          cp /tmp/weather-pages/index.html weather-v2.html
+
           git config user.name "jotrip-weather-bot"
           git config user.email "jotrip-weather-bot@users.noreply.github.com"
-          git add "$PAGES_DIR"
+          git add "$PAGES_DIR" weather.html weather-v2.html
 
           if git diff --cached --quiet; then
             echo "Weather Pages already current"
@@ -220,3 +225,5 @@ jobs:
 # v2-only-production-cutover
 
 # canonical-weather-source-v2
+
+# weather-root-v2-alias
