@@ -1,16 +1,17 @@
-const VERSION="weather-lab-2026.09.16.10";
+const VERSION="weather-lab-2026.09.18.01";
 const CACHE=`${VERSION}-static`;
 const STATIC=[
   "/weather.html",
   "/weather-dashboard.css",
   "/weather-dashboard-base.css",
   "/weather-dashboard-typography.css",
-  "/weather-dashboard.js?v=20260916-16",
+  "/weather-dashboard.js?v=20260918-01",
   "/weather-dashboard-enhancements.js",
   "/weather-dashboard-legacy.js",
   "/weather-dashboard-air-quality.js",
   "/weather-dashboard-tide.js",
-  "/weather-dashboard-observation-status.js",
+  "/weather-dashboard-local-now.js",
+  "/weather-dashboard-weather-map.js",
   "/weather-dashboard-history-link.js",
   "/weather-app-icon.svg",
   "/weather-manifest.webmanifest"
@@ -47,7 +48,8 @@ self.addEventListener("fetch",e=>{
     u.pathname.endsWith("/weather/dashboard-data.json")||
     u.pathname.endsWith("/weather/air-quality.json")||
     u.pathname.endsWith("/weather/tide.json")||
-    u.pathname.endsWith("/weather/nowcast.json")
+    u.pathname.endsWith("/weather/nowcast.json")||
+    u.pathname.includes("/data/weather-groundtruth/")
   ){
     e.respondWith(fetch(r,{cache:"no-store"}).catch(()=>caches.match(r)));
     return;
