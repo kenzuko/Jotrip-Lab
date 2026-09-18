@@ -17,10 +17,20 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from weather.points import POINTS as CANONICAL_POINTS, POINT_NAMES, POINT_METADATA
+
+LOCAL_POINT_IDS = tuple(
+    point_id for point_id in CANONICAL_POINTS
+    if point_id != "rach_gia"
+)
 POINTS = {
-    "duong_dong": {"name": "Dương Đông", "lat": 10.2172, "lon": 103.9593},
-    "an_thoi": {"name": "An Thới / Nam đảo", "lat": 9.9050, "lon": 104.0050},
-    "ganh_dau": {"name": "Gành Dầu", "lat": 10.37077, "lon": 103.84472},
+    point_id: {
+        "name": POINT_NAMES[point_id],
+        "lat": CANONICAL_POINTS[point_id][0],
+        "lon": CANONICAL_POINTS[point_id][1],
+        "reference_type": POINT_METADATA[point_id].get("reference_type"),
+    }
+    for point_id in LOCAL_POINT_IDS
 }
 
 VVPQ = {"lat": 10.169, "lon": 103.995}
