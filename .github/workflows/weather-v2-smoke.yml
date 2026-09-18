@@ -36,7 +36,7 @@ jobs:
           node-version: "22"
       - name: Build compact critical payload
         run: |
-          python -m unittest weather.tests.test_critical_payload -v
+          python -m unittest weather.tests.test_critical_payload weather.tests.test_jotrip_forecast -v
           python -m weather.pipeline.build_critical_payload \
             --dashboard weather/dashboard-data.json \
             --local-now live-data/data/weather-groundtruth/local-now.json \
@@ -46,8 +46,12 @@ jobs:
             --nowcast live-data/data/weather-nowcast/latest.json \
             --ensemble live-data/data/weather-ensemble/latest.json \
             --output weather/critical.json
+          python -m weather.pipeline.build_jotrip_forecast \
+            --ensemble live-data/data/weather-ensemble/latest.json \
+            --output weather/jotrip-forecast.json
           test $(wc -c < weather/critical.json) -lt 60000
-          wc -c weather/critical.json weather-v2.html weather-v2.css weather-v2.js
+          test $(wc -c < weather/jotrip-forecast.json) -lt 120000
+          wc -c weather/critical.json weather/jotrip-forecast.json weather-v2.html weather-v2.css weather-v2.js
       - name: Install browser
         run: |
           npm install --no-save playwright@1.55.0
