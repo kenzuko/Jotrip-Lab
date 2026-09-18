@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#f4f8fb">
   <title>JoTrip Weather - Phú Quốc</title>
   <meta name="description" content="Thời tiết Phú Quốc: quan trắc thực tế, PQ Local Now, hải văn, AQI và dự báo ensemble. Miễn phí, phi thương mại.">
-  <link rel="stylesheet" href="/weather-v2.css?v=20260918-9">
+  <link rel="stylesheet" href="/weather-v2.css?v=20260918-10">
   <link rel="preload" as="fetch" href="/weather/critical.json" crossorigin="anonymous">
   <link rel="manifest" href="/weather-manifest.webmanifest">
-  <script defer src="/weather-v2.js?v=20260918-9"></script>
+  <script defer src="/weather-v2.js?v=20260918-10"></script>
 </head>
 <body>
 <header class="topbar">
@@ -42,6 +42,12 @@
     <div><span>Tầm dự báo</span><b id="horizonNow">-</b></div>
   </section>
   <div id="islandSummary" class="island-summary">Đang tổng hợp tình hình toàn đảo...</div>
+  <section id="hazardBoard" class="hazard-board" aria-label="Các nguy cơ cần theo dõi">
+    <article><span>Mưa lớn</span><b id="hazardRain">Đang tính</b><small id="hazardRainMeta">-</small></article>
+    <article><span>Đối lưu - dông</span><b id="hazardStorm">Đang tính</b><small id="hazardStormMeta">-</small></article>
+    <article><span>Gió - biển</span><b id="hazardWind">Đang tính</b><small id="hazardWindMeta">-</small></article>
+    <article><span>Biến động 72h</span><b id="hazardVolatility">Đang tính</b><small id="hazardVolatilityMeta">-</small></article>
+  </section>
 
   <nav id="pointTabs" class="point-tabs" aria-label="Điểm theo dõi thời tiết">
     <span class="inline-loader">Đang tải danh sách điểm...</span>
@@ -99,23 +105,24 @@
       <div><span class="eyebrow">QUAN TRẮC THỰC TẾ</span><h2>Dữ liệu đo được</h2></div>
       <small id="actualState">ĐANG TẢI</small>
     </div>
-    <div id="actualStrip" class="actual-strip"><div class="skeleton wide"></div></div>
 
-    <div class="field-strip" aria-label="Phản hồi thực địa">
+    <div class="field-strip field-strip-first" aria-label="Phản hồi thực địa">
       <div class="field-strip-head">
-        <span><b>Phản hồi tại chỗ</b> · giúp kiểm tra PQ Local Now</span>
+        <span><b>Phản hồi tại chỗ</b> · bạn đang thấy thực tế thế nào?</span>
         <select id="feedbackPoint" aria-label="Khu vực phản hồi"></select>
       </div>
       <div class="feedback-actions compact">
         <button data-feedback="MATCH">Khớp</button>
-        <button data-feedback="RAIN_MORE">Mưa +</button>
-        <button data-feedback="RAIN_LESS">Mưa -</button>
-        <button data-feedback="WIND_MORE">Gió +</button>
-        <button data-feedback="WIND_LESS">Gió -</button>
+        <button data-feedback="RAIN_MORE">Mưa nhiều hơn</button>
+        <button data-feedback="RAIN_LESS">Mưa ít hơn</button>
+        <button data-feedback="WIND_MORE">Gió mạnh hơn</button>
+        <button data-feedback="WIND_LESS">Gió yếu hơn</button>
         <button data-feedback="THUNDER">Có dông</button>
       </div>
-      <small id="feedbackState">Không thu GPS · phản hồi lưu trên thiết bị.</small>
+      <small id="feedbackState">Không thu GPS · phản hồi hiện lưu trên thiết bị.</small>
     </div>
+
+    <div id="actualStrip" class="actual-strip"><div class="skeleton wide"></div></div>
   </section>
 
   <div class="two-col">
@@ -139,6 +146,29 @@
     </section>
   </div>
 
+  <section class="panel map-panel">
+    <div class="panel-head">
+      <div><span class="eyebrow">BẢN ĐỒ QUAN SÁT</span><h2>Thời tiết quanh Phú Quốc</h2></div>
+      <span id="mapState" class="badge deferred">CHƯA TẢI</span>
+    </div>
+    <div class="map-tabs">
+      <button class="active" data-map="radar">Radar</button>
+      <button data-map="himawari">Himawari IR</button>
+      <button data-map="wind">Gió</button>
+      <button data-map="rain">Mưa dự báo</button>
+      <button data-map="waves">Sóng</button>
+    </div>
+    <div id="mapBox" class="map-box"><div class="map-placeholder"><b>Bản đồ sẽ tự tải khi cuộn tới đây</b><span>Không chặn phần số liệu phía trên.</span></div></div>
+    <div id="mapNote" class="map-note">Radar và Himawari là lớp quan sát. Gió, mưa dự báo và sóng là lớp mô hình tham khảo để nhìn cấu trúc không gian - không thay Dự báo JoTrip.</div>
+    <div class="map-source-links">
+      <a href="https://himawari8.nict.go.jp/" target="_blank" rel="noopener noreferrer">NICT Himawari ↗</a>
+      <a href="https://www.data.jma.go.jp/mscweb/data/himawari/" target="_blank" rel="noopener noreferrer">JMA Himawari ↗</a>
+      <a href="https://nchmf.gov.vn/KttvSiteE/vi-VN/1/image-ra-dar-r2.html" target="_blank" rel="noopener noreferrer">NCHMF Radar ↗</a>
+      <a href="https://www.windy.com/?10.20,104.00,8" target="_blank" rel="noopener noreferrer">Windy ↗</a>
+    </div>
+  </section>
+
+
   <section class="panel nowcast-panel">
     <div class="panel-head">
       <div><span class="eyebrow">QUAN SÁT VỆ TINH</span><h2>Himawari - mây đối lưu</h2></div>
@@ -157,51 +187,73 @@
     </div>
   </section>
 
-  <section class="panel map-panel">
-    <div class="panel-head">
-      <div><span class="eyebrow">BẢN ĐỒ QUAN SÁT</span><h2>Thời tiết quanh Phú Quốc</h2></div>
-      <span id="mapState" class="badge deferred">CHƯA TẢI</span>
-    </div>
-    <div class="map-tabs">
-      <button class="active" data-map="radar">Radar</button>
-      <button data-map="himawari">Himawari IR</button>
-    </div>
-    <div id="mapBox" class="map-box"><div class="map-placeholder"><b>Bản đồ sẽ tự tải khi cuộn tới đây</b><span>Không chặn phần số liệu phía trên.</span></div></div>
-    <div id="mapNote" class="map-note">Bản đồ dùng để nhìn mưa và mây đang quan sát được quanh Phú Quốc. Dự báo số dùng Dự báo JoTrip ở phần kế tiếp.</div>
-    <div class="map-source-links">
-      <a href="https://himawari8.nict.go.jp/" target="_blank" rel="noopener noreferrer">NICT Himawari ↗</a>
-      <a href="https://www.data.jma.go.jp/mscweb/data/himawari/" target="_blank" rel="noopener noreferrer">JMA Himawari ↗</a>
-      <a href="https://nchmf.gov.vn/KttvSiteE/vi-VN/1/image-ra-dar-r2.html" target="_blank" rel="noopener noreferrer">NCHMF Radar ↗</a>
-      <a href="https://www.windy.com/?10.20,104.00,8" target="_blank" rel="noopener noreferrer">Windy ↗</a>
-    </div>
-  </section>
-
   <section class="panel jotrip-forecast-panel">
     <div class="panel-head">
-      <div><span class="eyebrow">DỰ BÁO JOTRIP</span><h2>72 giờ tới</h2></div>
+      <div><span class="eyebrow">DỰ BÁO JOTRIP</span><h2 id="jotripForecastTitle">72 giờ tới</h2></div>
       <span id="ensembleState" class="badge learning">ĐANG HIỆU CHỈNH</span>
     </div>
-    <p id="jotripForecastSummary" class="panel-note">Hệ thống đang tổng hợp các thành viên ensemble thành một dự báo địa phương duy nhất.</p>
-    <div id="jotripForecastGrid" class="jotrip-forecast-grid"><div class="skeleton wide"></div></div>
+    <p id="jotripForecastSummary" class="panel-note">Bảng dự báo luôn theo địa điểm đang chọn ở đầu trang. Mỗi dòng là một mốc 6 giờ.</p>
+    <div class="forecast-table-shell">
+      <table class="jotrip-forecast-table">
+        <thead>
+          <tr>
+            <th>Thời điểm</th>
+            <th>Nhiệt độ</th>
+            <th>Gió</th>
+            <th>Beaufort</th>
+            <th>Mưa ≥5 mm</th>
+            <th>Gió ≥30 km/h</th>
+            <th>Biến động</th>
+            <th>Nhận định</th>
+          </tr>
+        </thead>
+        <tbody id="jotripForecastRows">
+          <tr><td colspan="8"><span class="inline-loader">Đang tổng hợp dự báo JoTrip...</span></td></tr>
+        </tbody>
+      </table>
+    </div>
     <small id="ensembleMeta" class="panel-foot"></small>
     <details class="forecast-method">
-      <summary>Dự báo này được tạo như thế nào?</summary>
-      <div>
-        Hệ thống dùng nhiều thành viên dự báo làm đầu vào, tổng hợp phân bố, đối chiếu với quan trắc thực tế và dần hiệu chỉnh theo dữ liệu lịch sử. Giao diện chỉ hiển thị kết quả JoTrip đã tổng hợp, không hiển thị riêng forecast thô của từng mô hình.
-      </div>
+      <summary>Dự báo JoTrip được tạo như thế nào?</summary>
+      <div>Hệ thống dùng nhiều thành viên ensemble làm đầu vào, tổng hợp phân bố, đối chiếu với quan trắc thực tế và dần hiệu chỉnh bằng lịch sử địa phương. Beaufort được quy đổi từ tốc độ gió trung tâm của Dự báo JoTrip.</div>
     </details>
   </section>
 
   <section class="panel about-panel">
     <div class="panel-head">
-      <div><span class="eyebrow">VỀ DỰ ÁN</span><h2>JoTrip Weather - Phú Quốc</h2></div>
-      <span class="badge actual">MIỄN PHÍ</span>
+      <div><span class="eyebrow">VỀ HỆ THỐNG</span><h2>JoTrip Weather - một lớp khí tượng địa phương cho Phú Quốc</h2></div>
+      <span class="badge actual">MIỄN PHÍ · PHI THƯƠNG MẠI</span>
     </div>
-    <p class="about-copy">Một dự án dữ liệu thời tiết riêng cho Phú Quốc, làm miễn phí và không có kế hoạch thu phí. Hệ thống dùng quan trắc thực tế, vệ tinh và nhiều nguồn mô hình làm đầu vào, sau đó xử lý thành PQ Local Now và Dự báo JoTrip để người dân, khách du lịch và anh em làm nghề trên đảo dễ đọc hơn.</p>
-    <p class="about-copy">Nếu bạn đang ở Phú Quốc và thấy thời tiết ngoài thực tế khác số trên trang, hãy chọn đúng khu vực ở phần <b>Phản hồi tại chỗ</b>. Bản thử nghiệm hiện lưu phản hồi trên thiết bị. Nếu trang hữu ích, bạn có thể chia sẻ cho người khác cùng xem và góp ý để tụi mình tiếp tục kiểm tra công thức.</p>
+    <p class="about-lead">JoTrip Weather được xây như một hệ thống khí tượng địa phương chuyên cho Phú Quốc. Thay vì đưa nguyên số của một mô hình ra cho người xem, hệ thống ghép nhiều lớp dữ liệu, kiểm tra chéo và chỉ công bố lớp phân tích JoTrip ở hiện tại cùng Dự báo JoTrip cho tương lai.</p>
+
+    <div class="about-principles">
+      <article><b>1. Quan sát trước</b><span>VVPQ METAR, VRain, Himawari và các nguồn quan trắc/remote sensing được ưu tiên để mô tả trạng thái hiện tại.</span></article>
+      <article><b>2. Mô hình là đầu vào</b><span>ECMWF, ICON, GEFS, Copernicus Marine/FES2014 và CAMS được dùng làm guidance, không mặc định xem là sự thật tại điểm.</span></article>
+      <article><b>3. Ensemble để đo bất định</b><span>Nhiều thành viên dự báo được dùng để nhìn mức đồng thuận, đuôi rủi ro và biến động thay vì dựa vào một đường forecast duy nhất.</span></article>
+      <article><b>4. Hiệu chỉnh bằng Phú Quốc</b><span>Quan trắc thực tế, lịch sử sai lệch và phản hồi tại chỗ được dùng để kiểm tra và dần hiệu chỉnh PQ Local Now cùng Dự báo JoTrip.</span></article>
+    </div>
+
+    <div class="about-method">
+      <h3>Triết lý xây dựng</h3>
+      <p>Cách làm lấy cảm hứng từ quy trình khí tượng vận hành hiện đại: ghép quan trắc mặt đất, radar/vệ tinh, phân tích hiện trạng, mô hình số và ensemble rồi mới tạo forecast cho người dùng. NOAA/NWS cũng mô tả forecast process theo hướng quan sát hiện tại trước, sau đó kết hợp model guidance và ensemble để lượng hóa bất định. JoTrip không phải NOAA và không sao chép hệ thống NOAA - chúng tôi chỉ áp dụng cùng tư duy nhiều lớp dữ liệu ở quy mô rất nhỏ cho riêng Phú Quốc.</p>
+    </div>
+
+    <div class="about-source-grid">
+      <div><span>Khí quyển thực tế</span><b>VVPQ / Aviation Weather Center</b></div>
+      <div><span>Mưa thực tế</span><b>VRain - Cửa Cạn, Bãi Thơm, An Thới</b></div>
+      <div><span>Vệ tinh</span><b>JMA / Himawari · NICT viewer</b></div>
+      <div><span>Ensemble</span><b>NOAA GEFS / NOMADS</b></div>
+      <div><span>Mô hình nền</span><b>ECMWF · ICON · NOAA</b></div>
+      <div><span>Biển & triều</span><b>Copernicus Marine · FES2014</b></div>
+      <div><span>Không khí</span><b>IQAir khi có · CAMS tham chiếu</b></div>
+      <div><span>Kiểm chứng địa phương</span><b>Archive JoTrip + phản hồi thực địa</b></div>
+    </div>
+
+    <p class="about-copy">Dự án được mở miễn phí, không có kế hoạch thu phí. Nếu bạn đang ở Phú Quốc, phản hồi tại chỗ là cách hữu ích nhất để giúp kiểm tra công thức. Nếu trang có ích, hãy chia sẻ cho người khác cùng theo dõi và góp ý.</p>
     <div class="about-actions">
       <button id="shareWeather" class="secondary-button">Chia sẻ trang</button>
       <a class="secondary-button link" href="https://github.com/kenzuko/Jotrip-Lab" target="_blank" rel="noopener noreferrer">Xem mã nguồn ↗</a>
+      <a class="secondary-button link" href="https://www.weather.gov/about/forecast-process" target="_blank" rel="noopener noreferrer">Tham khảo quy trình NWS ↗</a>
     </div>
   </section>
 
