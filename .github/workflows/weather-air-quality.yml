@@ -76,10 +76,11 @@ jobs:
         run: |
           python - <<'PY'
           import json
+          from weather.points import POINTS
           p=json.load(open('/tmp/air-quality.json'))
           assert p['status'] in {'POINT_NUMERIC_READY','PARTIAL','UNAVAILABLE'}, p
           if p['status'] == 'POINT_NUMERIC_READY':
-              assert set(p['points']) == {'an_thoi','duong_dong','ganh_dau','rach_gia'}
+              assert set(p['points']) == set(POINTS)
               assert all(p['points'][k]['aqi_us'] is not None for k in p['points'])
               assert all(p['points'][k]['aqi_source'] in {'IQAIR_COMMUNITY_REALTIME','CAMS_GLOBAL_ANALYSIS'} for k in p['points'])
           PY
