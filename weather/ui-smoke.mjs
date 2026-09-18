@@ -14,8 +14,8 @@ function inside(r,w){
 
 for(const [name,width,height] of sizes){
   const page=await browser.newPage({viewport:{width,height}}),errors=[];
-  await page.route("**/weather/critical.json",route=>route.fulfill({status:200,contentType:"application/json",body:liveCritical}));
-  await page.route("**/weather/jotrip-forecast.json",route=>route.fulfill({status:200,contentType:"application/json",body:liveForecast}));
+  await page.route("**/weather/critical.json*",route=>route.fulfill({status:200,contentType:"application/json",body:liveCritical}));
+  await page.route("**/weather/jotrip-forecast.json*",route=>route.fulfill({status:200,contentType:"application/json",body:liveForecast}));
   page.on("pageerror",e=>errors.push(String(e)));
   page.on("console",m=>{
     if(m.type()!=="error")return;
