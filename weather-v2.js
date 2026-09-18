@@ -432,7 +432,7 @@ function renderJoTripForecast(){
         '<div><span>Mưa đáng kể</span><b>'+forecastBand(rain.prob)+'</b></div>'+
         '<div><span>Gió mạnh ≥30</span><b>'+forecastBand(w.prob)+'</b></div>'+
       '</div>'+
-      '<small class="forecast-members">'+(num(members)!==null?fmt(members,0)+' thành viên usable':'ensemble tổng hợp')+'</small>'+
+      '<small class="forecast-members">'+(num(members)!==null?fmt(members,0)+' thành viên hợp lệ':'ensemble tổng hợp')+'</small>'+
     '</article>';
   }).join("");
 
