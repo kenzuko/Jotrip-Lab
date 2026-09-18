@@ -57,6 +57,10 @@ jobs:
 
           cp source/weather.html /tmp/weather-pages/index.html
           cp source/weather.html /tmp/weather-pages/weather.html
+          cp source/weather-v2.html /tmp/weather-pages/v2.html
+          cp source/weather-v2.css /tmp/weather-pages/
+          cp source/weather-v2.js /tmp/weather-pages/
+          cp source/weather-brand.svg /tmp/weather-pages/
           cp source/weather-history.html /tmp/weather-pages/
           cp source/weather-history.css /tmp/weather-pages/
           cp source/weather-history.js /tmp/weather-pages/
@@ -81,6 +85,16 @@ jobs:
           if [ -d live-data/data/weather-groundtruth ]; then
             cp -a live-data/data/weather-groundtruth /tmp/weather-pages/data/
           fi
+          if [ -d live-data/data/weather-ensemble ]; then
+            cp -a live-data/data/weather-ensemble /tmp/weather-pages/data/
+          fi
+
+          PYTHONPATH=source python -m weather.pipeline.build_critical_payload \
+            --dashboard source/weather/dashboard-data.json \
+            --local-now live-data/data/weather-groundtruth/local-now.json \
+            --groundtruth live-data/data/weather-groundtruth/latest.json \
+            --output /tmp/weather-pages/data/critical.json
+          test $(wc -c < /tmp/weather-pages/data/critical.json) -lt 30000
 
       - name: Make Weather Lab safe under /Jotrip-Lab/weather/
         shell: bash
@@ -94,12 +108,17 @@ jobs:
 
           replacements = {
               '/weather/dashboard-data.json': base + 'data/dashboard-data.json',
+              '/weather/critical.json': base + 'data/critical.json',
+              '/weather-v2.css': base + 'weather-v2.css',
+              '/weather-v2.js': base + 'weather-v2.js',
+              '/weather-brand.svg': base + 'weather-brand.svg',
               '/weather/air-quality.json': base + 'data/air-quality.json',
               '/weather/tide.json': base + 'data/tide.json',
               '/weather/nowcast.json': base + 'data/nowcast.json',
               '/data/weather-aqi/': base + 'data/weather-aqi/',
               '/data/weather-nowcast/': base + 'data/weather-nowcast/',
               '/data/weather-groundtruth/': base + 'data/weather-groundtruth/',
+              '/data/weather-ensemble/': base + 'data/weather-ensemble/',
               '/weather-history.html': base + 'weather-history.html',
               '/weather-history.css': base + 'weather-history.css',
               '/weather-history.js': base + 'weather-history.js',
