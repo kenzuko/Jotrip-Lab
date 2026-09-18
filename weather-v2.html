@@ -31,7 +31,7 @@
     <div class="hero-now">
       <span>NHIỆT ĐỘ ĐỊA PHƯƠNG</span>
       <b id="heroTemp">--</b>
-      <small id="heroTempClass">ESTIMATED</small>
+      <small id="heroTempClass">ƯỚC TÍNH</small>
     </div>
   </section>
 
@@ -49,35 +49,35 @@
 
   <section class="now-grid" aria-label="Tình hình hiện tại">
     <article class="metric-card">
-      <div><span>Gió địa phương</span><em id="windClass" class="badge estimated">ESTIMATED</em></div>
+      <div><span>Gió địa phương</span><em id="windClass" class="badge estimated">ƯỚC TÍNH</em></div>
       <b id="windNow">--</b><small>km/h</small>
     </article>
     <article class="metric-card">
-      <div><span>Gió giật</span><em class="badge model">MODEL</em></div>
+      <div><span>Gió giật</span><em class="badge model">MÔ HÌNH</em></div>
       <b id="gustNow">--</b><small>km/h</small>
     </article>
     <article class="metric-card">
-      <div><span>Mưa hiện tại</span><em id="rainClass" class="badge estimated">ESTIMATED</em></div>
+      <div><span>Mưa hiện tại</span><em id="rainClass" class="badge estimated">ƯỚC TÍNH</em></div>
       <b id="rainNow">--</b><small>mm/h · <span id="rainConfidence">--</span>% tin cậy</small>
     </article>
     <article class="metric-card">
-      <div><span>Đối lưu</span><em class="badge remote">REMOTE</em></div>
+      <div><span>Đối lưu</span><em class="badge remote">VỆ TINH</em></div>
       <b id="convectiveNow">--</b><small>Himawari score /100</small>
     </article>
     <article class="metric-card">
-      <div><span>Sóng Hs</span><em id="marineClass" class="badge model">MODEL</em></div>
+      <div><span>Sóng Hs</span><em id="marineClass" class="badge model">MÔ HÌNH</em></div>
       <b id="waveNow">--</b><small>m · biển nền</small>
     </article>
     <article class="metric-card">
-      <div><span>Hmax rủi ro</span><em class="badge model">MODEL</em></div>
+      <div><span>Hmax rủi ro</span><em class="badge model">MÔ HÌNH</em></div>
       <b id="hmaxNow">--</b><small>m · proxy khi cần</small>
     </article>
     <article class="metric-card">
-      <div><span>Chu kỳ sóng</span><em class="badge model">MODEL</em></div>
+      <div><span>Chu kỳ sóng</span><em class="badge model">MÔ HÌNH</em></div>
       <b id="periodNow">--</b><small>giây</small>
     </article>
     <article class="metric-card">
-      <div><span>Dòng chảy</span><em class="badge model">MODEL</em></div>
+      <div><span>Dòng chảy</span><em class="badge model">MÔ HÌNH</em></div>
       <b id="currentNow">--</b><small>km/h</small>
     </article>
   </section>
@@ -122,7 +122,7 @@
     <section class="panel instant-panel">
       <div class="panel-head">
         <div><span class="eyebrow">AIR QUALITY</span><h2>AQI & bụi mịn</h2></div>
-        <span id="aqiSourceBadge" class="badge actual">LIVE</span>
+        <span id="aqiSourceBadge" class="badge actual">TRỰC TIẾP</span>
       </div>
       <div id="aqiQuick" class="quick-grid"><div class="skeleton wide"></div></div>
       <small id="aqiAge" class="panel-foot"></small>
@@ -131,7 +131,7 @@
     <section class="panel instant-panel">
       <div class="panel-head">
         <div><span class="eyebrow">TIDE</span><h2>Triều & đổi nước</h2></div>
-        <span class="badge model">MODEL</span>
+        <span class="badge model">MÔ HÌNH</span>
       </div>
       <div id="tideQuick" class="quick-grid"><div class="skeleton wide"></div></div>
       <svg id="tideSpark" class="tide-spark" viewBox="0 0 600 120" preserveAspectRatio="none" aria-label="Triều 24 giờ"></svg>
@@ -191,7 +191,7 @@
       <button data-horizon="240">D0-D10</button>
     </div>
     <div id="forecastDetail" class="lazy-area">
-      <div class="table-scroll"><table class="forecast-table"><thead><tr><th>Giờ</th><th>°C</th><th>Gió</th><th>Giật</th><th>Mưa</th><th>Hs</th><th>Hmax</th><th>T</th></tr></thead><tbody id="forecastRows"><tr><td colspan="8"><span class="inline-loader">Đang nạp bảng D0-D10...</span></td></tr></tbody></table></div>
+      <div class="table-scroll"><table class="forecast-table"><thead><tr><th>Giờ</th><th>°C</th><th>Gió</th><th>Giật</th><th>Mưa</th><th>Hs</th><th>Hmax</th><th>Chu kỳ</th></tr></thead><tbody id="forecastRows"><tr><td colspan="8"><span class="inline-loader">Đang nạp bảng D0-D10...</span></td></tr></tbody></table></div>
       <div id="outlookCards" class="outlook-cards"></div>
     </div>
   </section>
