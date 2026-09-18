@@ -44,6 +44,15 @@ jobs:
         run: |
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
+      - name: Mirror production live-data paths
+        run: |
+          mkdir -p data
+          for d in weather-aqi weather-nowcast weather-groundtruth weather-ensemble; do
+            if [ -d "live-data/data/$d" ]; then
+              rm -rf "data/$d"
+              cp -a "live-data/data/$d" "data/$d"
+            fi
+          done
       - name: Start static server
         run: |
           python3 -m http.server 4173 >/tmp/weather-v2-http.log 2>&1 &
