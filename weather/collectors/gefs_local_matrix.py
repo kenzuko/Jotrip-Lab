@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import statistics
 import tempfile
 import time
 import urllib.parse
@@ -36,6 +37,17 @@ FILTER = "https://nomads.ncep.noaa.gov/cgi-bin/filter_gefs_atmos_0p50a.pl"
 LEADS = list(range(6, 241, 6))
 MEMBERS = ["c00"] + [f"p{i:02d}" for i in range(1, 31)]
 BOX = {"leftlon": 103.0, "rightlon": 104.75, "toplat": 11.0, "bottomlat": 9.0}
+NATIVE_GRID_DEG = 0.5
+
+# V5 spatial field keeps the model grid instead of throwing it away after
+# extracting the seven operational anchors. These requests intentionally align
+# to the native GEFS 0.5° grid. Display interpolation belongs to the renderer
+# and must never be described as higher model resolution.
+SPATIAL_GRID_REQUESTS = tuple(
+    (round(lat, 2), round(lon, 2))
+    for lat in (9.0, 9.5, 10.0, 10.5, 11.0)
+    for lon in (103.0, 103.5, 104.0, 104.5)
+)
 UA = "JoTrip-WeatherLab/1.0 NOAA-GEFS-local-ensemble"
 
 # V1 physical exposure layer. This is deliberately separate from statistical
@@ -104,6 +116,10 @@ def _url(cycle: datetime, member: str, lead: int) -> str:
     return FILTER + "?" + urllib.parse.urlencode(query)
 
 
+def _grid_id(lat: float, lon: float) -> str:
+    return f"grid_{lat:.2f}_{lon:.2f}"
+
+
 def _decode(path: Path, cycle: datetime, member: str) -> list[dict]:
     from eccodes import (
         codes_get,
@@ -124,8 +140,14 @@ def _decode(path: Path, cycle: datetime, member: str) -> list[dict]:
                 except Exception:
                     start_step = None
                 valid = cycle + timedelta(hours=end_step)
-                for point_id in ISLAND_POINT_IDS:
-                    lat, lon = POINTS[point_id]
+                targets = [
+                    (point_id, POINTS[point_id][0], POINTS[point_id][1], "OPERATIONAL_ANCHOR")
+                    for point_id in ISLAND_POINT_IDS
+                ] + [
+                    (_grid_id(lat, lon), lat, lon, "SPATIAL_GRID")
+                    for lat, lon in SPATIAL_GRID_REQUESTS
+                ]
+                for point_id, lat, lon, sample_kind in targets:
                     nearest = codes_grib_find_nearest(gid, lat, lon)[0]
                     value = float(nearest["value"])
                     if short == "2t" or short == "t":
@@ -140,6 +162,7 @@ def _decode(path: Path, cycle: datetime, member: str) -> list[dict]:
                         "period_start_lead": start_step,
                         "valid_time": valid.isoformat(),
                         "point_id": point_id,
+                        "sample_kind": sample_kind,
                         "variable": short,
                         "value": value,
                         "unit": "degC" if short in {"2t", "t"} else unit,
@@ -243,6 +266,8 @@ def _learning_calibration(variable: str) -> dict:
 def _summaries(vectors: dict) -> dict:
     points: dict[str, list[dict]] = {point_id: [] for point_id in ISLAND_POINT_IDS}
     for item in sorted(vectors.values(), key=lambda x: (x["point_id"], x["lead_hours"])):
+        if item["point_id"] not in points:
+            continue
         members = item["members"]
         row = {
             "lead_hours": item["lead_hours"],
@@ -277,6 +302,106 @@ def _summaries(vectors: dict) -> dict:
             row["variables"][variable] = dist
         points[item["point_id"]].append(row)
     return points
+
+
+
+
+
+def _raw_distribution(values: list[float], variable: str, threshold: float | None = None) -> dict:
+    """Spatial cells remain raw GEFS until a cell-level calibration exists."""
+    payload = correct_distribution(
+        values,
+        _learning_calibration(variable),
+        variable=variable,
+        threshold=threshold,
+    )["raw"]
+    return {
+        "q50": payload.get("q50"),
+        "q90": payload.get("q90"),
+        "q95": payload.get("q95"),
+        "spread": payload.get("spread"),
+        "prob": payload.get("exceedance_probability"),
+        "threshold": payload.get("exceedance_threshold"),
+        "members": payload.get("member_count"),
+    }
+
+
+def _spatial_summaries(vectors: dict) -> dict:
+    """Build compact D0-D10 ensemble fields on the native GEFS 0.5° grid."""
+    by_frame: dict[tuple[int, str], list[dict]] = {}
+    cells: dict[str, dict] = {}
+
+    for item in vectors.values():
+        cell_id = str(item.get("point_id") or "")
+        if not cell_id.startswith("grid_"):
+            continue
+        members = item.get("members") or {}
+        if not members:
+            continue
+
+        samples = list(members.values())
+        sample = samples[0]
+        lat = round(float(sample.get("sampled_lat")), 4)
+        lon = round(float(sample.get("sampled_lon")), 4)
+        cells[cell_id] = {"id": cell_id, "lat": lat, "lon": lon}
+
+        temp = [float(m["temperature_c"]) for m in samples if m.get("temperature_c") is not None]
+        wind = [float(m["wind_kmh"]) for m in samples if m.get("wind_kmh") is not None]
+        rain = [float(m["rain_mm"]) for m in samples if m.get("rain_mm") is not None]
+        us = [float(m["u10_ms"]) for m in samples if m.get("u10_ms") is not None]
+        vs = [float(m["v10_ms"]) for m in samples if m.get("v10_ms") is not None]
+        u50 = statistics.median(us) if us else None
+        v50 = statistics.median(vs) if vs else None
+        direction = _wind_from_direction_deg(u50, v50) if u50 is not None and v50 is not None else None
+
+        row = {
+            "cell_id": cell_id,
+            "temperature": _raw_distribution(temp, "temperature"),
+            "wind": {
+                **_raw_distribution(wind, "wind", 30.0),
+                "u10_q50_ms": round(u50, 4) if u50 is not None else None,
+                "v10_q50_ms": round(v50, 4) if v50 is not None else None,
+                "direction_q50_deg": round(direction, 1) if direction is not None else None,
+            },
+            "rain": _raw_distribution(rain, "rain", 5.0),
+        }
+        key = (int(item["lead_hours"]), str(item["valid_time"]))
+        by_frame.setdefault(key, []).append(row)
+
+    frames = []
+    for (lead, valid), rows in sorted(by_frame.items(), key=lambda x: x[0][0]):
+        rows.sort(key=lambda x: x["cell_id"])
+        member_counts = [
+            int(v.get("members") or 0)
+            for row in rows
+            for v in (row["temperature"], row["wind"], row["rain"])
+            if v.get("members") is not None
+        ]
+        frames.append({
+            "lead_hours": lead,
+            "valid_time": valid,
+            "members_min": min(member_counts) if member_counts else 0,
+            "cells": rows,
+        })
+
+    ordered_cells = sorted(cells.values(), key=lambda x: (x["lat"], x["lon"]))
+    return {
+        "status": "READY" if frames and ordered_cells else "UNAVAILABLE",
+        "model": "GEFS_0P50",
+        "native_resolution_deg": NATIVE_GRID_DEG,
+        "display_interpolation": "RENDER_ONLY",
+        "bounds": BOX,
+        "cell_count": len(ordered_cells),
+        "cells": ordered_cells,
+        "frames": frames,
+        "variables": {
+            "wind": ["q50", "q90", "q95", "spread", "prob", "u10_q50_ms", "v10_q50_ms", "direction_q50_deg"],
+            "rain": ["q50", "q90", "q95", "spread", "prob"],
+            "temperature": ["q50", "q90", "q95", "spread"],
+        },
+        "probability_thresholds": {"wind_kmh": 30.0, "rain_mm": 5.0},
+        "note": "Native GEFS 0.5° ensemble field. Smooth map rendering does not increase model resolution.",
+    }
 
 
 def collect(output: Path | None = None, *, members: list[str] | None = None,
@@ -340,6 +465,7 @@ def collect(output: Path | None = None, *, members: list[str] | None = None,
         "completion_ratio": round(completion, 4),
         "box": BOX,
         "points": _summaries(vectors),
+        "spatial": _spatial_summaries(vectors),
         "calibration_engine": "PQ_ENSEMBLE_LOCAL_V1",
         "wind_exposure_engine": WIND_EXPOSURE_ENGINE,
         "wind_exposure_points": sorted(WIND_EXPOSURE_8),
@@ -370,4 +496,6 @@ if __name__ == "__main__":
         "completion_ratio": result.get("completion_ratio"),
         "horizon_hours": result.get("horizon_hours"),
         "rows": {k: len(v) for k, v in result.get("points", {}).items()},
+        "spatial_cells": (result.get("spatial") or {}).get("cell_count"),
+        "spatial_frames": len((result.get("spatial") or {}).get("frames") or []),
     }, ensure_ascii=False, indent=2))
