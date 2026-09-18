@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#f4f8fb">
   <title>JoTrip Weather - Phú Quốc</title>
-  <meta name="description" content="Thời tiết Phú Quốc: quan trắc thực tế, PQ Local Now, hải văn, AQI và dự báo ensemble. Miễn phí, phi thương mại.">
-  <link rel="stylesheet" href="/weather-v2.css?v=20260918-12">
+  <meta name="description" content="Thời tiết Phú Quốc theo thời gian thực: quan trắc, radar - vệ tinh, biển, AQI và dự báo JoTrip 10 ngày. Miễn phí, phi thương mại.">
+  <link rel="stylesheet" href="/weather-v2.css?v=20260918-13">
   <link rel="preload" as="fetch" href="/weather/critical.json" crossorigin="anonymous">
   <link rel="manifest" href="/weather-manifest.webmanifest">
-  <script defer src="/weather-v2.js?v=20260918-12"></script>
+  <script defer src="/weather-v2.js?v=20260918-13"></script>
 </head>
 <body>
 <header class="topbar">
@@ -38,7 +38,7 @@
   <section class="status-strip" aria-label="Tổng quan toàn đảo">
     <div><span>Khuyến nghị chung</span><b id="decisionNow">-</b></div>
     <div><span>Độ phủ dữ liệu</span><b id="completenessNow">-</b></div>
-    <div><span>Tin cậy dữ liệu</span><b id="confidenceNow">-</b></div>
+    <div><span>Mức tin cậy</span><b id="confidenceNow">-</b></div>
     <div><span>Tầm dự báo</span><b id="horizonNow">-</b></div>
   </section>
   <div id="islandSummary" class="island-summary">Đang tổng hợp tình hình toàn đảo...</div>
@@ -46,7 +46,7 @@
     <article><span>Mưa lớn</span><b id="hazardRain">Đang tính</b><small id="hazardRainMeta">-</small></article>
     <article><span>Đối lưu - dông</span><b id="hazardStorm">Đang tính</b><small id="hazardStormMeta">-</small></article>
     <article><span>Gió - biển</span><b id="hazardWind">Đang tính</b><small id="hazardWindMeta">-</small></article>
-    <article><span>Biến động 72h</span><b id="hazardVolatility">Đang tính</b><small id="hazardVolatilityMeta">-</small></article>
+    <article><span>Biến động 10 ngày</span><b id="hazardVolatility">Đang tính</b><small id="hazardVolatilityMeta">-</small></article>
   </section>
 
   <nav id="pointTabs" class="point-tabs" aria-label="Điểm theo dõi thời tiết">
@@ -68,15 +68,15 @@
     </article>
     <article class="metric-card">
       <div><span>Đối lưu</span><em class="badge remote">VỆ TINH</em></div>
-      <b id="convectiveNow">--</b><small>Himawari score /100</small>
+      <b id="convectiveNow">--</b><small>chỉ số đối lưu /100</small>
     </article>
     <article class="metric-card">
       <div><span>Sóng Hs</span><em id="marineClass" class="badge model">MÔ HÌNH</em></div>
       <b id="waveNow">--</b><small>m · biển nền</small>
     </article>
     <article class="metric-card">
-      <div><span>Hmax rủi ro</span><em class="badge model">MÔ HÌNH</em></div>
-      <b id="hmaxNow">--</b><small>m · proxy khi cần</small>
+      <div><span>Sóng cao Hmax</span><em class="badge model">MÔ HÌNH</em></div>
+      <b id="hmaxNow">--</b><small>m · giá trị ước tính khi cần</small>
     </article>
     <article class="metric-card">
       <div><span>Chu kỳ sóng</span><em class="badge model">MÔ HÌNH</em></div>
@@ -91,10 +91,10 @@
   <details class="number-guide">
     <summary>Các con số phía trên nghĩa là gì?</summary>
     <div class="number-guide-grid">
-      <span><b>Mưa mm/h</b> - cường độ mưa ước tính hiện tại của PQ Local Now. % tin cậy là độ tin cậy của phép ước tính, không phải xác suất mưa.</span>
+      <span><b>Mưa mm/h</b> - cường độ mưa ước tính tại thời điểm hiện tại. % tin cậy cho biết mức chắc chắn của phép ước tính, không phải xác suất sẽ có mưa.</span>
       <span><b>Gió giật</b> - giá trị dự báo gió giật của mô hình, khác với gió trung bình tại chỗ.</span>
       <span><b>Hs</b> - chiều cao sóng có ý nghĩa, dùng mô tả trạng thái biển nền. Đây không phải con sóng lớn nhất.</span>
-      <span><b>Hmax</b> - biên sóng lớn để nhìn rủi ro. Có lúc là giá trị mô hình, có lúc là proxy thống kê và luôn được ghi rõ.</span>
+      <span><b>Hmax</b> - chiều cao sóng lớn dùng để nhìn phần rủi ro của trạng thái biển. Khi chưa có giá trị trực tiếp, hệ thống dùng ước tính thống kê và ghi rõ nguồn.</span>
       <span><b>Chu kỳ sóng</b> - khoảng thời gian giữa các đỉnh sóng. Cùng chiều cao nhưng chu kỳ khác nhau có thể cho cảm giác biển rất khác.</span>
       <span><b>Dòng chảy</b> - tốc độ dòng chảy mô hình gần điểm biển hợp lệ nhất, không phải phép đo tại bờ.</span>
     </div>
@@ -178,11 +178,11 @@
   <section class="panel jotrip-forecast-panel">
     <div class="panel-head">
       <div><span class="eyebrow">DỰ BÁO JOTRIP</span><h2 id="jotripForecastTitle">10 ngày tới theo vùng</h2></div>
-      <span id="ensembleState" class="badge learning">ĐANG HIỆU CHỈNH</span>
+      <span id="ensembleState" class="badge learning">ĐANG HỌC TỪ DỮ LIỆU THỰC TẾ</span>
     </div>
-    <p id="jotripForecastSummary" class="panel-note">0-72 giờ hiển thị mỗi 6 giờ. Ngày 4-10 giảm còn 12 giờ/mốc để tránh tạo cảm giác chính xác giả ở xa ngày.</p>
+    <p id="jotripForecastSummary" class="panel-note">3 ngày đầu hiển thị mỗi 6 giờ. Từ ngày 4 đến ngày 10, hệ thống giảm còn 12 giờ mỗi mốc vì dự báo càng xa thì độ bất định càng lớn.</p>
     <nav id="forecastRegionTabs" class="forecast-region-tabs" aria-label="Vùng dự báo Phú Quốc">
-      <span class="inline-loader">Đang tải vùng dự báo...</span>
+      <span class="inline-loader">Đang tải dự báo theo vùng...</span>
     </nav>
     <div id="forecastRegionMeta" class="forecast-region-meta"></div>
     <div class="forecast-table-shell">
@@ -197,7 +197,7 @@
             <th>Gió ≥30 km/h</th>
             <th>Biến động</th>
             <th>Độ tin cậy</th>
-            <th>Điểm chi phối</th>
+            <th>Điểm rủi ro cao nhất</th>
           </tr>
         </thead>
         <tbody id="jotripForecastRows">
@@ -207,46 +207,48 @@
     </div>
     <small id="ensembleMeta" class="panel-foot"></small>
     <details class="forecast-method">
-      <summary>Dự báo vùng được tính như thế nào?</summary>
-      <div>Nhiệt độ vùng dùng trung vị của các điểm đại diện. Gió, mưa và rủi ro dùng điểm bất lợi hơn trong vùng để không làm mượt mất tín hiệu nguy hiểm. D0-D3 giữ bước 6 giờ; D4-D10 dùng bước 12 giờ và hạ mức tin cậy theo thời hạn.</div>
+      <summary>JoTrip tính dự báo theo vùng như thế nào?</summary>
+      <div>Nhiệt độ của vùng lấy giá trị trung tâm từ các điểm đại diện. Với gió, mưa và rủi ro, hệ thống ưu tiên điểm có tín hiệu bất lợi hơn để không làm mất cảnh báo cục bộ. Ba ngày đầu giữ bước 6 giờ; từ ngày 4 đến ngày 10 dùng bước 12 giờ và giảm dần mức tin cậy.</div>
     </details>
   </section>
 
   <section class="panel about-panel">
     <div class="panel-head">
-      <div><span class="eyebrow">VỀ HỆ THỐNG</span><h2>JoTrip Weather - một lớp khí tượng địa phương cho Phú Quốc</h2></div>
+      <div><span class="eyebrow">VỀ JOTRIP WEATHER</span><h2>Một hệ thống thời tiết được xây riêng cho Phú Quốc</h2></div>
       <span class="badge actual">MIỄN PHÍ · PHI THƯƠNG MẠI</span>
     </div>
-    <p class="about-lead">JoTrip Weather được xây như một hệ thống khí tượng địa phương chuyên cho Phú Quốc. Thay vì đưa nguyên số của một mô hình ra cho người xem, hệ thống ghép nhiều lớp dữ liệu, kiểm tra chéo và chỉ công bố lớp phân tích JoTrip ở hiện tại cùng Dự báo JoTrip cho tương lai.</p>
+
+    <p class="about-lead">JoTrip Weather là dự án thời tiết dành riêng cho Phú Quốc. Chúng tôi không lấy nguyên kết quả của một mô hình rồi hiển thị lại. Hệ thống tập hợp dữ liệu đo thực tế, radar - vệ tinh, các mô hình khí quyển và biển, sau đó đối chiếu chúng với điều kiện trên đảo để tạo ra lớp phân tích và dự báo riêng của JoTrip.</p>
 
     <div class="about-principles">
-      <article><b>1. Quan sát trước</b><span>VVPQ METAR, VRain, Himawari và các nguồn quan trắc/remote sensing được ưu tiên để mô tả trạng thái hiện tại.</span></article>
-      <article><b>2. Mô hình là đầu vào</b><span>ECMWF, ICON, GEFS, Copernicus Marine/FES2014 và CAMS được dùng làm guidance, không mặc định xem là sự thật tại điểm.</span></article>
-      <article><b>3. Ensemble để đo bất định</b><span>Nhiều thành viên dự báo được dùng để nhìn mức đồng thuận, đuôi rủi ro và biến động thay vì dựa vào một đường forecast duy nhất.</span></article>
-      <article><b>4. Hiệu chỉnh bằng Phú Quốc</b><span>Quan trắc thực tế, lịch sử sai lệch và phản hồi tại chỗ được dùng để kiểm tra và dần hiệu chỉnh PQ Local Now cùng Dự báo JoTrip.</span></article>
+      <article><b>1. Bắt đầu từ những gì đang xảy ra</b><span>Ưu tiên dữ liệu quan trắc tại Phú Quốc, mưa đo thực tế và ảnh vệ tinh để hiểu trạng thái hiện tại trước khi nhìn tới dự báo.</span></article>
+      <article><b>2. Không phụ thuộc vào một mô hình</b><span>ECMWF, ICON, GEFS, Copernicus Marine, FES2014 và CAMS được dùng như các nguồn tham khảo độc lập. Không nguồn nào mặc nhiên được xem là đúng nhất trong mọi tình huống.</span></article>
+      <article><b>3. Đo cả phần chưa chắc chắn</b><span>Dự báo tổ hợp giúp nhìn mức độ đồng thuận giữa nhiều kịch bản, phát hiện phần rủi ro ở phía cao và nhận ra khi thời tiết có khả năng biến động mạnh.</span></article>
+      <article><b>4. Học từ chính Phú Quốc</b><span>Sai lệch giữa dự báo và thực tế được lưu lại theo thời gian. Khi đủ dữ liệu, hệ thống sẽ hiệu chỉnh riêng theo khu vực, mùa và thời hạn dự báo thay vì dùng một công thức chung cho mọi nơi.</span></article>
     </div>
 
     <div class="about-method">
-      <h3>Triết lý xây dựng</h3>
-      <p>Cách làm lấy cảm hứng từ quy trình khí tượng vận hành hiện đại: ghép quan trắc mặt đất, radar/vệ tinh, phân tích hiện trạng, mô hình số và ensemble rồi mới tạo forecast cho người dùng. NOAA/NWS cũng mô tả forecast process theo hướng quan sát hiện tại trước, sau đó kết hợp model guidance và ensemble để lượng hóa bất định. JoTrip không phải NOAA và không sao chép hệ thống NOAA - chúng tôi chỉ áp dụng cùng tư duy nhiều lớp dữ liệu ở quy mô rất nhỏ cho riêng Phú Quốc.</p>
+      <h3>Cách chúng tôi xây hệ thống</h3>
+      <p>Cách làm này lấy cảm hứng từ quy trình dự báo thời tiết hiện đại: trước tiên xây bức tranh hiện tại từ quan trắc mặt đất, radar và vệ tinh; sau đó mới kết hợp các mô hình số và dự báo tổ hợp để đánh giá những gì có thể xảy ra tiếp theo. NOAA/NWS cũng vận hành theo nguyên tắc nhiều lớp dữ liệu như vậy. JoTrip không phải NOAA và không sao chép hệ thống của NOAA - chúng tôi chỉ áp dụng cùng tư duy đó ở quy mô nhỏ, tập trung riêng cho điều kiện thời tiết rất đặc thù của Phú Quốc.</p>
     </div>
 
     <div class="about-source-grid">
-      <div><span>Khí quyển thực tế</span><b>VVPQ / Aviation Weather Center</b></div>
-      <div><span>Mưa thực tế</span><b>VRain - Cửa Cạn, Bãi Thơm, An Thới</b></div>
-      <div><span>Vệ tinh</span><b>JMA / Himawari · NICT viewer</b></div>
-      <div><span>Ensemble</span><b>NOAA GEFS / NOMADS</b></div>
-      <div><span>Mô hình nền</span><b>ECMWF · ICON · NOAA</b></div>
-      <div><span>Biển & triều</span><b>Copernicus Marine · FES2014</b></div>
-      <div><span>Không khí</span><b>IQAir khi có · CAMS tham chiếu</b></div>
-      <div><span>Kiểm chứng địa phương</span><b>Archive JoTrip + phản hồi thực địa</b></div>
+      <div><span>Quan trắc sân bay</span><b>VVPQ · Aviation Weather Center</b></div>
+      <div><span>Mưa đo thực tế</span><b>VRain · Cửa Cạn · Bãi Thơm · An Thới</b></div>
+      <div><span>Ảnh vệ tinh</span><b>JMA Himawari · NICT</b></div>
+      <div><span>Dự báo tổ hợp</span><b>NOAA GEFS · NOMADS</b></div>
+      <div><span>Mô hình khí quyển</span><b>ECMWF · ICON · NOAA</b></div>
+      <div><span>Biển và thủy triều</span><b>Copernicus Marine · FES2014</b></div>
+      <div><span>Chất lượng không khí</span><b>IQAir khi có · CAMS tham chiếu</b></div>
+      <div><span>Đối chiếu tại Phú Quốc</span><b>Lịch sử JoTrip · phản hồi thực địa</b></div>
     </div>
 
-    <p class="about-copy">Dự án được mở miễn phí, không có kế hoạch thu phí. Nếu bạn đang ở Phú Quốc, phản hồi tại chỗ là cách hữu ích nhất để giúp kiểm tra công thức. Nếu trang có ích, hãy chia sẻ cho người khác cùng theo dõi và góp ý.</p>
+    <p class="about-copy">Dự án được mở miễn phí và không có kế hoạch thu phí. Nếu bạn đang ở Phú Quốc, một phản hồi ngắn về mưa, gió hoặc dông tại nơi mình đứng sẽ rất hữu ích để chúng tôi kiểm tra lại hệ thống. Nếu trang có ích, bạn có thể chia sẻ cho người khác cùng theo dõi và góp ý.</p>
+
     <div class="about-actions">
-      <button id="shareWeather" class="secondary-button">Chia sẻ trang</button>
+      <button id="shareWeather" class="secondary-button">Chia sẻ JoTrip Weather</button>
       <a class="secondary-button link" href="https://github.com/kenzuko/Jotrip-Lab" target="_blank" rel="noopener noreferrer">Xem mã nguồn ↗</a>
-      <a class="secondary-button link" href="https://www.weather.gov/about/forecast-process" target="_blank" rel="noopener noreferrer">Tham khảo quy trình NWS ↗</a>
+      <a class="secondary-button link" href="https://www.weather.gov/about/forecast-process" target="_blank" rel="noopener noreferrer">Quy trình dự báo của NWS ↗</a>
     </div>
   </section>
 
