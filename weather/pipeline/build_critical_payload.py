@@ -21,8 +21,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-POINTS=("duong_dong","an_thoi","ganh_dau","rach_gia")
-NAMES={"duong_dong":"Dương Đông","an_thoi":"An Thới","ganh_dau":"Gành Dầu","rach_gia":"Rạch Giá"}
+from weather.points import POINT_NAMES
+
+POINTS=tuple(POINT_NAMES)
+NAMES=POINT_NAMES
+ISLAND_WATCH_ORDER=("duong_dong","cua_can","ganh_dau","bai_thom","ham_ninh","bai_sao","an_thoi")
+CORE_ENSEMBLE_POINTS={"duong_dong","an_thoi","ganh_dau"}
 
 def load(path: Path|None)->dict:
     if not path or not path.exists():
@@ -216,7 +220,15 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
             "aqi":compact_aqi(aqi,key),
             "tide":compact_tide(tide,key),
             "nowcast":compact_nowcast(nowcast,key),
-            "ensemble":compact_ensemble(ensemble,key),
+            "ensemble":compact_ensemble(ensemble,key) if key in CORE_ENSEMBLE_POINTS else {
+                "status":ensemble.get("status","UNAVAILABLE"),
+                "readiness":ensemble.get("readiness","UNAVAILABLE"),
+                "source":ensemble.get("source"),
+                "run_time":ensemble.get("run_time"),
+                "completion_ratio":num(ensemble.get("completion_ratio")),
+                "calibration_status":ensemble.get("calibration_status","LEARNING"),
+                "rows":[],
+            },
         }
 
     v=(ground.get("atmosphere") or {}).get("vvpq",{})
@@ -243,6 +255,8 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
         "schema_version":"2.1",
         "generated_at":generated.isoformat(),
         "default_point":"duong_dong",
+        "island_watch_order":[p for p in ISLAND_WATCH_ORDER if p in out],
+        "primary_points":[p for p in ("duong_dong","an_thoi","ganh_dau","rach_gia") if p in out],
         "report_status":dashboard.get("report_status","UNAVAILABLE"),
         "snapshot_id":dashboard.get("snapshot_id"),
         "git_commit_sha":dashboard.get("git_commit_sha"),
