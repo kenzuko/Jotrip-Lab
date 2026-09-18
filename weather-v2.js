@@ -458,6 +458,44 @@ function renderForecastRegionTabs(){
     '<button class="'+(id===currentRegion?'active':'')+'" data-region="'+esc(id)+'">'+esc(r.name||id)+'</button>'
   ).join("")||'<span class="inline-loader">Đang chờ dữ liệu vùng...</span>';
 }
+function phuQuocDay(iso){
+  const d=new Date(iso);
+  if(!Number.isFinite(d.getTime()))return null;
+  const parts=new Intl.DateTimeFormat("vi-VN",{timeZone:"Asia/Ho_Chi_Minh",year:"numeric",month:"2-digit",day:"2-digit",weekday:"short"}).formatToParts(d);
+  const get=t=>parts.find(x=>x.type===t)?.value||"";
+  return {key:get("year")+"-"+get("month")+"-"+get("day"),label:get("weekday"),date:get("day")+"/"+get("month")};
+}
+function worstConfidence(values){
+  const rank={"THẬN TRỌNG":3,"TRUNG BÌNH":2,"KHÁ":1};
+  return values.sort((a,b)=>(rank[b]||0)-(rank[a]||0))[0]||"-";
+}
+function renderForecastDayRibbon(rows){
+  const root=$("forecastDayRibbon");if(!root)return;
+  const groups=new Map();
+  rows.forEach(r=>{
+    const day=phuQuocDay(r.valid_time);if(!day)return;
+    if(!groups.has(day.key))groups.set(day.key,{day,rows:[]});
+    groups.get(day.key).rows.push(r);
+  });
+  const days=[...groups.values()].slice(0,10);
+  root.innerHTML=days.map(({day,rows})=>{
+    const temps=rows.map(r=>num(r.temperature_c)).filter(v=>v!==null);
+    const winds=rows.map(r=>num(r.wind_kmh)).filter(v=>v!==null);
+    const rainProb=Math.max(0,...rows.map(r=>num(r.rain_prob_5)).filter(v=>v!==null));
+    const windProb=Math.max(0,...rows.map(r=>num(r.wind_prob_30)).filter(v=>v!==null));
+    const state=forecastCardState(windProb,rainProb);
+    const bft=beaufort(winds.length?Math.max(...winds):0);
+    const conf=worstConfidence(rows.map(r=>r.confidence_band).filter(Boolean));
+    return '<article class="forecast-day '+state.cls+'">'+
+      '<header><b>'+esc(day.label)+'</b><span>'+esc(day.date)+'</span></header>'+
+      '<strong>'+(temps.length?fmt(Math.min(...temps),0)+'-'+fmt(Math.max(...temps),0)+'°':'-')+'</strong>'+
+      '<div><span>Mưa</span><b>'+forecastBand(rainProb)+'</b></div>'+
+      '<div><span>Gió</span><b>Bft '+bft.force+'</b></div>'+
+      '<small>'+esc(conf)+'</small>'+
+    '</article>';
+  }).join("")||'<span class="inline-loader">Chưa đủ dữ liệu để tóm tắt 10 ngày.</span>';
+}
+
 function renderJoTripForecast(){
   const title=$("jotripForecastTitle");
   const body=$("jotripForecastRows");
@@ -476,6 +514,7 @@ function renderJoTripForecast(){
   }
 
   renderForecastRegionTabs();
+  renderForecastDayRibbon(rows);
   const metaBox=$("forecastRegionMeta");
   if(metaBox)metaBox.innerHTML='<b>'+esc(meta.name)+'</b><span>Điểm đại diện: '+esc((meta.points||[]).join(" · "))+'</span>';
 
@@ -483,6 +522,7 @@ function renderJoTripForecast(){
     body.innerHTML='<tr><td colspan="9"><div class="data-empty"><b>CHƯA ĐỦ DỮ LIỆU 10 NGÀY</b><span>Vùng này chưa có đủ dữ liệu dự báo tổ hợp để công bố.</span></div></td></tr>';
     $("jotripForecastSummary").textContent="JoTrip không lấy dự báo nguyên bản của một mô hình để lấp vào khi dữ liệu tổng hợp chưa đủ.";
     $("ensembleMeta").textContent="Dự báo JoTrip chưa sẵn sàng.";
+    const ribbon=$("forecastDayRibbon");if(ribbon)ribbon.innerHTML='<span class="inline-loader">Chưa đủ dữ liệu để tóm tắt 10 ngày.</span>';
     return;
   }
 
