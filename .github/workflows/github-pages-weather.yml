@@ -93,6 +93,10 @@ jobs:
             --dashboard source/weather/dashboard-data.json \
             --local-now live-data/data/weather-groundtruth/local-now.json \
             --groundtruth live-data/data/weather-groundtruth/latest.json \
+            --aqi live-data/data/weather-aqi/latest.json \
+            --tide source/weather/tide.json \
+            --nowcast live-data/data/weather-nowcast/latest.json \
+            --ensemble live-data/data/weather-ensemble/latest.json \
             --output /tmp/weather-pages/data/critical.json
           test $(wc -c < /tmp/weather-pages/data/critical.json) -lt 30000
 
