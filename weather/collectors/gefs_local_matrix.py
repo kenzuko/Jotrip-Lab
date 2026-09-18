@@ -38,6 +38,37 @@ MEMBERS = ["c00"] + [f"p{i:02d}" for i in range(1, 31)]
 BOX = {"leftlon": 103.0, "rightlon": 104.75, "toplat": 11.0, "bottomlat": 9.0}
 UA = "JoTrip-WeatherLab/1.0 NOAA-GEFS-local-ensemble"
 
+# V1 physical exposure layer. This is deliberately separate from statistical
+# calibration: raw GEFS grid wind is preserved, while the public corrected
+# distribution may apply a transparent local shielding factor by wind direction.
+# Bãi Sao is on the east/southeast coast and is materially sheltered from
+# prevailing W-SW flow by Phú Quốc's land mass. Other points remain neutral
+# until their directional exposure tables are field-audited.
+WIND_EXPOSURE_ENGINE = "PQ_LOCAL_WIND_EXPOSURE_V1"
+WIND_EXPOSURE_8 = {
+    "bai_sao": {
+        "N": 0.90, "NE": 1.00, "E": 1.00, "SE": 0.95,
+        "S": 0.82, "SW": 0.62, "W": 0.58, "NW": 0.72,
+    },
+}
+WIND_SECTORS = ("N", "NE", "E", "SE", "S", "SW", "W", "NW")
+
+
+def _wind_from_direction_deg(u_ms: float, v_ms: float) -> float:
+    """Meteorological direction wind comes FROM, degrees clockwise from north."""
+    return (math.degrees(math.atan2(-u_ms, -v_ms)) + 360.0) % 360.0
+
+
+def _wind_sector(direction_deg: float) -> str:
+    return WIND_SECTORS[int((direction_deg + 22.5) // 45.0) % 8]
+
+
+def _wind_exposure_factor(point_id: str, direction_deg: float) -> float:
+    table = WIND_EXPOSURE_8.get(point_id)
+    if not table:
+        return 1.0
+    return float(table.get(_wind_sector(direction_deg), 1.0))
+
 
 def _file_member(member: str) -> str:
     return "gec00" if member == "c00" else "ge" + member
@@ -175,7 +206,13 @@ def _member_vectors(records: list[dict]) -> dict:
         if "u10" in b and "v10" in b:
             u = float(b["u10"]["value"])
             v = float(b["v10"]["value"])
-            m["wind_kmh"] = math.hypot(u, v) * 3.6
+            wind_kmh = math.hypot(u, v) * 3.6
+            direction_deg = _wind_from_direction_deg(u, v)
+            exposure_factor = _wind_exposure_factor(point, direction_deg)
+            m["wind_kmh"] = wind_kmh
+            m["wind_local_kmh"] = wind_kmh * exposure_factor
+            m["wind_direction_deg"] = direction_deg
+            m["wind_exposure_factor"] = exposure_factor
             m["u10_ms"] = u
             m["v10_ms"] = v
         if "rain" in b:
@@ -222,6 +259,19 @@ def _summaries(vectors: dict) -> dict:
             values = [m[member_key] for m in members.values() if member_key in m]
             calibration = _learning_calibration(variable)
             dist = correct_distribution(values, calibration, variable=variable, threshold=threshold)
+            if variable == "wind":
+                local_values = [m["wind_local_kmh"] for m in members.values() if "wind_local_kmh" in m]
+                local_dist = correct_distribution(local_values, calibration, variable=variable, threshold=threshold)
+                dist["corrected"] = local_dist["corrected"]
+                factors = [m["wind_exposure_factor"] for m in members.values() if "wind_exposure_factor" in m]
+                dist["local_exposure"] = {
+                    "engine": WIND_EXPOSURE_ENGINE,
+                    "status": "HEURISTIC_V1" if item["point_id"] in WIND_EXPOSURE_8 else "NEUTRAL",
+                    "mean_factor": round(sum(factors) / len(factors), 4) if factors else 1.0,
+                    "directional_table": WIND_EXPOSURE_8.get(item["point_id"]),
+                    "note": "Physical directional exposure is applied member-by-member before public wind probabilities; raw GEFS grid wind remains preserved.",
+                }
+                dist["rule"] = "Raw = GEFS grid wind. Corrected = local directional exposure, then statistical calibration when calibration becomes READY."
             dist["raw"]["completion_ratio"] = round(len(values) / 31, 3)
             dist["corrected"]["completion_ratio"] = round(len(values) / 31, 3)
             row["variables"][variable] = dist
@@ -291,6 +341,8 @@ def collect(output: Path | None = None, *, members: list[str] | None = None,
         "box": BOX,
         "points": _summaries(vectors),
         "calibration_engine": "PQ_ENSEMBLE_LOCAL_V1",
+        "wind_exposure_engine": WIND_EXPOSURE_ENGINE,
+        "wind_exposure_points": sorted(WIND_EXPOSURE_8),
         "calibration_status": "LEARNING",
         "calibration_note": "Raw member distributions are preserved until >=30 matched ACTUAL verification cases exist for the relevant point/variable/lead/regime.",
         "raw_member_records": len(all_records),
