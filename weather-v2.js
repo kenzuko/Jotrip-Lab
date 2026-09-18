@@ -18,7 +18,7 @@ const $=id=>document.getElementById(id);
 const num=v=>v===null||v===undefined||v===""||Number.isNaN(Number(v))?null:Number(v);
 const fmt=(v,d=1)=>{v=num(v);return v===null?"-":Number(v.toFixed(d)).toString()};
 const esc=v=>String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
-const defer=(fn,ms=600)=>{"requestIdleCallback" in window?requestIdleCallback(()=>fn(),{timeout:ms+900}):setTimeout(fn,ms)};
+const defer=(fn,ms=600)=>setTimeout(()=>{"requestIdleCallback" in window?requestIdleCallback(()=>fn(),{timeout:900}):fn()},ms);
 
 let critical=null;
 let current="duong_dong";
