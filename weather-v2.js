@@ -77,7 +77,7 @@ function setBadge(id,k,label){
   const key=String(k||"").toUpperCase();
   const natural={
     ACTUAL:"ĐO THỰC",ESTIMATED_NOW:"ƯỚC TÍNH",MODEL_ONLY:"MÔ HÌNH",
-    REMOTE_OBSERVED:"VỆ TINH",LEARNING:"ĐANG HỌC",
+    REMOTE_OBSERVED:"VỆ TINH",LEARNING:"ĐANG HIỆU CHỈNH",
     READY:"SẴN SÀNG",UNAVAILABLE:"CHƯA CÓ"
   };
   el.textContent=label||natural[key]||String(k||"-").replace("_NOW","").replaceAll("_"," ");
@@ -95,7 +95,7 @@ function viLevel(v){
   return ({LOW:"THẤP",WATCH:"THEO DÕI",ELEVATED:"TĂNG",HIGH:"CAO"}[String(v||"").toUpperCase()]||String(v||""));
 }
 function viCal(v){
-  return String(v||"").toUpperCase()==="LEARNING"?"ĐANG HỌC TỪ DỮ LIỆU THỰC TẾ":String(v||"").replaceAll("_"," ");
+  return String(v||"").toUpperCase()==="LEARNING"?"ĐANG HIỆU CHỈNH":String(v||"").replaceAll("_"," ");
 }
 function sourceReady(v){
   const x=String(v||"").toUpperCase();
@@ -210,7 +210,7 @@ function renderHazardBoard(){
   const wind=future.map(x=>({...x,val:num(x.row.wind?.prob)||0})).sort((a,b)=>b.val-a.val)[0];
   const windLvl=probabilityLevel(wind?.val);
   const waves=points.map(x=>({name:x.p.name,hs:num(x.p.local?.wave_hs_m??x.p.model?.wave_hs_m)||0})).sort((a,b)=>b.hs-a.hs)[0];
-  const windMeta=wind?esc(wind.p.name)+" · "+leadMoment(wind.row)+(waves?.hs?" · Hs cao nhất "+fmt(waves.hs,1)+" m":""):"Chưa đủ ensemble";
+  const windMeta=wind?esc(wind.p.name)+" · "+leadMoment(wind.row)+(waves?.hs?" · Hs cao nhất "+fmt(waves.hs,1)+" m":""):"Chưa đủ dữ liệu tổ hợp";
   setHazard("hazardWind",windLvl.label,windMeta,Math.max(windLvl.score,waves?.hs>=2?3:waves?.hs>=1.5?2:0));
 
   const vol=future.map(x=>({...x,v:variationLevel(x.row.wind,x.row.rain)})).sort((a,b)=>b.v.score-a.v.score)[0];
@@ -262,7 +262,7 @@ function renderStatus(){
     }
   }
   renderHazardBoard();
-  $("dataMode").textContent=critical.data_mode||"-";
+  $("dataMode").textContent=critical.data_mode==="B"?"ƯU TIÊN RỦI RO":(critical.data_mode||"-");
 }
 
 function summary(p){
@@ -511,7 +511,7 @@ function renderJoTripForecast(){
   $("jotripForecastSummary").textContent=(horizon>=240
     ? "D0-D3 mỗi 6 giờ; D4-D10 mỗi 12 giờ. "
     : "Nguồn hiện tại mới đủ "+Math.round(horizon/24)+" ngày. ")+
-    (watch?watch+" mốc trong vùng có rủi ro hoặc độ phân kỳ đáng theo dõi. ":"")+
+    (watch?watch+" mốc trong vùng có rủi ro hoặc mức chênh giữa các kịch bản đáng theo dõi. ":"")+
     "Mỗi vùng được tổng hợp từ các điểm đại diện tại Phú Quốc, không lấy riêng Dương Đông làm chuẩn cho cả đảo.";
 
   $("ensembleMeta").textContent="Dự báo JoTrip theo vùng · dữ liệu đầy đủ "+
@@ -520,13 +520,28 @@ function renderJoTripForecast(){
     " · càng xa ngày càng giảm độ tin cậy.";
 }
 
+function publicSourceName(key){
+  const names={
+    ECMWF:"ECMWF",
+    GEFS:"NOAA GEFS",
+    ICON:"ICON",
+    COPERNICUS:"Copernicus Marine",
+    RADAR_LIGHTNING:"Radar và sét",
+    VVPQ:"Quan trắc VVPQ",
+    VRAIN:"Mưa đo VRain",
+    HIMAWARI:"Himawari",
+    AQI:"Chất lượng không khí",
+    TRIỀU:"Thủy triều"
+  };
+  return names[key]||key;
+}
 function renderHealth(){
   const src=critical.sources||{};
   const stLabel=st=>({PASS:"Sẵn sàng",PARTIAL:"Một phần",FAIL:"Chưa sẵn sàng",UNRESOLVED:"Chưa kết nối"}[st]||st.replaceAll("_"," ").toLowerCase());
   $("sourceGrid").innerHTML=Object.entries(src).map(([k,v])=>{
     const st=String(v.status||"UNRESOLVED").toUpperCase();
     const cls=st==="PASS"?"pass":st==="PARTIAL"?"partial":"fail";
-    return '<article class="source-card"><header><b>'+esc(k)+'</b><span class="source-state '+cls+'">'+esc(stLabel(st))+'</span></header><p>'+esc(v.detail||"")+'</p></article>';
+    return '<article class="source-card"><header><b>'+esc(publicSourceName(k))+'</b><span class="source-state '+cls+'">'+esc(stLabel(st))+'</span></header><p>'+esc(v.detail||"")+'</p></article>';
   }).join("")||'<div class="lazy-status">Chưa có thông tin tình trạng nguồn.</div>';
   $("gapGrid").innerHTML=(critical.gaps||[]).length?(critical.gaps||[]).map(g=>'<div class="gap-card"><b>'+esc(g.name||"Phần còn thiếu")+'</b><span>'+esc(g.detail||"")+'</span></div>').join(""):'<div class="gap-card"><b>Không có khoảng trống nghiêm trọng</b><span>Chu kỳ hiện tại chưa ghi nhận lớp dữ liệu bắt buộc bị thiếu.</span></div>';
   $("cycleGrid").innerHTML=Object.entries(critical.source_cycles||{}).map(([k,v])=>'<span class="cycle-chip">'+esc(k)+' · '+localTime(v)+'</span>').join("");
@@ -583,7 +598,7 @@ function setMap(type){
     box.innerHTML='<img id="himawariImg" alt="JMA Himawari B13 infrared">';
     const img=$("himawariImg"),list=mapCandidates();let i=0;
     img.onerror=()=>{i++;if(i<list.length)img.src=list[i]+"?t="+Date.now();else{note.textContent="Không tải được ảnh Himawari trực tiếp lúc này.";$("mapState").textContent="KHÔNG TẢI ĐƯỢC"}};
-    img.onload=()=>{note.textContent="JMA Himawari B13 · lớp quan sát vệ tinh thực tế gần nhất.";$("mapState").textContent="SẴN SÀNG";$("mapState").className="badge remote"};
+    img.onload=()=>{note.textContent="Ảnh hồng ngoại Himawari gần nhất từ JMA.";$("mapState").textContent="SẴN SÀNG";$("mapState").className="badge remote"};
     img.src=list[0]+"?t="+Date.now();
     return;
   }
