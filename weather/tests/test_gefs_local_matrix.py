@@ -14,7 +14,7 @@ class GefsLocalMatrixTests(unittest.TestCase):
         u=_url(cycle,"p01",6)
         self.assertIn("filter_gefs_atmos_0p50a.pl",u)
         self.assertIn("gep01.t06z.pgrb2a.0p50.f006",u)
-        self.assertIn("leftlon=103.55",u)
+        self.assertIn("leftlon=103.0",u)
         self.assertIn("var_APCP=on",u)
 
     def test_learning_distribution_is_raw(self):
