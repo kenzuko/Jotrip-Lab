@@ -50,10 +50,11 @@ jobs:
         run: |
           python - <<'PY'
           import json
+          from weather.points import POINTS
           p=json.load(open('/tmp/tide.json'))
           assert p['status'] in {'POINT_NUMERIC_READY','AUTH_REQUIRED','UNAVAILABLE','PARTIAL_OR_FAILED'}, p
           if p['status'] == 'POINT_NUMERIC_READY':
-              assert set(p['points']) == {'an_thoi','duong_dong','ganh_dau','rach_gia'}
+              assert set(p['points']) == set(POINTS)
               for point in p['points'].values():
                   assert point['current_height_m'] is not None
                   assert point['trend'] in {'RISING','FALLING','TURNING'}
