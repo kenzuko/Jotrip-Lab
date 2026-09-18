@@ -507,12 +507,13 @@ function renderForecastDayRibbon(rows){
     const state=forecastCardState(windProb,rainProb);
     const bft=beaufort(winds.length?Math.max(...winds):0);
     const conf=worstConfidence(rows.map(r=>r.confidence_band).filter(Boolean));
+    const confScore=Math.min(...rows.map(rowConfidence));
     return '<article class="forecast-day '+state.cls+'">'+
       '<header><b>'+esc(day.label)+'</b><span>'+esc(day.date)+'</span></header>'+
       '<strong>'+(temps.length?fmt(Math.min(...temps),0)+'-'+fmt(Math.max(...temps),0)+'°':'-')+'</strong>'+
       '<div><span>Mưa ≥5 mm</span><b>'+pct(rainProb)+'</b></div>'+
       '<div><span>Gió ≥30</span><b>'+pct(windProb)+' · Bft '+bft.force+'</b></div>'+
-      '<small>Tin cậy '+rowConfidence(rows[0])+'/100 · '+esc(conf)+'</small>'+
+      '<small>Tin cậy '+confScore+'/100 · '+esc(conf)+'</small>'+
     '</article>';
   }).join("")||'<span class="inline-loader">Chưa đủ dữ liệu để tóm tắt 10 ngày.</span>';
 }
