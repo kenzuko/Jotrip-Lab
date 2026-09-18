@@ -25,7 +25,12 @@ for(const [name,width,height] of sizes){
     overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
     hero:document.querySelector("#heroTemp")?.textContent,
     actualCards:document.querySelectorAll(".actual-card").length,
-    jotripForecastCards:document.querySelectorAll(".jotrip-forecast-card").length,
+    jotripForecastRows:document.querySelectorAll("#jotripForecastRows tr").length,
+    beaufortCells:[...document.querySelectorAll("#jotripForecastRows td")].filter(td=>/Bft\s+\d/.test(td.textContent||"")).length,
+    hazardCards:document.querySelectorAll("#hazardBoard article").length,
+    mapTabs:document.querySelectorAll(".map-tabs [data-map]").length,
+    feedbackBeforeActual:(document.querySelector(".field-strip")?.compareDocumentPosition(document.querySelector("#actualStrip"))&Node.DOCUMENT_POSITION_FOLLOWING)!==0,
+    mapBeforeNowcast:(document.querySelector(".map-panel")?.compareDocumentPosition(document.querySelector(".nowcast-panel"))&Node.DOCUMENT_POSITION_FOLLOWING)!==0,
     rawForecastRemoved:!document.querySelector(".forecast-panel")&&!document.querySelector(".ensemble-panel"),
     rawForecastTableRemoved:!document.querySelector("#forecastRows")&&!document.querySelector(".horizon-tabs"),
     aqiItems:document.querySelectorAll("#aqiQuick .quick-item").length,
@@ -79,7 +84,12 @@ for(const [name,width,height] of sizes){
     checks.overflow<=2&&
     !!checks.hero&&
     checks.actualCards>=1&&
-    checks.jotripForecastCards>=1&&
+    checks.jotripForecastRows>=5&&
+    checks.beaufortCells>=5&&
+    checks.hazardCards===4&&
+    checks.mapTabs>=5&&
+    checks.feedbackBeforeActual&&
+    checks.mapBeforeNowcast&&
     checks.jotripForecastPanel&&
     checks.rawForecastRemoved&&
     checks.rawForecastTableRemoved&&
