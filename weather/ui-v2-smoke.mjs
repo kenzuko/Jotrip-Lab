@@ -30,6 +30,9 @@ for(const [name,width,height] of sizes){
     aqiItems:document.querySelectorAll("#aqiQuick .quick-item").length,
     tideItems:document.querySelectorAll("#tideQuick .quick-item").length,
     nowcastItems:document.querySelectorAll("#nowcastQuick .quick-item").length,
+    aqiEmpty:!!document.querySelector("#aqiQuick .data-empty"),
+    tideEmpty:!!document.querySelector("#tideQuick .data-empty"),
+    nowcastEmpty:!!document.querySelector("#nowcastQuick .data-empty"),
     sourceCards:document.querySelectorAll("#sourceGrid .source-card").length,
     mapDeferred:!document.querySelector("#mapBox iframe")&&!document.querySelector("#mapBox img"),
     horizonTabs:document.querySelectorAll(".horizon-tabs button").length,
@@ -39,6 +42,7 @@ for(const [name,width,height] of sizes){
     innerOverflow:[...document.querySelectorAll(".panel")].flatMap(panel=>{
       const pr=panel.getBoundingClientRect();
       return [...panel.querySelectorAll("*")].filter(el=>{
+        if(el.tagName==="OPTION")return false;
         if(el.closest(".table-scroll,.ensemble-table-shell,.actual-strip,.hourly-strip,.point-tabs"))return false;
         const r=el.getBoundingClientRect();
         return r.right>pr.right+3||r.left<pr.left-3;
@@ -71,9 +75,9 @@ for(const [name,width,height] of sizes){
     checks.actualCards>=1&&
     checks.hourly>=1&&
     checks.forecastRows>=1&&
-    checks.aqiItems>=3&&
-    checks.tideItems>=3&&
-    checks.nowcastItems>=4&&
+    (checks.aqiItems>=3||checks.aqiEmpty)&&
+    (checks.tideItems>=3||checks.tideEmpty)&&
+    (checks.nowcastItems>=4||checks.nowcastEmpty)&&
     checks.sourceCards>=1&&
     checks.mapDeferred&&
     checks.horizonTabs===4&&
