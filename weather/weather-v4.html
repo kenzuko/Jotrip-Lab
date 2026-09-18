@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#152f3b">
+  <title>JoTrip Weather V4 - Phú Quốc Live</title>
+  <meta name="description" content="Bản đồ thời tiết trực quan Phú Quốc - JoTrip Weather V4.">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://a.basemaps.cartocdn.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="weather-v4.css?v=20260918-1">
+</head>
+<body>
+<div class="app">
+  <div id="map" class="map"></div>
+  <canvas id="fieldCanvas" class="field-canvas" aria-hidden="true"></canvas>
+  <canvas id="flowCanvas" class="flow-canvas" aria-hidden="true"></canvas>
+
+  <header class="top-ui">
+    <div class="brand">
+      <span class="brand-mark">J</span>
+      <div><b>JoTrip Weather</b><small>PHÚ QUỐC LIVE</small></div>
+    </div>
+    <div class="search-pill">
+      <span class="search-icon">⌕</span>
+      <input id="placeSearch" type="search" placeholder="Tìm điểm trên đảo" autocomplete="off">
+    </div>
+    <div class="live-pill"><i></i><span id="liveState">ĐANG TẢI</span></div>
+  </header>
+
+  <section class="weather-strip">
+    <div class="current-main">
+      <span id="currentPlace">Phú Quốc</span>
+      <strong id="currentPrimary">--</strong>
+      <small id="currentSecondary">Wind live</small>
+    </div>
+    <div class="mini-outlook" id="miniOutlook"></div>
+  </section>
+
+  <nav class="right-tools" aria-label="Công cụ bản đồ">
+    <button id="recenterBtn" title="Về Phú Quốc" aria-label="Về Phú Quốc">⌂</button>
+    <button id="labelsBtn" class="active" title="Nhãn" aria-label="Nhãn">Aa</button>
+    <button id="riskOverlayBtn" class="overlay-btn active" title="JoTrip Risk" aria-label="JoTrip Risk"><span>!</span><small>Risk</small></button>
+    <button id="actualOverlayBtn" class="overlay-btn" title="Actual" aria-label="Actual"><span>●</span><small>Actual</small></button>
+  </nav>
+
+  <section id="alertPill" class="alert-pill neutral">
+    <span>!</span>
+    <div><small>QUICK ALERT</small><b id="alertTitle">Đang quét...</b></div>
+    <strong id="alertWhen">LIVE</strong>
+  </section>
+
+  <section id="probe" class="probe hidden">
+    <button id="probeClose" aria-label="Đóng">×</button>
+    <small id="probeSource">SOURCE</small>
+    <h2 id="probeName">Phú Quốc</h2>
+    <div id="probeRows"></div>
+    <footer><span id="probeMeta">-</span></footer>
+  </section>
+
+  <section class="timeline">
+    <div class="timeline-top">
+      <button id="timelinePlay" class="play">▶</button>
+      <span id="timelineNow">NOW</span>
+      <input id="timelineSlider" type="range" min="0" max="18" step="1" value="0">
+      <span id="timelineEnd">+18H</span>
+    </div>
+    <div class="date-row" id="dateRow"></div>
+  </section>
+
+  <section class="layer-bar" aria-label="Lớp thời tiết">
+    <div class="layer-scroll">
+      <button class="layer active" data-layer="wind"><i>↗</i><span>Wind</span></button>
+      <button class="layer" data-layer="rain"><i>☂</i><span>Rain</span></button>
+      <button class="layer" data-layer="radar"><i>◉</i><span>Radar</span></button>
+      <button class="layer" data-layer="waves"><i>≈</i><span>Waves</span></button>
+      <button class="layer" data-layer="storm"><i>ϟ</i><span>Storm</span></button>
+    </div>
+  </section>
+
+  <section class="scale-bar">
+    <div id="scaleGradient" class="scale-gradient"></div>
+    <div id="scaleLabels" class="scale-labels"></div>
+  </section>
+
+  <div id="sourceNote" class="source-note">Open-Meteo · JoTrip Weather Lab</div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="weather-v4.js?v=20260918-1"></script>
+</body>
+</html>
