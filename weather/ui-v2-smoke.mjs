@@ -1,5 +1,5 @@
 import { chromium } from "playwright";
-const base=process.env.WEATHER_V2_URL||"http://127.0.0.1:4173/weather-v2.html";
+const base=process.env.WEATHER_V2_URL||"http://127.0.0.1:4173/weather.html";
 const sizes=[["iphone390",390,844],["iphone430",430,932],["desktop",1440,1000]];
 const browser=await chromium.launch({headless:true});
 let failed=false;
@@ -46,8 +46,10 @@ for(const [name,width,height] of sizes){
     numberGuide:!!document.querySelector(".number-guide"),
     aboutPanel:!!document.querySelector(".about-panel"),
     commandCenter:!!document.querySelector(".command-center"),
-    heroStage:!!document.querySelector(".hero-stage"),
-    heroMood:document.querySelector(".hero")?.getAttribute("data-mood")||"",
+    photoHero:!!document.querySelector(".weather-scene-hero"),
+    tideSeries:!!document.querySelector("#tideSpark polyline"),
+    situationGap:(()=>{const a=document.querySelector(".command-center .island-summary")?.getBoundingClientRect(),b=document.querySelector("#hazardBoard")?.getBoundingClientRect();return a&&b?Math.round(b.top-a.bottom):9999})(),
+    situationHeight:Math.round(document.querySelector(".situation-rail")?.getBoundingClientRect().height||0),
     compactFeedback:!!document.querySelector(".field-strip")&&!document.querySelector(".feedback-panel"),
     mapBeforeForecast:(document.querySelector(".map-panel")?.compareDocumentPosition(document.querySelector(".jotrip-forecast-panel"))&Node.DOCUMENT_POSITION_FOLLOWING)!==0,
     innerOverflow:[...document.querySelectorAll(".panel")].flatMap(panel=>{
@@ -61,7 +63,8 @@ for(const [name,width,height] of sizes){
     }).slice(0,12)
   }));
 
-  const heavyInitial=initial.filter(u=>/embed\.windy|dashboard-data\.json|tide\.json|weather-aqi|weather-ensemble|weather-nowcast|himawari\/img/i.test(u));
+  const heavyInitial=initial.filter(u=>/embed\.windy|dashboard-data\.json|weather-aqi|weather-ensemble|weather-nowcast|himawari\/img/i.test(u));
+  const tideStartedEarly=initial.some(u=>/tide\.json/.test(u));
   const rawForecastRequests=initial.filter(u=>/dashboard-data\.json/.test(u));
 
   await page.waitForTimeout(1800);
@@ -115,19 +118,20 @@ for(const [name,width,height] of sizes){
     checks.numberGuide&&
     checks.aboutPanel&&
     checks.commandCenter&&
-    checks.heroStage&&
-    !!checks.heroMood&&
+    checks.photoHero&&
+    checks.tideSeries&&
+    (width>760||(checks.situationGap>=0&&checks.situationGap<=24&&checks.situationHeight<760))&&
     lateChecks.forecastRibbon>=7&&
     checks.compactFeedback&&
     checks.mapBeforeForecast&&
     checks.innerOverflow.length===0&&
     heavyInitial.length===0&&
-    deferred.tide&&deferred.aqi&&deferred.nowcast&&deferred.regionalForecast&&
+    tideStartedEarly&&deferred.tide&&deferred.aqi&&deferred.nowcast&&deferred.regionalForecast&&
     noRawForecastFetch&&rawForecastRequests.length===0&&
     errors.length===0&&
     mapLoaded;
 
-  console.log(name,JSON.stringify({checks,lateChecks,heavyInitial,deferred,noRawForecastFetch,errors,initialRequests:initial.length,mapLoaded}));
+  console.log(name,JSON.stringify({checks,lateChecks,heavyInitial,tideStartedEarly,deferred,noRawForecastFetch,errors,initialRequests:initial.length,mapLoaded}));
   if(!ok)failed=true;
   await page.close();
 }
