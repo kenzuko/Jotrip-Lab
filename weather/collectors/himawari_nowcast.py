@@ -24,6 +24,17 @@ PREFIX_ROOT = "AHI-L2-FLDK-Clouds"
 # coarser away from nadir, so the label is intentionally approximate.
 RADIUS_PIXELS = 20
 
+# V5 spatial nowcast domain. This is a renderer sampling grid, not a claim that
+# the satellite native resolution is 0.05°. The source remains Himawari AHI L2
+# (~2 km at nadir, coarser away from nadir).
+SPATIAL_BOUNDS = {
+    "south": 9.70,
+    "north": 10.55,
+    "west": 103.65,
+    "east": 104.30,
+}
+SPATIAL_STEP_DEG = 0.05
+
 
 def _write(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -161,6 +172,95 @@ def _sample(ds, lat: float, lon: float) -> dict:
     }
 
 
+
+def _axis(start: float, end: float, step: float) -> list[float]:
+    values = []
+    value = start
+    while value <= end + 1e-9:
+        values.append(round(value, 4))
+        value += step
+    return values
+
+
+def _spatial_sample(ds, lat: float, lon: float) -> dict:
+    """Small local satellite sample used only to preserve spatial structure."""
+    if ds is None:
+        return {}
+    ix, iy = _target_xy(ds, lat, lon)
+    y0, y1 = max(0, iy - 1), min(5500, iy + 2)
+    x0, x1 = max(0, ix - 1), min(5500, ix + 2)
+    temp_key = "CldTopTempAWIPS" if "CldTopTempAWIPS" in ds.variables else "CldTopTemp"
+    height_key = "CldTopHghtAWIPS" if "CldTopHghtAWIPS" in ds.variables else "CldTopHght"
+    temp = ds[temp_key].isel(y=slice(y0, y1), x=slice(x0, x1)) if "y" in ds[temp_key].dims else ds[temp_key].isel(Rows=slice(y0, y1), Columns=slice(x0, x1))
+    height = ds[height_key].isel(y=slice(y0, y1), x=slice(x0, x1)) if "y" in ds[height_key].dims else ds[height_key].isel(Rows=slice(y0, y1), Columns=slice(x0, x1))
+    _, cold_c, median_c = _temp_stats(temp.values)
+    _, high_m, median_m = _height_stats(height.values)
+    return {
+        "cloud_top_cold_c": round(cold_c, 1) if cold_c is not None else None,
+        "cloud_top_median_c": round(median_c, 1) if median_c is not None else None,
+        "cloud_top_high_m": round(high_m) if high_m is not None else None,
+        "cloud_top_median_m": round(median_m) if median_m is not None else None,
+    }
+
+
+def _spatial_field(ds_now, ds_prev, now_time: str, prev_time: str | None) -> dict:
+    lats = _axis(SPATIAL_BOUNDS["south"], SPATIAL_BOUNDS["north"], SPATIAL_STEP_DEG)
+    lons = _axis(SPATIAL_BOUNDS["west"], SPATIAL_BOUNDS["east"], SPATIAL_STEP_DEG)
+    current_cells = []
+    previous_cells = []
+
+    for lat in lats:
+        for lon in lons:
+            current = _spatial_sample(ds_now, lat, lon)
+            earlier = _spatial_sample(ds_prev, lat, lon) if ds_prev is not None else {}
+            cur = current.get("cloud_top_cold_c")
+            old = earlier.get("cloud_top_cold_c")
+            cooling = round(cur - old, 1) if cur is not None and old is not None else None
+            signal = convective_signal(
+                current.get("cloud_top_cold_c"),
+                current.get("cloud_top_high_m"),
+                cooling,
+            )
+            current_cells.append({
+                "lat": lat,
+                "lon": lon,
+                **current,
+                "cooling_c_per_20m_proxy": cooling,
+                "convective_score": signal["score"],
+                "convective_level": signal["level"],
+            })
+            if earlier:
+                earlier_signal = convective_signal(
+                    earlier.get("cloud_top_cold_c"),
+                    earlier.get("cloud_top_high_m"),
+                    None,
+                )
+                previous_cells.append({
+                    "lat": lat,
+                    "lon": lon,
+                    **earlier,
+                    "cooling_c_per_20m_proxy": None,
+                    "convective_score": earlier_signal["score"],
+                    "convective_level": earlier_signal["level"],
+                })
+
+    frames = []
+    if previous_cells and prev_time:
+        frames.append({"sampled_time": str(prev_time), "cells": previous_cells})
+    frames.append({"sampled_time": str(now_time), "cells": current_cells})
+    return {
+        "status": "READY" if current_cells else "UNAVAILABLE",
+        "bounds": SPATIAL_BOUNDS,
+        "display_grid_deg": SPATIAL_STEP_DEG,
+        "cell_count": len(current_cells),
+        "source_native_resolution": "2 km at nadir; coarser away from nadir",
+        "sampling_method": "REGULAR_LATLON_RENDER_GRID_FROM_HIMAWARI_AHI_L2_CLOUD_TOP",
+        "display_interpolation": "RENDER_ONLY",
+        "frames": frames,
+        "note": "Observed satellite cloud-top field. It is not radar rainfall and not lightning observation.",
+    }
+
+
 def _open_s3_dataset(fs, key: str):
     import xarray as xr
 
@@ -191,6 +291,8 @@ def collect() -> dict:
             now_time = now_time.isoformat()
         if isinstance(prev_time, datetime):
             prev_time = prev_time.isoformat()
+
+        spatial = _spatial_field(ds_now, ds_prev, str(now_time), str(prev_time) if prev_time else None)
 
         points = {}
         for point_id, (lat, lon) in POINTS.items():
@@ -238,6 +340,7 @@ def collect() -> dict:
                 "detail": "Radar chính thức vẫn là lớp kiểm tra thủ công; không được dùng làm dependency của collector này.",
             },
             "points": points,
+            "spatial": spatial,
             "method": "Observed Himawari cloud-top p05 temperature/p95 height + cooling heuristic; local ~40 km window; not lightning detection",
             "latest_object": latest["key"],
             "previous_object": previous["key"] if previous else None,
@@ -270,6 +373,8 @@ def main() -> None:
         "status": payload.get("status"),
         "sampled_time": payload.get("sampled_time"),
         "points": {k: v.get("convective_signal") for k, v in payload.get("points", {}).items()},
+        "spatial_cells": (payload.get("spatial") or {}).get("cell_count"),
+        "spatial_frames": len((payload.get("spatial") or {}).get("frames") or []),
         "detail": payload.get("detail"),
     }, ensure_ascii=False, indent=2))
 
