@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#f4f8fb">
   <title>JoTrip Weather - Phú Quốc</title>
-  <meta name="description" content="Thời tiết Phú Quốc: quan trắc thực tế, PQ Local Now và dự báo ensemble. Miễn phí, phi thương mại.">
-  <link rel="stylesheet" href="/Jotrip-Lab/weather/weather-v2.css?v=20260918-1">
+  <meta name="description" content="Thời tiết Phú Quốc: quan trắc thực tế, PQ Local Now, hải văn, AQI và dự báo ensemble. Miễn phí, phi thương mại.">
+  <link rel="stylesheet" href="/Jotrip-Lab/weather/weather-v2.css?v=20260918-4">
   <link rel="preload" as="fetch" href="/Jotrip-Lab/weather/data/critical.json" crossorigin="anonymous">
   <link rel="manifest" href="/Jotrip-Lab/weather/weather-manifest.webmanifest">
-  <script defer src="/Jotrip-Lab/weather/weather-v2.js?v=20260918-1"></script>
+  <script defer src="/Jotrip-Lab/weather/weather-v2.js?v=20260918-4"></script>
 </head>
 <body>
 <header class="topbar">
@@ -35,6 +35,13 @@
     </div>
   </section>
 
+  <section class="status-strip" aria-label="Trạng thái hệ thống">
+    <div><span>Quyết định</span><b id="decisionNow">-</b></div>
+    <div><span>Độ phủ</span><b id="completenessNow">-</b></div>
+    <div><span>Độ tin cậy</span><b id="confidenceNow">-</b></div>
+    <div><span>Horizon</span><b id="horizonNow">-</b></div>
+  </section>
+
   <nav class="point-tabs" aria-label="Điểm xem thời tiết">
     <button class="active" data-point="duong_dong">Dương Đông</button>
     <button data-point="an_thoi">An Thới</button>
@@ -48,6 +55,10 @@
       <b id="windNow">--</b><small>km/h</small>
     </article>
     <article class="metric-card">
+      <div><span>Gió giật</span><em class="badge model">MODEL</em></div>
+      <b id="gustNow">--</b><small>km/h</small>
+    </article>
+    <article class="metric-card">
       <div><span>Mưa hiện tại</span><em id="rainClass" class="badge estimated">ESTIMATED</em></div>
       <b id="rainNow">--</b><small>mm/h · <span id="rainConfidence">--</span>% tin cậy</small>
     </article>
@@ -56,8 +67,20 @@
       <b id="convectiveNow">--</b><small>Himawari score /100</small>
     </article>
     <article class="metric-card">
-      <div><span>Biển nền</span><em id="marineClass" class="badge model">MODEL</em></div>
-      <b id="waveNow">--</b><small>m · Hs</small>
+      <div><span>Sóng Hs</span><em id="marineClass" class="badge model">MODEL</em></div>
+      <b id="waveNow">--</b><small>m · biển nền</small>
+    </article>
+    <article class="metric-card">
+      <div><span>Hmax rủi ro</span><em class="badge model">MODEL</em></div>
+      <b id="hmaxNow">--</b><small>m · proxy khi cần</small>
+    </article>
+    <article class="metric-card">
+      <div><span>Chu kỳ sóng</span><em class="badge model">MODEL</em></div>
+      <b id="periodNow">--</b><small>giây</small>
+    </article>
+    <article class="metric-card">
+      <div><span>Dòng chảy</span><em class="badge model">MODEL</em></div>
+      <b id="currentNow">--</b><small>km/h</small>
     </article>
   </section>
 
@@ -69,14 +92,52 @@
     <div id="actualStrip" class="actual-strip"><div class="skeleton wide"></div></div>
   </section>
 
+  <div class="two-col">
+    <section class="panel instant-panel">
+      <div class="panel-head">
+        <div><span class="eyebrow">AIR QUALITY</span><h2>AQI & bụi mịn</h2></div>
+        <span id="aqiSourceBadge" class="badge actual">LIVE</span>
+      </div>
+      <div id="aqiQuick" class="quick-grid"><div class="skeleton wide"></div></div>
+      <small id="aqiAge" class="panel-foot"></small>
+    </section>
+
+    <section class="panel instant-panel">
+      <div class="panel-head">
+        <div><span class="eyebrow">TIDE</span><h2>Triều & đổi nước</h2></div>
+        <span class="badge model">MODEL</span>
+      </div>
+      <div id="tideQuick" class="quick-grid"><div class="skeleton wide"></div></div>
+      <svg id="tideSpark" class="tide-spark" viewBox="0 0 600 120" preserveAspectRatio="none" aria-label="Triều 24 giờ"></svg>
+      <small id="tideAge" class="panel-foot"></small>
+    </section>
+  </div>
+
+  <section class="panel nowcast-panel">
+    <div class="panel-head">
+      <div><span class="eyebrow">REMOTE OBSERVED</span><h2>Himawari nowcast</h2></div>
+      <span id="nowcastBadge" class="badge remote">HIMAWARI</span>
+    </div>
+    <div id="nowcastQuick" class="quick-grid quick-grid-4"><div class="skeleton wide"></div></div>
+    <small id="nowcastAge" class="panel-foot"></small>
+  </section>
+
   <section class="panel forecast-panel">
     <div class="panel-head">
-      <div><span class="eyebrow">NEXT 24 HOURS</span><h2>24 giờ tới</h2></div>
+      <div><span class="eyebrow">FORECAST</span><h2>Dự báo D0-D10</h2></div>
       <span class="badge model">MODEL FORECAST</span>
     </div>
     <div id="hourlyStrip" class="hourly-strip"><div class="skeleton hour"></div><div class="skeleton hour"></div><div class="skeleton hour"></div></div>
-    <button class="secondary-button" id="openForecast">Mở dự báo chi tiết D0-D10</button>
-    <div id="forecastDetail" class="lazy-area" hidden></div>
+    <div class="horizon-tabs">
+      <button class="active" data-horizon="72">D0-D3</button>
+      <button data-horizon="120">D0-D5</button>
+      <button data-horizon="168">D0-D7</button>
+      <button data-horizon="240">D0-D10</button>
+    </div>
+    <div id="forecastDetail" class="lazy-area">
+      <div class="table-scroll"><table class="forecast-table"><thead><tr><th>Giờ</th><th>°C</th><th>Gió</th><th>Giật</th><th>Mưa</th><th>Hs</th><th>Hmax</th><th>T</th></tr></thead><tbody id="forecastRows"><tr><td colspan="8"><span class="inline-loader">Đang nạp bảng D0-D10...</span></td></tr></tbody></table></div>
+      <div id="outlookCards" class="outlook-cards"></div>
+    </div>
   </section>
 
   <section class="panel ensemble-panel">
@@ -84,36 +145,45 @@
       <div><span class="eyebrow">PROBABILISTIC</span><h2>PQ Ensemble Local</h2></div>
       <span id="ensembleState" class="badge learning">LEARNING</span>
     </div>
-    <p class="panel-note">GEFS / ECMWF ENS / ICON-EPS được xử lý theo từng họ model. Hiệu chỉnh địa phương chỉ kích hoạt khi đủ ground truth.</p>
-    <button class="secondary-button" id="openEnsemble">Xem xác suất ensemble</button>
-    <div id="ensembleDetail" class="lazy-area" hidden></div>
+    <p class="panel-note">Distribution hiện trước từ payload nhẹ. Ma trận member đầy đủ được nạp sau và không chặn giao diện.</p>
+    <div id="ensembleQuick" class="ensemble-table-shell"><span class="inline-loader">Đang đọc ensemble summary...</span></div>
+    <small id="ensembleMeta" class="panel-foot"></small>
   </section>
 
   <section class="panel map-panel">
     <div class="panel-head">
       <div><span class="eyebrow">REMOTE OBSERVED + MAP</span><h2>Bản đồ thời tiết</h2></div>
-      <span class="badge deferred">TẢI KHI MỞ</span>
+      <span id="mapState" class="badge deferred">LAZY LOAD</span>
     </div>
-    <p class="panel-note">Bản đồ không tham gia first paint. Windy, Himawari và radar chỉ tải khi bạn mở phần này.</p>
-    <button class="primary-button" id="openMap">Mở bản đồ</button>
-    <div id="mapArea" class="lazy-area" hidden></div>
+    <div class="map-tabs">
+      <button class="active" data-map="radar">Radar</button>
+      <button data-map="wind">Gió</button>
+      <button data-map="rain">Mưa dự báo</button>
+      <button data-map="himawari">Himawari IR</button>
+    </div>
+    <div id="mapBox" class="map-box"><div class="map-placeholder"><b>Bản đồ sẽ tự tải khi cuộn tới đây</b><span>Không chặn phần số liệu phía trên.</span></div></div>
+    <div id="mapNote" class="map-note">Radar/map là lớp trực quan. Số liệu vận hành dùng pipeline riêng.</div>
+    <div class="map-source-links">
+      <a href="https://himawari8.nict.go.jp/" target="_blank" rel="noopener noreferrer">NICT Himawari ↗</a>
+      <a href="https://www.data.jma.go.jp/mscweb/data/himawari/" target="_blank" rel="noopener noreferrer">JMA Himawari ↗</a>
+      <a href="https://nchmf.gov.vn/KttvSiteE/vi-VN/1/image-ra-dar-r2.html" target="_blank" rel="noopener noreferrer">NCHMF Radar ↗</a>
+      <a href="https://www.windy.com/?10.20,104.00,8" target="_blank" rel="noopener noreferrer">Windy ↗</a>
+    </div>
   </section>
 
-  <section class="panel extras-panel">
+  <section class="panel health-panel" id="dataHealth">
     <div class="panel-head">
-      <div><span class="eyebrow">MORE DATA</span><h2>Triều, AQI & nguồn dữ liệu</h2></div>
-      <span class="badge deferred">TẢI SAU</span>
+      <div><span class="eyebrow">DATA HEALTH</span><h2>Nguồn dữ liệu & khoảng trống</h2></div>
+      <span id="dataMode" class="badge deferred">-</span>
     </div>
-    <div class="extra-actions">
-      <button class="secondary-button" data-extra="tide">Triều & đổi nước</button>
-      <button class="secondary-button" data-extra="aqi">Chất lượng không khí</button>
-      <a class="secondary-button link" href="/Jotrip-Lab/weather/weather-history.html">Lịch sử & đối chiếu</a>
-    </div>
-    <div id="extraDetail" class="lazy-area" hidden></div>
+    <div id="sourceGrid" class="source-grid"><div class="skeleton wide"></div></div>
+    <div id="gapGrid" class="gap-grid"></div>
+    <div id="cycleGrid" class="cycle-grid"></div>
+    <div id="auditGrid" class="audit-grid"></div>
   </section>
 
   <section class="panel feedback-panel">
-    <div class="panel-head"><div><span class="eyebrow">FIELD FEEDBACK</span><h2>Chỗ bạn đang thế nào?</h2></div></div>
+    <div class="panel-head"><div><span class="eyebrow">FIELD FEEDBACK</span><h2>Chỗ bạn đang thế nào?</h2></div><a class="text-link" href="/Jotrip-Lab/weather/weather-history.html">Lịch sử & đối chiếu ↗</a></div>
     <p class="panel-note">Phản hồi giúp đánh giá PQ Local Now. Không thu GPS và không biến phản hồi định tính thành số đo trạm.</p>
     <div class="feedback-actions">
       <button data-feedback="MATCH">Khớp</button>
