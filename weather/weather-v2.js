@@ -276,13 +276,16 @@ function summary(p){
 }
 
 function renderHero(){
-  const p=point(),l=p.local||{},m=p.model||{};
+  const p=point(),l=p.local||{},m=p.model||{},n=p.nowcast||{};
   $("placeName").textContent=p.name||current;
   const t=num(l.temperature_c)??num(m.temperature_c);
   $("heroTemp").textContent=t===null?"--":fmt(t,1)+"°";
   $("heroTempClass").textContent=l.available?"ƯỚC TÍNH":"MÔ HÌNH";
   $("heroSummary").textContent=summary(p);
   $("updatedAt").textContent="Cập nhật "+localTime(critical.generated_at)+" · "+ageText(critical.generated_at);
+  const rain=num(l.rain_rate_mm_h)||0,conv=num(n.convective_score??l.convection_score)||0,wind=num(l.wind_kmh??m.wind_kmh)||0;
+  const mood=(conv>=70||rain>=3)?"storm":(conv>=50||rain>=.5||wind>=28)?"watch":"calm";
+  document.querySelector(".hero")?.setAttribute("data-mood",mood);
 }
 
 function renderCurrent(){
