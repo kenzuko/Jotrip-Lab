@@ -38,11 +38,27 @@ def public_lead(lead:int)->bool:
     if lead<=72:return lead%6==0
     return lead%12==0 and lead<=240
 
-def confidence_band(lead:int,completion:float|None,calibration:str)->str:
-    c=completion or 0
-    if lead<=72 and c>=.9:return "KHÁ"
-    if lead<=168 and c>=.85:return "TRUNG BÌNH"
+def confidence_score(lead:int,completion:float|None,calibration:str)->int:
+    """Operational confidence index, not a probability of forecast correctness."""
+    c=max(0.0,min(1.0,completion or 0.0))
+    base=100.0*c
+    if lead<=72:
+        lead_penalty=0.0
+    else:
+        lead_penalty=min(35.0,35.0*(lead-72)/(240-72))
+    calibration_penalty=8.0 if str(calibration).upper()=="LEARNING" else 0.0
+    return round(max(35.0,min(95.0,base-lead_penalty-calibration_penalty)))
+
+def confidence_band(score:int)->str:
+    if score>=78:return "KHÁ"
+    if score>=62:return "TRUNG BÌNH"
     return "THẬN TRỌNG"
+
+def variability_score(wind_spread:float|None,rain_spread:float|None)->int:
+    """Normalized ensemble spread index. Not a probability."""
+    w=max(0.0,wind_spread or 0.0)/20.0
+    r=max(0.0,rain_spread or 0.0)/10.0
+    return round(100*min(1.0,max(w,r)))
 
 def build(ensemble:dict)->dict:
     points=ensemble.get("points") or {}
@@ -75,10 +91,14 @@ def build(ensemble:dict)->dict:
             wind_driver=max(items,key=lambda x:(x["wind_prob"] or 0,x["wind_q90"] or 0))
             rain_driver=max(items,key=lambda x:(x["rain_prob"] or 0,x["rain_q90"] or 0))
             vol_driver=max(items,key=lambda x:max((x["wind_spread"] or 0)/10,(x["rain_spread"] or 0)/4))
+            conf_score=confidence_score(lead,completion,cal)
+            var_score=variability_score(vol_driver["wind_spread"],vol_driver["rain_spread"])
             rows.append({
                 "lead_hours":lead,
                 "valid_time":next((x["valid_time"] for x in items if x["valid_time"]),None),
-                "confidence_band":confidence_band(lead,completion,cal),
+                "confidence_score":conf_score,
+                "confidence_band":confidence_band(conf_score),
+                "variability_score":var_score,
                 "temperature_c":round(statistics.median(temps),2) if temps else None,
                 "wind_kmh":round(wind_driver["wind_q50"],2) if wind_driver["wind_q50"] is not None else None,
                 "wind_q90_kmh":round(wind_driver["wind_q90"],2) if wind_driver["wind_q90"] is not None else None,
@@ -108,7 +128,7 @@ def build(ensemble:dict)->dict:
         "calibration_status":cal,
         "cadence":{"d0_d3_hours":6,"d4_d10_hours":12},
         "regions":out_regions,
-        "note":"D0-D3 shown every 6h; D4-D10 every 12h. Longer lead time is shown with lower confidence to avoid false precision.",
+        "note":"D0-D3 shown every 6h; D4-D10 every 12h. confidence_score is an operational confidence index, not probability of correctness; variability_score is normalized ensemble spread, not hazard probability.",
     }
 
 def main():
