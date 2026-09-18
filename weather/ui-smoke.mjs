@@ -59,6 +59,7 @@ for(const [name,width,height] of sizes){
       aqiItems:document.querySelectorAll("#aqiQuick .quick-item").length,
       tideItems:document.querySelectorAll("#tideQuick .quick-item").length,
       tideSpark:!!document.querySelector("#tideSpark"),
+      tideSeries:!!document.querySelector("#tideSpark polyline"),
       feedback:document.querySelectorAll("[data-feedback]").length,
       command:!!document.querySelector(".command-center"),
       mapBox:!!document.querySelector("#mapBox"),
@@ -67,6 +68,8 @@ for(const [name,width,height] of sizes){
       days:document.querySelectorAll("#forecastDayRibbon .forecast-day").length,
       forecastRows:document.querySelectorAll("#jotripForecastRows tr").length,
       historyLink:!!document.querySelector('a[href="/weather-history.html"]'),
+      situationGap:(()=>{const a=rect(".command-center .island-summary"),b=rect("#hazardBoard");return a&&b?Math.round(b.top-a.bottom):9999})(),
+      situationHeight:Math.round(rect(".situation-rail")?.height||0),
       fatal:/Không tải được dữ liệu ban đầu/i.test(document.body.innerText)
     };
   });
@@ -74,8 +77,9 @@ for(const [name,width,height] of sizes){
   await page.screenshot({path:`artifacts/weather-ui-${name}.png`,fullPage:true});
   const ok=checks.overflow<=2&&checks.heroInside&&checks.heroImage&&checks.place&&checks.temp&&checks.statusInside&&
     checks.pointTabs>=8&&checks.metrics===8&&checks.actualCards>=1&&checks.aqiItems>=4&&checks.tideItems>=4&&
-    checks.tideSpark&&checks.feedback===6&&checks.command&&checks.mapBox&&checks.hazards===4&&
-    checks.regions===4&&checks.days>=7&&checks.forecastRows>=1&&checks.historyLink&&!checks.fatal&&errors.length===0;
+    checks.tideSpark&&checks.tideSeries&&checks.feedback===6&&checks.command&&checks.mapBox&&checks.hazards===4&&
+    checks.regions===4&&checks.days>=7&&checks.forecastRows>=1&&checks.historyLink&&
+    (width>760||(checks.situationGap>=0&&checks.situationGap<=24&&checks.situationHeight<760))&&!checks.fatal&&errors.length===0;
   console.log(name,JSON.stringify(checks),errors);
   if(!ok)failed=true;
   await page.close();
