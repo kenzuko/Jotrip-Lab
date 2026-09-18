@@ -121,6 +121,14 @@ jobs:
           assert p.get('short_record_count', 0) >= 200, p
           assert p.get('medium_record_count', 0) >= 500, p
           assert p.get('record_count', 0) >= 700, p
+          spatial=p.get('spatial') or {}
+          assert spatial.get('status') == 'READY', spatial
+          assert spatial.get('cell_count',0) >= 20, spatial
+          assert spatial.get('display_interpolation') == 'RENDER_ONLY', spatial
+          assert len(spatial.get('frames') or []) >= 45, len(spatial.get('frames') or [])
+          assert spatial['frames'][-1]['valid_time'] >= spatial['frames'][0]['valid_time']
+          assert any(cell.get('u10_ms') is not None and cell.get('v10_ms') is not None
+                     for frame in spatial['frames'] for cell in frame['cells']), spatial
           points={r.get('point_id') for r in p.get('records', [])} | {r.get('point_id') for r in p.get('medium_records', [])}
           assert set(POINTS).issubset(points), points
           PY
@@ -265,6 +273,29 @@ jobs:
             --icon /tmp/weather-artifacts/icon/icon-point.json \
             --copernicus /tmp/weather-artifacts/copernicus/copernicus-live.json \
             --output weather/dashboard-data.json
+      - name: Publish compact ECMWF spatial field for V5
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          source=json.load(open('/tmp/weather-artifacts/ecmwf/ecmwf-d10.json'))
+          spatial=source.get('spatial') or {}
+          assert spatial.get('status') == 'READY', spatial
+          payload={
+              'schema_version':'weather-spatial-v1',
+              'product':'JOTRIP_ECMWF_SPATIAL',
+              'generated_at':source.get('checked_at'),
+              'run_time':source.get('run_time'),
+              'medium_run_time':source.get('medium_run_time'),
+              'horizon_hours':source.get('horizon_hours'),
+              'source':'ECMWF_OPEN_DATA_DIRECT',
+              'spatial':spatial,
+          }
+          target=Path('weather/spatial-ecmwf.json')
+          target.write_text(json.dumps(payload,ensure_ascii=False,separators=(',',':'))+'\n',encoding='utf-8')
+          assert target.stat().st_size < 2500000, target.stat().st_size
+          PY
       - name: Enforce dashboard publication gate
         run: |
           python - <<'PY'
@@ -288,7 +319,7 @@ jobs:
         run: |
           git config user.name "jotrip-weather-bot"
           git config user.email "jotrip-weather-bot@users.noreply.github.com"
-          git add weather/dashboard-data.json
+          git add weather/dashboard-data.json weather/spatial-ecmwf.json
           if git diff --cached --quiet; then
             echo "Dashboard snapshot unchanged"
             exit 0
