@@ -90,6 +90,31 @@
       <small id="actualState">ĐANG TẢI</small>
     </div>
     <div id="actualStrip" class="actual-strip"><div class="skeleton wide"></div></div>
+
+    <div class="field-strip" aria-label="Phản hồi thực địa">
+      <div class="field-strip-head">
+        <span><b>Thực địa</b> · giúp kiểm tra PQ Local Now</span>
+        <select id="feedbackPoint" aria-label="Khu vực phản hồi"></select>
+      </div>
+      <div class="feedback-actions compact">
+        <button data-feedback="MATCH">Khớp</button>
+        <button data-feedback="RAIN_MORE">Mưa +</button>
+        <button data-feedback="RAIN_LESS">Mưa -</button>
+        <button data-feedback="WIND_MORE">Gió +</button>
+        <button data-feedback="WIND_LESS">Gió -</button>
+        <button data-feedback="THUNDER">Có dông</button>
+      </div>
+      <small id="feedbackState">Không thu GPS · phản hồi lưu trên thiết bị.</small>
+    </div>
+  </section>
+
+  <section class="panel island-watch-panel">
+    <div class="panel-head">
+      <div><span class="eyebrow">ISLAND WATCH</span><h2>Theo dõi toàn đảo</h2></div>
+      <span class="badge estimated">ESTIMATED + ACTUAL ANCHORS</span>
+    </div>
+    <p class="panel-note">Các điểm đại diện Bắc - Tây - Đông - Nam đảo. Nhấn một điểm để chuyển toàn bộ dashboard sang khu vực đó.</p>
+    <div id="islandWatchGrid" class="island-watch-grid"><div class="skeleton wide"></div></div>
   </section>
 
   <div class="two-col">
@@ -122,6 +147,27 @@
     <small id="nowcastAge" class="panel-foot"></small>
   </section>
 
+  <section class="panel map-panel">
+    <div class="panel-head">
+      <div><span class="eyebrow">REMOTE OBSERVED + MAP</span><h2>Bản đồ thời tiết</h2></div>
+      <span id="mapState" class="badge deferred">LAZY LOAD</span>
+    </div>
+    <div class="map-tabs">
+      <button class="active" data-map="radar">Radar</button>
+      <button data-map="wind">Gió</button>
+      <button data-map="rain">Mưa dự báo</button>
+      <button data-map="himawari">Himawari IR</button>
+    </div>
+    <div id="mapBox" class="map-box"><div class="map-placeholder"><b>Bản đồ sẽ tự tải khi cuộn tới đây</b><span>Không chặn phần số liệu phía trên.</span></div></div>
+    <div id="mapNote" class="map-note">Bản đồ giúp đọc cấu trúc không gian trước khi xem forecast. Số liệu vận hành vẫn dùng pipeline riêng.</div>
+    <div class="map-source-links">
+      <a href="https://himawari8.nict.go.jp/" target="_blank" rel="noopener noreferrer">NICT Himawari ↗</a>
+      <a href="https://www.data.jma.go.jp/mscweb/data/himawari/" target="_blank" rel="noopener noreferrer">JMA Himawari ↗</a>
+      <a href="https://nchmf.gov.vn/KttvSiteE/vi-VN/1/image-ra-dar-r2.html" target="_blank" rel="noopener noreferrer">NCHMF Radar ↗</a>
+      <a href="https://www.windy.com/?10.20,104.00,8" target="_blank" rel="noopener noreferrer">Windy ↗</a>
+    </div>
+  </section>
+
   <section class="panel forecast-panel">
     <div class="panel-head">
       <div><span class="eyebrow">FORECAST</span><h2>Dự báo D0-D10</h2></div>
@@ -150,27 +196,6 @@
     <small id="ensembleMeta" class="panel-foot"></small>
   </section>
 
-  <section class="panel map-panel">
-    <div class="panel-head">
-      <div><span class="eyebrow">REMOTE OBSERVED + MAP</span><h2>Bản đồ thời tiết</h2></div>
-      <span id="mapState" class="badge deferred">LAZY LOAD</span>
-    </div>
-    <div class="map-tabs">
-      <button class="active" data-map="radar">Radar</button>
-      <button data-map="wind">Gió</button>
-      <button data-map="rain">Mưa dự báo</button>
-      <button data-map="himawari">Himawari IR</button>
-    </div>
-    <div id="mapBox" class="map-box"><div class="map-placeholder"><b>Bản đồ sẽ tự tải khi cuộn tới đây</b><span>Không chặn phần số liệu phía trên.</span></div></div>
-    <div id="mapNote" class="map-note">Radar/map là lớp trực quan. Số liệu vận hành dùng pipeline riêng.</div>
-    <div class="map-source-links">
-      <a href="https://himawari8.nict.go.jp/" target="_blank" rel="noopener noreferrer">NICT Himawari ↗</a>
-      <a href="https://www.data.jma.go.jp/mscweb/data/himawari/" target="_blank" rel="noopener noreferrer">JMA Himawari ↗</a>
-      <a href="https://nchmf.gov.vn/KttvSiteE/vi-VN/1/image-ra-dar-r2.html" target="_blank" rel="noopener noreferrer">NCHMF Radar ↗</a>
-      <a href="https://www.windy.com/?10.20,104.00,8" target="_blank" rel="noopener noreferrer">Windy ↗</a>
-    </div>
-  </section>
-
   <section class="panel health-panel" id="dataHealth">
     <div class="panel-head">
       <div><span class="eyebrow">DATA HEALTH</span><h2>Nguồn dữ liệu & khoảng trống</h2></div>
@@ -180,20 +205,7 @@
     <div id="gapGrid" class="gap-grid"></div>
     <div id="cycleGrid" class="cycle-grid"></div>
     <div id="auditGrid" class="audit-grid"></div>
-  </section>
-
-  <section class="panel feedback-panel">
-    <div class="panel-head"><div><span class="eyebrow">FIELD FEEDBACK</span><h2>Chỗ bạn đang thế nào?</h2></div><a class="text-link" href="/weather-history.html">Lịch sử & đối chiếu ↗</a></div>
-    <p class="panel-note">Phản hồi giúp đánh giá PQ Local Now. Không thu GPS và không biến phản hồi định tính thành số đo trạm.</p>
-    <div class="feedback-actions">
-      <button data-feedback="MATCH">Khớp</button>
-      <button data-feedback="RAIN_MORE">Mưa nhiều hơn</button>
-      <button data-feedback="RAIN_LESS">Mưa ít hơn</button>
-      <button data-feedback="WIND_MORE">Gió mạnh hơn</button>
-      <button data-feedback="WIND_LESS">Gió yếu hơn</button>
-      <button data-feedback="THUNDER">Có dông</button>
-    </div>
-    <small id="feedbackState">Chưa gửi phản hồi.</small>
+    <div class="history-row"><a class="text-link" href="/weather-history.html">Mở lịch sử & đối chiếu ↗</a></div>
   </section>
 
   <footer>
