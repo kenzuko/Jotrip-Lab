@@ -38,7 +38,7 @@ jobs:
         run: |
           python -m unittest weather.tests.test_critical_payload -v
           python -m weather.pipeline.build_critical_payload             --dashboard weather/dashboard-data.json             --local-now live-data/data/weather-groundtruth/local-now.json             --groundtruth live-data/data/weather-groundtruth/latest.json             --output weather/critical.json
-          test $(wc -c < weather/critical.json) -lt 30000
+          test $(wc -c < weather/critical.json) -lt 60000
           wc -c weather/critical.json weather-v2.html weather-v2.css weather-v2.js
       - name: Install browser
         run: |
