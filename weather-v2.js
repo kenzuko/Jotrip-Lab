@@ -332,7 +332,17 @@ function renderCurrent(){
 function renderActual(){
   const a=critical.actual||{},v=a.vvpq||{},g=a.rain_gauges||[],cards=[];
   cards.push('<article class="actual-card"><header><b>VVPQ</b><em class="badge actual">ĐO THỰC</em></header><strong>'+fmt(v.temperature_c,1)+'°C</strong><small>Gió '+fmt(v.wind_kmh,1)+' km/h · '+(v.weather?esc(v.weather)+' · ':'')+ageText(v.observed_at)+'</small></article>');
-  g.forEach(x=>cards.push('<article class="actual-card"><header><b>'+esc(x.name)+'</b><em class="badge actual">ĐO THỰC</em></header><strong>'+fmt(x.accum_mm,1)+' mm</strong><small>Tích lũy'+(num(x.increment_mm)!==null?' · +'+fmt(x.increment_mm,1)+' mm / '+fmt(x.increment_min,0)+' phút':'')+'</small></article>'));
+  g.forEach(x=>{
+    const observed=x.rain_observed===true?"CÓ MƯA":x.rain_observed===false?"KHÔNG MƯA":"CHƯA RÕ";
+    const win=num(x.increment_min),inc=num(x.increment_mm),rate=num(x.rain_intensity_mm_h);
+    let detail="Chưa đủ 2 mẫu liên tiếp để xác định mưa hiện tại";
+    if(win!==null&&inc!==null){
+      detail="Lượng mưa "+fmt(inc,2)+" mm / "+fmt(win,0)+" phút";
+      if(rate!==null)detail+=" · cường độ "+fmt(rate,2)+" mm/h";
+    }
+    if(num(x.accum_mm)!==null)detail+=" · tổng kỳ "+fmt(x.accum_mm,1)+" mm";
+    cards.push('<article class="actual-card rain-actual"><header><b>'+esc(x.name)+'</b><em class="badge actual">ĐO THỰC</em></header><strong>'+observed+'</strong><small>'+detail+'</small></article>');
+  });
   $("actualStrip").innerHTML=cards.join("");
   $("actualState").textContent=(critical.source_state?.vvpq==="FRESH"&&critical.source_state?.vrain==="FRESH")?"VVPQ + VRain vừa cập nhật":"Có nguồn cập nhật chậm";
 }
