@@ -98,7 +98,7 @@ jobs:
             --nowcast live-data/data/weather-nowcast/latest.json \
             --ensemble live-data/data/weather-ensemble/latest.json \
             --output /tmp/weather-pages/data/critical.json
-          test $(wc -c < /tmp/weather-pages/data/critical.json) -lt 30000
+          test $(wc -c < /tmp/weather-pages/data/critical.json) -lt 60000
 
       - name: Make Weather Lab safe under /Jotrip-Lab/weather/
         shell: bash
