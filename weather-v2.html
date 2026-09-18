@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#f4f8fb">
   <title>JoTrip Weather - Phú Quốc</title>
   <meta name="description" content="Thời tiết Phú Quốc theo thời gian thực: quan trắc, radar - vệ tinh, biển, AQI và dự báo JoTrip 10 ngày. Miễn phí, phi thương mại.">
-  <link rel="stylesheet" href="/weather-v2.css?v=20260918-13">
+  <link rel="stylesheet" href="/weather-v2.css?v=20260918-14">
   <link rel="preload" as="fetch" href="/weather/critical.json" crossorigin="anonymous">
   <link rel="manifest" href="/weather-manifest.webmanifest">
-  <script defer src="/weather-v2.js?v=20260918-13"></script>
+  <script defer src="/weather-v2.js?v=20260918-14"></script>
 </head>
 <body>
 <header class="topbar">
@@ -185,6 +185,9 @@
       <span class="inline-loader">Đang tải dự báo theo vùng...</span>
     </nav>
     <div id="forecastRegionMeta" class="forecast-region-meta"></div>
+    <div id="forecastDayRibbon" class="forecast-day-ribbon" aria-label="Tóm tắt dự báo 10 ngày">
+      <span class="inline-loader">Đang tổng hợp 10 ngày...</span>
+    </div>
     <div class="forecast-table-shell">
       <table class="jotrip-forecast-table">
         <thead>
