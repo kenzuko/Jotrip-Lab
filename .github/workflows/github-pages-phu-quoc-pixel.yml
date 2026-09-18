@@ -1,0 +1,153 @@
+name: Phu Quoc Pixel - GitHub Pages
+
+on:
+  push:
+    branches:
+      - 'feat/phu-quoc-pixel-architecture-v1'
+    paths:
+      - 'phu-quoc-pixel/**'
+      - '.github/workflows/github-pages-phu-quoc-pixel.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pixel-pages-writer
+  cancel-in-progress: true
+
+env:
+  SOURCE_REF: feat/phu-quoc-pixel-architecture-v1
+  PAGES_REF: gh-pages
+  PAGES_DIR: phu-quoc-pixel
+  PREVIEW_URL: https://kenzuko.github.io/Jotrip-Lab/phu-quoc-pixel/
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Pixel source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SOURCE_REF }}
+          path: source
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install and build reproducibly
+        working-directory: source/phu-quoc-pixel
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Checkout existing GitHub Pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.PAGES_REF }}
+          path: pages
+          fetch-depth: 0
+
+      - name: Publish isolated Pixel folder to gh-pages
+        shell: bash
+        working-directory: pages
+        run: |
+          set -euo pipefail
+          rm -rf "$PAGES_DIR"
+          mkdir -p "$PAGES_DIR"
+          cp -a ../source/phu-quoc-pixel/dist/. "$PAGES_DIR"/
+
+          git config user.name "jotrip-pixel-bot"
+          git config user.email "jotrip-pixel-bot@users.noreply.github.com"
+          git add "$PAGES_DIR"
+
+          if git diff --cached --quiet; then
+            echo "Pixel Pages already current"
+          else
+            git commit -m "deploy(pixel): refresh GitHub Pages preview"
+
+            published=false
+            for attempt in 1 2 3; do
+              if git pull --rebase origin "$PAGES_REF" && git push origin "HEAD:$PAGES_REF"; then
+                echo "Pixel preview published to gh-pages on attempt $attempt"
+                published=true
+                break
+              fi
+              echo "Publish attempt $attempt failed; retrying"
+              git rebase --abort 2>/dev/null || true
+              sleep $((attempt * 3))
+            done
+
+            if [ "$published" != true ]; then
+              echo "Pixel gh-pages publish failed after 3 attempts"
+              exit 1
+            fi
+          fi
+
+      - name: Production HTTP smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=false
+          for attempt in $(seq 1 20); do
+            if curl -fsSL "$PREVIEW_URL" -o /tmp/pixel-index.html && grep -q 'PHU QUOC: PIXEL ISLAND' /tmp/pixel-index.html; then
+              ok=true
+              break
+            fi
+            sleep 3
+          done
+          test "$ok" = true
+
+      - name: Production Chrome smoke - mobile and desktop
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          test -n "$CHROME"
+
+          "$CHROME" --headless=new --no-sandbox --disable-gpu \
+            --window-size=430,932 --virtual-time-budget=3000 \
+            --dump-dom "$PREVIEW_URL" > /tmp/pixel-mobile-dom.html
+          grep -q '<canvas' /tmp/pixel-mobile-dom.html
+          "$CHROME" --headless=new --no-sandbox --disable-gpu \
+            --window-size=430,932 --virtual-time-budget=3000 \
+            --screenshot=/tmp/pixel-mobile.png "$PREVIEW_URL"
+
+          "$CHROME" --headless=new --no-sandbox --disable-gpu \
+            --window-size=1440,900 --virtual-time-budget=3000 \
+            --dump-dom "$PREVIEW_URL" > /tmp/pixel-desktop-dom.html
+          grep -q '<canvas' /tmp/pixel-desktop-dom.html
+          "$CHROME" --headless=new --no-sandbox --disable-gpu \
+            --window-size=1440,900 --virtual-time-budget=3000 \
+            --screenshot=/tmp/pixel-desktop.png "$PREVIEW_URL"
+
+      - name: Install browser interaction harness
+        working-directory: source/phu-quoc-pixel
+        run: npm install --no-save --package-lock=false --no-audit --no-fund playwright-core@1.55.0
+
+      - name: Production interaction E2E
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          test -n "$CHROME"
+          PREVIEW_URL="$PREVIEW_URL" CHROME_BIN="$CHROME" E2E_OUT=/tmp/pixel-e2e \
+            node source/phu-quoc-pixel/e2e/production.mjs
+
+      - name: Upload production smoke evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phu-quoc-pixel-production-smoke
+          path: |
+            /tmp/pixel-mobile.png
+            /tmp/pixel-desktop.png
+            /tmp/pixel-mobile-dom.html
+            /tmp/pixel-desktop-dom.html
+            /tmp/pixel-e2e
+          retention-days: 7
