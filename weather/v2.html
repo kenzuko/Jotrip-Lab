@@ -6,10 +6,33 @@
   <meta name="theme-color" content="#f4f8fb">
   <title>JoTrip Weather - Phú Quốc</title>
   <meta name="description" content="Thời tiết Phú Quốc theo thời gian thực: quan trắc, radar - vệ tinh, biển, AQI và dự báo JoTrip 10 ngày. Miễn phí, phi thương mại.">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="author" content="JoTrip">
+  <link rel="icon" type="image/svg+xml" href="/Jotrip-Lab/weather/weather-app-icon.svg">
+  <link rel="apple-touch-icon" href="/Jotrip-Lab/weather/weather-app-icon.svg">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="vi_VN">
+  <meta property="og:site_name" content="JoTrip Weather Intelligence">
+  <meta property="og:title" content="JoTrip Weather Intelligence - Phú Quốc">
+  <meta property="og:description" content="Theo dõi thời tiết Phú Quốc với quan trắc thực tế, radar - vệ tinh, biển, AQI và dự báo JoTrip 10 ngày.">
+  <meta property="og:url" content="https://weather.openphuquoc.com/">
+  <meta property="og:image" content="https://commons.wikimedia.org/wiki/Special:Redirect/file/Phu%20Quoc%20Beach.jpg?width=1200">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="900">
+  <meta property="og:image:alt" content="Bờ biển Phú Quốc gần Dương Đông">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="JoTrip Weather Intelligence - Phú Quốc">
+  <meta name="twitter:description" content="Quan trắc, radar - vệ tinh, biển, AQI và dự báo JoTrip 10 ngày dành riêng cho Phú Quốc.">
+  <meta name="twitter:image" content="https://commons.wikimedia.org/wiki/Special:Redirect/file/Phu%20Quoc%20Beach.jpg?width=1200">
   <link rel="stylesheet" href="/Jotrip-Lab/weather/weather-v2.css?v=20260918-17">
   <link rel="preload" as="fetch" href="/Jotrip-Lab/weather/data/critical.json" crossorigin="anonymous">
   <link rel="manifest" href="/Jotrip-Lab/weather/weather-manifest.webmanifest">
   <script defer src="/Jotrip-Lab/weather/weather-v2.js?v=20260918-17"></script>
+  <link rel="canonical" href="https://weather.openphuquoc.com/">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"JoTrip Weather Intelligence","url":"https://weather.openphuquoc.com/","applicationCategory":"WeatherApplication","operatingSystem":"Web","inLanguage":"vi","description":"Hệ thống thời tiết dành riêng cho Phú Quốc với quan trắc thực tế, radar - vệ tinh, biển, AQI và dự báo JoTrip 10 ngày."}
+  </script>
 </head>
 <body>
 <header class="topbar">
@@ -21,24 +44,21 @@
 </header>
 
 <main>
-  <section class="hero">
-    <div class="hero-copy">
-      <span class="eyebrow">HỆ THỐNG THỜI TIẾT PHÚ QUỐC · V2</span>
+  <section class="weather-scene weather-scene-hero" aria-label="Thời tiết Phú Quốc tại điểm đang chọn">
+    <img decoding="async" fetchpriority="high" src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Phu%20Quoc%20Beach.jpg?width=1600" alt="Bờ biển Phú Quốc gần Dương Đông">
+    <div class="weather-scene-shade"></div>
+    <div class="weather-scene-copy">
+      <span class="scene-badge">PHÚ QUỐC WEATHER INTELLIGENCE · V2</span>
+      <small>ẢNH THAM CHIẾU · BỜ TÂY GẦN DƯƠNG ĐÔNG</small>
       <h1 id="placeName">Dương Đông</h1>
       <p id="heroSummary">Đang đọc dữ liệu quan trắc và phân tích địa phương...</p>
       <div class="updated" id="updatedAt">-</div>
+      <span class="scene-credit">Ảnh: FrogsLegs71 · Wikimedia Commons · CC BY-SA 3.0 · không phải webcam trực tiếp</span>
     </div>
-    <div class="hero-stage">
-      <div class="weather-orbit" aria-hidden="true">
-        <i></i><i></i><i></i>
-        <span class="orbit-core"></span>
-      </div>
-      <div class="hero-now">
-        <span>NHIỆT ĐỘ ĐỊA PHƯƠNG</span>
-        <b id="heroTemp">--</b>
-        <small id="heroTempClass">ƯỚC TÍNH</small>
-      </div>
-      <div class="hero-signature">PHU QUOC · 10.2°N</div>
+    <div class="weather-scene-data">
+      <span>NHIỆT ĐỘ ĐỊA PHƯƠNG</span>
+      <strong id="heroTemp">--</strong>
+      <small id="heroTempClass">ƯỚC TÍNH</small>
     </div>
   </section>
 
@@ -245,7 +265,7 @@
     <small id="ensembleMeta" class="panel-foot"></small>
     <details class="forecast-method">
       <summary>JoTrip tính dự báo theo vùng như thế nào?</summary>
-      <div>Nhiệt độ của vùng lấy giá trị trung tâm từ các điểm đại diện. Với gió, mưa và rủi ro, hệ thống ưu tiên điểm có tín hiệu bất lợi hơn để không làm mất cảnh báo cục bộ. Ba ngày đầu giữ bước 6 giờ; từ ngày 4 đến ngày 10 dùng bước 12 giờ và giảm dần mức tin cậy.</div>
+      <div>Nhiệt độ của vùng lấy giá trị trung tâm từ các điểm đại diện. Với gió, mưa và rủi ro, hệ thống ưu tiên điểm có tín hiệu bất lợi hơn để không làm mất cảnh báo cục bộ. Gió tại các điểm ven bờ có thể được hiệu chỉnh theo hướng phơi gió và mức che chắn địa phương trước khi tính xác suất. Điểm biến động /100 là chỉ số độ phân tán ensemble, còn điểm tin cậy /100 là chỉ số chất lượng vận hành - cả hai đều không phải xác suất dự báo chắc chắn đúng. Ba ngày đầu giữ bước 6 giờ; từ ngày 4 đến ngày 10 dùng bước 12 giờ và giảm dần mức tin cậy.</div>
     </details>
   </section>
 

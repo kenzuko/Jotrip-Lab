@@ -171,11 +171,29 @@ function probabilityLevel(v){
 }
 function variationLevel(w,r){
   const ws=num(w?.spread)||0,rs=num(r?.spread)||0;
-  const score=Math.max(ws/10,rs/4);
-  if(score>=1.4)return {label:"CAO",score:3};
-  if(score>=0.75)return {label:"VỪA",score:2};
-  if(score>=0.35)return {label:"NHẸ",score:1};
-  return {label:"ỔN ĐỊNH",score:0};
+  const raw=Math.max(ws/20,rs/10);
+  const index=Math.round(clamp(raw*100,0,100));
+  if(index>=70)return {label:"CAO",score:3,index};
+  if(index>=40)return {label:"VỪA",score:2,index};
+  if(index>=20)return {label:"NHẸ",score:1,index};
+  return {label:"ỔN ĐỊNH",score:0,index};
+}
+function pct(v){
+  v=num(v);return v===null?"-":Math.round(clamp(v,0,1)*100)+"%";
+}
+function rowVariability(r){
+  const direct=num(r?.variability_score);
+  if(direct!==null)return Math.round(clamp(direct,0,100));
+  return variationLevel({spread:r?.wind_spread},{spread:r?.rain_spread}).index;
+}
+function rowConfidence(r){
+  const direct=num(r?.confidence_score);
+  if(direct!==null)return Math.round(clamp(direct,0,100));
+  const completion=clamp(num(regionalForecast?.ensemble_completion_ratio)??0,0,1);
+  const lead=Math.max(0,num(r?.lead_hours)||0);
+  const leadPenalty=lead<=72?0:Math.min(35,35*(lead-72)/(240-72));
+  const learning=String(regionalForecast?.calibration_status||"").toUpperCase()==="LEARNING"?8:0;
+  return Math.round(clamp(100*completion-leadPenalty-learning,35,95));
 }
 function leadMoment(row){
   return row?.valid_time?localTime(row.valid_time):("+"+fmt(row?.lead_hours,0)+" giờ");
@@ -193,7 +211,7 @@ function renderHazardBoard(){
 
   const rain=future.map(x=>({...x,val:num(x.row.rain?.prob)||0})).sort((a,b)=>b.val-a.val)[0];
   const rainLvl=probabilityLevel(rain?.val);
-  setHazard("hazardRain",rainLvl.label,rain?esc(rain.p.name)+" · "+leadMoment(rain.row):"Chưa đủ dữ liệu tổ hợp",rainLvl.score);
+  setHazard("hazardRain",rain?pct(rain.val):"-",rain?"P(mưa ≥5 mm / 6h) · "+esc(rain.p.name)+" · "+leadMoment(rain.row):"Chưa đủ dữ liệu tổ hợp",rainLvl.score);
 
   const storms=points.map(x=>({
     ...x,
@@ -201,20 +219,20 @@ function renderHazardBoard(){
     cooling:num(x.p.nowcast?.cooling_c_per_20m)
   })).sort((a,b)=>b.score-a.score);
   const storm=storms[0];
-  let stormLabel="THẤP",stormLevel=0;
-  if(storm?.score>=75){stormLabel="DỄ PHÁT TRIỂN";stormLevel=3}
-  else if(storm?.score>=60){stormLabel="CẦN THEO DÕI";stormLevel=2}
-  else if(storm?.score>=40){stormLabel="CÓ TÍN HIỆU";stormLevel=1}
-  setHazard("hazardStorm",stormLabel,storm?esc(storm.p.name)+" · điểm đối lưu "+fmt(storm.score,0)+(storm.cooling!==null?" · Δ20p "+fmt(storm.cooling,1)+"°C":""):"Chưa có Himawari",stormLevel);
+  let stormLevel=0;
+  if(storm?.score>=75)stormLevel=3;
+  else if(storm?.score>=60)stormLevel=2;
+  else if(storm?.score>=40)stormLevel=1;
+  setHazard("hazardStorm",storm?fmt(storm.score,0)+"/100":"-",storm?"Chỉ số đối lưu · "+esc(storm.p.name)+(storm.cooling!==null?" · Δ20p "+fmt(storm.cooling,1)+"°C":"")+" · không phải xác suất dông":"Chưa có Himawari",stormLevel);
 
   const wind=future.map(x=>({...x,val:num(x.row.wind?.prob)||0})).sort((a,b)=>b.val-a.val)[0];
   const windLvl=probabilityLevel(wind?.val);
   const waves=points.map(x=>({name:x.p.name,hs:num(x.p.local?.wave_hs_m??x.p.model?.wave_hs_m)||0})).sort((a,b)=>b.hs-a.hs)[0];
-  const windMeta=wind?esc(wind.p.name)+" · "+leadMoment(wind.row)+(waves?.hs?" · Hs cao nhất "+fmt(waves.hs,1)+" m":""):"Chưa đủ dữ liệu tổ hợp";
-  setHazard("hazardWind",windLvl.label,windMeta,Math.max(windLvl.score,waves?.hs>=2?3:waves?.hs>=1.5?2:0));
+  const windMeta=wind?"P(gió ≥30 km/h) · "+esc(wind.p.name)+" · "+leadMoment(wind.row)+(waves?.hs?" · Hs cao nhất "+fmt(waves.hs,1)+" m":""):"Chưa đủ dữ liệu tổ hợp";
+  setHazard("hazardWind",wind?pct(wind.val):"-",windMeta,Math.max(windLvl.score,waves?.hs>=2?3:waves?.hs>=1.5?2:0));
 
-  const vol=future.map(x=>({...x,v:variationLevel(x.row.wind,x.row.rain)})).sort((a,b)=>b.v.score-a.v.score)[0];
-  setHazard("hazardVolatility",vol?.v.label||"CHƯA RÕ",vol?esc(vol.p.name)+" · mạnh nhất "+leadMoment(vol.row):"Chưa đủ dữ liệu",vol?.v.score||0);
+  const vol=future.map(x=>({...x,v:variationLevel(x.row.wind,x.row.rain)})).sort((a,b)=>b.v.index-a.v.index)[0];
+  setHazard("hazardVolatility",vol?vol.v.index+"/100":"-",vol?"Biến động ensemble · "+esc(vol.p.name)+" · mạnh nhất "+leadMoment(vol.row)+" · không phải xác suất":"Chưa đủ dữ liệu",vol?.v.score||0);
 }
 
 function islandAssessment(){
@@ -247,7 +265,7 @@ function renderStatus(){
   const confidence=confidenceScore();
   $("decisionNow").textContent=assessment.label;
   $("completenessNow").textContent=coverage+"% · "+islandIds().length+"/"+islandIds().length+" điểm";
-  $("confidenceNow").textContent=(confidence>=80?"CAO":confidence>=60?"KHÁ":"THẤP")+" · "+confidence+"/100";
+  $("confidenceNow").textContent=confidence+"/100 · "+(confidence>=80?"cao":confidence>=60?"khá":"thận trọng");
   const fallbackLead=Math.max(0,...islandIds().flatMap(id=>(critical.points[id]?.ensemble?.rows||[]).map(r=>Number(r.lead_hours)||0)));
   const maxLead=Number(regionalForecast?.horizon_hours||fallbackLead||0);
   $("horizonNow").textContent=maxLead?(maxLead>=240?"10 NGÀY":maxLead+" giờ"):"CHƯA CÓ";
@@ -283,6 +301,9 @@ function renderHero(){
   $("heroTempClass").textContent=l.available?"ƯỚC TÍNH":"MÔ HÌNH";
   $("heroSummary").textContent=summary(p);
   $("updatedAt").textContent="Cập nhật "+localTime(critical.generated_at)+" · "+ageText(critical.generated_at);
+  if($("scenePoint"))$("scenePoint").textContent=p.name||current;
+  if($("sceneTemp"))$("sceneTemp").textContent=t===null?"--":fmt(t,1)+"°";
+  if($("sceneUpdated"))$("sceneUpdated").textContent="JoTrip Local Now · "+ageText(critical.generated_at);
   const rain=num(l.rain_rate_mm_h)||0,conv=num(n.convective_score??l.convection_score)||0,wind=num(l.wind_kmh??m.wind_kmh)||0;
   const mood=(conv>=70||rain>=3)?"storm":(conv>=50||rain>=.5||wind>=28)?"watch":"calm";
   document.querySelector(".hero")?.setAttribute("data-mood",mood);
@@ -489,12 +510,13 @@ function renderForecastDayRibbon(rows){
     const state=forecastCardState(windProb,rainProb);
     const bft=beaufort(winds.length?Math.max(...winds):0);
     const conf=worstConfidence(rows.map(r=>r.confidence_band).filter(Boolean));
+    const confScore=Math.min(...rows.map(rowConfidence));
     return '<article class="forecast-day '+state.cls+'">'+
       '<header><b>'+esc(day.label)+'</b><span>'+esc(day.date)+'</span></header>'+
       '<strong>'+(temps.length?fmt(Math.min(...temps),0)+'-'+fmt(Math.max(...temps),0)+'°':'-')+'</strong>'+
-      '<div><span>Mưa</span><b>'+forecastBand(rainProb)+'</b></div>'+
-      '<div><span>Gió</span><b>Bft '+bft.force+'</b></div>'+
-      '<small>'+esc(conf)+'</small>'+
+      '<div><span>Mưa ≥5 mm</span><b>'+pct(rainProb)+'</b></div>'+
+      '<div><span>Gió ≥30</span><b>'+pct(windProb)+' · Bft '+bft.force+'</b></div>'+
+      '<small>Tin cậy '+confScore+'/100 · '+esc(conf)+'</small>'+
     '</article>';
   }).join("")||'<span class="inline-loader">Chưa đủ dữ liệu để tóm tắt 10 ngày.</span>';
 }
@@ -542,10 +564,10 @@ function renderJoTripForecast(){
       '<td>'+fmt(r.temperature_c,1)+'°C</td>'+
       '<td><b>'+fmt(r.wind_kmh,0)+' km/h</b><small>q90 '+fmt(r.wind_q90_kmh,0)+'</small></td>'+
       '<td><b>Bft '+bft.force+'</b><small>'+esc(bft.label)+'</small></td>'+
-      '<td>'+forecastBand(r.rain_prob_5)+'</td>'+
-      '<td>'+forecastBand(r.wind_prob_30)+'</td>'+
-      '<td>'+variation.label+'</td>'+
-      '<td>'+esc(r.confidence_band||"-")+'</td>'+
+      '<td><b>'+pct(r.rain_prob_5)+'</b><small>'+forecastBand(r.rain_prob_5)+'</small></td>'+
+      '<td><b>'+pct(r.wind_prob_30)+'</b><small>'+forecastBand(r.wind_prob_30)+'</small></td>'+
+      '<td><b>'+rowVariability(r)+'/100</b><small>'+variation.label.toLowerCase()+'</small></td>'+
+      '<td><b>'+rowConfidence(r)+'/100</b><small>'+esc((r.confidence_band||"-").toLowerCase())+'</small></td>'+
       '<td>'+esc(driverText)+'</td>'+
     '</tr>';
   }).join("");
