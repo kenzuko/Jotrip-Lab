@@ -287,7 +287,7 @@ function renderAQI(){
     '<div class="quick-item"><span>Lệch nguồn</span><b>'+fmt(a.divergence,0)+'</b><small>IQAir - CAMS</small></div>'+
     '<div class="quick-item"><span>Điểm nguồn</span><b class="small-value">'+esc(a.source_city||"-")+'</b><small>'+esc(a.aqi_source||"-")+'</small></div>';
   setBadge("aqiSourceBadge",a.aqi_source==="IQAIR_COMMUNITY_REALTIME"?"ACTUAL":"MODEL_ONLY",a.aqi_source==="IQAIR_COMMUNITY_REALTIME"?"IQAIR TRỰC TIẾP":"CAMS");
-  $("aqiAge").textContent="AQI cập nhật "+ageText(a.sampled_time)+". PM2.5/PM10 hiện dùng CAMS mô hình nếu chưa có nguồn đo trực tiếp riêng.";
+  $("aqiAge").textContent="AQI cập nhật "+ageText(a.sampled_time)+". 0-50: tốt · 51-100: trung bình · trên 100: bắt đầu đáng lưu ý. PM2.5/PM10 dùng CAMS mô hình nếu chưa có nguồn đo trực tiếp riêng.";
 }
 
 function effectiveTide(){
@@ -370,7 +370,7 @@ function renderNowcast(){
   if(n.lightning&&String(n.lightning).toUpperCase()!=="NOT_CONNECTED")cards.push('<div class="quick-item"><span>Sét quan sát</span><b class="small-value">'+esc(n.lightning)+'</b><small>nguồn sét trực tiếp</small></div>');
   root.innerHTML=cards.join("");
   $("nowcastAge").textContent="Himawari quan sát "+ageText(n.sampled_time)+" · "+esc(n.source||"JMA Himawari")+". Đây là quan sát vệ tinh, không phải trạm mưa.";
-  if(preview){preview.hidden=false;installSatellitePreviewObserver()}
+  if(preview){preview.hidden=false;defer(installSatellitePreviewObserver,1400)}
 }
 
 let satellitePreviewStarted=false;
@@ -395,7 +395,7 @@ function installSatellitePreviewObserver(){
 
 function renderHours(rows){
   $("hourlyStrip").innerHTML=rows.length?rows.map(r=>
-    '<article class="hour-card"><time>'+hourLabel(r.t)+'</time><strong>'+fmt(r.temp,0)+'°</strong><div class="hour-grid"><span>Gió</span><b>'+fmt(r.wind,0)+'</b><span>Giật</span><b>'+fmt(r.gust,0)+'</b><span>Mưa</span><b>'+fmt(r.rain,1)+'</b><span>Hs</span><b>'+fmt(r.wave,1)+'</b></div></article>'
+    '<article class="hour-card"><time>'+hourLabel(r.t)+'</time><strong>'+fmt(r.temp,0)+'°</strong><div class="hour-grid"><span>Gió</span><b>'+fmt(r.wind,0)+'</b><span>Giật</span><b>'+fmt(r.gust,0)+'</b><span>Mưa 3h</span><b>'+fmt(r.rain,1)+'</b><span>Hs</span><b>'+fmt(r.wave,1)+'</b></div></article>'
   ).join(""):'<div class="lazy-status">Chưa có chuỗi 24 giờ.</div>';
 }
 
