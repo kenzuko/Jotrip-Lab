@@ -432,7 +432,7 @@ async function boot(){
     defer(loadAQI,850);
     defer(loadTide,1000);
     defer(loadNowcast,1150);
-    defer(loadEnsemble,1350);
+    if(critical.source_state?.ensemble&&critical.source_state.ensemble!=="UNAVAILABLE")defer(loadEnsemble,1350);
   }catch(e){
     $("heroSummary").textContent="Không tải được payload nhanh. Hãy thử tải lại trang.";
     $("liveLabel").textContent="DATA ERROR";$("liveDot").className="warn";
