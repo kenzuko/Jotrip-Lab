@@ -257,3 +257,24 @@ body{
   .hazard-board{grid-template-columns:1fr}
   .about-source-grid{grid-template-columns:1fr}
 }
+
+/* V2.6 regional 10-day forecast + map Himawari metrics */
+.map-convective{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px;padding:10px;border:1px solid #e0eaf0;border-radius:13px;background:#f8fbfc}
+.map-convective span{min-width:0}
+.map-convective b{display:block;font-size:6.8px;color:#8798a2;font-weight:700}
+.map-convective strong{display:block;margin-top:3px;font-size:11px;color:#31566c}
+.map-convective small{grid-column:1/-1;font-size:7px;line-height:1.4;color:#84959f}
+.forecast-region-tabs{display:flex;gap:7px;overflow:auto;scrollbar-width:none;margin:10px 0 8px;padding-bottom:2px}
+.forecast-region-tabs::-webkit-scrollbar{display:none}
+.forecast-region-tabs button{flex:0 0 auto;border:1px solid #dce7ed;border-radius:999px;background:#fff;color:#537080;padding:8px 11px;font-size:8px;font-weight:800}
+.forecast-region-tabs button.active{background:#143f5d;color:#fff;border-color:#143f5d;box-shadow:0 4px 12px rgba(20,63,93,.14)}
+.forecast-region-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:7px 0 0;padding:8px 10px;border-radius:11px;background:#f6fafc;color:#718794;font-size:7.5px}
+.forecast-region-meta b{font-size:9px;color:#31576c}
+.forecast-region-meta span{text-align:right}
+.jotrip-forecast-table td:nth-child(3) small{display:block;margin-top:2px;color:#8a9aa3;font-size:6.5px}
+@media(max-width:620px){
+  .map-convective{grid-template-columns:1fr 1fr}
+  .map-convective small{grid-column:1/-1}
+  .forecast-region-meta{display:block}
+  .forecast-region-meta span{display:block;text-align:left;margin-top:3px}
+}
