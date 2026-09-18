@@ -64,6 +64,14 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: data-weather
+          path: live-data
+      - name: Mirror production live AQI path
+        run: |
+          mkdir -p data/weather-aqi
+          cp live-data/data/weather-aqi/latest.json data/weather-aqi/latest.json
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
