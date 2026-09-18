@@ -22,11 +22,22 @@ var state={
   map:null,
   fieldLayer:null,
   markerLayer:null,
+  actualLayer:null,
   selected:"duong_dong",
+  mode:"jotrip",
   layer:"risk",
+  source:null,
   step:0,
   loading:false
 };
+
+var SOURCE_MAPS={
+  radar:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=radar&product=radar&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1",
+  wind:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=wind&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C",
+  rain:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=rain&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C",
+  waves:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=waves&product=ecmwfWaves&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C"
+};
+var JMA_BASE="https://www.data.jma.go.jp/mscweb/data/himawari/img/ha1/";
 
 var $=function(id){return document.getElementById(id)};
 var num=function(v){
@@ -214,7 +225,7 @@ function layerNote(){
 function initMap(){
   if(!window.L)return;
   state.map=L.map("situationMap",{zoomControl:false,attributionControl:true,minZoom:9,maxZoom:13}).setView([10.17,103.97],10);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{
     maxZoom:19,
     subdomains:"abcd",
     attribution:'&copy; OpenStreetMap &copy; CARTO'
@@ -222,12 +233,89 @@ function initMap(){
   L.control.zoom({position:"bottomright"}).addTo(state.map);
   state.fieldLayer=L.layerGroup().addTo(state.map);
   state.markerLayer=L.layerGroup().addTo(state.map);
+  state.actualLayer=L.layerGroup().addTo(state.map);
+}
+
+function renderActualLayer(){
+  if(!state.actualLayer||!state.data)return;
+  state.actualLayer.clearLayers();
+  if(state.mode!=="actual")return;
+
+  var actual=state.data.actual||{};
+  var v=actual.vvpq||{};
+  if(v.status){
+    var metarIcon=L.divIcon({className:"",html:'<div class="actual-observation metar"></div>',iconSize:[18,18],iconAnchor:[9,9]});
+    var metar=L.marker([10.169,103.995],{icon:metarIcon,zIndexOffset:1400});
+    metar.bindTooltip("VVPQ · "+(v.temperature_c!==undefined?fmt(v.temperature_c,1)+"°C":"")+" · "+(v.wind_kmh!==undefined?fmt(v.wind_kmh,0)+" km/h":""),{direction:"top",opacity:.98});
+    metar.addTo(state.actualLayer);
+    var ml=L.divIcon({className:"",html:'<div class="actual-label">VVPQ · METAR</div>',iconSize:[98,22],iconAnchor:[49,-11]});
+    L.marker([10.169,103.995],{icon:ml,interactive:false,zIndexOffset:1300}).addTo(state.actualLayer);
+  }
+
+  (actual.rain_gauges||[]).forEach(function(g){
+    if(num(g.lat)===null||num(g.lon)===null)return;
+    var icon=L.divIcon({className:"",html:'<div class="actual-observation rain"></div>',iconSize:[18,18],iconAnchor:[9,9]});
+    var mk=L.marker([Number(g.lat),Number(g.lon)],{icon:icon,zIndexOffset:1300});
+    var rainText=g.rain_observed===true?"ĐANG MƯA":g.rain_observed===false?"KHÔNG MƯA":"TRẠNG THÁI CHƯA ĐỦ";
+    var amount=num(g.rain_intensity_mm_h)!==null?fmt(g.rain_intensity_mm_h,1)+" mm/h":num(g.accum_mm)!==null?fmt(g.accum_mm,1)+" mm tích lũy":"-";
+    mk.bindTooltip((g.name||"VRain")+" · "+rainText+" · "+amount,{direction:"top",opacity:.98});
+    mk.addTo(state.actualLayer);
+    var lb=L.divIcon({className:"",html:'<div class="actual-label">'+esc(g.name||"VRain")+'</div>',iconSize:[100,22],iconAnchor:[50,-11]});
+    L.marker([Number(g.lat),Number(g.lon)],{icon:lb,interactive:false,zIndexOffset:1200}).addTo(state.actualLayer);
+  });
+}
+
+function himawariCandidates(){
+  var now=new Date(),base=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate(),now.getUTCHours(),Math.floor(now.getUTCMinutes()/10)*10);
+  return Array.from({length:12},function(_,i){
+    var d=new Date(base-(i+2)*600000);
+    var hh=String(d.getUTCHours()).padStart(2,"0"),mm=String(d.getUTCMinutes()).padStart(2,"0");
+    return JMA_BASE+"ha1_b13_"+hh+mm+".jpg";
+  });
+}
+
+function renderSourceLayer(){
+  var box=$("sourceLayerFrame");
+  if(!box)return;
+  if(state.mode!=="source"){
+    box.className="source-layer-frame";
+    box.setAttribute("aria-hidden","true");
+    box.innerHTML="";
+    return;
+  }
+  box.className="source-layer-frame active";
+  box.setAttribute("aria-hidden","false");
+  if(state.source==="himawari"){
+    box.innerHTML='<img id="v3Himawari" alt="JMA Himawari B13 infrared">';
+    var img=$("v3Himawari"),list=himawariCandidates(),i=0;
+    img.onerror=function(){
+      i++;
+      if(i<list.length)img.src=list[i]+"?t="+Date.now();
+      else box.innerHTML='<div class="source-fallback"><div><b>Himawari chưa tải được</b><span>JoTrip Risk và Actual vẫn hoạt động bình thường.</span></div></div>';
+    };
+    img.src=list[0]+"?t="+Date.now();
+    return;
+  }
+  var src=SOURCE_MAPS[state.source];
+  if(src){
+    box.innerHTML='<iframe title="Weather source map" loading="eager" referrerpolicy="strict-origin-when-cross-origin" allow="geolocation"></iframe>';
+    box.firstChild.src=src;
+  }else{
+    box.innerHTML='<div class="source-fallback"><div><b>Source layer chưa sẵn sàng</b><span>Chọn Radar, Himawari, Wind, Rain hoặc Waves.</span></div></div>';
+  }
 }
 
 function renderMap(){
   if(!state.map||!state.data)return;
   state.fieldLayer.clearLayers();
   state.markerLayer.clearLayers();
+  renderSourceLayer();
+  renderActualLayer();
+  if(state.mode!=="jotrip"){
+    $("layerNote").textContent=state.mode==="actual"?"Actual chỉ hiển thị trạm/nguồn đo thật có timestamp. Không nội suy thành trường liên tục.":"Đây là lớp nguồn tham chiếu như V2. JoTrip Risk không trộn vào dữ liệu nguồn.";
+    $("windFlow").classList.add("hidden");
+    return;
+  }
 
   pointIds().forEach(function(id){
     var cfg=POINTS[id],metric=layerMetric(id),color=colorForLevel(metric.level);
@@ -442,10 +530,16 @@ function selectPoint(id){
   }
 }
 
-function setLayer(layer){
-  state.layer=layer;
-  document.querySelectorAll("[data-layer]").forEach(function(btn){
-    btn.classList.toggle("active",btn.getAttribute("data-layer")===layer);
+function setMode(mode,layer,source){
+  state.mode=mode||"jotrip";
+  if(layer)state.layer=layer;
+  state.source=source||null;
+  document.querySelectorAll("[data-mode]").forEach(function(btn){
+    var active=false;
+    if(state.mode==="jotrip")active=btn.getAttribute("data-mode")==="jotrip"&&btn.getAttribute("data-layer")===state.layer;
+    if(state.mode==="actual")active=btn.getAttribute("data-mode")==="actual";
+    if(state.mode==="source")active=btn.getAttribute("data-mode")==="source"&&btn.getAttribute("data-source")===state.source;
+    btn.classList.toggle("active",active);
   });
   renderMap();
 }
@@ -480,8 +574,10 @@ async function loadData(){
 }
 
 function events(){
-  document.querySelectorAll("[data-layer]").forEach(function(btn){
-    btn.addEventListener("click",function(){setLayer(btn.getAttribute("data-layer"))});
+  document.querySelectorAll("[data-mode]").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      setMode(btn.getAttribute("data-mode"),btn.getAttribute("data-layer"),btn.getAttribute("data-source"));
+    });
   });
   document.querySelectorAll("[data-step]").forEach(function(btn){
     btn.addEventListener("click",function(){setStep(btn.getAttribute("data-step"))});
