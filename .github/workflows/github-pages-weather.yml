@@ -55,8 +55,9 @@ jobs:
           rm -rf /tmp/weather-pages
           mkdir -p /tmp/weather-pages/data
 
-          cp source/weather.html /tmp/weather-pages/index.html
-          cp source/weather.html /tmp/weather-pages/weather.html
+          cp source/weather.html /tmp/weather-pages/classic.html
+          cp source/weather-v2.html /tmp/weather-pages/index.html
+          cp source/weather-v2.html /tmp/weather-pages/weather.html
           cp source/weather-v2.html /tmp/weather-pages/v2.html
           cp source/weather-v2.css /tmp/weather-pages/
           cp source/weather-v2.js /tmp/weather-pages/
@@ -152,8 +153,14 @@ jobs:
               path.write_text(text, encoding='utf-8')
 
           html = (root / 'index.html').read_text(encoding='utf-8')
+          weather_html = (root / 'weather.html').read_text(encoding='utf-8')
+          classic_html = (root / 'classic.html').read_text(encoding='utf-8')
           history_html = (root / 'weather-history.html').read_text(encoding='utf-8')
-          assert '/Jotrip-Lab/weather/weather-dashboard.css' in html
+          assert '/Jotrip-Lab/weather/weather-v2.css' in html
+          assert '/Jotrip-Lab/weather/weather-v2.js' in html
+          assert '/Jotrip-Lab/weather/weather-v2.css' in weather_html
+          assert '/Jotrip-Lab/weather/weather-dashboard.css' not in html
+          assert '/Jotrip-Lab/weather/weather-dashboard.css' in classic_html
           assert '/Jotrip-Lab/weather/data/dashboard-data.json' in (root / 'weather-dashboard-enhancements.js').read_text(encoding='utf-8')
           assert '/Jotrip-Lab/weather/weather-history.css' in history_html
           assert '/Jotrip-Lab/weather/weather-history.js' in history_html
@@ -217,3 +224,5 @@ jobs:
 # v2.8-natural-copy-final
 
 # v2.9-intelligence-visual-publish
+
+# v2-homepage-cutover
