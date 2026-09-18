@@ -235,8 +235,8 @@ function renderCurrent(){
 
 function renderActual(){
   const a=critical.actual||{},v=a.vvpq||{},g=a.rain_gauges||[],cards=[];
-  cards.push('<article class="actual-card"><header><b>VVPQ</b><em class="badge actual">ACTUAL</em></header><strong>'+fmt(v.temperature_c,1)+'°C</strong><small>Gió '+fmt(v.wind_kmh,1)+' km/h · '+(v.weather?esc(v.weather)+' · ':'')+ageText(v.observed_at)+'</small></article>');
-  g.forEach(x=>cards.push('<article class="actual-card"><header><b>'+esc(x.name)+'</b><em class="badge actual">ACTUAL</em></header><strong>'+fmt(x.accum_mm,1)+' mm</strong><small>Tích lũy'+(num(x.increment_mm)!==null?' · +'+fmt(x.increment_mm,1)+' mm / '+fmt(x.increment_min,0)+' phút':'')+'</small></article>'));
+  cards.push('<article class="actual-card"><header><b>VVPQ</b><em class="badge actual">ĐO THỰC</em></header><strong>'+fmt(v.temperature_c,1)+'°C</strong><small>Gió '+fmt(v.wind_kmh,1)+' km/h · '+(v.weather?esc(v.weather)+' · ':'')+ageText(v.observed_at)+'</small></article>');
+  g.forEach(x=>cards.push('<article class="actual-card"><header><b>'+esc(x.name)+'</b><em class="badge actual">ĐO THỰC</em></header><strong>'+fmt(x.accum_mm,1)+' mm</strong><small>Tích lũy'+(num(x.increment_mm)!==null?' · +'+fmt(x.increment_mm,1)+' mm / '+fmt(x.increment_min,0)+' phút':'')+'</small></article>'));
   $("actualStrip").innerHTML=cards.join("");
   $("actualState").textContent=(critical.source_state?.vvpq==="FRESH"&&critical.source_state?.vrain==="FRESH")?"VVPQ + VRAIN FRESH":"CÓ NGUỒN CHẬM";
 }
