@@ -75,7 +75,13 @@ function badgeClass(k){
 function setBadge(id,k,label){
   const el=$(id);if(!el)return;
   el.className="badge "+badgeClass(k);
-  el.textContent=label||String(k||"-").replace("_NOW","").replaceAll("_"," ");
+  const key=String(k||"").toUpperCase();
+  const natural={
+    ACTUAL:"ĐO THỰC",ESTIMATED_NOW:"ƯỚC TÍNH",MODEL_ONLY:"MÔ HÌNH",
+    REMOTE_OBSERVED:"VỆ TINH",LEARNING:"ĐANG HIỆU CHỈNH",
+    READY:"SẴN SÀNG",UNAVAILABLE:"CHƯA CÓ"
+  };
+  el.textContent=label||natural[key]||String(k||"-").replace("_NOW","").replaceAll("_"," ");
 }
 function setMetric(id,v,d){const el=$(id);if(el)el.textContent=num(v)===null?"-":fmt(v,d)}
 function point(){return critical?.points?.[current]||{}}
@@ -208,7 +214,7 @@ function renderHero(){
   $("placeName").textContent=p.name||current;
   const t=num(l.temperature_c)??num(m.temperature_c);
   $("heroTemp").textContent=t===null?"--":fmt(t,1)+"°";
-  $("heroTempClass").textContent=l.available?"ESTIMATED":"MODEL";
+  $("heroTempClass").textContent=l.available?"ƯỚC TÍNH":"MÔ HÌNH";
   $("heroSummary").textContent=summary(p);
   $("updatedAt").textContent="Cập nhật "+localTime(critical.generated_at)+" · "+ageText(critical.generated_at);
 }
@@ -268,20 +274,20 @@ function effectiveAQI(){
 function renderAQI(){
   const a=effectiveAQI();
   if(num(a.aqi_us)===null&&num(a.pm25_ugm3)===null&&num(a.pm10_ugm3)===null){
-    $("aqiQuick").innerHTML='<div class="data-empty"><b>CHỜ CYCLE AQI</b><span>Điểm này chưa có số AQI trong snapshot hiện tại.</span></div>';
+    $("aqiQuick").innerHTML='<div class="data-empty"><b>ĐANG CHỜ DỮ LIỆU AQI</b><span>Điểm này chưa có số AQI trong bản dữ liệu hiện tại.</span></div>';
     setBadge("aqiSourceBadge","UNAVAILABLE","CHƯA CÓ");
     $("aqiAge").textContent="Không nội suy AQI từ điểm khác để lấp số.";
     return;
   }
   $("aqiQuick").innerHTML=
     '<div class="quick-item"><span>US AQI</span><b>'+fmt(a.aqi_us,0)+'</b><small>'+esc(aqiLabel(a.category))+'</small></div>'+
-    '<div class="quick-item"><span>PM2.5</span><b>'+fmt(a.pm25_ugm3,1)+'</b><small>µg/m³ · CAMS reference</small></div>'+
-    '<div class="quick-item"><span>PM10</span><b>'+fmt(a.pm10_ugm3,1)+'</b><small>µg/m³ · CAMS reference</small></div>'+
-    '<div class="quick-item"><span>AQI CAMS</span><b>'+fmt(a.model_aqi_us,0)+'</b><small>model reference</small></div>'+
+    '<div class="quick-item"><span>PM2.5</span><b>'+fmt(a.pm25_ugm3,1)+'</b><small>µg/m³ · CAMS tham chiếu</small></div>'+
+    '<div class="quick-item"><span>PM10</span><b>'+fmt(a.pm10_ugm3,1)+'</b><small>µg/m³ · CAMS tham chiếu</small></div>'+
+    '<div class="quick-item"><span>AQI CAMS</span><b>'+fmt(a.model_aqi_us,0)+'</b><small>mô hình tham chiếu</small></div>'+
     '<div class="quick-item"><span>Lệch nguồn</span><b>'+fmt(a.divergence,0)+'</b><small>IQAir - CAMS</small></div>'+
     '<div class="quick-item"><span>Điểm nguồn</span><b class="small-value">'+esc(a.source_city||"-")+'</b><small>'+esc(a.aqi_source||"-")+'</small></div>';
-  setBadge("aqiSourceBadge",a.aqi_source==="IQAIR_COMMUNITY_REALTIME"?"ACTUAL":"MODEL_ONLY",a.aqi_source==="IQAIR_COMMUNITY_REALTIME"?"IQAIR LIVE":"CAMS");
-  $("aqiAge").textContent="AQI cập nhật "+ageText(a.sampled_time)+". PM2.5/PM10 hiện là CAMS model trừ khi có feed observed riêng.";
+  setBadge("aqiSourceBadge",a.aqi_source==="IQAIR_COMMUNITY_REALTIME"?"ACTUAL":"MODEL_ONLY",a.aqi_source==="IQAIR_COMMUNITY_REALTIME"?"IQAIR TRỰC TIẾP":"CAMS");
+  $("aqiAge").textContent="AQI cập nhật "+ageText(a.sampled_time)+". PM2.5/PM10 hiện dùng CAMS mô hình nếu chưa có nguồn đo trực tiếp riêng.";
 }
 
 function effectiveTide(){
@@ -306,8 +312,8 @@ function tideTrend(v){return v==="RISING"?"Đang lên":v==="FALLING"?"Đang xu�
 function renderTide(){
   const t=effectiveTide();
   if(num(t.height_m)===null&&!t.next_high&&!t.next_low){
-    $("tideQuick").innerHTML='<div class="data-empty"><b>CHỜ CYCLE TRIỀU</b><span>Chưa có ô lưới triều hợp lệ cho điểm này trong snapshot hiện tại.</span></div>';
-    $("tideAge").textContent="Triều luôn giữ nhãn MODEL, không thay bằng số từ điểm khác.";
+    $("tideQuick").innerHTML='<div class="data-empty"><b>ĐANG CHỜ DỮ LIỆU TRIỀU</b><span>Chưa có ô lưới triều hợp lệ cho điểm này trong bản dữ liệu hiện tại.</span></div>';
+    $("tideAge").textContent="Triều luôn giữ nhãn MÔ HÌNH, không thay bằng số từ điểm khác.";
     drawTide([]);
     return;
   }
@@ -316,9 +322,9 @@ function renderTide(){
     '<div class="quick-item"><span>Triều cao kế</span><b>'+localTime(t.next_high?.time)+'</b><small>'+fmt(t.next_high?.height_m,2)+' m</small></div>'+
     '<div class="quick-item"><span>Triều thấp kế</span><b>'+localTime(t.next_low?.time)+'</b><small>'+fmt(t.next_low?.height_m,2)+' m</small></div>'+
     '<div class="quick-item"><span>Đổi nước</span><b>'+localTime(t.next_turn?.time)+'</b><small>'+esc(t.next_turn?.type||"-")+'</small></div>'+
-    '<div class="quick-item"><span>Biên độ 24h</span><b>'+fmt(t.range_24h_m,2)+' m</b><small>max - min model</small></div>'+
+    '<div class="quick-item"><span>Biên độ 24h</span><b>'+fmt(t.range_24h_m,2)+' m</b><small>cao nhất - thấp nhất</small></div>'+
     '<div class="quick-item"><span>Nguồn</span><b class="small-value">'+esc(t.source||"FES2014")+'</b><small>không phải trạm triều</small></div>';
-  $("tideAge").textContent="Triều model cập nhật "+ageText(t.generated_at||t.current_time)+". Không dùng như mực nước hải đồ cảng.";
+  $("tideAge").textContent="Triều mô hình cập nhật "+ageText(t.generated_at||t.current_time)+". Không dùng thay mực nước hải đồ cảng.";
   drawTide(t.series||[]);
 }
 function drawTide(series){
@@ -418,9 +424,9 @@ function renderForecastTable(){
   const rows=detailRows();
   $("forecastRows").innerHTML=rows.length?rows.map(r=>
     '<tr><td>'+localTime(r.time_iso)+'</td><td>'+fmt(r.temperature,1)+'</td><td>'+fmt(r.wind,1)+'</td><td>'+fmt(r.gust,1)+'</td><td>'+fmt(r.rain,2)+'</td><td>'+fmt(r.wave,2)+'</td><td>'+fmt(r.wave_max,2)+'</td><td>'+fmt(r.period,1)+'</td></tr>'
-  ).join(""):'<tr><td colspan="8">Chưa có dữ liệu forecast.</td></tr>';
+  ).join(""):'<tr><td colspan="8">Chưa có dữ liệu dự báo.</td></tr>';
   const available=full?Number(full.forecast_horizon_hours||72):24;
-  document.querySelectorAll(".horizon-tabs button").forEach(b=>{const h=Number(b.dataset.horizon);b.disabled=!full&&h>72;b.classList.toggle("active",h===horizon);b.title=h>available?"Snapshot hiện tại chưa đủ horizon":""});
+  document.querySelectorAll(".horizon-tabs button").forEach(b=>{const h=Number(b.dataset.horizon);b.disabled=!full&&h>72;b.classList.toggle("active",h===horizon);b.title=h>available?"Bản dữ liệu hiện tại chưa đủ tầm dự báo":""});
   renderOutlook();
 }
 function renderOutlook(){
@@ -431,8 +437,8 @@ function renderOutlook(){
   });
   root.innerHTML=rows.length?rows.map(x=>{
     const d=x.day_offset??x.d;
-    return '<article class="outlook-card"><header><b>D+'+d+'</b><time>'+esc(x.date||"-")+'</time></header><div class="outlook-card-grid"><div><span>Gió max</span><b>'+fmt(x.wind_max,0)+' km/h</b></div><div><span>Giật max</span><b>'+fmt(x.gust_max,0)+' km/h</b></div><div><span>Hs max</span><b>'+fmt(x.hs_max,1)+' m</b></div><div><span>Hmax</span><b>'+fmt(x.hmax_max,1)+' m</b></div><div><span>Mưa tổng</span><b>'+fmt(x.rain_total,1)+' mm</b></div></div></article>';
-  }).join(""):'<div class="lazy-status">D+8-D+10 chưa có daily outlook.</div>';
+    return '<article class="outlook-card"><header><b>D+'+d+'</b><time>'+esc(x.date||"-")+'</time></header><div class="outlook-card-grid"><div><span>Gió cao nhất</span><b>'+fmt(x.wind_max,0)+' km/h</b></div><div><span>Giật cao nhất</span><b>'+fmt(x.gust_max,0)+' km/h</b></div><div><span>Hs cao nhất</span><b>'+fmt(x.hs_max,1)+' m</b></div><div><span>Hmax</span><b>'+fmt(x.hmax_max,1)+' m</b></div><div><span>Mưa tổng</span><b>'+fmt(x.rain_total,1)+' mm</b></div></div></article>';
+  }).join(""):'<div class="lazy-status">D+8-D+10 chưa có tổng quan theo ngày.</div>';
 }
 
 function ensembleData(){
