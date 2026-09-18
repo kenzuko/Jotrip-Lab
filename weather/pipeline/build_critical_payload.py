@@ -26,7 +26,6 @@ from weather.points import POINT_NAMES
 POINTS=tuple(POINT_NAMES)
 NAMES=POINT_NAMES
 ISLAND_WATCH_ORDER=("duong_dong","cua_can","ganh_dau","bai_thom","ham_ninh","bai_sao","an_thoi")
-CORE_ENSEMBLE_POINTS={"duong_dong","an_thoi","ganh_dau"}
 
 def load(path: Path|None)->dict:
     if not path or not path.exists():
@@ -220,15 +219,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
             "aqi":compact_aqi(aqi,key),
             "tide":compact_tide(tide,key),
             "nowcast":compact_nowcast(nowcast,key),
-            "ensemble":compact_ensemble(ensemble,key) if key in CORE_ENSEMBLE_POINTS else {
-                "status":ensemble.get("status","UNAVAILABLE"),
-                "readiness":ensemble.get("readiness","UNAVAILABLE"),
-                "source":ensemble.get("source"),
-                "run_time":ensemble.get("run_time"),
-                "completion_ratio":num(ensemble.get("completion_ratio")),
-                "calibration_status":ensemble.get("calibration_status","LEARNING"),
-                "rows":[],
-            },
+            "ensemble":compact_ensemble(ensemble,key),
         }
 
     v=(ground.get("atmosphere") or {}).get("vvpq",{})
