@@ -471,7 +471,6 @@ function renderAll(){
   renderJoTripForecast();renderHealth();
 }
 
-}
 async function loadAQI(){
   try{fullAQI=await getFirst(AQI);renderAQI()}catch(e){console.warn("[Weather V2] AQI",e)}
 }
@@ -480,7 +479,6 @@ async function loadTide(){
 }
 async function loadNowcast(){
   try{fullNowcast=await getFirst(NOWCAST);renderNowcast();renderCurrent()}catch(e){console.warn("[Weather V2] nowcast",e)}
-}
 }
 
 function mapCandidates(){
