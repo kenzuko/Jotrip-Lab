@@ -62,13 +62,20 @@ jobs:
           assert p['calibration_engine']=='PQ_ENSEMBLE_LOCAL_V1'
           assert p['calibration_status']=='LEARNING'
           assert {'duong_dong','an_thoi','ganh_dau','cua_can','bai_thom','ham_ninh','bai_sao'}.issubset(set(p['points']))
-          for rows in p['points'].values():
+          assert p.get('wind_exposure_engine')=='PQ_LOCAL_WIND_EXPOSURE_V1'
+          assert 'bai_sao' in set(p.get('wind_exposure_points') or [])
+          for point_id, rows in p['points'].items():
               assert rows, p
               for row in rows:
                   assert {'temperature','wind','rain'}.issubset(row['variables'])
-                  for v in row['variables'].values():
+                  for variable, v in row['variables'].items():
                       assert v['status']=='LEARNING'
-                      assert v['raw']['q50']==v['corrected']['q50']
+                      if variable != 'wind' or point_id != 'bai_sao':
+                          assert v['raw']['q50']==v['corrected']['q50']
+                  wind=row['variables']['wind']
+                  if point_id=='bai_sao':
+                      assert wind.get('local_exposure',{}).get('status')=='HEURISTIC_V1'
+                      assert wind['corrected']['q50'] <= wind['raw']['q50']
           PY
       - uses: actions/upload-artifact@v4
         if: always()
