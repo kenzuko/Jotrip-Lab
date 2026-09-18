@@ -112,6 +112,7 @@ function initMap(){
 function ecmwfFrames(){return state.ecmwf?.spatial?.frames||[]}
 function gefsFrames(){return state.gefs?.spatial?.frames||[]}
 function cloudFrames(){return state.nowcast?.spatial?.frames||[]}
+function baseFrames(){return ecmwfFrames().length?ecmwfFrames():gefsFrames()}
 
 function nearestFrame(frames,targetTime){
   if(!frames?.length)return null;
@@ -228,6 +229,11 @@ function activeECMWFFrame(){
   if(!frames.length)return null;
   return frames[clamp(state.frameIndex,0,frames.length-1)];
 }
+function activeBaseFrame(){
+  const frames=baseFrames();
+  if(!frames.length)return null;
+  return frames[clamp(state.frameIndex,0,frames.length-1)];
+}
 function activeValidTime(){
   if(state.layer==="storm"){
     const f=cloudFrames()[clamp(state.frameIndex,0,Math.max(0,cloudFrames().length-1))];
@@ -237,7 +243,7 @@ function activeValidTime(){
     const f=state.radarMeta?.frames?.[state.radarIndex];
     return f?f.time*1000:Date.now();
   }
-  return parseTime(activeECMWFFrame()?.valid_time);
+  return parseTime(activeBaseFrame()?.valid_time);
 }
 function activeRows(){
   if(state.layer==="storm"){
@@ -246,7 +252,7 @@ function activeRows(){
   }
   const frame=activeECMWFFrame();
   if(frame?.cells?.length)return frame.cells;
-  const gf=nearestFrame(gefsFrames(),Date.now());
+  const gf=gefsFrames()[clamp(state.frameIndex,0,Math.max(0,gefsFrames().length-1))];
   return genericRowsFromGEFS(gf,state.layer);
 }
 
@@ -500,7 +506,7 @@ function riskLabel(v){return v>=3?"CAO":v>=2?"THEO DÕI":v>=1?"LƯU Ý":"ỔN"}
 
 function currentLeadHours(){
   if(state.layer==="storm"||state.layer==="radar")return 0;
-  const f=activeECMWFFrame();
+  const f=activeBaseFrame();
   if(f&&num(f.lead_hours)!==null)return num(f.lead_hours);
   const t=activeValidTime();return Number.isFinite(t)?Math.max(0,Math.round((t-Date.now())/3600000)):0;
 }
@@ -574,7 +580,7 @@ function configureTimeline(){
     $("timelineTicks").innerHTML=fs.length?'<span>-60m</span><span>-40m</span><span>-20m</span><span>NOW</span>':"";
     $("timeLabel").textContent="NOW";
   }else{
-    const fs=ecmwfFrames();
+    const fs=baseFrames();
     slider.min=0;slider.max=Math.max(0,fs.length-1);slider.step=1;state.frameIndex=clamp(state.frameIndex,0,Math.max(0,fs.length-1));slider.value=state.frameIndex;
     const idxs=[0,Math.floor((fs.length-1)*.25),Math.floor((fs.length-1)*.5),Math.floor((fs.length-1)*.75),fs.length-1].filter((v,i,a)=>a.indexOf(v)===i);
     $("timelineTicks").innerHTML=idxs.map(i=>"<span>"+(fs[i]?dayLabel(fs[i].valid_time):"-")+"</span>").join("");
@@ -583,7 +589,7 @@ function configureTimeline(){
   updateConfidence();
 }
 function selectNearestNowFrame(){
-  const fs=ecmwfFrames();if(!fs.length){state.frameIndex=0;return}
+  const fs=baseFrames();if(!fs.length){state.frameIndex=0;return}
   let best=0,d=Infinity;
   fs.forEach((f,i)=>{const dd=Math.abs(parseTime(f.valid_time)-Date.now());if(dd<d){d=dd;best=i}});
   state.frameIndex=best;
