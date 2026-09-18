@@ -642,6 +642,10 @@ function renderAll(redrawTimeline=true){
   if(state.layer==="storm"){
     const ef=nearestFrame(ecmwfFrames(),activeValidTime()||Date.now());
     if(ef)startParticles(ef.cells||[],"wind");
+    else{
+      const gf=nearestFrame(gefsFrames(),activeValidTime()||Date.now());
+      if(gf)startParticles(genericRowsFromGEFS(gf,"wind"),"wind");
+    }
   }
   renderRisk();renderActual();renderScale();updateReadout();updateModelBadge();updateConfidence();
   if(redrawTimeline&&state.layer!=="radar")configureTimeline();
