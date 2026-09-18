@@ -709,7 +709,12 @@ function events(){
   $("shareWeather")?.addEventListener("click",shareWeather);
 }
 
+function registerWeatherWorker(){
+  if(!("serviceWorker" in navigator))return;
+  navigator.serviceWorker.register("/weather-sw.js",{scope:"/"}).catch(e=>console.warn("[Weather] service worker",e));
+}
 async function boot(){
+  registerWeatherWorker();
   events();
   try{
     critical=await getJSON(CRITICAL);
