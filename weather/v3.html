@@ -16,7 +16,7 @@
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark">J</span>
-      <div><strong>JoTrip Weather</strong><small>PHÚ QUỐC · V3 SITUATION MAP</small></div>
+      <div><strong>JoTrip Weather</strong><small>PHÚ QUỐC · V3.1 SITUATION MAP</small></div>
     </div>
     <div class="top-actions">
       <span id="liveState" class="live-state loading"><i></i> ĐANG TẢI</span>
@@ -26,7 +26,7 @@
 
   <main class="workspace">
     <section class="map-stage" aria-label="Bản đồ tình huống thời tiết Phú Quốc">
-      <div id="situationMap" class="map"></div>
+      <div id="situationMap" class="map"></div>\n      <div id="sourceLayerFrame" class="source-layer-frame" aria-hidden="true"></div>
       <div id="windFlow" class="wind-flow" aria-hidden="true"></div>
       <div class="map-vignette" aria-hidden="true"></div>
 
@@ -36,13 +36,25 @@
         <p id="islandSub">Weather Lab đang đọc dữ liệu live.</p>
       </div>
 
-      <nav class="layer-switcher" aria-label="Lớp dữ liệu">
-        <button data-layer="risk" class="active"><span>⚠</span><b>Risk</b></button>
-        <button data-layer="rain"><span>☂</span><b>Rain</b></button>
-        <button data-layer="wind"><span>≋</span><b>Wind</b></button>
-        <button data-layer="waves"><span>≈</span><b>Waves</b></button>
-        <button data-layer="storm"><span>ϟ</span><b>Storm</b></button>
-      </nav>
+      <div class="layer-groups">
+        <div class="layer-group-label">JOTRIP</div>
+        <nav class="layer-switcher" aria-label="Lớp JoTrip">
+          <button data-mode="jotrip" data-layer="risk" class="active"><span>⚠</span><b>Risk</b></button>
+          <button data-mode="jotrip" data-layer="rain"><span>☂</span><b>Rain</b></button>
+          <button data-mode="jotrip" data-layer="wind"><span>≋</span><b>Wind</b></button>
+          <button data-mode="jotrip" data-layer="waves"><span>≈</span><b>Waves</b></button>
+          <button data-mode="jotrip" data-layer="storm"><span>ϟ</span><b>Storm</b></button>
+          <button data-mode="actual" data-layer="actual"><span>●</span><b>Actual</b></button>
+        </nav>
+        <div class="layer-group-label source-label">SOURCE LAYERS</div>
+        <nav class="source-switcher" aria-label="Lớp nguồn tham chiếu">
+          <button data-mode="source" data-source="radar"><b>Radar</b></button>
+          <button data-mode="source" data-source="himawari"><b>Himawari</b></button>
+          <button data-mode="source" data-source="wind"><b>Wind</b></button>
+          <button data-mode="source" data-source="rain"><b>Rain</b></button>
+          <button data-mode="source" data-source="waves"><b>Waves</b></button>
+        </nav>
+      </div>
 
       <div class="map-legend">
         <span><i class="ok"></i>Ổn định</span>
