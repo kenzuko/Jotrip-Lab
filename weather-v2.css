@@ -278,3 +278,33 @@ body{
   .forecast-region-meta{display:block}
   .forecast-region-meta span{display:block;text-align:left;margin-top:3px}
 }
+
+/* V2.7 visual polish */
+.forecast-day-ribbon{display:grid;grid-template-columns:repeat(10,minmax(88px,1fr));gap:7px;margin:10px 0 12px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.forecast-day-ribbon::-webkit-scrollbar{display:none}
+.forecast-day{border:1px solid #dfe8ee;border-radius:14px;background:linear-gradient(180deg,#fff,#f8fbfc);padding:9px;min-width:88px;box-shadow:0 5px 14px rgba(34,67,90,.035)}
+.forecast-day header{display:flex;justify-content:space-between;gap:6px;align-items:center}
+.forecast-day header b{font-size:8px;color:#31576c;text-transform:capitalize}
+.forecast-day header span{font-size:6.5px;color:#8b9aa3}
+.forecast-day>strong{display:block;margin:9px 0 7px;font-size:18px;letter-spacing:-.035em;color:#244d64}
+.forecast-day>div{display:flex;justify-content:space-between;gap:5px;margin-top:4px}
+.forecast-day>div span{font-size:6.5px;color:#8a9aa3}
+.forecast-day>div b{font-size:7px;color:#557181}
+.forecast-day>small{display:inline-block;margin-top:7px;border-radius:999px;padding:3px 5px;font-size:6px;background:#eef3f6;color:#71838d}
+.forecast-day.watch{border-color:#efd7da;background:linear-gradient(180deg,#fff,#fff8f8)}
+.forecast-day.variable{border-color:#eadfb7;background:linear-gradient(180deg,#fff,#fffdf6)}
+.forecast-day.stable{border-color:#d8e9df}
+.liveDot,.health i{animation:livePulse 2.6s ease-in-out infinite}
+@keyframes livePulse{0%,100%{opacity:.65;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
+.metric-card,.quick-item,.hazard-board article,.forecast-day,.panel{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+@media(hover:hover){
+  .hazard-board article:hover,.forecast-day:hover{transform:translateY(-2px);box-shadow:0 9px 22px rgba(34,67,90,.08)}
+}
+@media(max-width:760px){
+  .forecast-day-ribbon{display:flex}
+  .forecast-day{flex:0 0 96px}
+}
+@media(prefers-reduced-motion:reduce){
+  .liveDot,.health i{animation:none}
+  .metric-card,.quick-item,.hazard-board article,.forecast-day,.panel{transition:none}
+}
