@@ -470,9 +470,29 @@ function futureRisk(row){
   if(rp>=.65||(r90!==null&&r90>=20)){level=3;reasons.push("mưa cao")}else if(rp>=.35||(r90!==null&&r90>=8)){level=Math.max(level,2);reasons.push("mưa tăng")}else if(rp>=.15)level=Math.max(level,1);
   return {level,reasons};
 }
+function regionalRiskAt(id,lead){
+  if(!state.forecast)return {level:0,reasons:["D4-D10 trend only"]};
+  const regionId=POINTS[id]?.region||"central_west";
+  const rows=state.forecast.regions?.[regionId]?.rows||[];
+  let best=null,d=Infinity;
+  rows.forEach(r=>{const dd=Math.abs((num(r.lead_hours)||0)-lead);if(dd<d){d=dd;best=r}});
+  if(!best)return {level:0,reasons:["D4-D10 trend only"]};
+  const wp=num(best.wind_prob_30)||0,rp=num(best.rain_prob_5)||0;
+  const w90=num(best.wind_q90_kmh),r90=num(best.rain_q90_mm),vari=num(best.variability_score)||0;
+  let level=0,reasons=[];
+  if(wp>=.45||(w90!==null&&w90>=39)){level=3;reasons.push("ensemble gió mạnh")}
+  else if(wp>=.20||(w90!==null&&w90>=30)){level=Math.max(level,2);reasons.push("ensemble gió cần theo dõi")}
+  else if(wp>=.08)level=Math.max(level,1);
+  if(rp>=.65||(r90!==null&&r90>=20)){level=3;reasons.push("ensemble mưa cao")}
+  else if(rp>=.35||(r90!==null&&r90>=8)){level=Math.max(level,2);reasons.push("ensemble mưa tăng")}
+  else if(rp>=.15)level=Math.max(level,1);
+  if(vari>=70){level=Math.max(level,2);reasons.push("độ phân tán cao")}
+  return {level,reasons,confidence:num(best.confidence_score),variability:vari};
+}
 function riskAt(id){
   const p=state.critical?.points?.[id]||{};
   const lead=currentLeadHours();
+  if(lead>72)return regionalRiskAt(id,lead);
   return lead>0?futureRisk(nearestEnsembleRow(p,lead)):currentRisk(p);
 }
 function riskClass(v){return v>=3?"alert":v>=1?"watch":"ok"}
