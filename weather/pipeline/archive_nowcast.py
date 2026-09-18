@@ -18,8 +18,10 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+from weather.points import POINTS
+
 VN_TZ = timezone(timedelta(hours=7))
-POINT_ORDER = ("an_thoi", "duong_dong", "ganh_dau", "rach_gia")
+POINT_ORDER = tuple(POINTS)
 LEVEL_RANK = {"LOW": 0, "WATCH": 1, "ELEVATED": 2, "HIGH": 3}
 
 # Event thresholds deliberately ignore tiny scan-to-scan noise. Daily summary still
