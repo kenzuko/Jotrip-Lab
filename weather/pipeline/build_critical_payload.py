@@ -238,6 +238,40 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
     sources={}
     for k,vv in (dashboard.get("sources") or {}).items():
         sources[k]={"status":vv.get("status"),"detail":vv.get("detail")}
+
+    def ready_status(value:Any, *, partial_ok:bool=False)->str:
+        text=str(value or "").upper()
+        if text in {"PASS","FRESH","READY","POINT_NUMERIC_READY","MEMBER_MATRIX_READY","LIVE"}:
+            return "PASS"
+        if partial_ok and text in {"PARTIAL","PARTIAL_ENSEMBLE","DEGRADED"}:
+            return "PARTIAL"
+        return "FAIL"
+
+    ens_ratio=num(ensemble.get("completion_ratio"))
+    sources["GEFS"]={
+        "status":ready_status(ensemble.get("readiness"),partial_ok=True),
+        "detail":f"NOAA GEFS D0-D3 · tối đa 31 thành viên · hoàn tất {round((ens_ratio or 0)*100)}% · PQ Ensemble Local đang {str(ensemble.get('calibration_status','LEARNING')).lower()}."
+    }
+    sources["VVPQ"]={
+        "status":ready_status(v.get("status")),
+        "detail":"METAR sân bay Phú Quốc dùng làm neo quan trắc khí quyển cho PQ Local Now."
+    }
+    sources["VRAIN"]={
+        "status":ready_status((ground.get("rainfall") or {}).get("status")),
+        "detail":f"Mưa đo thực tế tại {len(gauges)} trạm công khai trên đảo; hệ thống lưu chênh lệch theo thời gian để ước tính cường độ mưa."
+    }
+    sources["HIMAWARI"]={
+        "status":ready_status(nowcast.get("status")),
+        "detail":"Himawari-9 qua nguồn mở JMA/NOAA: nhiệt độ đỉnh mây, độ cao đỉnh mây, xu hướng 20 phút và chỉ số đối lưu."
+    }
+    sources["AQI"]={
+        "status":ready_status(aqi.get("status"),partial_ok=True),
+        "detail":"IQAir realtime khi có điểm phù hợp; CAMS dùng làm lớp PM2.5/PM10 và mô hình tham chiếu."
+    }
+    sources["TRIỀU"]={
+        "status":ready_status(tide.get("status"),partial_ok=True),
+        "detail":"Triều mô hình FES2014/Copernicus; không phải số đo trạm và không thay mực nước hải đồ cảng."
+    }
     gaps=[]
     for g in dashboard.get("gaps") or []:
         gaps.append({"name":g.get("name"),"detail":g.get("detail")})
