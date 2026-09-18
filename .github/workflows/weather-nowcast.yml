@@ -73,6 +73,12 @@ jobs:
           assert p['lightning_observed']['status'] == 'NOT_CONNECTED', p
           if p['status'] == 'POINT_NUMERIC_READY':
               assert set(p['points']) == set(POINTS)
+              spatial=p.get('spatial') or {}
+              assert spatial.get('status') == 'READY', spatial
+              assert spatial.get('cell_count',0) >= 200, spatial
+              assert len(spatial.get('frames') or []) >= 1, spatial
+              assert spatial.get('display_interpolation') == 'RENDER_ONLY', spatial
+              assert all('convective_score' in cell for frame in spatial['frames'] for cell in frame['cells']), spatial
               for point in p['points'].values():
                   sig=point['convective_signal']
                   assert sig['level'] in {'LOW','WATCH','ELEVATED','HIGH'}
