@@ -32,7 +32,18 @@ for(const [name,width,height] of sizes){
     nowcastItems:document.querySelectorAll("#nowcastQuick .quick-item").length,
     sourceCards:document.querySelectorAll("#sourceGrid .source-card").length,
     mapDeferred:!document.querySelector("#mapBox iframe")&&!document.querySelector("#mapBox img"),
-    horizonTabs:document.querySelectorAll(".horizon-tabs button").length
+    horizonTabs:document.querySelectorAll(".horizon-tabs button").length,
+    islandWatch:document.querySelectorAll(".island-watch-card").length,
+    compactFeedback:!!document.querySelector(".field-strip")&&!document.querySelector(".feedback-panel"),
+    mapBeforeForecast:(document.querySelector(".map-panel")?.compareDocumentPosition(document.querySelector(".forecast-panel"))&Node.DOCUMENT_POSITION_FOLLOWING)!==0,
+    innerOverflow:[...document.querySelectorAll(".panel")].flatMap(panel=>{
+      const pr=panel.getBoundingClientRect();
+      return [...panel.querySelectorAll("*")].filter(el=>{
+        if(el.closest(".table-scroll,.ensemble-table-shell,.actual-strip,.hourly-strip,.point-tabs"))return false;
+        const r=el.getBoundingClientRect();
+        return r.right>pr.right+3||r.left<pr.left-3;
+      }).slice(0,4).map(el=>el.className||el.tagName);
+    }).slice(0,12)
   }));
 
   const heavyInitial=initial.filter(u=>/embed\.windy|dashboard-data\.json|tide\.json|weather-aqi|weather-ensemble|weather-nowcast|himawari\/img/i.test(u));
@@ -66,6 +77,10 @@ for(const [name,width,height] of sizes){
     checks.sourceCards>=1&&
     checks.mapDeferred&&
     checks.horizonTabs===4&&
+    checks.islandWatch>=3&&
+    checks.compactFeedback&&
+    checks.mapBeforeForecast&&
+    checks.innerOverflow.length===0&&
     heavyInitial.length===0&&
     deferred.forecast&&deferred.tide&&deferred.aqi&&deferred.nowcast&&
     errors.length===0&&
