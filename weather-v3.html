@@ -3,136 +3,120 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#07131d">
-  <title>JoTrip Weather V3 - Situation Map</title>
-  <meta name="description" content="Weather Situation Map thử nghiệm cho Phú Quốc - bản đồ rủi ro trực quan từ dữ liệu JoTrip Weather Lab.">
+  <meta name="theme-color" content="#eaf6fa">
+  <title>JoTrip Weather V3.2 - Phú Quốc Live Map</title>
+  <meta name="description" content="Bản đồ tình huống thời tiết Phú Quốc - JoTrip Weather V3.2.">
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="preconnect" href="https://a.basemaps.cartocdn.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="weather-v3.css?v=20260918-1">
+  <link rel="stylesheet" href="weather-v3.css?v=20260918-32">
 </head>
 <body>
-<div class="app-shell">
+<div class="app">
   <header class="topbar">
-    <div class="brand">
+    <a class="brand" href="./" aria-label="JoTrip Weather">
       <span class="brand-mark">J</span>
-      <div><strong>JoTrip Weather</strong><small>PHÚ QUỐC · V3.1 SITUATION MAP</small></div>
-    </div>
-    <div class="top-actions">
-      <span id="liveState" class="live-state loading"><i></i> ĐANG TẢI</span>
-      <a class="lab-link" href="/weather.html">Mở Lab đầy đủ</a>
+      <span><b>JoTrip Weather</b><small>PHÚ QUỐC · V3.2 LIVE MAP</small></span>
+    </a>
+    <div class="freshness">
+      <i></i><span id="liveState">ĐANG TẢI</span>
     </div>
   </header>
 
-  <main class="workspace">
-    <section class="map-stage" aria-label="Bản đồ tình huống thời tiết Phú Quốc">
-      <div id="situationMap" class="map"></div>\n      <div id="sourceLayerFrame" class="source-layer-frame" aria-hidden="true"></div>
-      <div id="windFlow" class="wind-flow" aria-hidden="true"></div>
-      <div class="map-vignette" aria-hidden="true"></div>
+  <main class="map-shell">
+    <div id="map" class="map" aria-label="Bản đồ thời tiết Phú Quốc"></div>
+    <canvas id="flowCanvas" class="flow-canvas" aria-hidden="true"></canvas>
+    <div class="map-soft-shade" aria-hidden="true"></div>
 
-      <div class="island-summary">
-        <small>PHÚ QUỐC HIỆN TẠI</small>
-        <h1 id="islandHeadline">Đang tổng hợp tình hình...</h1>
-        <p id="islandSub">Weather Lab đang đọc dữ liệu live.</p>
-      </div>
-
-      <div class="layer-groups">
-        <div class="layer-group-label">JOTRIP</div>
-        <nav class="layer-switcher" aria-label="Lớp JoTrip">
-          <button data-mode="jotrip" data-layer="risk" class="active"><span>⚠</span><b>Risk</b></button>
-          <button data-mode="jotrip" data-layer="rain"><span>☂</span><b>Rain</b></button>
-          <button data-mode="jotrip" data-layer="wind"><span>≋</span><b>Wind</b></button>
-          <button data-mode="jotrip" data-layer="waves"><span>≈</span><b>Waves</b></button>
-          <button data-mode="jotrip" data-layer="storm"><span>ϟ</span><b>Storm</b></button>
-          <button data-mode="actual" data-layer="actual"><span>●</span><b>Actual</b></button>
-        </nav>
-        <div class="layer-group-label source-label">SOURCE LAYERS</div>
-        <nav class="source-switcher" aria-label="Lớp nguồn tham chiếu">
-          <button data-mode="source" data-source="radar"><b>Radar</b></button>
-          <button data-mode="source" data-source="himawari"><b>Himawari</b></button>
-          <button data-mode="source" data-source="wind"><b>Wind</b></button>
-          <button data-mode="source" data-source="rain"><b>Rain</b></button>
-          <button data-mode="source" data-source="waves"><b>Waves</b></button>
-        </nav>
-      </div>
-
-      <div class="map-legend">
-        <span><i class="ok"></i>Ổn định</span>
-        <span><i class="watch"></i>Theo dõi</span>
-        <span><i class="danger"></i>Nguy cơ cao</span>
-        <small id="layerNote">Risk là lớp đánh giá của JoTrip từ Local Now, model và ensemble.</small>
-      </div>
-
-      <button id="recenter" class="recenter" type="button" aria-label="Đưa bản đồ về Phú Quốc">◎</button>
-
-      <section id="quickAlert" class="quick-alert neutral" aria-live="polite">
-        <div class="alert-icon">!</div>
-        <div>
-          <small>QUICK ALERT</small>
-          <b id="alertTitle">Đang quét tín hiệu...</b>
-          <p id="alertText">Đối chiếu nowcast và ensemble.</p>
-        </div>
-        <span id="alertWhen">LIVE</span>
-      </section>
-
-      <aside class="detail-panel" id="detailPanel">
-        <div class="detail-head">
-          <div>
-            <small>ĐIỂM ĐANG CHỌN</small>
-            <h2 id="pointName">Dương Đông</h2>
-          </div>
-          <span id="pointRisk" class="risk-pill neutral">-</span>
-        </div>
-        <div class="metrics">
-          <article><span>Mưa</span><b id="rainNow">-</b><small id="rainClass">-</small></article>
-          <article><span>Gió</span><b id="windNow">-</b><small id="windClass">-</small></article>
-          <article><span>Giật</span><b id="gustNow">-</b><small>MÔ HÌNH</small></article>
-          <article><span>Sóng Hs</span><b id="waveNow">-</b><small id="waveClass">-</small></article>
-        </div>
-        <div class="convective-row">
-          <span>Đối lưu</span>
-          <strong id="convectiveNow">-</strong>
-          <small id="convectiveMeta">Himawari</small>
-        </div>
-        <div class="confidence-row">
-          <span>Dữ liệu</span>
-          <b id="confidenceNow">-</b>
-          <small id="updatedAt">-</small>
-        </div>
-      </aside>
-
-      <section class="timeline-card" aria-label="Diễn biến rủi ro">
-        <div class="timeline-head">
-          <div><small>HAZARD TIMELINE</small><b id="timelineTitle">Dương Đông</b></div>
-          <span>Ensemble</span>
-        </div>
-        <div id="hazardTimeline" class="hazard-timeline"></div>
-        <div class="time-controls">
-          <button data-step="0" class="active">Hiện tại</button>
-          <button data-step="6">+6h</button>
-          <button data-step="12">+12h</button>
-          <button data-step="18">+18h</button>
-        </div>
-      </section>
+    <section class="headline-card">
+      <span class="kicker">PHÚ QUỐC HIỆN TẠI</span>
+      <h1 id="headline">Đang đọc Weather Lab...</h1>
+      <p id="headlineSub">Đang tổng hợp các vùng cần chú ý.</p>
     </section>
 
-    <section class="below-map">
-      <div class="explain">
-        <span class="eyebrow">V3 TEST</span>
-        <h2>Nhìn trước, đọc sau</h2>
-        <p>Bản đồ này ưu tiên tình huống và rủi ro. Các vùng màu là lớp trực quan hóa từ những điểm Weather Lab hiện có, không phải mạng quan trắc liên tục và không được hiểu là độ phân giải thực của model.</p>
+    <div class="map-actions">
+      <button id="recenterBtn" title="Về Phú Quốc" aria-label="Về Phú Quốc">◎</button>
+      <button id="toggleLabelsBtn" class="active" title="Hiện số liệu" aria-label="Hiện số liệu">123</button>
+    </div>
+
+    <section id="sourceBadge" class="source-badge">
+      <b id="layerTitle">JoTrip Risk</b>
+      <span id="layerSource">Weather Lab</span>
+      <small id="layerUpdated">-</small>
+    </section>
+
+    <section id="quickAlert" class="quick-alert neutral">
+      <span class="alert-symbol">!</span>
+      <div>
+        <small>QUICK ALERT</small>
+        <b id="alertTitle">Đang quét nhiễu động...</b>
+        <p id="alertText">Nowcast + ensemble + quan trắc</p>
       </div>
-      <div class="source-grid">
-        <article><b>Actual / Observed</b><span>Trạm và nguồn đo thật vẫn được phân biệt riêng.</span></article>
-        <article><b>Estimated Now</b><span>Nội suy hoặc ước tính hiện tại được ghi rõ nguồn.</span></article>
-        <article><b>Forecast</b><span>Model và ensemble dùng cho diễn biến tương lai.</span></article>
-        <article><b>Risk</b><span>JoTrip tổng hợp để trả lời nơi nào cần chú ý trước.</span></article>
+      <strong id="alertWhen">LIVE</strong>
+    </section>
+
+    <section id="probeCard" class="probe-card">
+      <button id="probeClose" class="probe-close" aria-label="Đóng">×</button>
+      <small id="probeEyebrow">ĐIỂM ĐANG CHỌN</small>
+      <div class="probe-head">
+        <h2 id="probeName">Dương Đông</h2>
+        <span id="probeRisk" class="risk-chip">-</span>
+      </div>
+      <div id="probeMetrics" class="probe-metrics"></div>
+      <div class="probe-foot">
+        <span id="probeClass">-</span>
+        <span id="probeTime">-</span>
       </div>
     </section>
+
+    <section class="time-strip">
+      <span>DỰ BÁO</span>
+      <button class="active" data-step="0">NOW</button>
+      <button data-step="6">+6H</button>
+      <button data-step="12">+12H</button>
+      <button data-step="18">+18H</button>
+    </section>
+
+    <section class="layer-dock" aria-label="Các lớp bản đồ">
+      <div class="dock-scroll">
+        <span class="dock-group">JOTRIP</span>
+        <button class="layer-btn active" data-mode="jotrip" data-layer="risk"><i>⚠</i>Risk</button>
+        <button class="layer-btn" data-mode="actual" data-layer="actual"><i>●</i>Actual</button>
+        <button class="layer-btn" data-mode="jotrip" data-layer="storm"><i>ϟ</i>Storm</button>
+        <button class="layer-btn" data-mode="jotrip" data-layer="rain"><i>☂</i>Rain</button>
+        <button class="layer-btn" data-mode="jotrip" data-layer="wind"><i>≋</i>Wind</button>
+        <button class="layer-btn" data-mode="jotrip" data-layer="waves"><i>≈</i>Waves</button>
+
+        <span class="dock-divider"></span>
+        <span class="dock-group source">SOURCE</span>
+        <button class="layer-btn source-btn" data-mode="source" data-layer="radar"><i>◉</i>Radar</button>
+        <button class="layer-btn source-btn" data-mode="source" data-layer="satellite"><i>☁</i>Himawari</button>
+        <button class="layer-btn source-btn" data-mode="source" data-layer="rain"><i>☂</i>Rain grid</button>
+        <button class="layer-btn source-btn" data-mode="source" data-layer="wind"><i>↗</i>Wind grid</button>
+        <button class="layer-btn source-btn" data-mode="source" data-layer="waves"><i>≈</i>Wave grid</button>
+      </div>
+    </section>
+
+    <div class="legend" id="legend">
+      <span><i class="legend-low"></i><b>Ổn</b></span>
+      <span><i class="legend-watch"></i><b>Theo dõi</b></span>
+      <span><i class="legend-high"></i><b>Cao</b></span>
+    </div>
+
+    <div class="attribution-note" id="attributionNote">JoTrip Weather · lớp Risk là phân tích nội bộ, không phải quan trắc.</div>
   </main>
+
+  <section class="info-band">
+    <div>
+      <span class="kicker">V3.2 FIELD TEST</span>
+      <h2>Bản đồ phải cho thấy thời tiết đang ở đâu.</h2>
+    </div>
+    <p>JoTrip Risk dùng dữ liệu Weather Lab. Actual chỉ là dữ liệu đo thật. Radar là ảnh radar nguồn. Rain/Wind/Waves source là grid mô hình độc lập để đối chiếu. Các lớp không được trộn nhãn với nhau.</p>
+  </section>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="weather-v3.js?v=20260918-1"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="weather-v3.js?v=20260918-32"></script>
 </body>
 </html>
