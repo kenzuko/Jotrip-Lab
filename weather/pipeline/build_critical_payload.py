@@ -250,7 +250,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
     ens_ratio=num(ensemble.get("completion_ratio"))
     sources["GEFS"]={
         "status":ready_status(ensemble.get("readiness"),partial_ok=True),
-        "detail":f"NOAA GEFS D0-D3 · tối đa 31 thành viên · hoàn tất {round((ens_ratio or 0)*100)}% · PQ Ensemble Local đang {str(ensemble.get('calibration_status','LEARNING')).lower()}."
+        "detail":f"NOAA GEFS D0-D10 · tối đa 31 thành viên · hoàn tất {round((ens_ratio or 0)*100)}% · PQ Ensemble Local đang {str(ensemble.get('calibration_status','LEARNING')).lower()}."
     }
     sources["VVPQ"]={
         "status":ready_status(v.get("status")),
