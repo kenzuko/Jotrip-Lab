@@ -3,8 +3,8 @@
 
 const CRITICAL="/Jotrip-Lab/weather/data/critical.json";
 const TIDE="/Jotrip-Lab/weather/data/tide.json";
-const AQI=["/Jotrip-Lab/weather/data/weather-aqi/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-aqi/latest.json","/Jotrip-Lab/weather/data/air-quality.json"];
-const NOWCAST=["/Jotrip-Lab/weather/data/weather-nowcast/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast/latest.json","/Jotrip-Lab/weather/data/nowcast.json"];
+const AQI=["/Jotrip-Lab/weather/data/weather-aqi/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-aqi/latest.json","/weather/air-quality.json"];
+const NOWCAST=["/Jotrip-Lab/weather/data/weather-nowcast/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast/latest.json","/weather/nowcast.json"];
 const JOTRIP_FORECAST="/Jotrip-Lab/weather/jotrip-forecast.json";
 const WINDY={
   radar:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=radar&product=radar&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1",
