@@ -1,0 +1,58 @@
+name: Weather V2 performance smoke
+
+on:
+  push:
+    paths:
+      - "weather-v2.html"
+      - "weather-v2.css"
+      - "weather-v2.js"
+      - "weather-brand.svg"
+      - "weather/pipeline/build_critical_payload.py"
+      - "weather/tests/test_critical_payload.py"
+      - "weather/ui-v2-smoke.mjs"
+      - ".github/workflows/weather-v2-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/weather-lab-data-engine-v1
+      - uses: actions/checkout@v4
+        with:
+          ref: data-weather
+          path: live-data
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Build compact critical payload
+        run: |
+          python -m unittest weather.tests.test_critical_payload -v
+          python -m weather.pipeline.build_critical_payload             --dashboard weather/dashboard-data.json             --local-now live-data/data/weather-groundtruth/local-now.json             --groundtruth live-data/data/weather-groundtruth/latest.json             --output weather/critical.json
+          test $(wc -c < weather/critical.json) -lt 30000
+          wc -c weather/critical.json weather-v2.html weather-v2.css weather-v2.js
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start static server
+        run: |
+          python3 -m http.server 4173 >/tmp/weather-v2-http.log 2>&1 &
+          sleep 2
+      - name: Verify first paint stays light
+        run: node weather/ui-v2-smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: weather-v2-smoke
+          path: artifacts/weather-v2-*.png
+          if-no-files-found: ignore
