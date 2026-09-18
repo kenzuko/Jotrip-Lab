@@ -18,41 +18,44 @@ for(const [name,width,height] of sizes){
     scripts:[...document.scripts].map(s=>s.src).filter(Boolean),
     airModule:!!window.WeatherLabAirQuality,
     tideModule:!!window.WeatherLabTide,
-    observationModule:!!window.WeatherLabObservationStatus,
+    localNowModule:!!window.PQLocalNow,
+    weatherMapModule:!!window.PQWeatherMap,
     polishModule:!!window.WeatherLabPolish,
     historyModule:!!window.WeatherLabHistoryLink,
     airPanel:!!document.querySelector('#airQualityPanel'),
     tidePanel:!!document.querySelector('#tidePanel'),
-    observationPanel:!!document.querySelector('#observationPanel'),
-    mapPanel:!!document.querySelector('#weatherMapPanel')
+    localNowPanel:!!document.querySelector('#pqLocalNowPanel'),
+    weatherMapPanel:!!document.querySelector('#pqMapPanel')
   }));
   console.log(`${name} boot`,JSON.stringify(boot));
 
   await page.waitForSelector("#airQualityPanel",{timeout:10000});
   await page.waitForSelector("#tidePanel",{timeout:10000});
-  await page.waitForSelector("#observationPanel",{timeout:10000});
+  await page.waitForSelector("#pqLocalNowPanel",{timeout:10000});
+  await page.waitForSelector("#pqMapPanel",{timeout:10000});
   await page.waitForSelector("[data-weather-history-link]",{timeout:10000});
   await page.waitForTimeout(500);
 
   const checks=await page.evaluate(()=>{
-    const hero=document.querySelector(".hero-card"),temp=document.querySelector(".hero-temp"),hb=hero?.getBoundingClientRect(),tb=temp?.getBoundingClientRect(),aq=document.querySelector("#airQualityPanel"),aqb=aq?.getBoundingClientRect(),tide=document.querySelector("#tidePanel"),tideb=tide?.getBoundingClientRect(),obs=document.querySelector("#observationPanel"),obsb=obs?.getBoundingClientRect(),visibleText=document.body.innerText;
+    const hero=document.querySelector(".hero-card"),temp=document.querySelector(".hero-temp"),hb=hero?.getBoundingClientRect(),tb=temp?.getBoundingClientRect(),aq=document.querySelector("#airQualityPanel"),aqb=aq?.getBoundingClientRect(),tide=document.querySelector("#tidePanel"),tideb=tide?.getBoundingClientRect(),local=document.querySelector("#pqLocalNowPanel"),lb=local?.getBoundingClientRect(),map=document.querySelector("#pqMapPanel"),mb=map?.getBoundingClientRect(),visibleText=document.body.innerText;
     return {
       overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
       tempInside:!!(hb&&tb&&tb.left>=hb.left-1&&tb.right<=hb.right+1&&tb.top>=hb.top-1&&tb.bottom<=hb.bottom+1),
       aqInside:!!(aqb&&aqb.left>=-1&&aqb.right<=document.documentElement.clientWidth+1),
       tideInside:!!(tideb&&tideb.left>=-1&&tideb.right<=document.documentElement.clientWidth+1),
-      obsInside:!!(obsb&&obsb.left>=-1&&obsb.right<=document.documentElement.clientWidth+1),
-      mapRemoved:!document.querySelector("#weatherMapPanel"),
+      localInside:!!(lb&&lb.left>=-1&&lb.right<=document.documentElement.clientWidth+1),
+      mapInside:!!(mb&&mb.left>=-1&&mb.right<=document.documentElement.clientWidth+1),
       pointTabs:document.querySelectorAll(".point-tabs button").length,
       horizonTabs:document.querySelectorAll(".horizon-tabs button").length,
       canvas:!!document.querySelector("#forecastChart"),aqi:!!document.querySelector("#aqiValue"),pm25:!!document.querySelector("#pm25Value"),pm10:!!document.querySelector("#pm10Value"),modelAqi:!!document.querySelector("#aqiModelRef"),
-      tideHeight:!!document.querySelector("#tideHeight"),tideSpark:!!document.querySelector("#tideSpark"),nextTurn:!!document.querySelector("#nextTurn"),convectiveState:!!document.querySelector("#convectiveState"),cloudTemp:!!document.querySelector("#cloudTemp"),radarFrame:!!document.querySelector(".radar-frame[src*='rainviewer.com']"),
-      lightningPlaceholder:!!document.querySelector("#lightningState")||/Sét quan sát trực tiếp/i.test(visibleText),historyLink:!!document.querySelector("[data-weather-history-link]"),rawHmaxError:/ValueError: Cannot find index entries/i.test(visibleText),rawLightningUnresolved:/radar\/lightning unresolved/i.test(visibleText),fatal:!!document.querySelector('.diagnostic-banner[data-level="error"]')
+      tideHeight:!!document.querySelector("#tideHeight"),tideSpark:!!document.querySelector("#tideSpark"),nextTurn:!!document.querySelector("#nextTurn"),
+      localGrid:!!document.querySelector("#pqlGrid"),feedback:document.querySelectorAll("[data-fb]").length>=6,weatherFrame:!!document.querySelector("#pqmFrame"),rainviewer:!!document.querySelector("iframe[src*='rainviewer.com']"),
+      historyLink:!!document.querySelector("[data-weather-history-link]"),rawHmaxError:/ValueError: Cannot find index entries/i.test(visibleText),fatal:!!document.querySelector('.diagnostic-banner[data-level="error"]')
     }
   });
 
   await page.screenshot({path:`artifacts/weather-ui-${name}.png`,fullPage:true});
-  const ok=checks.overflow<=2&&checks.tempInside&&checks.aqInside&&checks.tideInside&&checks.obsInside&&checks.mapRemoved&&checks.pointTabs===4&&checks.horizonTabs===4&&checks.canvas&&checks.aqi&&checks.pm25&&checks.pm10&&checks.modelAqi&&checks.tideHeight&&checks.tideSpark&&checks.nextTurn&&checks.convectiveState&&checks.cloudTemp&&checks.radarFrame&&!checks.lightningPlaceholder&&checks.historyLink&&!checks.rawHmaxError&&!checks.rawLightningUnresolved&&!checks.fatal&&errors.length===0;
+  const ok=checks.overflow<=2&&checks.tempInside&&checks.aqInside&&checks.tideInside&&checks.localInside&&checks.mapInside&&checks.pointTabs===4&&checks.horizonTabs===4&&checks.canvas&&checks.aqi&&checks.pm25&&checks.pm10&&checks.modelAqi&&checks.tideHeight&&checks.tideSpark&&checks.nextTurn&&checks.localGrid&&checks.feedback&&checks.weatherFrame&&!checks.rainviewer&&checks.historyLink&&!checks.rawHmaxError&&!checks.fatal&&errors.length===0;
   console.log(name,JSON.stringify(checks),errors);
   if(!ok)failed=true;
   await page.close();
