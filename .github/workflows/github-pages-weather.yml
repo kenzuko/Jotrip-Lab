@@ -99,6 +99,10 @@ jobs:
             --ensemble live-data/data/weather-ensemble/latest.json \
             --output /tmp/weather-pages/data/critical.json
           test $(wc -c < /tmp/weather-pages/data/critical.json) -lt 60000
+          PYTHONPATH=source python -m weather.pipeline.build_jotrip_forecast \
+            --ensemble live-data/data/weather-ensemble/latest.json \
+            --output /tmp/weather-pages/jotrip-forecast.json
+          test $(wc -c < /tmp/weather-pages/jotrip-forecast.json) -lt 120000
 
       - name: Make Weather Lab safe under /Jotrip-Lab/weather/
         shell: bash
@@ -113,6 +117,7 @@ jobs:
           replacements = {
               '/weather/dashboard-data.json': base + 'data/dashboard-data.json',
               '/weather/critical.json': base + 'data/critical.json',
+              '/weather/jotrip-forecast.json': base + 'jotrip-forecast.json',
               '/weather-v2.css': base + 'weather-v2.css',
               '/weather-v2.js': base + 'weather-v2.js',
               '/weather-brand.svg': base + 'weather-brand.svg',
