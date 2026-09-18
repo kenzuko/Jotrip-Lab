@@ -50,6 +50,9 @@ function ageMinutes(iso){
   const t=Date.parse(iso||"");
   return Number.isFinite(t)?Math.max(0,(Date.now()-t)/60000):Infinity;
 }
+function liveTimestamp(){
+  return critical?.local_generated_at||critical?.generated_at||null;
+}
 function ageText(iso){
   const m=ageMinutes(iso);
   if(!Number.isFinite(m))return "không rõ";
@@ -126,7 +129,7 @@ function confidenceScore(){
   const coverage=coverageScore()/100;
   const confs=ids.map(id=>num(critical.points[id]?.local?.rain_confidence)).filter(v=>v!==null);
   const local=confs.length?confs.reduce((a,b)=>a+b,0)/confs.length:0.35;
-  const fresh=clamp(1-ageMinutes(critical.generated_at)/90,0,1);
+  const fresh=clamp(1-ageMinutes(liveTimestamp())/90,0,1);
   const ens=ids.map(id=>num(critical.points[id]?.ensemble?.completion_ratio)).filter(v=>v!==null);
   const ensemble=ens.length?ens.reduce((a,b)=>a+b,0)/ens.length:0;
   const g=critical.actual?.rain_gauges||[];
@@ -258,10 +261,10 @@ function renderPointTabs(){
 
 function renderStatus(){
   if(!critical)return;
-  const m=ageMinutes(critical.generated_at);
+  const m=ageMinutes(liveTimestamp());
   const stale=m>60,delayed=m>25;
   $("liveDot").className=stale||delayed?"warn":"ok";
-  $("liveLabel").textContent=(stale?"DỮ LIỆU CŨ":delayed?"CẬP NHẬT CHẬM":critical.report_status==="LIVE"?"ĐANG HOẠT ĐỘNG":"SUY GIẢM")+" · "+ageText(critical.generated_at);
+  $("liveLabel").textContent=(stale?"DỮ LIỆU CŨ":delayed?"CẬP NHẬT CHẬM":critical.report_status==="LIVE"?"ĐANG HOẠT ĐỘNG":"SUY GIẢM")+" · "+ageText(liveTimestamp());
 
   const assessment=islandAssessment();
   const coverage=coverageScore();
@@ -303,10 +306,10 @@ function renderHero(){
   $("heroTemp").textContent=t===null?"--":fmt(t,1)+"°";
   $("heroTempClass").textContent=l.available?"ƯỚC TÍNH":"MÔ HÌNH";
   $("heroSummary").textContent=summary(p);
-  $("updatedAt").textContent="Cập nhật "+localTime(critical.generated_at)+" · "+ageText(critical.generated_at);
+  $("updatedAt").textContent="Cập nhật "+localTime(liveTimestamp())+" · "+ageText(liveTimestamp());
   if($("scenePoint"))$("scenePoint").textContent=p.name||current;
   if($("sceneTemp"))$("sceneTemp").textContent=t===null?"--":fmt(t,1)+"°";
-  if($("sceneUpdated"))$("sceneUpdated").textContent="JoTrip Local Now · "+ageText(critical.generated_at);
+  if($("sceneUpdated"))$("sceneUpdated").textContent="JoTrip Local Now · "+ageText(liveTimestamp());
   const rain=num(l.rain_rate_mm_h)||0,conv=num(n.convective_score??l.convection_score)||0,wind=num(l.wind_kmh??m.wind_kmh)||0;
   const mood=(conv>=70||rain>=3)?"storm":(conv>=50||rain>=.5||wind>=28)?"watch":"calm";
   document.querySelector(".hero")?.setAttribute("data-mood",mood);
