@@ -169,3 +169,12 @@ main,.panel,.hero,.two-col,.now-grid,.quick-grid,.source-grid,.audit-grid,.statu
 .forecast-method>div{margin-top:6px;font-size:7.5px;line-height:1.5;color:#7d909b}
 @media(max-width:900px){.jotrip-forecast-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:620px){.jotrip-forecast-grid{display:flex;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.jotrip-forecast-grid::-webkit-scrollbar{display:none}.jotrip-forecast-card{flex:0 0 155px}}
+
+/* V2.4 mobile forecast overflow fix */
+@media(max-width:620px){
+  .jotrip-forecast-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}
+  .jotrip-forecast-card{min-width:0;width:auto}
+  .jotrip-forecast-card header{flex-wrap:wrap}
+  .jotrip-forecast-card header>span{white-space:normal;text-align:right;max-width:78px}
+}
+@media(max-width:340px){.jotrip-forecast-grid{grid-template-columns:1fr}}
