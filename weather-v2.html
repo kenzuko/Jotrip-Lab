@@ -6,16 +6,16 @@
   <meta name="theme-color" content="#f4f8fb">
   <title>JoTrip Weather - Phú Quốc</title>
   <meta name="description" content="Thời tiết Phú Quốc theo thời gian thực: quan trắc, radar - vệ tinh, biển, AQI và dự báo JoTrip 10 ngày. Miễn phí, phi thương mại.">
-  <link rel="stylesheet" href="/weather-v2.css?v=20260918-14">
+  <link rel="stylesheet" href="/weather-v2.css?v=20260918-15">
   <link rel="preload" as="fetch" href="/weather/critical.json" crossorigin="anonymous">
   <link rel="manifest" href="/weather-manifest.webmanifest">
-  <script defer src="/weather-v2.js?v=20260918-14"></script>
+  <script defer src="/weather-v2.js?v=20260918-15"></script>
 </head>
 <body>
 <header class="topbar">
   <a class="brand" href="/weather.html" aria-label="JoTrip Weather">
     <img src="/weather-brand.svg" alt="JoTrip">
-    <span><strong>Weather</strong><small>PHÚ QUỐC</small></span>
+    <span><strong>Weather Intelligence</strong><small>PHÚ QUỐC · LIVE</small></span>
   </a>
   <div class="health"><i id="liveDot"></i><span id="liveLabel">ĐANG TẢI</span></div>
 </header>
@@ -28,10 +28,17 @@
       <p id="heroSummary">Đang đọc dữ liệu quan trắc và phân tích địa phương...</p>
       <div class="updated" id="updatedAt">-</div>
     </div>
-    <div class="hero-now">
-      <span>NHIỆT ĐỘ ĐỊA PHƯƠNG</span>
-      <b id="heroTemp">--</b>
-      <small id="heroTempClass">ƯỚC TÍNH</small>
+    <div class="hero-stage">
+      <div class="weather-orbit" aria-hidden="true">
+        <i></i><i></i><i></i>
+        <span class="orbit-core"></span>
+      </div>
+      <div class="hero-now">
+        <span>NHIỆT ĐỘ ĐỊA PHƯƠNG</span>
+        <b id="heroTemp">--</b>
+        <small id="heroTempClass">ƯỚC TÍNH</small>
+      </div>
+      <div class="hero-signature">PHU QUOC · 10.2°N</div>
     </div>
   </section>
 
@@ -41,18 +48,14 @@
     <div><span>Mức tin cậy</span><b id="confidenceNow">-</b></div>
     <div><span>Tầm dự báo</span><b id="horizonNow">-</b></div>
   </section>
-  <div id="islandSummary" class="island-summary">Đang tổng hợp tình hình toàn đảo...</div>
-  <section id="hazardBoard" class="hazard-board" aria-label="Các nguy cơ cần theo dõi">
-    <article><span>Mưa lớn</span><b id="hazardRain">Đang tính</b><small id="hazardRainMeta">-</small></article>
-    <article><span>Đối lưu - dông</span><b id="hazardStorm">Đang tính</b><small id="hazardStormMeta">-</small></article>
-    <article><span>Gió - biển</span><b id="hazardWind">Đang tính</b><small id="hazardWindMeta">-</small></article>
-    <article><span>Biến động 10 ngày</span><b id="hazardVolatility">Đang tính</b><small id="hazardVolatilityMeta">-</small></article>
-  </section>
-
   <nav id="pointTabs" class="point-tabs" aria-label="Điểm theo dõi thời tiết">
     <span class="inline-loader">Đang tải danh sách điểm...</span>
   </nav>
 
+  <div class="section-intro">
+    <div><span class="eyebrow">ĐANG XẢY RA</span><h2>Thời tiết tại điểm đang chọn</h2></div>
+    <small>PQ Local Now kết hợp quan trắc và phân tích địa phương</small>
+  </div>
   <section class="now-grid" aria-label="Tình hình hiện tại">
     <article class="metric-card">
       <div><span>Gió địa phương</span><em id="windClass" class="badge estimated">ƯỚC TÍNH</em></div>
@@ -100,6 +103,10 @@
     </div>
   </details>
 
+  <div class="section-intro section-intro-spaced">
+    <div><span class="eyebrow">KIỂM CHỨNG</span><h2>Quan trắc và phản hồi thực địa</h2></div>
+    <small>Những gì hệ thống đo được hoặc nhận từ người đang ở trên đảo</small>
+  </div>
   <section class="panel actual-panel">
     <div class="panel-head">
       <div><span class="eyebrow">QUAN TRẮC THỰC TẾ</span><h2>Dữ liệu đo được</h2></div>
@@ -146,7 +153,18 @@
     </section>
   </div>
 
-  <section class="panel map-panel">
+  <section class="command-center" aria-label="Trung tâm theo dõi thời tiết">
+    <div class="command-center-head">
+      <div>
+        <span class="eyebrow">PHÚ QUỐC WEATHER INTELLIGENCE</span>
+        <h2>Tình hình toàn đảo</h2>
+      </div>
+      <span class="command-kicker">OBSERVE · ASSESS · FORECAST</span>
+    </div>
+
+    <div class="command-center-grid">
+      <div class="command-map">
+<section class="panel map-panel">
     <div class="panel-head">
       <div><span class="eyebrow">BẢN ĐỒ QUAN SÁT</span><h2>Thời tiết quanh Phú Quốc</h2></div>
       <span id="mapState" class="badge deferred">CHƯA TẢI</span>
@@ -173,7 +191,23 @@
       <a href="https://www.windy.com/?10.20,104.00,8" target="_blank" rel="noopener noreferrer">Windy ↗</a>
     </div>
   </section>
+      </div>
 
+      <aside class="situation-rail" aria-label="Các nguy cơ cần theo dõi">
+        <div class="situation-title">
+          <span class="eyebrow">TÌNH HÌNH NHANH</span>
+          <h3>Cần chú ý</h3>
+        </div>
+        <div id="islandSummary" class="island-summary">Đang tổng hợp tình hình toàn đảo...</div>
+        <section id="hazardBoard" class="hazard-board" aria-label="Các nguy cơ cần theo dõi">
+          <article><span>Mưa lớn</span><b id="hazardRain">Đang tính</b><small id="hazardRainMeta">-</small></article>
+          <article><span>Đối lưu - dông</span><b id="hazardStorm">Đang tính</b><small id="hazardStormMeta">-</small></article>
+          <article><span>Gió - biển</span><b id="hazardWind">Đang tính</b><small id="hazardWindMeta">-</small></article>
+          <article><span>Biến động 10 ngày</span><b id="hazardVolatility">Đang tính</b><small id="hazardVolatilityMeta">-</small></article>
+        </section>
+      </aside>
+    </div>
+  </section>
 
   <section class="panel jotrip-forecast-panel">
     <div class="panel-head">
@@ -268,7 +302,7 @@
   </section>
 
   <footer>
-    <b>JoTrip Weather · Phú Quốc</b>
+    <b>JoTrip Weather Intelligence · Phú Quốc</b>
     <span>Miễn phí · Phi thương mại · Không thay thế bản tin/cảnh báo chính thức.</span>
   </footer>
 </main>
