@@ -1,0 +1,164 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-09-18T00:19:00.181985+00:00",
+  "status": "READY",
+  "actual_policy": "Only machine-readable numeric observations with timestamps are ACTUAL. Remote sensing and models are separate classes.",
+  "atmosphere": {
+    "vvpq": {
+      "status": "FRESH",
+      "station_id": "VVPQ",
+      "station_name": "Phu Quoc International Airport",
+      "location_id": "phu_quoc_airport",
+      "lat": 10.169,
+      "lon": 103.995,
+      "source": "AVIATION_WEATHER_CENTER_METAR",
+      "source_channel": "METAR",
+      "data_class": "ACTUAL",
+      "observed_at": "2026-09-18T00:00:00+00:00",
+      "age_minutes": 19.0,
+      "temperature_c": 27.0,
+      "dewpoint_c": 25.0,
+      "wind_direction_deg": 300.0,
+      "wind_speed_kt": 5.0,
+      "wind_speed_ms": 2.572,
+      "wind_speed_kmh": 9.26,
+      "pressure_hpa": 1011.0,
+      "visibility_sm": 5.59,
+      "visibility_m": 8996,
+      "weather": null,
+      "convective_cloud": true,
+      "clouds": [
+        {
+          "cover": "SCT",
+          "base": 1500
+        },
+        {
+          "cover": "FEW",
+          "base": 1700
+        },
+        {
+          "cover": "SCT",
+          "base": 4000
+        }
+      ],
+      "flight_category": "VFR",
+      "raw_observation": "METAR VVPQ 180000Z 30005KT 9000 SCT015 FEW017CB SCT040 27/25 Q1011 NOSIG",
+      "qc": "PASS",
+      "provenance_url": "https://aviationweather.gov/api/data/metar?ids=VVPQ&format=json&hours=24",
+      "raw_payload_hash": "3f809c87791eea1375d1282025234acea275c64b88c5398e20d573c88176a7fb"
+    }
+  },
+  "rainfall": {
+    "status": "FRESH",
+    "source": "VRAIN_PUBLIC",
+    "period_start": "2026-09-17T12:00:00+00:00",
+    "period_end": "2026-09-18T00:19:02+00:00",
+    "stations": {
+      "cua_can": {
+        "station_id": "VRAIN_CUA_CAN",
+        "station_name": "Cửa Cạn",
+        "location_id": "rain_cua_can",
+        "lat": 10.292693,
+        "lon": 103.914799,
+        "source": "VRAIN_PUBLIC",
+        "source_channel": "current/all.json",
+        "data_class": "ACTUAL",
+        "observed_at": "2026-09-18T00:19:02+00:00",
+        "age_minutes": 0.0,
+        "variable": "precipitation",
+        "accumulation_mm": 21.0,
+        "accumulation_label": "Mưa vừa",
+        "period_start": "2026-09-17T12:00:00+00:00",
+        "period_end": "2026-09-18T00:19:02+00:00",
+        "statistic": "ACCUMULATION",
+        "timestamp_semantics": "END_OF_WINDOW",
+        "increment_mm": null,
+        "increment_window_minutes": null,
+        "increment_qc": "NO_PREVIOUS_SAMPLE",
+        "qc": "PASS",
+        "provenance_url": "https://data.vrain.vn/public/current/all.json",
+        "raw_payload_hash": "f546d7eaf71762a51b029d0f40ff7272a75a64ec4bad198fa851f3e8776f2b93"
+      },
+      "bai_thom": {
+        "station_id": "VRAIN_BAI_THOM",
+        "station_name": "Bãi Thơm",
+        "location_id": "rain_bai_thom",
+        "lat": 10.411765,
+        "lon": 104.031055,
+        "source": "VRAIN_PUBLIC",
+        "source_channel": "current/all.json",
+        "data_class": "ACTUAL",
+        "observed_at": "2026-09-18T00:19:02+00:00",
+        "age_minutes": 0.0,
+        "variable": "precipitation",
+        "accumulation_mm": 15.6,
+        "accumulation_label": "Mưa nhỏ",
+        "period_start": "2026-09-17T12:00:00+00:00",
+        "period_end": "2026-09-18T00:19:02+00:00",
+        "statistic": "ACCUMULATION",
+        "timestamp_semantics": "END_OF_WINDOW",
+        "increment_mm": null,
+        "increment_window_minutes": null,
+        "increment_qc": "NO_PREVIOUS_SAMPLE",
+        "qc": "PASS",
+        "provenance_url": "https://data.vrain.vn/public/current/all.json",
+        "raw_payload_hash": "ee1da016b68e9ec05e3a86b8fe7ae0490cc4cbade0ef1c70433f3f9f62e324de"
+      },
+      "an_thoi": {
+        "station_id": "VRAIN_AN_THOI",
+        "station_name": "An Thới",
+        "location_id": "rain_an_thoi",
+        "lat": 10.018482,
+        "lon": 104.0149,
+        "source": "VRAIN_PUBLIC",
+        "source_channel": "current/all.json",
+        "data_class": "ACTUAL",
+        "observed_at": "2026-09-18T00:19:02+00:00",
+        "age_minutes": 0.0,
+        "variable": "precipitation",
+        "accumulation_mm": 14.8,
+        "accumulation_label": "Mưa nhỏ",
+        "period_start": "2026-09-17T12:00:00+00:00",
+        "period_end": "2026-09-18T00:19:02+00:00",
+        "statistic": "ACCUMULATION",
+        "timestamp_semantics": "END_OF_WINDOW",
+        "increment_mm": null,
+        "increment_window_minutes": null,
+        "increment_qc": "NO_PREVIOUS_SAMPLE",
+        "qc": "PASS",
+        "provenance_url": "https://data.vrain.vn/public/current/all.json",
+        "raw_payload_hash": "d1d0d2e45f8c7edf3d099b892225646c59f361fb6d821346cc72fd21ec6e60aa"
+      }
+    },
+    "provenance_url": "https://data.vrain.vn/public/current/all.json"
+  },
+  "station_status": {
+    "VVPQ": {
+      "station_id": "VVPQ",
+      "station_name": "Phu Quoc International Airport",
+      "location_id": "phu_quoc_airport",
+      "lat": 10.169,
+      "lon": 103.995,
+      "source": "AVIATION_WEATHER_CENTER_METAR",
+      "readiness": "PRODUCTION_ACTUAL"
+    },
+    "60018": {
+      "station_id": "DG60018/DS60018",
+      "station_name": "KT HAI VAN PHU QUOC",
+      "location_id": "duong_dong_station",
+      "source": "VN_KTTV_PUBLIC",
+      "readiness": "FEED_EMPTY",
+      "note": "Deep public probe 2026-09-18: XHR 6/24/72h returned zeros/empty and official Excel export contained zero numeric observation cells."
+    },
+    "408": {
+      "station_id": "408",
+      "station_name": "An Thoi",
+      "location_id": "an_thoi_station_408",
+      "source": "VN_NATIONAL_STATION_NETWORK",
+      "readiness": "FEED_UNRESOLVED",
+      "note": "Station existence and variables T/U/R/P/W are documented; public machine-readable feed not found."
+    }
+  },
+  "errors": [],
+  "payload_hash": "0bc3de7eaa5293e58bbdd77f976a0b6cf8d7dd80bd4f508b393128c60fd5688f"
+}
