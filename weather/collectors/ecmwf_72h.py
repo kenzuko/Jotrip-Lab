@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -20,6 +21,17 @@ from weather.processing.units import add_speed_display
 SHORT_STEPS = list(range(0, 73, 3))
 MEDIUM_STEPS = list(range(0, 145, 3)) + list(range(150, 241, 6))
 STEPS = SHORT_STEPS  # backward compatibility for existing callers
+
+# V5 spatial renderer sampling grid around Phu Quoc. Values are sampled from
+# the direct ECMWF Open Data fields already downloaded by this collector.
+# Smooth rendering is a display operation and must not be described as model
+# resolution finer than the underlying source.
+SPATIAL_GRID_DEG = 0.25
+SPATIAL_GRID_REQUESTS = tuple(
+    (round(lat, 2), round(lon, 2))
+    for lat in (9.50, 9.75, 10.00, 10.25, 10.50, 10.75)
+    for lon in (103.50, 103.75, 104.00, 104.25, 104.50)
+)
 
 
 def _decode_all(path: Path, run_time: datetime, source: str, stream: str) -> list[dict]:
@@ -33,7 +45,14 @@ def _decode_all(path: Path, run_time: datetime, source: str, stream: str) -> lis
                 variable = str(codes_get(gid, "shortName"))
                 unit = str(codes_get(gid, "units"))
                 valid_time = run_time + timedelta(hours=step)
-                for point_id, (lat, lon) in POINTS.items():
+                targets = [
+                    (point_id, lat, lon, "OPERATIONAL_ANCHOR")
+                    for point_id, (lat, lon) in POINTS.items()
+                ] + [
+                    (f"grid_{lat:.2f}_{lon:.2f}", lat, lon, "SPATIAL_GRID")
+                    for lat, lon in SPATIAL_GRID_REQUESTS
+                ]
+                for point_id, lat, lon, sample_kind in targets:
                     nearest = codes_grib_find_nearest(gid, lat, lon)[0]
                     records.append(add_speed_display({
                         "source": source,
@@ -44,6 +63,7 @@ def _decode_all(path: Path, run_time: datetime, source: str, stream: str) -> lis
                         "member": None,
                         "variable": variable,
                         "point_id": point_id,
+                        "sample_kind": sample_kind,
                         "requested_lat": lat,
                         "requested_lon": lon,
                         "sampled_lat": float(nearest["lat"]),
@@ -152,6 +172,156 @@ def _collect_cycle(client, work: Path, steps: list[int], prefix: str, run_time: 
     }
 
 
+
+def _speed_kmh(value: float | None, unit: str | None) -> float | None:
+    if value is None:
+        return None
+    u = str(unit or "").lower().replace(" ", "")
+    v = float(value)
+    if "m/s" in u or "ms**-1" in u or "ms-1" in u or "m*s**-1" in u:
+        v *= 3.6
+    return round(v, 3)
+
+
+def _temp_c(value: float | None, unit: str | None) -> float | None:
+    if value is None:
+        return None
+    v = float(value)
+    if str(unit or "").lower() in {"k", "kelvin"} or v > 150:
+        v -= 273.15
+    return round(v, 3)
+
+
+def _rain_mm(value: float | None, unit: str | None) -> float | None:
+    if value is None:
+        return None
+    v = max(0.0, float(value))
+    u = str(unit or "").lower().replace(" ", "")
+    if u in {"m", "mofwaterequivalent"} or ("m" in u and "kg" not in u and "mm" not in u):
+        v *= 1000.0
+    return round(v, 4)
+
+
+def _spatial_frames(records: list[dict]) -> list[dict]:
+    """Convert one ECMWF cycle into compact per-time spatial frames."""
+    grouped: dict[tuple[str, str], dict[str, dict]] = {}
+    cell_meta: dict[str, dict] = {}
+
+    for record in records:
+        if record.get("sample_kind") != "SPATIAL_GRID" or record.get("qc") != "PASS":
+            continue
+        cell_id = str(record.get("point_id"))
+        valid = str(record.get("valid_time"))
+        grouped.setdefault((cell_id, valid), {})[str(record.get("variable"))] = record
+        cell_meta[cell_id] = {
+            "cell_id": cell_id,
+            "lat": round(float(record.get("sampled_lat")), 4),
+            "lon": round(float(record.get("sampled_lon")), 4),
+            "requested_lat": round(float(record.get("requested_lat")), 4),
+            "requested_lon": round(float(record.get("requested_lon")), 4),
+        }
+
+    per_cell: dict[str, list[dict]] = {}
+    for (cell_id, valid), bucket in grouped.items():
+        lead = min((int(r.get("lead_hours", 0)) for r in bucket.values()), default=0)
+        u = bucket.get("10u") or bucket.get("u10")
+        v = bucket.get("10v") or bucket.get("v10")
+        u_ms = float(u["value"]) if u else None
+        v_ms = float(v["value"]) if v else None
+        wind_kmh = math.hypot(u_ms, v_ms) * 3.6 if u_ms is not None and v_ms is not None else None
+        wind_dir = (math.degrees(math.atan2(-u_ms, -v_ms)) + 360.0) % 360.0 if u_ms is not None and v_ms is not None else None
+        temp = bucket.get("2t") or bucket.get("t2m")
+        gust = bucket.get("10fg") or bucket.get("i10fg")
+        tp = bucket.get("tp")
+        swh = bucket.get("swh")
+        mwd = bucket.get("mwd")
+        period = bucket.get("pp1d") or bucket.get("mwp")
+        row = {
+            **cell_meta[cell_id],
+            "valid_time": valid,
+            "lead_hours": lead,
+            "temperature_c": _temp_c(float(temp["value"]), temp.get("unit")) if temp else None,
+            "u10_ms": round(u_ms, 4) if u_ms is not None else None,
+            "v10_ms": round(v_ms, 4) if v_ms is not None else None,
+            "wind_kmh": round(wind_kmh, 3) if wind_kmh is not None else None,
+            "wind_direction_deg": round(wind_dir, 1) if wind_dir is not None else None,
+            "gust_kmh": _speed_kmh(float(gust["value"]), gust.get("unit")) if gust else None,
+            "tp_accum_mm": _rain_mm(float(tp["value"]), tp.get("unit")) if tp else None,
+            "rain_mm": None,
+            "wave_hs_m": round(float(swh["value"]), 3) if swh else None,
+            "wave_direction_deg": round(float(mwd["value"]), 1) if mwd else None,
+            "wave_period_s": round(float(period["value"]), 2) if period else None,
+        }
+        per_cell.setdefault(cell_id, []).append(row)
+
+    # TP is accumulated within one model cycle. Difference only inside that
+    # cycle, never across the short/medium cycle boundary.
+    for rows in per_cell.values():
+        rows.sort(key=lambda x: x["valid_time"])
+        previous = None
+        for row in rows:
+            current = row.get("tp_accum_mm")
+            if current is not None:
+                row["rain_mm"] = round(max(0.0, current if previous is None else current - previous), 3)
+                previous = current
+            row.pop("tp_accum_mm", None)
+
+    by_time: dict[tuple[int, str], list[dict]] = {}
+    for rows in per_cell.values():
+        for row in rows:
+            key = (int(row["lead_hours"]), str(row["valid_time"]))
+            by_time.setdefault(key, []).append(row)
+
+    frames = []
+    for (lead, valid), cells in sorted(by_time.items(), key=lambda x: x[0][1]):
+        cells.sort(key=lambda x: (x["lat"], x["lon"]))
+        frames.append({"lead_hours": lead, "valid_time": valid, "cells": cells})
+    return frames
+
+
+def _merge_spatial(short_records: list[dict], medium_records: list[dict], short_run: datetime, medium_run: datetime) -> dict:
+    short_frames = _spatial_frames(short_records)
+    medium_frames = _spatial_frames(medium_records)
+    short_end = max((datetime.fromisoformat(f["valid_time"].replace("Z", "+00:00")) for f in short_frames), default=None)
+    frames = list(short_frames)
+    if short_end is not None:
+        frames.extend(
+            f for f in medium_frames
+            if datetime.fromisoformat(f["valid_time"].replace("Z", "+00:00")) > short_end
+        )
+    else:
+        frames = medium_frames
+
+    cells = {}
+    for frame in frames:
+        for row in frame["cells"]:
+            cells[row["cell_id"]] = {
+                "id": row["cell_id"],
+                "lat": row["lat"],
+                "lon": row["lon"],
+                "requested_lat": row["requested_lat"],
+                "requested_lon": row["requested_lon"],
+            }
+
+    return {
+        "status": "READY" if frames else "UNAVAILABLE",
+        "product": "ECMWF_IFS_DIRECT_SPATIAL",
+        "requested_grid_deg": SPATIAL_GRID_DEG,
+        "display_interpolation": "RENDER_ONLY",
+        "short_run_time": short_run.isoformat(),
+        "medium_run_time": medium_run.isoformat(),
+        "cell_count": len(cells),
+        "cells": sorted(cells.values(), key=lambda x: (x["lat"], x["lon"])),
+        "frames": frames,
+        "variables": [
+            "temperature_c", "u10_ms", "v10_ms", "wind_kmh", "wind_direction_deg",
+            "gust_kmh", "rain_mm", "wave_hs_m", "wave_direction_deg", "wave_period_s"
+        ],
+        "note": "Direct ECMWF Open Data sampled on a 0.25° renderer grid. D0-D3 uses freshest oper cycle; D4-D10 uses the latest 00/12 cycle with step 240. Interpolation is display-only.",
+    }
+
+
+
 def collect(output: Path | None = None) -> dict:
     from ecmwf.opendata import Client
 
@@ -166,8 +336,13 @@ def collect(output: Path | None = None) -> dict:
                 full_cycle = _latest_full_cycle(client)
                 medium = _collect_cycle(client, work, MEDIUM_STEPS, "medium", run_time=full_cycle)
 
-                short_records = short["records"]
-                medium_records = medium["records"]
+                short_all = short["records"]
+                medium_all = medium["records"]
+                short_records = [r for r in short_all if r.get("sample_kind") != "SPATIAL_GRID"]
+                medium_records = [r for r in medium_all if r.get("sample_kind") != "SPATIAL_GRID"]
+                short_spatial = [r for r in short_all if r.get("sample_kind") == "SPATIAL_GRID"]
+                medium_spatial = [r for r in medium_all if r.get("sample_kind") == "SPATIAL_GRID"]
+                spatial = _merge_spatial(short_spatial, medium_spatial, short["run_time"], medium["run_time"])
                 total_records = len(short_records) + len(medium_records)
                 result = {
                     "status": "POINT_ROUTE_EXTRACTED" if short_records and medium_records else "FIELD_DECODE_FAILED",
@@ -182,6 +357,8 @@ def collect(output: Path | None = None) -> dict:
                     "short_record_count": len(short_records),
                     "medium_record_count": len(medium_records),
                     "record_count": total_records,
+                    "spatial_record_count": len(short_spatial) + len(medium_spatial),
+                    "spatial": spatial,
                     "records": short_records,
                     "medium_records": medium_records,
                     "gust_parameter": short["gust_parameter"],
