@@ -3,6 +3,8 @@ import { chromium } from "playwright";
 const base=process.env.WEATHER_UI_URL||"http://127.0.0.1:4173/weather.html";
 const historyBase=new URL('/weather-history.html',base).href;
 const sizes=[["iphone390",390,844],["iphone430",430,932],["tablet",768,1024],["desktop",1440,1100]];
+const liveCritical=await fetch("https://kenzuko.github.io/Jotrip-Lab/weather/data/critical.json").then(r=>{if(!r.ok)throw new Error("critical "+r.status);return r.text()});
+const liveForecast=await fetch("https://kenzuko.github.io/Jotrip-Lab/weather/jotrip-forecast.json").then(r=>{if(!r.ok)throw new Error("forecast "+r.status);return r.text()});
 const browser=await chromium.launch({headless:true});
 let failed=false;
 
@@ -12,6 +14,8 @@ function inside(r,w){
 
 for(const [name,width,height] of sizes){
   const page=await browser.newPage({viewport:{width,height}}),errors=[];
+  await page.route("**/weather/critical.json",route=>route.fulfill({status:200,contentType:"application/json",body:liveCritical}));
+  await page.route("**/weather/jotrip-forecast.json",route=>route.fulfill({status:200,contentType:"application/json",body:liveForecast}));
   page.on("pageerror",e=>errors.push(String(e)));
   page.on("console",m=>{
     if(m.type()!=="error")return;
