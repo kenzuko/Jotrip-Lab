@@ -137,6 +137,48 @@ function renderActual(){
   $("actualState").textContent=(critical.source_state?.vvpq==="FRESH"&&critical.source_state?.vrain==="FRESH")?"VVPQ + VRAIN FRESH":"CÓ NGUỒN CHẬM";
 }
 
+function islandHasRainActual(name){
+  const target=String(name||"").toLowerCase();
+  return (critical.actual?.rain_gauges||[]).some(g=>String(g.name||"").toLowerCase().includes(target)||target.includes(String(g.name||"").toLowerCase()));
+}
+function watchAvailability(p){
+  const l=p.local||{},m=p.model||{},n=p.nowcast||{};
+  return [l.temperature_c,l.wind_kmh,l.rain_rate_mm_h,m.temperature_c,m.wind_kmh,n.convective_score].some(v=>num(v)!==null);
+}
+function renderIslandWatch(){
+  const root=$("islandWatchGrid");if(!root)return;
+  const ids=(critical.island_watch_order||[]).filter(id=>critical.points?.[id]);
+  root.innerHTML=ids.map(id=>{
+    const p=critical.points[id]||{},l=p.local||{},m=p.model||{},n=p.nowcast||{};
+    const ready=watchAvailability(p);
+    const rainActual=islandHasRainActual(p.name);
+    const temp=num(l.temperature_c)??num(m.temperature_c);
+    const wind=num(l.wind_kmh)??num(m.wind_kmh);
+    const rain=num(l.rain_rate_mm_h);
+    const conv=num(n.convective_score)??num(l.convection_score);
+    return '<button class="island-watch-card '+(id===current?'active':'')+'" data-watch-point="'+esc(id)+'">'+
+      '<header><b>'+esc(p.name||id)+'</b><span class="'+(rainActual?'watch-actual':'watch-est')+'">'+(rainActual?'RAIN ACTUAL':ready?'ESTIMATED':'CHỜ CYCLE')+'</span></header>'+
+      (ready?'<div class="watch-temp">'+fmt(temp,1)+'°</div><div class="watch-meta">'+
+        '<span>Gió <b>'+fmt(wind,0)+'</b></span><span>Mưa <b>'+fmt(rain,2)+'</b></span>'+
+        '<span>Đối lưu <b>'+fmt(conv,0)+'</b></span><span>AQI <b>'+fmt(p.aqi?.aqi_us,0)+'</b></span>'+
+      '</div>':'<div class="lazy-status">Chưa đủ model/nowcast ở cycle hiện tại.</div>')+
+    '</button>';
+  }).join("")||'<div class="lazy-status">Island Watch đang chờ cycle dữ liệu mới.</div>';
+  root.querySelectorAll("[data-watch-point]").forEach(b=>b.addEventListener("click",()=>{
+    current=b.dataset.watchPoint;
+    renderAll();
+    document.querySelector(".hero")?.scrollIntoView({behavior:"smooth",block:"start"});
+  }));
+}
+function renderFeedbackPoint(){
+  const sel=$("feedbackPoint");if(!sel)return;
+  const ids=(critical.island_watch_order||[]).filter(id=>critical.points?.[id]);
+  const prev=sel.value;
+  sel.innerHTML=ids.map(id=>'<option value="'+esc(id)+'">'+esc(critical.points[id]?.name||id)+'</option>').join("");
+  const desired=ids.includes(current)?current:(ids.includes(prev)?prev:"duong_dong");
+  sel.value=desired;
+}
+
 function aqiLabel(cat){
   const map={GOOD:"Tốt",MODERATE:"Trung bình",UNHEALTHY_FOR_SENSITIVE_GROUPS:"Không tốt cho nhóm nhạy cảm",UNHEALTHY:"Không tốt",VERY_UNHEALTHY:"Rất không tốt",HAZARDOUS:"Nguy hại"};
   return map[cat]||cat||"Chưa xác định";
@@ -340,7 +382,7 @@ function renderHealth(){
 
 function renderAll(){
   if(!critical)return;
-  renderStatus();renderHero();renderCurrent();renderActual();renderAQI();renderTide();renderNowcast();
+  renderStatus();renderHero();renderCurrent();renderActual();renderFeedbackPoint();renderIslandWatch();renderAQI();renderTide();renderNowcast();
   renderHours(point().next24h||[]);renderForecastTable();renderEnsemble();renderHealth();
   document.querySelectorAll(".point-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.point===current));
 }
@@ -404,11 +446,12 @@ function installMapObserver(){
 }
 
 function feedback(kind){
-  const p=point(),l=p.local||{},item={
+  const feedbackPoint=$("feedbackPoint")?.value||current;
+  const p=critical?.points?.[feedbackPoint]||point(),l=p.local||{},item={
     schema_version:"1.0",
     id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),
     at:new Date().toISOString(),
-    point_id:current,
+    point_id:feedbackPoint,
     category:kind,
     engine:critical?.source_state?.local_engine||"PQ_LOCAL_NOW_V1",
     estimate:{temperature_c:l.temperature_c,wind_kmh:l.wind_kmh,rain_rate_mm_h:l.rain_rate_mm_h,rain_confidence:l.rain_confidence}
