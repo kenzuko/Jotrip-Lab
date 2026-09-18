@@ -156,11 +156,19 @@ function renderIslandWatch(){
     const wind=num(l.wind_kmh)??num(m.wind_kmh);
     const rain=num(l.rain_rate_mm_h);
     const conv=num(n.convective_score)??num(l.convection_score);
+    const aqi=num(p.aqi?.aqi_us);
+    const partial=ready&&(temp===null||wind===null);
+    const lead=temp!==null?fmt(temp,1)+'°':rain!==null?'Mưa '+fmt(rain,2):conv!==null?'Đối lưu '+fmt(conv,0)+'/100':'Đang cập nhật';
+    const meta=[];
+    if(wind!==null)meta.push('<span>Gió <b>'+fmt(wind,0)+'</b></span>');
+    if(rain!==null)meta.push('<span>Mưa <b>'+fmt(rain,2)+'</b></span>');
+    if(conv!==null)meta.push('<span>Đối lưu <b>'+fmt(conv,0)+'</b></span>');
+    if(aqi!==null)meta.push('<span>AQI <b>'+fmt(aqi,0)+'</b></span>');
+    if(temp===null)meta.push('<span>Nhiệt độ <b>chờ model</b></span>');
+    if(wind===null)meta.push('<span>Gió <b>chờ model</b></span>');
     return '<button class="island-watch-card '+(id===current?'active':'')+'" data-watch-point="'+esc(id)+'">'+
-      '<header><b>'+esc(p.name||id)+'</b><span class="'+(rainActual?'watch-actual':'watch-est')+'">'+(rainActual?'RAIN ACTUAL':ready?'ESTIMATED':'CHỜ CYCLE')+'</span></header>'+
-      (ready?'<div class="watch-temp">'+fmt(temp,1)+'°</div><div class="watch-meta">'+
-        '<span>Gió <b>'+fmt(wind,0)+'</b></span><span>Mưa <b>'+fmt(rain,2)+'</b></span>'+
-        '<span>Đối lưu <b>'+fmt(conv,0)+'</b></span><span>AQI <b>'+fmt(p.aqi?.aqi_us,0)+'</b></span>'+
+      '<header><b>'+esc(p.name||id)+'</b><span class="'+(rainActual?'watch-actual':'watch-est')+'">'+(rainActual?'RAIN ACTUAL':partial?'PARTIAL':ready?'ESTIMATED':'CHỜ CYCLE')+'</span></header>'+
+      (ready?'<div class="watch-temp">'+lead+'</div><div class="watch-meta">'+meta.join('')+
       '</div>':'<div class="lazy-status">Chưa đủ model/nowcast ở cycle hiện tại.</div>')+
     '</button>';
   }).join("")||'<div class="lazy-status">Island Watch đang chờ cycle dữ liệu mới.</div>';
