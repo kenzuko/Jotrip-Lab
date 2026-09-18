@@ -16,15 +16,15 @@
   <meta property="og:title" content="JoTrip Weather Intelligence - Phú Quốc">
   <meta property="og:description" content="Theo dõi thời tiết Phú Quốc với quan trắc thực tế, radar - vệ tinh, biển, AQI và dự báo JoTrip 10 ngày.">
   <meta property="og:url" content="https://weather.openphuquoc.com/">
-  <meta property="og:image" content="https://commons.wikimedia.org/wiki/Special:Redirect/file/Phu%20Quoc%20beach%2001.jpg?width=1200">
+  <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Phu_Quoc_beach_01.jpg/1280px-Phu_Quoc_beach_01.jpg">
   <meta property="og:image:type" content="image/jpeg">
-  <meta property="og:image:width" content="1200">
+  <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="964">
   <meta property="og:image:alt" content="Bờ biển Phú Quốc gần Dương Đông">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="JoTrip Weather Intelligence - Phú Quốc">
   <meta name="twitter:description" content="Quan trắc, radar - vệ tinh, biển, AQI và dự báo JoTrip 10 ngày dành riêng cho Phú Quốc.">
-  <meta name="twitter:image" content="https://commons.wikimedia.org/wiki/Special:Redirect/file/Phu%20Quoc%20beach%2001.jpg?width=1200">
+  <meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Phu_Quoc_beach_01.jpg/1280px-Phu_Quoc_beach_01.jpg">
   <link rel="stylesheet" href="/Jotrip-Lab/weather/weather-v2.css?v=20260918-17">
   <link rel="preload" as="fetch" href="/Jotrip-Lab/weather/data/critical.json" crossorigin="anonymous">
   <link rel="manifest" href="/Jotrip-Lab/weather/weather-manifest.webmanifest">
@@ -60,6 +60,16 @@
       <strong id="heroTemp">--</strong>
       <small id="heroTempClass">ƯỚC TÍNH</small>
     </div>
+  </section>
+
+  <section id="quickAlert" class="quick-alert neutral" aria-live="polite" aria-label="Cảnh báo thời tiết sắp tới">
+    <div class="quick-alert-icon"><span></span></div>
+    <div class="quick-alert-copy">
+      <small>QUICK ALERT · 12 GIỜ TỚI</small>
+      <b id="quickAlertTitle">Đang quét tín hiệu nhiễu động...</b>
+      <p id="quickAlertText">Hệ thống đang đối chiếu nowcast và ensemble.</p>
+    </div>
+    <time id="quickAlertTime">-</time>
   </section>
 
   <section class="status-strip" aria-label="Tổng quan toàn đảo">
@@ -150,6 +160,7 @@
     </div>
 
     <div id="actualStrip" class="actual-strip"><div class="skeleton wide"></div></div>
+    <small class="panel-foot rain-standard-note">Mưa quan trắc: trạng thái có/không mưa dựa trên chênh lệch giữa hai mẫu đo liên tiếp. Lượng mưa ghi bằng mm trong đúng cửa sổ quan trắc; cường độ được quy đổi về mm/h theo chuẩn biến quan trắc WMO.</small>
   </section>
 
   <div class="two-col">

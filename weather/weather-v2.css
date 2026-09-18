@@ -777,3 +777,53 @@ footer{
 .weather-scene-copy{position:absolute;left:30px;bottom:28px;width:min(620px,62%);color:#fff}.weather-scene-copy>small{display:block;margin:13px 0 4px;font-size:8px;letter-spacing:.13em;font-weight:800;color:#d8e8ef}.weather-scene-copy h1,.weather-scene-copy h2{font-size:clamp(38px,5.5vw,66px);line-height:.98;letter-spacing:-.055em;margin:4px 0 12px;color:#fff}.weather-scene-copy p{font-size:13px;line-height:1.55;max-width:540px;margin:0;color:#e2edf2}.weather-scene .updated{margin-top:12px;color:#d2e1e8;font-size:8px}.scene-badge{display:inline-flex;padding:6px 9px;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:rgba(5,36,53,.42);backdrop-filter:blur(8px);font-size:8px;font-weight:800;letter-spacing:.1em}.scene-credit{display:block;margin-top:12px;font-size:7px;color:#b8ccd5}
 .weather-scene-data{position:absolute;right:26px;bottom:26px;width:220px;padding:18px;border:1px solid rgba(255,255,255,.24);border-radius:22px;background:rgba(6,35,51,.54);backdrop-filter:blur(12px);color:#fff}.weather-scene-data span{display:block;font-size:7px;letter-spacing:.12em;font-weight:800;color:#c7dbe4}.weather-scene-data b{display:block;margin-top:5px;font-size:13px}.weather-scene-data strong{display:block;margin:13px 0 5px;font-size:44px;line-height:1;letter-spacing:-.06em}.weather-scene-data small{font-size:8px;color:#c9dae1}
 @media(max-width:700px){.weather-scene,.weather-scene-hero{min-height:470px;border-radius:24px}.weather-scene-shade{background:linear-gradient(0deg,rgba(4,27,41,.92) 0%,rgba(4,31,46,.62) 60%,rgba(4,28,42,.18) 100%)}.weather-scene-copy{left:20px;right:20px;bottom:112px;width:auto}.weather-scene-copy h1,.weather-scene-copy h2{font-size:38px}.weather-scene-copy p{font-size:11px}.weather-scene-data{left:20px;right:20px;bottom:18px;width:auto;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;align-items:end}.weather-scene-data span,.weather-scene-data b,.weather-scene-data small{grid-column:1}.weather-scene-data strong{grid-column:2;grid-row:1/3;margin:0;font-size:42px}}
+
+
+/* Readability pass - public Weather UI */
+body{font-size:12px}
+.eyebrow{font-size:10px}
+.brand strong{font-size:13px}.brand small{font-size:8.5px}.health{font-size:10px}
+.weather-scene-copy>small{font-size:9.5px}.weather-scene-copy p{font-size:15px;line-height:1.55}.weather-scene .updated{font-size:10px}.scene-badge{font-size:9px}.scene-credit{font-size:8.5px}
+.weather-scene-data span{font-size:9px}.weather-scene-data small{font-size:10px}
+.status-strip span{font-size:9px}.status-strip b{font-size:13px}
+.point-tabs button{font-size:11px;padding:10px 14px}
+.metric-card span{font-size:11px}.metric-card>small{font-size:10px}.metric-card>b{font-size:29px}
+.badge{font-size:8.5px;padding:5px 8px}
+.panel-head h2{font-size:21px}.panel-head>small{font-size:9px}.panel-note{font-size:11.5px}
+.actual-card{flex-basis:205px;padding:14px}.actual-card b{font-size:13px}.actual-card strong{font-size:21px}.actual-card small{font-size:10.5px;line-height:1.5}
+.quick-item span{font-size:10px}.quick-item b{font-size:20px}.quick-item small{font-size:9.5px}.panel-foot{font-size:9.5px;line-height:1.55}
+.hour-card time{font-size:10px}.hour-grid{font-size:9.5px}.hour-grid b{font-size:10px}
+.field-strip-head>span{font-size:10.5px}.field-strip select{font-size:10px}.feedback-actions.compact button{font-size:9.5px}.field-strip>small{font-size:9px}
+.island-summary{font-size:10.5px;line-height:1.6}.island-summary small{font-size:9px}
+.hazard-board span{font-size:9px}.hazard-board b{font-size:15px}.hazard-board small{font-size:9.5px;line-height:1.5}
+.forecast-day header b{font-size:10px}.forecast-day header span{font-size:8.5px}.forecast-day>div span{font-size:9px}.forecast-day>div b{font-size:9.5px}.forecast-day>small{font-size:8.5px}
+.jotrip-forecast-table{font-size:9.5px}.jotrip-forecast-table th{font-size:8.5px}.jotrip-forecast-table td:first-child b{font-size:10px}.jotrip-forecast-table td:first-child small,.jotrip-forecast-table td:nth-child(4) small,.jotrip-forecast-table td:nth-child(3) small{font-size:8.5px}
+.source-card header b{font-size:11px}.source-card p{font-size:9.5px}.source-state{font-size:8px}
+.gap-card b{font-size:10px}.gap-card span{font-size:9.5px}.cycle-chip{font-size:9px}.text-link{font-size:10px}
+.number-guide summary{font-size:10px}.number-guide-grid span{font-size:9.5px}.about-copy{font-size:11px}
+footer{font-size:9.5px}
+
+/* Compact near-term disturbance bulletin */
+.quick-alert{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:13px;align-items:center;margin:14px 0 8px;padding:14px 16px;border:1px solid #dce8ee;border-radius:18px;background:linear-gradient(135deg,#f8fbfd,#eef6fa);box-shadow:0 8px 24px rgba(30,69,91,.05)}
+.quick-alert-icon{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#e6f1f6}
+.quick-alert-icon span{width:10px;height:10px;border-radius:50%;background:#6f91a3;box-shadow:0 0 0 6px rgba(111,145,163,.12)}
+.quick-alert-copy{min-width:0}.quick-alert-copy small{display:block;font-size:8.5px;font-weight:850;letter-spacing:.11em;color:#728995}.quick-alert-copy b{display:block;margin-top:3px;font-size:14px;color:#173f57}.quick-alert-copy p{margin:4px 0 0;font-size:10.5px;line-height:1.45;color:#6c8390}
+.quick-alert time{font-size:11px;font-weight:850;letter-spacing:.04em;color:#5f7887;background:#fff;border:1px solid #dbe7ed;border-radius:999px;padding:7px 9px}
+.quick-alert.watch{border-color:#ead99e;background:linear-gradient(135deg,#fffdf5,#fff8dc)}.quick-alert.watch .quick-alert-icon{background:#fff0b8}.quick-alert.watch .quick-alert-icon span{background:#d9a72b;box-shadow:0 0 0 6px rgba(217,167,43,.13)}
+.quick-alert.alert{border-color:#e8b9af;background:linear-gradient(135deg,#fff9f7,#fff0eb)}.quick-alert.alert .quick-alert-icon{background:#ffe0d8}.quick-alert.alert .quick-alert-icon span{background:#d9644a;box-shadow:0 0 0 6px rgba(217,100,74,.14);animation:alertPulse 1.8s ease-out infinite}
+.quick-alert.alert .quick-alert-copy b{color:#8a3426}
+@keyframes alertPulse{0%{box-shadow:0 0 0 0 rgba(217,100,74,.28)}70%{box-shadow:0 0 0 10px rgba(217,100,74,0)}100%{box-shadow:0 0 0 0 rgba(217,100,74,0)}}
+@media(max-width:700px){
+  body{font-size:13px}
+  .brand strong{font-size:12px}.brand small{font-size:8px}.health{font-size:9px}
+  .weather-scene-copy p{font-size:13px}.weather-scene-copy>small{font-size:9px}.scene-credit{font-size:8px}
+  .status-strip span{font-size:9px}.status-strip b{font-size:13px}
+  .point-tabs button{font-size:11px}
+  .metric-card span{font-size:11px}.metric-card>small{font-size:10px}
+  .panel-head h2{font-size:19px}
+  .quick-alert{grid-template-columns:auto minmax(0,1fr);padding:13px 14px}.quick-alert time{grid-column:2;width:max-content;margin-top:2px}.quick-alert-copy b{font-size:13px}.quick-alert-copy p{font-size:10.5px}
+  .actual-card{flex-basis:220px}.actual-card small{font-size:10px}
+  .quick-item span{font-size:10px}.quick-item small{font-size:9.5px}
+  .island-summary{font-size:10.5px}.hazard-board small{font-size:9.5px}
+}
+@media(prefers-reduced-motion:reduce){.quick-alert.alert .quick-alert-icon span{animation:none}}

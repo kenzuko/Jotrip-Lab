@@ -332,7 +332,17 @@ function renderCurrent(){
 function renderActual(){
   const a=critical.actual||{},v=a.vvpq||{},g=a.rain_gauges||[],cards=[];
   cards.push('<article class="actual-card"><header><b>VVPQ</b><em class="badge actual">ĐO THỰC</em></header><strong>'+fmt(v.temperature_c,1)+'°C</strong><small>Gió '+fmt(v.wind_kmh,1)+' km/h · '+(v.weather?esc(v.weather)+' · ':'')+ageText(v.observed_at)+'</small></article>');
-  g.forEach(x=>cards.push('<article class="actual-card"><header><b>'+esc(x.name)+'</b><em class="badge actual">ĐO THỰC</em></header><strong>'+fmt(x.accum_mm,1)+' mm</strong><small>Tích lũy'+(num(x.increment_mm)!==null?' · +'+fmt(x.increment_mm,1)+' mm / '+fmt(x.increment_min,0)+' phút':'')+'</small></article>'));
+  g.forEach(x=>{
+    const observed=x.rain_observed===true?"CÓ MƯA":x.rain_observed===false?"KHÔNG MƯA":"CHƯA RÕ";
+    const win=num(x.increment_min),inc=num(x.increment_mm),rate=num(x.rain_intensity_mm_h);
+    let detail="Chưa có cửa sổ quan trắc 5-20 phút hợp lệ để xác định mưa hiện tại";
+    if(x.increment_qc==="PASS"&&win!==null&&inc!==null){
+      detail="Lượng mưa "+fmt(inc,2)+" mm / "+fmt(win,0)+" phút";
+      if(rate!==null)detail+=" · cường độ "+fmt(rate,2)+" mm/h";
+    }
+    if(num(x.accum_mm)!==null)detail+=" · tổng kỳ "+fmt(x.accum_mm,1)+" mm";
+    cards.push('<article class="actual-card rain-actual"><header><b>'+esc(x.name)+'</b><em class="badge actual">ĐO THỰC</em></header><strong>'+observed+'</strong><small>'+detail+'</small></article>');
+  });
   $("actualStrip").innerHTML=cards.join("");
   $("actualState").textContent=(critical.source_state?.vvpq==="FRESH"&&critical.source_state?.vrain==="FRESH")?"VVPQ + VRain vừa cập nhật":"Có nguồn cập nhật chậm";
 }
@@ -527,6 +537,64 @@ function renderForecastDayRibbon(rows){
   }).join("")||'<span class="inline-loader">Chưa đủ dữ liệu để tóm tắt 10 ngày.</span>';
 }
 
+function renderQuickAlert(){
+  const root=$("quickAlert"),title=$("quickAlertTitle"),text=$("quickAlertText"),time=$("quickAlertTime");
+  if(!root||!title||!text||!time)return;
+
+  const nowSignals=islandIds().map(id=>{
+    const p=critical?.points?.[id]||{};
+    return {name:p.name||id,score:num(p.nowcast?.convective_score??p.local?.convection_score)||0};
+  }).sort((a,b)=>b.score-a.score);
+  const strongestNow=nowSignals[0];
+
+  const candidates=[];
+  Object.values(regionalForecast?.regions||{}).forEach(region=>{
+    (region.rows||[]).forEach(row=>{
+      const lead=num(row.lead_hours);
+      if(lead===null||lead<0||lead>12)return;
+      const rain=num(row.rain_prob_5)||0;
+      const wind=num(row.wind_prob_30)||0;
+      const variability=rowVariability(row)/100;
+      const score=Math.max(rain,wind,variability*.7);
+      if(rain>=.25||wind>=.15||variability>=.45){
+        candidates.push({region:region.name||"Phú Quốc",row,rain,wind,variability,score});
+      }
+    });
+  });
+  candidates.sort((a,b)=>(a.row.lead_hours-b.row.lead_hours)||(b.score-a.score));
+
+  let cls="neutral",headline="Chưa thấy nhiễu động đáng kể trong 12 giờ tới";
+  let detail="Hệ thống vẫn tiếp tục theo dõi mưa, gió và độ phân tán ensemble.";
+  let when="12H";
+
+  if(strongestNow&&strongestNow.score>=70){
+    cls="alert";
+    headline="Đối lưu đang hoạt động mạnh - cần theo dõi ngắn hạn";
+    detail=strongestNow.name+" · chỉ số đối lưu "+fmt(strongestNow.score,0)+"/100 · ưu tiên radar/Himawari và quan trắc thực địa.";
+    when="0-3H";
+  }else if(candidates.length){
+    const x=candidates[0];
+    cls=x.rain>=.50||x.wind>=.25||x.variability>=.70?"alert":"watch";
+    const drivers=[];
+    if(x.rain>=.25)drivers.push("mưa "+pct(x.rain));
+    if(x.wind>=.15)drivers.push("gió "+pct(x.wind));
+    if(x.variability>=.45)drivers.push("biến động "+Math.round(x.variability*100)+"/100");
+    headline=(cls==="alert"?"Có tín hiệu nhiễu động đáng chú ý":"Có dao động thời tiết cần theo dõi");
+    detail=x.region+" · "+drivers.join(" · ")+" · mốc "+leadMoment(x.row)+".";
+    when="+"+fmt(x.row.lead_hours,0)+"H";
+  }else if(strongestNow&&strongestNow.score>=50){
+    cls="watch";
+    headline="Đối lưu có tín hiệu phát triển";
+    detail=strongestNow.name+" · chỉ số đối lưu "+fmt(strongestNow.score,0)+"/100 · chưa đủ để nâng mức cảnh báo.";
+    when="0-3H";
+  }
+
+  root.className="quick-alert "+cls;
+  title.textContent=headline;
+  text.textContent=detail;
+  time.textContent=when;
+}
+
 function renderJoTripForecast(){
   const title=$("jotripForecastTitle");
   const body=$("jotripForecastRows");
@@ -627,7 +695,7 @@ function renderHealth(){
 
 function renderAll(){
   if(!critical)return;
-  renderPointTabs();renderStatus();renderHero();renderCurrent();renderActual();renderFeedbackPoint();renderAQI();renderTide();renderMapConvective();
+  renderPointTabs();renderStatus();renderHero();renderCurrent();renderActual();renderFeedbackPoint();renderAQI();renderTide();renderMapConvective();renderQuickAlert();
   renderJoTripForecast();renderHealth();
 }
 
@@ -641,14 +709,14 @@ async function loadTide(){
   }
 }
 async function loadNowcast(){
-  try{fullNowcast=await getFirst(NOWCAST);renderMapConvective();renderCurrent();renderStatus()}catch(e){console.warn("[Weather V2] nowcast",e)}
+  try{fullNowcast=await getFirst(NOWCAST);renderMapConvective();renderCurrent();renderStatus();renderQuickAlert()}catch(e){console.warn("[Weather V2] nowcast",e)}
 }
 async function loadRegionalForecast(){
   try{
     regionalForecast=await getJSON(JOTRIP_FORECAST);
     const ids=Object.keys(regionalForecast.regions||{});
     if(!ids.includes(currentRegion))currentRegion=ids[0]||currentRegion;
-    renderJoTripForecast();renderStatus();
+    renderJoTripForecast();renderStatus();renderQuickAlert();
   }catch(e){
     console.warn("[Weather V2] regional forecast",e);
     $("jotripForecastRows").innerHTML='<tr><td colspan="9"><div class="data-empty"><b>CHƯA TẢI ĐƯỢC DỰ BÁO VÙNG</b><span>Phần quan trắc hiện tại vẫn hoạt động bình thường.</span></div></td></tr>';
@@ -757,6 +825,7 @@ async function refreshLive(){
   }catch(e){
     console.warn("[Weather V2] live refresh",e);
     renderStatus();
+    setTimeout(()=>{if(document.visibilityState==="visible")refreshLive()},60000);
   }finally{
     liveRefreshBusy=false;
   }
@@ -778,6 +847,9 @@ async function boot(){
     setInterval(refreshLive,LIVE_REFRESH_MS);
     document.addEventListener("visibilitychange",()=>{
       if(document.visibilityState==="visible"&&Date.now()-lastLiveRefreshAt>5*60*1000)refreshLive();
+    });
+    window.addEventListener("online",()=>{
+      if(Date.now()-lastLiveRefreshAt>2*60*1000)refreshLive();
     });
   }catch(e){
     $("heroSummary").textContent="Không tải được dữ liệu ban đầu. Bạn thử tải lại trang giúp mình.";
