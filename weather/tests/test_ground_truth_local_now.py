@@ -27,6 +27,25 @@ class GroundTruthTests(unittest.TestCase):
         self.assertTrue(s["rain_observed"])
         self.assertEqual(s["rain_intensity_mm_h"], 3.0)
 
+    def test_vrain_rejects_too_short_window_for_current_rain(self):
+        now = datetime(2026, 9, 18, 0, 20, tzinfo=timezone.utc)
+        previous = {
+            "rainfall": {"stations": {
+                "cua_can": {
+                    "accumulation_mm": 20.0,
+                    "period_start": "2026-09-17T12:00:00+00:00",
+                    "period_end": "2026-09-18T00:19:48+00:00",
+                }
+            }}
+        }
+        rows = [{"sn": "Cửa Cạn", "lt": 10.292693, "lg": 103.914799, "d": 20.2, "l": "Mưa vừa"}]
+        timing = {"fr": 1789646400, "n": 1789690800}
+        out = _vrain(rows, timing, previous, now)
+        s = out["stations"]["cua_can"]
+        self.assertEqual(s["increment_qc"], "WINDOW_TOO_SHORT")
+        self.assertIsNone(s["rain_observed"])
+        self.assertIsNone(s["rain_intensity_mm_h"])
+
     def test_vvpq_units_and_convective_flag(self):
         now = datetime(2026, 9, 18, 0, 10, tzinfo=timezone.utc)
         rows = [{
