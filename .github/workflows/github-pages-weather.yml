@@ -78,6 +78,9 @@ jobs:
           if [ -d live-data/data/weather-nowcast ]; then
             cp -a live-data/data/weather-nowcast /tmp/weather-pages/data/
           fi
+          if [ -d live-data/data/weather-groundtruth ]; then
+            cp -a live-data/data/weather-groundtruth /tmp/weather-pages/data/
+          fi
 
       - name: Make Weather Lab safe under /Jotrip-Lab/weather/
         shell: bash
@@ -96,6 +99,7 @@ jobs:
               '/weather/nowcast.json': base + 'data/nowcast.json',
               '/data/weather-aqi/': base + 'data/weather-aqi/',
               '/data/weather-nowcast/': base + 'data/weather-nowcast/',
+              '/data/weather-groundtruth/': base + 'data/weather-groundtruth/',
               '/weather-history.html': base + 'weather-history.html',
               '/weather-history.css': base + 'weather-history.css',
               '/weather-history.js': base + 'weather-history.js',
