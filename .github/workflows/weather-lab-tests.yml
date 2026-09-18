@@ -111,6 +111,7 @@ jobs:
         run: |
           python - <<'PY'
           import json
+          from weather.points import POINTS
           p=json.load(open('/tmp/ecmwf-d10.json'))
           assert p['readiness'] == 'POINT_ROUTE_EXTRACTED', p
           assert p['horizon_hours'] == 240, p
@@ -121,7 +122,7 @@ jobs:
           assert p.get('medium_record_count', 0) >= 500, p
           assert p.get('record_count', 0) >= 700, p
           points={r.get('point_id') for r in p.get('records', [])} | {r.get('point_id') for r in p.get('medium_records', [])}
-          assert {'an_thoi','duong_dong','ganh_dau','rach_gia'}.issubset(points), points
+          assert set(POINTS).issubset(points), points
           PY
       - uses: actions/upload-artifact@v4
         with:
@@ -200,7 +201,16 @@ jobs:
       - name: Download Phu Quoc and Rach Gia wave and current subsets
         run: python -m weather.collectors.copernicus_live --output /tmp/copernicus-live.json
       - name: Enforce credential, variable and point gates
-        run: python -c 'import json; p=json.load(open("/tmp/copernicus-live.json")); assert p["status"] == "POINT_NUMERIC_READY", p; assert p["wave"]["available_variables"] == ["VHM0","VMDR","VTM10","VTPK"]; assert p["current"]["available_variables"] == ["uo","vo"]; assert set(p["current"]["derived_vectors"]) == {"duong_dong","an_thoi","ganh_dau","rach_gia"}'
+        run: |
+          python - <<'PY'
+          import json
+          from weather.points import POINTS
+          p=json.load(open("/tmp/copernicus-live.json"))
+          assert p["status"] == "POINT_NUMERIC_READY", p
+          assert p["wave"]["available_variables"] == ["VHM0","VMDR","VTM10","VTPK"]
+          assert p["current"]["available_variables"] == ["uo","vo"]
+          assert set(p["current"]["derived_vectors"]) == set(POINTS), p["current"]["derived_vectors"].keys()
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -260,11 +270,12 @@ jobs:
           python - <<'PY'
           import json
           from datetime import datetime, timezone
+          from weather.points import POINTS
           p=json.load(open('weather/dashboard-data.json', encoding='utf-8'))
           assert p['report_status'] == 'LIVE', p
           assert p['completeness'] >= 60, p
           assert p.get('forecast_horizon_hours') == 240, p
-          assert set(p.get('points', {})) == {'an_thoi','duong_dong','ganh_dau','rach_gia'}, p.get('points', {}).keys()
+          assert set(p.get('points', {})) == set(POINTS), p.get('points', {}).keys()
           assert all(len(v['hours']) >= 45 for v in p['points'].values()), {k:len(v['hours']) for k,v in p['points'].items()}
           assert all(len(v.get('daily_outlook', [])) >= 2 for v in p['points'].values()), p
           assert set(p.get('source_cycles', {})) == {'ECMWF','ECMWF_MEDIUM','GEFS','ICON'}, p.get('source_cycles')
@@ -300,12 +311,13 @@ jobs:
           import json
           from weather.pipeline.publish_snapshot import validate_snapshot
           from weather.processing.snapshot import verify_snapshot
+          from weather.points import POINTS
           p=json.load(open('weather/snapshots/latest.json', encoding='utf-8'))
           assert verify_snapshot(p), 'payload hash mismatch'
           validate_snapshot(p)
           assert p['schema_version'] == '1.0'
           assert p['data_mode'] in {'A','B','C'}
-          assert {'duong_dong','an_thoi','ganh_dau'}.issubset(p['points'])
+          assert set(POINTS).issubset(p['points'])
           assert p['ensemble']['p_operational_window']['status'] == 'NOT_COMPUTABLE'
           PY
       - name: Commit canonical LAB snapshot
