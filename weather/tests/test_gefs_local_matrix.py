@@ -1,6 +1,6 @@
 import unittest
 from datetime import datetime, timezone
-from weather.collectors.gefs_local_matrix import _file_member, _url
+from weather.collectors.gefs_local_matrix import _file_member, _url, _wind_from_direction_deg, _wind_sector, _wind_exposure_factor
 from weather.processing.ensemble_local import correct_distribution
 
 class GefsLocalMatrixTests(unittest.TestCase):
@@ -22,6 +22,16 @@ class GefsLocalMatrixTests(unittest.TestCase):
         out=correct_distribution([10,20,30],cal,variable="wind",threshold=25)
         self.assertEqual(out["status"],"LEARNING")
         self.assertEqual(out["raw"]["q50"],out["corrected"]["q50"])
+
+    def test_wind_direction_uses_meteorological_from_convention(self):
+        self.assertAlmostEqual(_wind_from_direction_deg(10.0, 0.0), 270.0)
+        self.assertAlmostEqual(_wind_from_direction_deg(0.0, 10.0), 180.0)
+        self.assertEqual(_wind_sector(225.0), "SW")
+
+    def test_bai_sao_is_sheltered_from_west_southwest(self):
+        self.assertLess(_wind_exposure_factor("bai_sao", 225.0), 0.7)
+        self.assertLess(_wind_exposure_factor("bai_sao", 270.0), 0.7)
+        self.assertEqual(_wind_exposure_factor("an_thoi", 225.0), 1.0)
 
 if __name__=="__main__":
     unittest.main()
