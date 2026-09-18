@@ -1,18 +1,10 @@
-const VERSION="weather-lab-2026.09.18.01";
+const VERSION="weather-intelligence-2026.09.18.02";
 const CACHE=`${VERSION}-static`;
 const STATIC=[
   "/weather.html",
-  "/weather-dashboard.css",
-  "/weather-dashboard-base.css",
-  "/weather-dashboard-typography.css",
-  "/weather-dashboard.js?v=20260918-01",
-  "/weather-dashboard-enhancements.js",
-  "/weather-dashboard-legacy.js",
-  "/weather-dashboard-air-quality.js",
-  "/weather-dashboard-tide.js",
-  "/weather-dashboard-local-now.js",
-  "/weather-dashboard-weather-map.js",
-  "/weather-dashboard-history-link.js",
+  "/weather-v2.css?v=20260918-16",
+  "/weather-v2.js?v=20260918-16",
+  "/weather-brand.svg",
   "/weather-app-icon.svg",
   "/weather-manifest.webmanifest"
 ];
@@ -30,7 +22,7 @@ self.addEventListener("install",e=>e.waitUntil(
 
 self.addEventListener("activate",e=>e.waitUntil(
   caches.keys()
-    .then(keys=>Promise.all(keys.filter(k=>k.startsWith("weather-lab-")&&k!==CACHE).map(k=>caches.delete(k))))
+    .then(keys=>Promise.all(keys.filter(k=>k.startsWith("weather-")&&k!==CACHE).map(k=>caches.delete(k))))
     .then(()=>self.clients.claim())
 ));
 
@@ -44,27 +36,34 @@ self.addEventListener("fetch",e=>{
   const u=new URL(r.url);
   if(u.origin!==location.origin)return;
 
-  if(
-    u.pathname.endsWith("/weather/dashboard-data.json")||
-    u.pathname.endsWith("/weather/air-quality.json")||
-    u.pathname.endsWith("/weather/tide.json")||
-    u.pathname.endsWith("/weather/nowcast.json")||
-    u.pathname.includes("/data/weather-groundtruth/")
-  ){
+  const liveData=
+    u.pathname.endsWith("/weather/data/critical.json")||
+    u.pathname.endsWith("/weather/jotrip-forecast.json")||
+    u.pathname.includes("/weather/data/weather-groundtruth/")||
+    u.pathname.includes("/weather/data/weather-aqi/")||
+    u.pathname.includes("/weather/data/weather-nowcast/")||
+    u.pathname.includes("/weather/data/weather-ensemble/")||
+    u.pathname.endsWith("/weather/data/tide.json");
+
+  if(liveData){
     e.respondWith(fetch(r,{cache:"no-store"}).catch(()=>caches.match(r)));
     return;
   }
 
   const isWeatherAsset=
-    u.pathname.endsWith("/weather.html")||
-    /\/weather-dashboard[^/]*$/.test(u.pathname)||
-    u.pathname.endsWith("/weather-app-icon.svg")||
-    u.pathname.endsWith("/weather-manifest.webmanifest");
+    u.pathname.endsWith("/weather/")||
+    u.pathname.endsWith("/weather/weather.html")||
+    u.pathname.endsWith("/weather/v2.html")||
+    u.pathname.endsWith("/weather/weather-v2.css")||
+    u.pathname.endsWith("/weather/weather-v2.js")||
+    u.pathname.endsWith("/weather/weather-brand.svg")||
+    u.pathname.endsWith("/weather/weather-app-icon.svg")||
+    u.pathname.endsWith("/weather/weather-manifest.webmanifest");
 
   if(!isWeatherAsset)return;
 
   e.respondWith(
-    fetch(r)
+    fetch(r,{cache:"no-store"})
       .then(res=>{
         const copy=res.clone();
         caches.open(CACHE).then(c=>c.put(r,copy));
