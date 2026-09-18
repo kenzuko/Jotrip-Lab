@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#f4f8fb">
   <title>JoTrip Weather - Phú Quốc</title>
   <meta name="description" content="Thời tiết Phú Quốc: quan trắc thực tế, PQ Local Now, hải văn, AQI và dự báo ensemble. Miễn phí, phi thương mại.">
-  <link rel="stylesheet" href="/weather-v2.css?v=20260918-10">
+  <link rel="stylesheet" href="/weather-v2.css?v=20260918-11">
   <link rel="preload" as="fetch" href="/weather/critical.json" crossorigin="anonymous">
   <link rel="manifest" href="/weather-manifest.webmanifest">
-  <script defer src="/weather-v2.js?v=20260918-10"></script>
+  <script defer src="/weather-v2.js?v=20260918-11"></script>
 </head>
 <body>
 <header class="topbar">
@@ -160,6 +160,12 @@
     </div>
     <div id="mapBox" class="map-box"><div class="map-placeholder"><b>Bản đồ sẽ tự tải khi cuộn tới đây</b><span>Không chặn phần số liệu phía trên.</span></div></div>
     <div id="mapNote" class="map-note">Radar và Himawari là lớp quan sát. Gió, mưa dự báo và sóng là lớp mô hình tham khảo để nhìn cấu trúc không gian - không thay Dự báo JoTrip.</div>
+    <div id="mapConvective" class="map-convective">
+      <span><b>Đối lưu Himawari</b><strong id="mapConvectiveScore">-</strong></span>
+      <span><b>Đỉnh mây lạnh nhất</b><strong id="mapCloudTop">-</strong></span>
+      <span><b>Biến thiên 20 phút</b><strong id="mapCooling">-</strong></span>
+      <small>Đây là phân tích từ ảnh vệ tinh cho khu vực đang chọn, không phải xác suất có mưa hoặc sét.</small>
+    </div>
     <div class="map-source-links">
       <a href="https://himawari8.nict.go.jp/" target="_blank" rel="noopener noreferrer">NICT Himawari ↗</a>
       <a href="https://www.data.jma.go.jp/mscweb/data/himawari/" target="_blank" rel="noopener noreferrer">JMA Himawari ↗</a>
@@ -169,53 +175,40 @@
   </section>
 
 
-  <section class="panel nowcast-panel">
-    <div class="panel-head">
-      <div><span class="eyebrow">QUAN SÁT VỆ TINH</span><h2>Himawari - mây đối lưu</h2></div>
-      <span id="nowcastBadge" class="badge remote">HIMAWARI</span>
-    </div>
-    <div id="nowcastQuick" class="quick-grid quick-grid-4"><div class="skeleton wide"></div></div>
-    <small id="nowcastAge" class="panel-foot"></small>
-    <figure id="satellitePreview" class="satellite-preview" hidden>
-      <img id="nowcastImage" alt="Ảnh quan sát hồng ngoại Himawari khu vực Đông Nam Á" loading="lazy">
-      <figcaption id="nowcastImageCaption">Ảnh vệ tinh quan sát thực tế gần nhất.</figcaption>
-    </figure>
-    <div class="explain-box">
-      <b>Hiểu nhanh</b>
-      <span><strong>Điểm đối lưu 0-100</strong> là chỉ số nội bộ từ độ lạnh, độ cao và xu hướng phát triển của đỉnh mây - không phải xác suất mưa hay xác suất có sét.</span>
-      <span><strong>Đỉnh mây càng lạnh và càng cao</strong> thường cho thấy mây phát triển mạnh hơn. Giá trị 20 phút âm nghĩa là đỉnh mây đang lạnh thêm.</span>
-    </div>
-  </section>
-
   <section class="panel jotrip-forecast-panel">
     <div class="panel-head">
-      <div><span class="eyebrow">DỰ BÁO JOTRIP</span><h2 id="jotripForecastTitle">72 giờ tới</h2></div>
+      <div><span class="eyebrow">DỰ BÁO JOTRIP</span><h2 id="jotripForecastTitle">10 ngày tới theo vùng</h2></div>
       <span id="ensembleState" class="badge learning">ĐANG HIỆU CHỈNH</span>
     </div>
-    <p id="jotripForecastSummary" class="panel-note">Bảng dự báo luôn theo địa điểm đang chọn ở đầu trang. Mỗi dòng là một mốc 6 giờ.</p>
+    <p id="jotripForecastSummary" class="panel-note">0-72 giờ hiển thị mỗi 6 giờ. Ngày 4-10 giảm còn 12 giờ/mốc để tránh tạo cảm giác chính xác giả ở xa ngày.</p>
+    <nav id="forecastRegionTabs" class="forecast-region-tabs" aria-label="Vùng dự báo Phú Quốc">
+      <span class="inline-loader">Đang tải vùng dự báo...</span>
+    </nav>
+    <div id="forecastRegionMeta" class="forecast-region-meta"></div>
     <div class="forecast-table-shell">
       <table class="jotrip-forecast-table">
         <thead>
           <tr>
             <th>Thời điểm</th>
             <th>Nhiệt độ</th>
-            <th>Gió</th>
+            <th>Gió vùng</th>
             <th>Beaufort</th>
             <th>Mưa ≥5 mm</th>
             <th>Gió ≥30 km/h</th>
             <th>Biến động</th>
-            <th>Nhận định</th>
+            <th>Độ tin cậy</th>
+            <th>Điểm chi phối</th>
           </tr>
         </thead>
         <tbody id="jotripForecastRows">
-          <tr><td colspan="8"><span class="inline-loader">Đang tổng hợp dự báo JoTrip...</span></td></tr>
+          <tr><td colspan="9"><span class="inline-loader">Đang tổng hợp dự báo JoTrip 10 ngày...</span></td></tr>
         </tbody>
       </table>
     </div>
     <small id="ensembleMeta" class="panel-foot"></small>
     <details class="forecast-method">
-      <summary>Dự báo JoTrip được tạo như thế nào?</summary>
-      <div>Hệ thống dùng nhiều thành viên ensemble làm đầu vào, tổng hợp phân bố, đối chiếu với quan trắc thực tế và dần hiệu chỉnh bằng lịch sử địa phương. Beaufort được quy đổi từ tốc độ gió trung tâm của Dự báo JoTrip.</div>
+      <summary>Dự báo vùng được tính như thế nào?</summary>
+      <div>Nhiệt độ vùng dùng trung vị của các điểm đại diện. Gió, mưa và rủi ro dùng điểm bất lợi hơn trong vùng để không làm mượt mất tín hiệu nguy hiểm. D0-D3 giữ bước 6 giờ; D4-D10 dùng bước 12 giờ và hạ mức tin cậy theo thời hạn.</div>
     </details>
   </section>
 
