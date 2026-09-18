@@ -686,11 +686,32 @@ function showMapProbe(lat,lon){
   const ens=ensembleAt(lat,lon);
   const anchor=nearestAnchor(lat,lon),p=state.critical?.points?.[anchor]||{},l=p.local||{},m=p.model||{},t=p.tide||{},aq=p.aqi||{};
   const items=[];
-  if(state.layer==="wind")items.push(["ECMWF",fmt(row?.wind_kmh,0)+" km/h"],["GEFS p50",fmt(ens?.wind?.q50,0)+" km/h"],["GEFS p90",fmt(ens?.wind?.q90,0)+" km/h"],["P ≥30",ens?.wind?.prob==null?"-":Math.round(ens.wind.prob*100)+"%"]);
-  else if(state.layer==="rain")items.push(["ECMWF",fmt(row?.rain_mm,1)+" mm"],["GEFS p50",fmt(ens?.rain?.q50,1)+" mm"],["GEFS p90",fmt(ens?.rain?.q90,1)+" mm"],["P ≥5",ens?.rain?.prob==null?"-":Math.round(ens.rain.prob*100)+"%"]);
+  if(state.layer==="wind")items.push(
+    ["ECMWF",fmt(row?.wind_kmh,0)+" km/h"],
+    ["GEFS p50",fmt(ens?.wind?.q50,0)+" km/h"],
+    ["GEFS p90",fmt(ens?.wind?.q90,0)+" km/h"],
+    ["GEFS p95",fmt(ens?.wind?.q95,0)+" km/h"],
+    ["P ≥30",ens?.wind?.prob==null?"-":Math.round(ens.wind.prob*100)+"%"],
+    ["Spread",fmt(ens?.wind?.spread,1)+" km/h"]
+  );
+  else if(state.layer==="rain")items.push(
+    ["ECMWF",fmt(row?.rain_mm,1)+" mm"],
+    ["GEFS p50",fmt(ens?.rain?.q50,1)+" mm"],
+    ["GEFS p90",fmt(ens?.rain?.q90,1)+" mm"],
+    ["GEFS p95",fmt(ens?.rain?.q95,1)+" mm"],
+    ["P ≥5",ens?.rain?.prob==null?"-":Math.round(ens.rain.prob*100)+"%"],
+    ["Spread",fmt(ens?.rain?.spread,1)+" mm"]
+  );
   else if(state.layer==="waves")items.push(["Hs",fmt(row?.wave_hs_m,1)+" m"],["Hướng",fmt(row?.wave_direction_deg,0)+"°"],["Chu kỳ",fmt(row?.wave_period_s,1)+" s"],["Hmax anchor",fmt(m.wave_hmax_m,1)+" m"]);
   else items.push(["Đối lưu",fmt(row?.convective_score,0)+"/100"],["Đỉnh mây",fmt(row?.cloud_top_cold_c,1)+"°C"],["Độ cao",fmt(row?.cloud_top_high_m,0)+" m"],["Δ20p",fmt(row?.cooling_c_per_20m_proxy,1)+"°C"]);
-  const extra=(POINTS[anchor]?.name||anchor)+" · Local Now gió "+fmt(l.wind_kmh,0)+" km/h · dòng "+fmt(m.current_kmh,2)+" km/h · triều "+fmt(t.height_m,2)+" m · AQI "+fmt(aq.aqi_us,0);
+  const regional=regionalForecastRow();
+  const extra=(POINTS[anchor]?.name||anchor)+
+    " · Local Now gió "+fmt(l.wind_kmh,0)+" km/h"+
+    " · Hmax "+fmt(m.wave_hmax_m,1)+" m"+
+    " · dòng "+fmt(m.current_kmh,2)+" km/h"+
+    " · triều "+fmt(t.height_m,2)+" m"+
+    " · AQI "+fmt(aq.aqi_us,0)+
+    (regional?" · confidence "+fmt(regional.confidence_score,0)+"/100 · variability "+fmt(regional.variability_score,0)+"/100":"");
   showProbe("Điểm trên bản đồ",state.layer==="storm"?"HIMAWARI":"SPATIAL + ENSEMBLE",items,extra);
 }
 function showAnchorProbe(id){
