@@ -53,7 +53,7 @@ for(const [name,width,height] of sizes){
       const pr=panel.getBoundingClientRect();
       return [...panel.querySelectorAll("*")].filter(el=>{
         if(el.tagName==="OPTION"||el.hidden||el.closest("[hidden]")||getComputedStyle(el).display==="none")return false;
-        if(el.closest(".table-scroll,.ensemble-table-shell,.actual-strip,.hourly-strip,.point-tabs"))return false;
+        if(el.closest(".table-scroll,.forecast-table-shell,.ensemble-table-shell,.actual-strip,.hourly-strip,.point-tabs"))return false;
         const r=el.getBoundingClientRect();
         return r.right>pr.right+3||r.left<pr.left-3;
       }).slice(0,4).map(el=>el.className||el.tagName);
