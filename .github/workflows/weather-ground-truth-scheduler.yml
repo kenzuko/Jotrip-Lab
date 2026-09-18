@@ -1,0 +1,23 @@
+name: Weather Ground Truth 15m scheduler
+
+on:
+  schedule:
+    - cron: "2,17,32,47 * * * *"
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/weather-ground-truth-scheduler.yml"
+
+concurrency:
+  group: weather-ground-truth-clock
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  ground-truth:
+    uses: kenzuko/Jotrip-Lab/.github/workflows/weather-ground-truth.yml@feat/weather-lab-data-engine-v1
+    with:
+      target_ref: feat/weather-lab-data-engine-v1
+    secrets: inherit
