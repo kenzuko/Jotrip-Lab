@@ -5,11 +5,7 @@ const CRITICAL="/weather/critical.json";
 const TIDE="/weather/tide.json";
 const AQI=["/data/weather-aqi/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-aqi/latest.json","/weather/air-quality.json"];
 const NOWCAST=["/data/weather-nowcast/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast/latest.json","/weather/nowcast.json"];
-const WINDY={
-  radar:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=radar&product=radar&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1",
-  wind:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=wind&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C",
-  rain:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=rain&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C"
-};
+const WINDY={radar:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=radar&product=radar&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1"};
 const JMA="https://www.data.jma.go.jp/mscweb/data/himawari/img/ha1/";
 
 const $=id=>document.getElementById(id);
@@ -429,8 +425,8 @@ function renderJoTripForecast(){
       '<div class="jotrip-forecast-main">'+fmt(temp.q50,1)+'°</div>'+
       '<div class="jotrip-forecast-values">'+
         '<div><span>Gió</span><b>'+fmt(w.q50,0)+' km/h</b></div>'+
-        '<div><span>Mưa đáng kể</span><b>'+forecastBand(rain.prob)+'</b></div>'+
-        '<div><span>Gió mạnh ≥30</span><b>'+forecastBand(w.prob)+'</b></div>'+
+        '<div><span>Mưa ≥5 mm</span><b>'+forecastBand(rain.prob)+'</b></div>'+
+        '<div><span>Gió ≥30 km/h</span><b>'+forecastBand(w.prob)+'</b></div>'+
       '</div>'+
       '<small class="forecast-members">'+(num(members)!==null?fmt(members,0)+' thành viên hợp lệ':'ensemble tổng hợp')+'</small>'+
     '</article>';
@@ -456,7 +452,7 @@ function renderHealth(){
   }).join("")||'<div class="lazy-status">Chưa có thông tin tình trạng nguồn.</div>';
   $("gapGrid").innerHTML=(critical.gaps||[]).length?(critical.gaps||[]).map(g=>'<div class="gap-card"><b>'+esc(g.name||"Phần còn thiếu")+'</b><span>'+esc(g.detail||"")+'</span></div>').join(""):'<div class="gap-card"><b>Không có khoảng trống nghiêm trọng</b><span>Chu kỳ hiện tại chưa ghi nhận lớp dữ liệu bắt buộc bị thiếu.</span></div>';
   $("cycleGrid").innerHTML=Object.entries(critical.source_cycles||{}).map(([k,v])=>'<span class="cycle-chip">'+esc(k)+' · '+localTime(v)+'</span>').join("");
-  const headline=String(critical.headline||"").includes("Live D0-D10")?"Dữ liệu D0-D10 đã cập nhật. D4-D10 dùng để theo dõi xu hướng, không tự phát quyết định vận hành.":(critical.headline||"-");
+  const headline=String(critical.headline||"").includes("Live D0-D10")?"Các nguồn mô hình nền đã cập nhật. V2 chỉ công bố Dự báo JoTrip tổng hợp, không hiển thị forecast thô từng mô hình.":(critical.headline||"-");
   const next=String(critical.next_review||"").includes("watch cycle")?"Hệ thống tự kiểm tra chu kỳ mô hình mới mỗi 30 phút.":(critical.next_review||"-");
   $("auditGrid").innerHTML=
     '<div class="audit-item"><span>Mã ảnh chụp dữ liệu</span><b>'+esc(critical.snapshot_id||"-")+'</b></div>'+
