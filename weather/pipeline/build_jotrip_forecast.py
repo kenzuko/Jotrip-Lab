@@ -20,7 +20,7 @@ REGIONS={
 }
 POINT_NAMES={
     "duong_dong":"Dương Đông","cua_can":"Cửa Cạn","ganh_dau":"Gành Dầu",
-    "bai_thom":"Bãi Thơm","ham_ninh":"Hàm Ninh","bai_sao":"Bãi Sao","an_thoi":"Biển An Thới - Mây Rút"
+    "bai_thom":"Bãi Thơm","ham_ninh":"Hàm Ninh","bai_sao":"Bãi Sao","an_thoi":"Biển An Thới - Mây Rút Ngoài"
 }
 
 def load(p:Path)->dict:
