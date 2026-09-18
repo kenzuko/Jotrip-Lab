@@ -1,0 +1,171 @@
+name: Weather Ground Truth + PQ Local Now
+
+on:
+  push:
+    paths:
+      - "weather/collectors/phuquoc_ground_truth.py"
+      - "weather/processing/local_now.py"
+      - "weather/tests/test_ground_truth_local_now.py"
+      - ".github/workflows/weather-ground-truth.yml"
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      target_ref:
+        description: "Branch containing Weather Lab code"
+        required: false
+        type: string
+        default: "feat/weather-lab-data-engine-v1"
+
+concurrency:
+  group: weather-ground-truth-${{ inputs.target_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  DATA_BRANCH: data-weather
+  DATA_ROOT: data/weather-groundtruth
+  NOWCAST_ROOT: data/weather-nowcast
+
+jobs:
+  ground-truth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || github.ref_name }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Restore previous observation state
+        shell: bash
+        run: |
+          git fetch origin "$DATA_BRANCH" --depth=1
+          git checkout "origin/$DATA_BRANCH" -- "$DATA_ROOT" "$NOWCAST_ROOT" 2>/dev/null || true
+
+      - name: Test ground truth and local analysis formulas
+        run: python -m unittest weather.tests.test_ground_truth_local_now -v
+
+      - name: Collect public in-situ observations
+        shell: bash
+        run: |
+          PREVIOUS=""
+          if [ -f "$DATA_ROOT/latest.json" ]; then
+            PREVIOUS="--previous $DATA_ROOT/latest.json"
+          fi
+          python -m weather.collectors.phuquoc_ground_truth --output /tmp/groundtruth.json $PREVIOUS
+
+      - name: Build PQ Local Now
+        shell: bash
+        run: |
+          NOWCAST="$NOWCAST_ROOT/latest.json"
+          if [ ! -f "$NOWCAST" ]; then
+            NOWCAST="weather/nowcast.json"
+          fi
+          python -m weather.processing.local_now             --groundtruth /tmp/groundtruth.json             --dashboard weather/dashboard-data.json             --nowcast "$NOWCAST"             --output /tmp/local-now.json
+
+      - name: Validate semantic safety gates
+        run: |
+          python - <<'PY'
+          import json
+          gt=json.load(open('/tmp/groundtruth.json'))
+          ln=json.load(open('/tmp/local-now.json'))
+          assert gt['status'] in {'READY','UNAVAILABLE'}
+          if gt['status']=='READY':
+              if gt.get('atmosphere',{}).get('vvpq',{}).get('status') in {'FRESH','STALE'}:
+                  assert gt['atmosphere']['vvpq']['data_class']=='ACTUAL'
+              for s in gt['rainfall'].get('stations',{}).values():
+                  assert s['data_class']=='ACTUAL'
+                  assert s['statistic']=='ACCUMULATION'
+          assert ln['engine']=='PQ_LOCAL_NOW_V1'
+          assert ln['data_class']=='ESTIMATED_NOW'
+          for p in ln['points'].values():
+              assert p['marine']['data_class']=='MODEL_ONLY'
+              assert p['temperature']['data_class'] in {'ESTIMATED_NOW','MODEL_ONLY'}
+              assert p['wind']['data_class'] in {'ESTIMATED_NOW','MODEL_ONLY'}
+              assert p['rain']['data_class']=='ESTIMATED_NOW'
+          PY
+
+      - name: Build compact calibration archive
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime
+          from pathlib import Path
+
+          root=Path('data/weather-groundtruth')
+          gt=json.load(open('/tmp/groundtruth.json'))
+          ln=json.load(open('/tmp/local-now.json'))
+          t=datetime.fromisoformat(gt['generated_at'].replace('Z','+00:00'))
+          day=root/t.strftime('%Y')/t.strftime('%m')/t.strftime('%d')
+          day.mkdir(parents=True,exist_ok=True)
+          stamp=t.strftime('%H%M%S')
+          (day/f'{stamp}.json').write_text(json.dumps(gt,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+
+          analysis=root/'analysis'/t.strftime('%Y')/t.strftime('%m')/t.strftime('%d')
+          analysis.mkdir(parents=True,exist_ok=True)
+          (analysis/f'{stamp}.json').write_text(json.dumps(ln,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+
+          root.mkdir(parents=True,exist_ok=True)
+          (root/'latest.json').write_text(json.dumps(gt,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          (root/'local-now.json').write_text(json.dumps(ln,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          health={
+              'module':'JoTrip Weather Ground Truth',
+              'state':gt['status'],
+              'generated_at':gt['generated_at'],
+              'vvpq':gt.get('atmosphere',{}).get('vvpq',{}).get('status'),
+              'vrain':gt.get('rainfall',{}).get('status'),
+              'rain_stations':list(gt.get('rainfall',{}).get('stations',{})),
+              'increment_ready':[k for k,v in gt.get('rainfall',{}).get('stations',{}).items() if v.get('increment_qc')=='PASS'],
+              'local_engine':ln['engine'],
+              'actual_policy':gt['actual_policy'],
+          }
+          (root/'health.json').write_text(json.dumps(health,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          PY
+
+      - name: Persist isolated observation state
+        shell: bash
+        run: |
+          rm -rf /tmp/weather-groundtruth-export
+          mkdir -p /tmp/weather-groundtruth-export
+          cp -a "$DATA_ROOT"/. /tmp/weather-groundtruth-export/
+
+          git reset --hard HEAD
+          rm -rf "$DATA_ROOT"
+          git fetch origin "$DATA_BRANCH"
+          git checkout -B "$DATA_BRANCH" "origin/$DATA_BRANCH"
+          mkdir -p "$DATA_ROOT"
+          cp -a /tmp/weather-groundtruth-export/. "$DATA_ROOT"/
+
+          git config user.name "jotrip-weather-bot"
+          git config user.email "jotrip-weather-bot@users.noreply.github.com"
+          git add "$DATA_ROOT"
+          if git diff --cached --quiet; then
+            echo "Ground truth state unchanged"
+            exit 0
+          fi
+          git commit -m "data: archive Phu Quoc ground truth and PQ Local Now"
+          for attempt in 1 2 3; do
+            if git pull --rebase origin "$DATA_BRANCH" && git push origin "HEAD:$DATA_BRANCH"; then
+              echo "Ground truth persisted on attempt $attempt"
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+          exit 1
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phu-quoc-ground-truth
+          path: |
+            /tmp/groundtruth.json
+            /tmp/local-now.json
+          retention-days: 7
