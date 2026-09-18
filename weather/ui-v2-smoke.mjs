@@ -46,7 +46,7 @@ for(const [name,width,height] of sizes){
     innerOverflow:[...document.querySelectorAll(".panel")].flatMap(panel=>{
       const pr=panel.getBoundingClientRect();
       return [...panel.querySelectorAll("*")].filter(el=>{
-        if(el.tagName==="OPTION")return false;
+        if(el.tagName==="OPTION"||el.hidden||getComputedStyle(el).display==="none")return false;
         if(el.closest(".table-scroll,.ensemble-table-shell,.actual-strip,.hourly-strip,.point-tabs"))return false;
         const r=el.getBoundingClientRect();
         return r.right>pr.right+3||r.left<pr.left-3;
