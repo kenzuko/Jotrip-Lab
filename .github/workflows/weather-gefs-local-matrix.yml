@@ -64,6 +64,14 @@ jobs:
           assert {'duong_dong','an_thoi','ganh_dau','cua_can','bai_thom','ham_ninh','bai_sao'}.issubset(set(p['points']))
           assert p.get('wind_exposure_engine')=='PQ_LOCAL_WIND_EXPOSURE_V1'
           assert 'bai_sao' in set(p.get('wind_exposure_points') or [])
+          spatial=p.get('spatial') or {}
+          assert spatial.get('status')=='READY', spatial
+          assert spatial.get('native_resolution_deg')==0.5, spatial
+          assert spatial.get('display_interpolation')=='RENDER_ONLY', spatial
+          assert spatial.get('cell_count',0) >= 16, spatial
+          assert len(spatial.get('frames') or []) >= 1, spatial
+          assert all('u10_q50_ms' in cell['wind'] and 'v10_q50_ms' in cell['wind']
+                     for frame in spatial['frames'] for cell in frame['cells']), spatial
           for point_id, rows in p['points'].items():
               assert rows, p
               for row in rows:
@@ -94,6 +102,22 @@ jobs:
           import json
           from pathlib import Path
           p=json.load(open('/tmp/gefs-local.json'))
+          spatial=p.get('spatial') or {}
+          spatial_payload={
+            'schema_version':'weather-spatial-v1',
+            'product':'JOTRIP_GEFS_SPATIAL_ENSEMBLE',
+            'generated_at':p.get('generated_at'),
+            'run_time':p.get('run_time'),
+            'horizon_hours':p.get('horizon_hours'),
+            'completion_ratio':p.get('completion_ratio'),
+            'calibration_status':p.get('calibration_status'),
+            'source':p.get('source'),
+            'spatial':spatial,
+          }
+          Path('/tmp/gefs-export/spatial.json').write_text(
+            json.dumps(spatial_payload,ensure_ascii=False,separators=(',',':'))+'\n',
+            encoding='utf-8'
+          )
           Path('/tmp/gefs-export/health.json').write_text(json.dumps({
             'module':'JoTrip GEFS Local Ensemble',
             'state':p['status'],
@@ -102,7 +126,11 @@ jobs:
             'completion_ratio':p['completion_ratio'],
             'horizon_hours':p['horizon_hours'],
             'calibration_status':p['calibration_status'],
+            'spatial_status':spatial.get('status'),
+            'spatial_cells':spatial.get('cell_count'),
+            'spatial_frames':len(spatial.get('frames') or []),
           },ensure_ascii=False,indent=2)+'\n')
+          assert Path('/tmp/gefs-export/spatial.json').stat().st_size < 1500000
           PY
 
           git reset --hard HEAD
