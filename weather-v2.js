@@ -767,7 +767,10 @@ async function boot(){
     lastLiveRefreshAt=Date.now();
     renderAll();
     installMapObserver();
-    Promise.allSettled([loadTide(),loadAQI(),loadNowcast(),loadRegionalForecast()]);
+    loadTide();
+    defer(loadAQI,350);
+    defer(loadNowcast,500);
+    defer(loadRegionalForecast,700);
     setInterval(()=>{renderStatus();renderHero()},60000);
     setInterval(refreshLive,LIVE_REFRESH_MS);
     document.addEventListener("visibilitychange",()=>{
