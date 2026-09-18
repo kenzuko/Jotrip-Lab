@@ -3,7 +3,7 @@ import unittest
 from weather.pipeline.build_critical_payload import build
 
 class CriticalPayloadTests(unittest.TestCase):
-    def test_compact_payload_keeps_v1_surface(self):
+    def test_compact_payload_exposes_jotrip_forecast_without_raw_rows(self):
         dashboard={
             "generated_at":"2026-09-18T00:00:00+00:00",
             "report_status":"LIVE",
@@ -53,7 +53,9 @@ class CriticalPayloadTests(unittest.TestCase):
         self.assertEqual(p["points"]["duong_dong"]["tide"]["trend"],"RISING")
         self.assertEqual(p["points"]["duong_dong"]["nowcast"]["convective_score"],75.0)
         self.assertEqual(p["points"]["duong_dong"]["ensemble"]["rows"][0]["wind"]["q90"],20.0)
-        self.assertEqual(len(p["points"]["duong_dong"]["next24h"]),1)
+        self.assertNotIn("next24h",p["points"]["duong_dong"])
+        self.assertNotIn("outlook",p["points"]["duong_dong"])
+        self.assertEqual(p["public_forecast"],"JOTRIP_ENSEMBLE_LOCAL")
         self.assertEqual(p["sources"]["ECMWF"]["status"],"PASS")
         self.assertLess(len(json.dumps(p,ensure_ascii=False).encode()),30000)
 
