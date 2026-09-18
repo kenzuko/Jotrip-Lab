@@ -24,6 +24,8 @@ class GroundTruthTests(unittest.TestCase):
         self.assertEqual(s["increment_qc"], "PASS")
         self.assertEqual(s["increment_mm"], 1.0)
         self.assertEqual(s["increment_window_minutes"], 20.0)
+        self.assertTrue(s["rain_observed"])
+        self.assertEqual(s["rain_intensity_mm_h"], 3.0)
 
     def test_vvpq_units_and_convective_flag(self):
         now = datetime(2026, 9, 18, 0, 10, tzinfo=timezone.utc)
