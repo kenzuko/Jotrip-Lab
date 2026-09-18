@@ -239,6 +239,15 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
     for k,vv in (dashboard.get("sources") or {}).items():
         sources[k]={"status":vv.get("status"),"detail":vv.get("detail")}
 
+    # Public-facing source descriptions. Internal diagnostics stay in the engine,
+    # but the website should explain each source in normal Vietnamese.
+    if "ECMWF" in sources:
+        sources["ECMWF"]["detail"]="ECMWF cung cấp nền khí quyển và sóng cho dự báo dài ngày. JoTrip dùng nguồn này để đối chiếu, không công bố nguyên bản như dự báo chính."
+    if "ICON" in sources:
+        sources["ICON"]["detail"]="ICON của DWD được dùng như một nguồn khí quyển độc lập để so sánh với các mô hình khác và phát hiện khi các kịch bản bắt đầu lệch nhau."
+    if "COPERNICUS" in sources:
+        sources["COPERNICUS"]["detail"]="Copernicus Marine cung cấp sóng và dòng chảy quanh Phú Quốc. Số liệu biển được ghép theo điểm và thời gian gần nhất phù hợp."
+
     def ready_status(value:Any, *, partial_ok:bool=False)->str:
         text=str(value or "").upper()
         if text in {"PASS","FRESH","READY","POINT_NUMERIC_READY","MEMBER_MATRIX_READY","LIVE"}:
@@ -250,31 +259,49 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
     ens_ratio=num(ensemble.get("completion_ratio"))
     sources["GEFS"]={
         "status":ready_status(ensemble.get("readiness"),partial_ok=True),
-        "detail":f"NOAA GEFS D0-D10 · tối đa 31 thành viên · hoàn tất {round((ens_ratio or 0)*100)}% · PQ Ensemble Local đang {str(ensemble.get('calibration_status','LEARNING')).lower()}."
+        "detail":f"NOAA GEFS D0-D10 · tối đa 31 thành viên · dữ liệu hiện đủ {round((ens_ratio or 0)*100)}%. JoTrip đang tiếp tục hiệu chỉnh lớp dự báo địa phương bằng dữ liệu thực tế trên đảo."
     }
     sources["VVPQ"]={
         "status":ready_status(v.get("status")),
-        "detail":"METAR sân bay Phú Quốc dùng làm neo quan trắc khí quyển cho PQ Local Now."
+        "detail":"METAR sân bay Phú Quốc là một trong các mốc quan trắc thực tế để JoTrip kiểm tra nhiệt độ, gió, tầm nhìn và trạng thái thời tiết hiện tại."
     }
     sources["VRAIN"]={
         "status":ready_status((ground.get("rainfall") or {}).get("status")),
-        "detail":f"Mưa đo thực tế tại {len(gauges)} trạm công khai trên đảo; hệ thống lưu chênh lệch theo thời gian để ước tính cường độ mưa."
+        "detail":f"Mưa đo thực tế tại {len(gauges)} trạm công khai trên đảo. JoTrip theo dõi mức tăng giữa các lần cập nhật để ước tính cường độ mưa gần hiện tại."
     }
     sources["HIMAWARI"]={
         "status":ready_status(nowcast.get("status")),
-        "detail":"Himawari-9 qua nguồn mở JMA/NOAA: nhiệt độ đỉnh mây, độ cao đỉnh mây, xu hướng 20 phút và chỉ số đối lưu."
+        "detail":"Himawari-9 giúp theo dõi mây đối lưu quanh Phú Quốc qua nhiệt độ đỉnh mây, độ cao đỉnh mây và xu hướng phát triển trong khoảng 20 phút."
     }
     sources["AQI"]={
         "status":ready_status(aqi.get("status"),partial_ok=True),
-        "detail":"IQAir realtime khi có điểm phù hợp; CAMS dùng làm lớp PM2.5/PM10 và mô hình tham chiếu."
+        "detail":"IQAir được ưu tiên khi có điểm đo phù hợp; CAMS được dùng làm nguồn tham chiếu cho PM2.5, PM10 và chất lượng không khí khu vực."
     }
     sources["TRIỀU"]={
         "status":ready_status(tide.get("status"),partial_ok=True),
-        "detail":"Triều mô hình FES2014/Copernicus; không phải số đo trạm và không thay mực nước hải đồ cảng."
+        "detail":"Triều được tính từ FES2014/Copernicus. Đây là số liệu mô hình, không phải phép đo tại trạm và không thay mực nước hải đồ cảng."
     }
     gaps=[]
     for g in dashboard.get("gaps") or []:
-        gaps.append({"name":g.get("name"),"detail":g.get("detail")})
+        name=str(g.get("name") or "")
+        detail=str(g.get("detail") or "")
+        if name=="D4-D10 ensemble consensus":
+            gaps.append({
+                "name":"Độ đồng thuận nhiều mô hình từ ngày 4 đến ngày 10",
+                "detail":"GEFS đã có đủ horizon 10 ngày, nhưng các lớp ensemble dài hạn từ những họ mô hình khác vẫn chưa được tích hợp đầy đủ. Vì vậy dự báo xa ngày luôn được hạ mức tin cậy."
+            })
+        elif name=="Hmax trực tiếp":
+            gaps.append({
+                "name":"Sóng lớn Hmax",
+                "detail":"Nguồn ECMWF Open Data hiện không cung cấp trực tiếp Hmax cho pipeline này. Khi cần, JoTrip dùng ước tính thống kê từ Hs và luôn ghi rõ đây là giá trị ước tính."
+            })
+        elif name=="Nowcast offshore":
+            gaps.append({
+                "name":"Quan sát dông ngoài khơi",
+                "detail":"Chưa có lớp radar/sét ngoài khơi đủ ổn định cho toàn vùng biển quanh Phú Quốc."
+            })
+        else:
+            gaps.append({"name":name or "Phần còn thiếu","detail":detail})
 
     return {
         "schema_version":"2.1",
