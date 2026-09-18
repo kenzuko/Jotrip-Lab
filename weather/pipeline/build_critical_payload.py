@@ -233,6 +233,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
             "increment_min":num(s.get("increment_window_minutes")),
             "rain_observed":s.get("rain_observed"),
             "rain_intensity_mm_h":num(s.get("rain_intensity_mm_h")),
+            "increment_qc":s.get("increment_qc"),
             "observed_at":s.get("observed_at"),
             "qc":s.get("qc"),
         })
