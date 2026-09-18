@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#f4f8fb">
   <title>JoTrip Weather - Phú Quốc</title>
   <meta name="description" content="Thời tiết Phú Quốc: quan trắc thực tế, PQ Local Now, hải văn, AQI và dự báo ensemble. Miễn phí, phi thương mại.">
-  <link rel="stylesheet" href="/Jotrip-Lab/weather/weather-v2.css?v=20260918-7">
+  <link rel="stylesheet" href="/Jotrip-Lab/weather/weather-v2.css?v=20260918-9">
   <link rel="preload" as="fetch" href="/Jotrip-Lab/weather/data/critical.json" crossorigin="anonymous">
   <link rel="manifest" href="/Jotrip-Lab/weather/weather-manifest.webmanifest">
-  <script defer src="/Jotrip-Lab/weather/weather-v2.js?v=20260918-7"></script>
+  <script defer src="/Jotrip-Lab/weather/weather-v2.js?v=20260918-9"></script>
 </head>
 <body>
 <header class="topbar">
@@ -23,7 +23,7 @@
 <main>
   <section class="hero">
     <div class="hero-copy">
-      <span class="eyebrow">PHÚ QUỐC WEATHER SYSTEM · V2</span>
+      <span class="eyebrow">HỆ THỐNG THỜI TIẾT PHÚ QUỐC · V2</span>
       <h1 id="placeName">Dương Đông</h1>
       <p id="heroSummary">Đang đọc dữ liệu quan trắc và phân tích địa phương...</p>
       <div class="updated" id="updatedAt">-</div>
@@ -121,7 +121,7 @@
   <div class="two-col">
     <section class="panel instant-panel">
       <div class="panel-head">
-        <div><span class="eyebrow">AIR QUALITY</span><h2>AQI & bụi mịn</h2></div>
+        <div><span class="eyebrow">CHẤT LƯỢNG KHÔNG KHÍ</span><h2>AQI & bụi mịn</h2></div>
         <span id="aqiSourceBadge" class="badge actual">TRỰC TIẾP</span>
       </div>
       <div id="aqiQuick" class="quick-grid"><div class="skeleton wide"></div></div>
@@ -130,7 +130,7 @@
 
     <section class="panel instant-panel">
       <div class="panel-head">
-        <div><span class="eyebrow">TIDE</span><h2>Triều & đổi nước</h2></div>
+        <div><span class="eyebrow">THỦY TRIỀU</span><h2>Triều & đổi nước</h2></div>
         <span class="badge model">MÔ HÌNH</span>
       </div>
       <div id="tideQuick" class="quick-grid"><div class="skeleton wide"></div></div>
@@ -164,12 +164,10 @@
     </div>
     <div class="map-tabs">
       <button class="active" data-map="radar">Radar</button>
-      <button data-map="wind">Gió</button>
-      <button data-map="rain">Mưa dự báo</button>
       <button data-map="himawari">Himawari IR</button>
     </div>
     <div id="mapBox" class="map-box"><div class="map-placeholder"><b>Bản đồ sẽ tự tải khi cuộn tới đây</b><span>Không chặn phần số liệu phía trên.</span></div></div>
-    <div id="mapNote" class="map-note">Bản đồ giúp đọc cấu trúc không gian trước khi xem forecast. Số liệu vận hành vẫn dùng pipeline riêng.</div>
+    <div id="mapNote" class="map-note">Bản đồ dùng để nhìn mưa và mây đang quan sát được quanh Phú Quốc. Dự báo số dùng Dự báo JoTrip ở phần kế tiếp.</div>
     <div class="map-source-links">
       <a href="https://himawari8.nict.go.jp/" target="_blank" rel="noopener noreferrer">NICT Himawari ↗</a>
       <a href="https://www.data.jma.go.jp/mscweb/data/himawari/" target="_blank" rel="noopener noreferrer">JMA Himawari ↗</a>
@@ -178,37 +176,20 @@
     </div>
   </section>
 
-  <section class="panel forecast-panel">
+  <section class="panel jotrip-forecast-panel">
     <div class="panel-head">
-      <div><span class="eyebrow">DỰ BÁO</span><h2>Dự báo D0-D10</h2></div>
-      <span class="badge model">MÔ HÌNH</span>
-    </div>
-    <div id="hourlyStrip" class="hourly-strip"><div class="skeleton hour"></div><div class="skeleton hour"></div><div class="skeleton hour"></div></div>
-    <div class="horizon-tabs">
-      <button class="active" data-horizon="72">D0-D3</button>
-      <button data-horizon="120">D0-D5</button>
-      <button data-horizon="168">D0-D7</button>
-      <button data-horizon="240">D0-D10</button>
-    </div>
-    <div id="forecastDetail" class="lazy-area">
-      <div class="table-scroll"><table class="forecast-table"><thead><tr><th>Giờ</th><th>°C</th><th>Gió</th><th>Giật</th><th>Mưa 3h</th><th>Hs</th><th>Hmax</th><th>Chu kỳ</th></tr></thead><tbody id="forecastRows"><tr><td colspan="8"><span class="inline-loader">Đang nạp bảng D0-D10...</span></td></tr></tbody></table></div>
-      <div id="outlookCards" class="outlook-cards"></div>
-    </div>
-  </section>
-
-  <section class="panel ensemble-panel">
-    <div class="panel-head">
-      <div><span class="eyebrow">DỰ BÁO XÁC SUẤT</span><h2>PQ Ensemble Local</h2></div>
+      <div><span class="eyebrow">DỰ BÁO JOTRIP</span><h2>72 giờ tới</h2></div>
       <span id="ensembleState" class="badge learning">ĐANG HIỆU CHỈNH</span>
     </div>
-    <p class="panel-note">Nhiều thành viên dự báo cùng một thời điểm để nhìn mức độ đồng thuận và phần rủi ro ở phía cao.</p>
-    <div id="ensembleQuick" class="ensemble-table-shell"><span class="inline-loader">Đang đọc phân bố ensemble...</span></div>
+    <p id="jotripForecastSummary" class="panel-note">Hệ thống đang tổng hợp các thành viên ensemble thành một dự báo địa phương duy nhất.</p>
+    <div id="jotripForecastGrid" class="jotrip-forecast-grid"><div class="skeleton wide"></div></div>
     <small id="ensembleMeta" class="panel-foot"></small>
-    <div class="explain-box">
-      <b>Cách đọc q50, q90 và xác suất</b>
-      <span><strong>q50</strong> là giá trị trung vị. <strong>q90</strong> là mức cao mà chỉ khoảng 10% thành viên còn vượt qua.</span>
-      <span><strong>P(gió ≥ 30)</strong> hoặc <strong>P(mưa ≥ 5)</strong> là tỷ lệ thành viên vượt ngưỡng đó - không phải lời khẳng định chắc chắn sẽ xảy ra.</span>
-    </div>
+    <details class="forecast-method">
+      <summary>Dự báo này được tạo như thế nào?</summary>
+      <div>
+        Hệ thống dùng nhiều thành viên dự báo làm đầu vào, tổng hợp phân bố, đối chiếu với quan trắc thực tế và dần hiệu chỉnh theo dữ liệu lịch sử. Giao diện chỉ hiển thị kết quả JoTrip đã tổng hợp, không hiển thị riêng forecast thô của từng mô hình.
+      </div>
+    </details>
   </section>
 
   <section class="panel about-panel">
@@ -216,7 +197,7 @@
       <div><span class="eyebrow">VỀ DỰ ÁN</span><h2>JoTrip Weather - Phú Quốc</h2></div>
       <span class="badge actual">MIỄN PHÍ</span>
     </div>
-    <p class="about-copy">Một dự án dữ liệu thời tiết riêng cho Phú Quốc, làm miễn phí và không có kế hoạch thu phí. Mục tiêu là gom quan trắc thực tế, vệ tinh, mô hình khí quyển - biển và ensemble thành một trang dễ đọc hơn cho người dân, khách du lịch và anh em làm nghề trên đảo.</p>
+    <p class="about-copy">Một dự án dữ liệu thời tiết riêng cho Phú Quốc, làm miễn phí và không có kế hoạch thu phí. Hệ thống dùng quan trắc thực tế, vệ tinh và nhiều nguồn mô hình làm đầu vào, sau đó xử lý thành PQ Local Now và Dự báo JoTrip để người dân, khách du lịch và anh em làm nghề trên đảo dễ đọc hơn.</p>
     <p class="about-copy">Nếu bạn đang ở Phú Quốc và thấy thời tiết ngoài thực tế khác số trên trang, hãy chọn đúng khu vực ở phần <b>Phản hồi tại chỗ</b>. Bản thử nghiệm hiện lưu phản hồi trên thiết bị. Nếu trang hữu ích, bạn có thể chia sẻ cho người khác cùng xem và góp ý để tụi mình tiếp tục kiểm tra công thức.</p>
     <div class="about-actions">
       <button id="shareWeather" class="secondary-button">Chia sẻ trang</button>

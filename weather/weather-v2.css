@@ -146,3 +146,35 @@ main,.panel,.hero,.two-col,.now-grid,.quick-grid,.source-grid,.audit-grid,.statu
 
 .satellite-preview{box-sizing:border-box;width:100%;max-width:100%}
 .satellite-preview img,.satellite-preview figcaption{box-sizing:border-box;max-width:100%}
+
+/* V2.4 single JoTrip forecast surface */
+.jotrip-forecast-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:12px}
+.jotrip-forecast-card{border:1px solid #dfe9ee;border-radius:15px;background:linear-gradient(180deg,#fff,#f8fbfc);padding:11px;min-width:0}
+.jotrip-forecast-card header{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;min-width:0}
+.jotrip-forecast-card header>div{min-width:0}
+.jotrip-forecast-card header b{display:block;font-size:10px;color:#31576c}
+.jotrip-forecast-card header small{display:block;margin-top:2px;font-size:6.5px;color:#8b9aa3;white-space:nowrap}
+.jotrip-forecast-card header>span{font-size:6px;font-weight:850;border-radius:999px;padding:4px 6px;white-space:nowrap;background:#edf3f6;color:#647c89}
+.jotrip-forecast-card.stable header>span{background:#e8f7ef;color:#28734d}
+.jotrip-forecast-card.variable header>span{background:#fff6d9;color:#80630a}
+.jotrip-forecast-card.watch header>span{background:#fff0f1;color:#a94249}
+.jotrip-forecast-main{font-size:24px;font-weight:850;letter-spacing:-.04em;color:#234b63;margin:10px 0}
+.jotrip-forecast-values{display:grid;gap:5px}
+.jotrip-forecast-values>div{display:flex;justify-content:space-between;gap:7px;min-width:0}
+.jotrip-forecast-values span{font-size:7px;color:#84959f}
+.jotrip-forecast-values b{font-size:7.5px;color:#456477;text-align:right}
+.forecast-members{display:block;margin-top:8px;color:#93a0a7;font-size:6.5px}
+.forecast-method{margin-top:10px;border-top:1px solid #e7eef2;padding-top:8px}
+.forecast-method summary{cursor:pointer;font-size:7.5px;font-weight:750;color:#527080}
+.forecast-method>div{margin-top:6px;font-size:7.5px;line-height:1.5;color:#7d909b}
+@media(max-width:900px){.jotrip-forecast-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){.jotrip-forecast-grid{display:flex;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.jotrip-forecast-grid::-webkit-scrollbar{display:none}.jotrip-forecast-card{flex:0 0 155px}}
+
+/* V2.4 mobile forecast overflow fix */
+@media(max-width:620px){
+  .jotrip-forecast-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}
+  .jotrip-forecast-card{min-width:0;width:auto}
+  .jotrip-forecast-card header{flex-wrap:wrap}
+  .jotrip-forecast-card header>span{white-space:normal;text-align:right;max-width:78px}
+}
+@media(max-width:340px){.jotrip-forecast-grid{grid-template-columns:1fr}}
