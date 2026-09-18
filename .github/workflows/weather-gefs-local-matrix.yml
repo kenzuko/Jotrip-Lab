@@ -29,7 +29,7 @@ permissions:
 jobs:
   ensemble:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 55
     steps:
       - uses: actions/checkout@v4
         with:
@@ -49,7 +49,7 @@ jobs:
           if [[ "${{ inputs.smoke }}" == "true" || ( "${{ github.event_name }}" == "push" && "${{ github.ref_name }}" != "main" ) ]]; then
             python -m weather.collectors.gefs_local_matrix --members 3 --lead 6 --lead 12 --workers 2 --output /tmp/gefs-local.json
           else
-            python -m weather.collectors.gefs_local_matrix --members 31 --workers 3 --output /tmp/gefs-local.json
+            python -m weather.collectors.gefs_local_matrix --members 31 --workers 4 --output /tmp/gefs-local.json
           fi
       - name: Validate ensemble semantics
         shell: bash
