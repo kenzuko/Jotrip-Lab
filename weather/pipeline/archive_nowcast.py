@@ -33,6 +33,11 @@ THRESHOLDS = {
     "cooling_c_per_20m_proxy": 3.0,
 }
 
+# V5 visual layer keeps a small rolling satellite-frame ring. This is not a
+# full snapshot history. It exists only so the public Cloud layer can animate
+# recent observed spatial evolution without reopening many large NOAA files.
+SPATIAL_HISTORY_LIMIT = 12
+
 
 def _read_json(path: Path) -> dict[str, Any] | None:
     try:
@@ -53,6 +58,31 @@ def _append_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
     with path.open("a", encoding="utf-8") as fh:
         for row in rows:
             fh.write(json.dumps(row, ensure_ascii=False, separators=(",", ":")) + "\n")
+
+
+def _merge_spatial_frames(previous: dict[str, Any] | None, current: dict[str, Any]) -> dict[str, Any]:
+    spatial = deepcopy(current.get("spatial") or {})
+    current_frames = list(spatial.get("frames") or [])
+    previous_frames = list(((previous or {}).get("spatial") or {}).get("frames") or [])
+
+    merged: dict[str, dict[str, Any]] = {}
+    for frame in previous_frames + current_frames:
+        sampled = str(frame.get("sampled_time") or "")
+        if not sampled:
+            continue
+        merged[sampled] = frame
+
+    ordered = sorted(
+        merged.values(),
+        key=lambda frame: _parse_time(str(frame.get("sampled_time") or "")),
+    )
+    spatial["frames"] = ordered[-SPATIAL_HISTORY_LIMIT:]
+    spatial["frame_history_limit"] = SPATIAL_HISTORY_LIMIT
+    spatial["frame_history_mode"] = "ROLLING_RECENT_OBSERVED_FRAMES"
+    spatial["cell_count"] = spatial.get("cell_count") or (
+        len(spatial["frames"][-1].get("cells") or []) if spatial["frames"] else 0
+    )
+    return spatial
 
 
 def _parse_time(value: str | None) -> datetime:
@@ -199,6 +229,7 @@ def archive(snapshot: dict[str, Any], root: Path) -> dict[str, Any]:
     health_path = root / "health.json"
 
     previous_raw = _read_json(raw_path)
+    previous_latest = _read_json(latest_path)
     previous_points = (previous_raw or {}).get("points") or {}
     events: list[dict[str, Any]] = []
     for point_id in POINT_ORDER:
@@ -239,10 +270,15 @@ def archive(snapshot: dict[str, Any], root: Path) -> dict[str, Any]:
     summary["material_event_count"] = _count_events(events_path)
     _write_json(summary_path, summary)
 
-    # Airport-style daily raw: overwrite today's exact full observation rather than
-    # accumulating per-poll files. Git history lives on the isolated data branch.
-    _write_json(raw_path, snapshot)
-    _write_json(latest_path, snapshot)
+    # Keep only a compact rolling spatial-frame ring for the animated Cloud layer.
+    # Point observations / metadata remain the newest snapshot.
+    persisted_snapshot = deepcopy(snapshot)
+    persisted_snapshot["spatial"] = _merge_spatial_frames(previous_latest, snapshot)
+
+    # Airport-style daily raw: overwrite today's exact latest observation rather
+    # than accumulating per-poll files. Git history lives on the isolated branch.
+    _write_json(raw_path, persisted_snapshot)
+    _write_json(latest_path, persisted_snapshot)
 
     catalog = _read_json(catalog_path) or {
         "schema_version": "weather-nowcast-catalog-v1",
@@ -274,6 +310,8 @@ def archive(snapshot: dict[str, Any], root: Path) -> dict[str, Any]:
         "state": "READY",
         "archive_mode": "DAILY_RAW_PLUS_MATERIAL_EVENTS_PLUS_DAILY_SUMMARY",
         "full_snapshot_history": False,
+        "spatial_frame_history": SPATIAL_HISTORY_LIMIT,
+        "spatial_frames_available": len((persisted_snapshot.get("spatial") or {}).get("frames") or []),
         "source": snapshot.get("source"),
         "date": day,
         "sampled_time": sampled_time,
