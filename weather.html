@@ -149,14 +149,14 @@
         <select id="feedbackPoint" aria-label="Khu vực phản hồi"></select>
       </div>
       <div class="feedback-actions compact">
-        <button data-feedback="MATCH">Khớp</button>
-        <button data-feedback="RAIN_MORE">Mưa nhiều hơn</button>
-        <button data-feedback="RAIN_LESS">Mưa ít hơn</button>
-        <button data-feedback="WIND_MORE">Gió mạnh hơn</button>
-        <button data-feedback="WIND_LESS">Gió yếu hơn</button>
-        <button data-feedback="THUNDER">Có dông</button>
+        <button type="button" data-feedback="MATCH">Khớp</button>
+        <button type="button" data-feedback="RAIN_MORE">Mưa nhiều hơn</button>
+        <button type="button" data-feedback="RAIN_LESS">Mưa ít hơn</button>
+        <button type="button" data-feedback="WIND_MORE">Gió mạnh hơn</button>
+        <button type="button" data-feedback="WIND_LESS">Gió yếu hơn</button>
+        <button type="button" data-feedback="THUNDER">Có dông</button>
       </div>
-      <small id="feedbackState">Không thu GPS · phản hồi hiện lưu trên thiết bị.</small>
+      <small id="feedbackState">Không thu GPS · phản hồi được lưu trên thiết bị này.</small><div id="feedbackToast" class="feedback-toast" role="status" aria-live="polite"></div>
     </div>
 
     <div id="actualStrip" class="actual-strip"><div class="skeleton wide"></div></div>
