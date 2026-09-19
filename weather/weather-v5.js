@@ -263,7 +263,7 @@ function renderField(){
   state.currentFrame=state.layer==="storm"
     ?cloudFrames()[clamp(state.frameIndex,0,Math.max(0,cloudFrames().length-1))]
     :activeECMWFFrame();
-  drawIDW(rows,state.layer,state.layer==="storm"?.72:.78);
+  drawIDW(rows,state.layer,state.layer==="storm"?.55:.57);
 }
 
 function drawUncertaintyField(rows,layer){
@@ -319,9 +319,9 @@ function stopParticles(){
 function resetParticles(){
   if(!state.particleRows)return;
   fitFlow();
-  const c=$("flowCanvas"),count=innerWidth<700?160:310;
+  const c=$("flowCanvas"),count=innerWidth<700?280:520;
   state.particles=Array.from({length:count},()=>({
-    x:Math.random()*c.width,y:Math.random()*c.height,age:Math.random()*80,max:60+Math.random()*120
+    x:Math.random()*c.width,y:Math.random()*c.height,age:Math.random()*110,max:85+Math.random()*150
   }));
 }
 function vectorRows(rows,kind){
@@ -335,6 +335,25 @@ function vectorRows(rows,kind){
   return (rows||[]).filter(r=>num(r.u10_ms)!==null&&num(r.v10_ms)!==null).map(r=>({
     ...r,u:num(r.u10_ms),v:num(r.v10_ms),mag:Math.hypot(num(r.u10_ms),num(r.v10_ms))
   }));
+}
+function interpolatedVectorAt(p,pv){
+  if(!pv.length)return null;
+  const nearest=[];
+  for(const v of pv){
+    const dx=p.x-v.x,dy=p.y-v.y,d2=dx*dx+dy*dy+18;
+    let inserted=false;
+    for(let i=0;i<nearest.length;i++){
+      if(d2<nearest[i].d2){nearest.splice(i,0,{v,d2});inserted=true;break}
+    }
+    if(!inserted)nearest.push({v,d2});
+    if(nearest.length>4)nearest.length=4;
+  }
+  let sw=0,u=0,vv=0,mag=0;
+  for(const item of nearest){
+    const w=1/item.d2;
+    sw+=w;u+=item.v.u*w;vv+=item.v.v*w;mag+=(item.v.mag||0)*w;
+  }
+  return sw?{u:u/sw,v:vv/sw,mag:mag/sw}:null;
 }
 function startParticles(rows,kind){
   stopParticles();
@@ -351,30 +370,29 @@ function startParticles(rows,kind){
   const tick=()=>{
     if(!state.particleRows)return;
     ctx.globalCompositeOperation="destination-out";
-    ctx.fillStyle="rgba(0,0,0,.095)";ctx.fillRect(0,0,c.width,c.height);
+    ctx.fillStyle="rgba(0,0,0,.052)";
+    ctx.fillRect(0,0,c.width,c.height);
     ctx.globalCompositeOperation="source-over";
-    ctx.strokeStyle=kind==="waves"?"rgba(238,251,255,.85)":"rgba(255,255,255,.91)";
-    ctx.lineWidth=kind==="waves"?1.45:1.25;
+    ctx.strokeStyle=kind==="waves"?"rgba(240,252,255,.92)":"rgba(255,255,255,.96)";
+    ctx.lineWidth=kind==="waves"?1.7:1.55;
     const dpr=Number(c.dataset.dpr)||1;
     const pv=state.particleRows.map(r=>{
       const p=state.map.latLngToContainerPoint([r.lat,r.lon]);
       return {x:p.x*dpr,y:p.y*dpr,u:r.u,v:r.v,mag:r.mag};
     });
     state.particles.forEach(p=>{
-      let n=null,d=Infinity;
-      for(const v of pv){
-        const dd=(p.x-v.x)**2+(p.y-v.y)**2;
-        if(dd<d){d=dd;n=v}
-      }
+      const n=interpolatedVectorAt(p,pv);
       if(!n)return;
-      const scale=kind==="waves"?clamp((n.mag||0)*1.5,.45,2.2):clamp((n.mag||0)/4,.65,3.7);
+      const scale=kind==="waves"
+        ?clamp((n.mag||0)*1.7,.55,2.7)
+        :clamp((n.mag||0)/3.4,.85,4.8);
       const m=Math.max(.001,Math.hypot(n.u,n.v));
       const dx=(n.u/m)*scale,dy=-(n.v/m)*scale;
-      const nx=p.x+dx*2.15,ny=p.y+dy*2.15;
+      const nx=p.x+dx*2.7,ny=p.y+dy*2.7;
       ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(nx,ny);ctx.stroke();
       p.x=nx;p.y=ny;p.age++;
       if(p.age>p.max||p.x<0||p.y<0||p.x>c.width||p.y>c.height){
-        p.x=Math.random()*c.width;p.y=Math.random()*c.height;p.age=0;p.max=60+Math.random()*120;
+        p.x=Math.random()*c.width;p.y=Math.random()*c.height;p.age=0;p.max=85+Math.random()*150;
       }
     });
     state.particleRAF=requestAnimationFrame(tick);
@@ -416,14 +434,21 @@ function playRadar(){
 function renderRisk(){
   state.riskLayer.clearLayers();
   if(!state.risk||!state.critical)return;
-  const ids=state.critical.island_watch_order||Object.keys(POINTS);
-  ids.filter(id=>POINTS[id]&&state.critical.points?.[id]).forEach(id=>{
+  const ids=(state.critical.island_watch_order||Object.keys(POINTS))
+    .filter(id=>POINTS[id]&&state.critical.points?.[id]);
+  const ranked=ids.map(id=>({id,r:riskAt(id)})).sort((a,b)=>b.r.level-a.r.level);
+  const worst=ranked[0]?.id||null;
+  const zoom=state.map?.getZoom?.()||10;
+  ids.forEach(id=>{
     const cfg=POINTS[id],r=riskAt(id);
-    const icon=L.divIcon({className:"",html:'<div class="risk-dot '+riskClass(r.level)+'"></div>',iconSize:[12,12],iconAnchor:[6,6]});
+    const icon=L.divIcon({className:"",html:'<div class="risk-dot '+riskClass(r.level)+'"></div>',iconSize:[10,10],iconAnchor:[5,5]});
     const m=L.marker([cfg.lat,cfg.lon],{icon,zIndexOffset:900}).addTo(state.riskLayer);
     m.on("click",()=>showAnchorProbe(id));
-    if(r.level>=2){
-      const li=L.divIcon({className:"",html:'<div class="risk-label">'+esc(cfg.name)+' · '+riskLabel(r.level)+'</div>',iconSize:[120,20],iconAnchor:[60,-9]});
+    const selected=id===state.selected.anchor;
+    const severe=id===worst&&r.level>=3;
+    const zoomed=zoom>=12&&r.level>=2;
+    if(selected||severe||zoomed){
+      const li=L.divIcon({className:"",html:'<div class="risk-label">'+esc(cfg.name)+' · '+riskLabel(r.level)+'</div>',iconSize:[118,20],iconAnchor:[59,-9]});
       L.marker([cfg.lat,cfg.lon],{icon:li,interactive:false,zIndexOffset:850}).addTo(state.riskLayer);
     }
   });

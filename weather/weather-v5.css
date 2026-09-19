@@ -101,3 +101,104 @@ button{cursor:pointer}
   .layer{min-width:60px}
 }
 @media(prefers-reduced-motion:reduce){.flow-canvas{display:none}}
+
+
+/* V5.1 mobile readability + motion hierarchy */
+.field-canvas{opacity:.78}
+.map .leaflet-tile-pane{filter:saturate(.96) brightness(1.01) contrast(1.07)}
+.risk-dot{width:10px;height:10px;border-width:2px}
+.risk-label{font-size:7px;padding:3px 5px;background:rgba(255,255,255,.90)}
+
+@media(max-width:760px){
+  .readout{
+    min-width:138px;
+    max-width:170px;
+    padding:7px 8px;
+    border-radius:12px;
+  }
+  .readout>small{font-size:6px}
+  .readout-main strong{font-size:22px}
+  .readout-main span{font-size:8px}
+  .readout>b{font-size:10px}
+  .readout>p{
+    font-size:6.5px;
+    line-height:1.15;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .right-controls{gap:5px}
+  .tool{width:34px;height:34px;border-radius:11px;font-size:15px}
+  .toggle{
+    min-width:45px;
+    width:45px;
+    height:32px;
+    border-radius:11px;
+    padding:0;
+  }
+  .toggle span{font-size:8px}
+  .toggle small{display:none}
+
+  .alert-bar{
+    min-height:42px;
+    grid-template-columns:26px 1fr auto;
+    gap:6px;
+    padding:6px 8px;
+    border-radius:12px;
+  }
+  .alert-icon{width:25px;height:25px;border-radius:8px}
+  .alert-bar small{display:none}
+  .alert-bar b{
+    font-size:9px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .timeline{
+    bottom:61px;
+    padding:5px 7px 4px;
+    border-radius:12px;
+  }
+  .timeline-head{gap:6px}
+  .play{width:27px;height:27px;border-radius:8px}
+  .timeline-head b{font-size:8px}
+  .timeline-head span{font-size:6px}
+  .timeline input{margin:2px 0 0}
+  .timeline-ticks{padding:0 1px}
+  .timeline-ticks span{font-size:5.5px}
+
+  .layerbar{
+    padding:5px 6px max(5px,env(safe-area-inset-bottom));
+    gap:5px;
+  }
+  .layer{
+    min-width:58px;
+    height:36px;
+    border-radius:10px;
+    gap:4px;
+    font-size:7.5px;
+  }
+  .layer i{font-size:12px}
+
+  .scale{bottom:47px}
+  .scale-gradient{height:6px}
+  .scale-labels{font-size:5.5px}
+
+  .probe{bottom:128px}
+}
+
+@media(max-width:480px){
+  .brand{height:38px;padding-right:7px}
+  .brand-mark{width:28px;height:28px;border-radius:9px}
+  .brand b{font-size:11px}
+  .brand small{display:none}
+  .status-pill{height:30px;font-size:6.5px}
+  .readout{top:50px}
+  .right-controls{top:50px}
+  .alert-bar{bottom:128px}
+  .timeline{bottom:57px}
+  .scale{bottom:44px}
+  .layer{min-width:56px}
+}
