@@ -336,14 +336,26 @@ function renderActual(){
   const a=critical.actual||{},v=a.vvpq||{},g=a.rain_gauges||[],cards=[];
   cards.push('<article class="actual-card"><header><b>VVPQ</b><em class="badge actual">ĐO THỰC</em></header><strong>'+fmt(v.temperature_c,1)+'°C</strong><small>Gió '+fmt(v.wind_kmh,1)+' km/h · '+(v.weather?esc(v.weather)+' · ':'')+ageText(v.observed_at)+'</small></article>');
   g.forEach(x=>{
-    const observed=x.rain_observed===true?"CÓ MƯA":x.rain_observed===false?"KHÔNG MƯA":"CHƯA RÕ";
-    const win=num(x.increment_min),inc=num(x.increment_mm),rate=num(x.rain_intensity_mm_h);
-    let detail="Chưa có cửa sổ quan trắc 5-20 phút hợp lệ để xác định mưa hiện tại";
-    if(x.increment_qc==="PASS"&&win!==null&&inc!==null){
+    const win=num(x.increment_min),inc=num(x.increment_mm),rate=num(x.rain_intensity_mm_h),acc=num(x.accum_mm);
+    let observed="CHƯA CÓ DỮ LIỆU HIỆN TẠI";
+    let detail="Không đủ dữ liệu mới để xác định trạng thái mưa.";
+
+    if(x.rain_observed===true){
+      observed="CÓ MƯA";
       detail="Lượng mưa "+fmt(inc,2)+" mm / "+fmt(win,0)+" phút";
       if(rate!==null)detail+=" · cường độ "+fmt(rate,2)+" mm/h";
+    }else if(x.rain_observed===false){
+      observed="KHÔNG MƯA";
+      detail="Không ghi nhận thêm lượng mưa trong "+fmt(win,0)+" phút gần nhất.";
+    }else if(acc===0){
+      observed="KHÔNG MƯA";
+      detail="VRain hiện ghi 0 mm trong kỳ quan trắc.";
+    }else if(acc!==null&&acc>0){
+      observed="ĐÃ CÓ MƯA TRONG KỲ";
+      detail="Tổng kỳ "+fmt(acc,1)+" mm · chưa đủ hai mẫu gần nhau để kết luận đang mưa ngay lúc này.";
     }
-    if(num(x.accum_mm)!==null)detail+=" · tổng kỳ "+fmt(x.accum_mm,1)+" mm";
+
+    if(acc!==null&&x.rain_observed!==true&&!(acc>0&&x.rain_observed===null))detail+=" · tổng kỳ "+fmt(acc,1)+" mm";
     cards.push('<article class="actual-card rain-actual"><header><b>'+esc(x.name)+'</b><em class="badge actual">ĐO THỰC</em></header><strong>'+observed+'</strong><small>'+detail+'</small></article>');
   });
   $("actualStrip").innerHTML=cards.join("");
