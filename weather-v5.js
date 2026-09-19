@@ -415,6 +415,9 @@ function activeRows(){
 
 function renderField(){
   if(state.layer==="radar"){clearCanvas("fieldCanvas");clearCanvas("uncertaintyCanvas");return}
+  const fieldCanvas=$("fieldCanvas");
+  fieldCanvas.style.filter=state.layer==="storm"?"blur(5px)":"none";
+  fieldCanvas.style.opacity=state.layer==="storm"?"0.88":"1";
   const rows=activeRows();
   state.currentRows=rows;
   state.currentFrame=state.layer==="storm"
