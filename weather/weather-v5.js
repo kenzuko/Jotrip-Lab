@@ -39,6 +39,7 @@ const state={
   actual:false,
   riskLayer:null,
   actualLayer:null,
+  flagMarker:null,
   radarLayers:[],
   radarMeta:null,
   radarIndex:0,
@@ -106,14 +107,43 @@ function distance2(a,b,c,d){return (a-c)*(a-c)+(b-d)*(b-d)}
 
 function initMap(){
   state.map=L.map("map",{zoomControl:false,attributionControl:true,minZoom:8,maxZoom:13,preferCanvas:true}).setView([10.17,103.98],10);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=cb1_3q98_1_d8112ce70cc7ec9b9276b0a0",{
+
+  // Windy-style render stack:
+  // basemap geometry -> weather canvases -> labels -> JoTrip markers/flag.
+  state.map.createPane("weatherLabels");
+  const labelPane=state.map.getPane("weatherLabels");
+  labelPane.style.zIndex="580";
+  labelPane.style.pointerEvents="none";
+
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}{r}.png?key=cb1_3q98_1_d8112ce70cc7ec9b9276b0a0",{
     subdomains:"abcd",
     maxZoom:19,
     attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>'
   }).addTo(state.map);
+
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/dark_only_labels/{z}/{x}/{y}{r}.png?key=cb1_3q98_1_d8112ce70cc7ec9b9276b0a0",{
+    subdomains:"abcd",
+    maxZoom:19,
+    pane:"weatherLabels"
+  }).addTo(state.map);
+
+  const mapEl=state.map.getContainer();
+  [
+    ["fieldCanvas",300],
+    ["uncertaintyCanvas",360],
+    ["flowCanvas",500],
+  ].forEach(([id,z])=>{
+    const el=$(id);
+    mapEl.appendChild(el);
+    el.style.zIndex=String(z);
+  });
+
   state.riskLayer=L.layerGroup().addTo(state.map);
   state.actualLayer=L.layerGroup().addTo(state.map);
-  state.map.on("moveend zoomend",()=>{renderField();resetParticles();renderUncertainty()});
+  state.map.on("moveend zoomend",()=>{
+    renderField();resetParticles();renderUncertainty();
+    if(state.flagMarker)updateSelectionFlag();
+  });
   state.map.on("click",onMapClick);
 }
 
@@ -343,7 +373,13 @@ function renderField(){
     :state.layer==="current"
       ?state.marine?.current||null
       :activeECMWFFrame();
-  drawIDW(rows,state.layer,state.layer==="storm"?.76:state.layer==="rain"?.82:.88);
+  const alpha=state.layer==="wind"?.58
+    :state.layer==="rain"?.68
+    :state.layer==="waves"?.64
+    :state.layer==="current"?.62
+    :state.layer==="storm"?.70
+    :.62;
+  drawIDW(rows,state.layer,alpha);
 }
 
 function drawUncertaintyField(rows,layer,kind="ensemble"){
@@ -421,7 +457,8 @@ function renderUncertainty(){
 }
 
 function fitFlow(){
-  const c=$("flowCanvas"),r=c.getBoundingClientRect(),dpr=Math.min(1.4,devicePixelRatio||1);
+  const c=$("flowCanvas"),r=c.getBoundingClientRect();
+  const dpr=Math.min(innerWidth<700?1.8:1.6,devicePixelRatio||1);
   c.width=Math.round(r.width*dpr);c.height=Math.round(r.height*dpr);c.dataset.dpr=dpr;
 }
 function stopParticles(){
@@ -432,9 +469,11 @@ function stopParticles(){
 function resetParticles(){
   if(!state.particleRows)return;
   fitFlow();
-  const c=$("flowCanvas"),count=innerWidth<700?280:520;
+  const c=$("flowCanvas");
+  const lowMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const count=lowMotion?(innerWidth<700?120:180):(innerWidth<700?360:620);
   state.particles=Array.from({length:count},()=>({
-    x:Math.random()*c.width,y:Math.random()*c.height,age:Math.random()*110,max:85+Math.random()*150
+    x:Math.random()*c.width,y:Math.random()*c.height,age:Math.random()*125,max:100+Math.random()*175
   }));
 }
 function vectorRows(rows,kind){
@@ -475,7 +514,7 @@ function interpolatedVectorAt(p,pv){
 }
 function startParticles(rows,kind){
   stopParticles();
-  if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const lowMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
   let vectors=vectorRows(rows,kind);
   if(!vectors.length&&kind!=="waves"&&state.gefs){
     const gf=nearestFrame(gefsFrames(),activeValidTime()||Date.now());
@@ -488,11 +527,13 @@ function startParticles(rows,kind){
   const tick=()=>{
     if(!state.particleRows)return;
     ctx.globalCompositeOperation="destination-out";
-    ctx.fillStyle="rgba(0,0,0,.052)";
+    ctx.fillStyle=lowMotion?"rgba(0,0,0,.075)":"rgba(0,0,0,.036)";
     ctx.fillRect(0,0,c.width,c.height);
     ctx.globalCompositeOperation="source-over";
-    ctx.strokeStyle=kind==="waves"?"rgba(240,252,255,.92)":"rgba(255,255,255,.96)";
-    ctx.lineWidth=kind==="waves"?1.7:1.55;
+    ctx.strokeStyle=kind==="waves"?"rgba(245,253,255,.96)":"rgba(255,255,255,.99)";
+    ctx.lineWidth=innerWidth<700?(kind==="waves"?2.05:1.9):(kind==="waves"?1.8:1.65);
+    ctx.shadowColor="rgba(0,0,0,.46)";
+    ctx.shadowBlur=1.15;
     const dpr=Number(c.dataset.dpr)||1;
     const pv=state.particleRows.map(r=>{
       const p=state.map.latLngToContainerPoint([r.lat,r.lon]);
@@ -508,12 +549,14 @@ function startParticles(rows,kind){
         p.x=Math.random()*c.width;p.y=Math.random()*c.height;p.age=0;
         return;
       }
-      const scale=kind==="waves"
+      let scale=kind==="waves"
         ?clamp((n.mag||0)*1.7,.55,2.7)
-        :clamp((n.mag||0)/3.4,.85,4.8);
+        :clamp((n.mag||0)/3.15,1.0,5.2);
+      if(lowMotion)scale*=.42;
       const m=Math.max(.001,Math.hypot(n.u,n.v));
       const dx=(n.u/m)*scale,dy=-(n.v/m)*scale;
-      const nx=p.x+dx*2.7,ny=p.y+dy*2.7;
+      const trail=innerWidth<700?3.15:2.8;
+      const nx=p.x+dx*trail,ny=p.y+dy*trail;
       ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(nx,ny);ctx.stroke();
       p.x=nx;p.y=ny;p.age++;
       if(p.age>p.max||p.x<0||p.y<0||p.x>c.width||p.y>c.height){
@@ -568,7 +611,7 @@ function renderRisk(){
     const cfg=POINTS[id],r=riskAt(id);
     const icon=L.divIcon({className:"",html:'<div class="risk-dot '+riskClass(r.level)+'"></div>',iconSize:[10,10],iconAnchor:[5,5]});
     const m=L.marker([cfg.lat,cfg.lon],{icon,zIndexOffset:900}).addTo(state.riskLayer);
-    m.on("click",()=>showAnchorProbe(id));
+    m.on("click",e=>{L.DomEvent.stopPropagation(e);selectAnchorFlag(id)});
     const selected=id===state.selected.anchor;
     const severe=id===worst&&r.level>=3;
     const zoomed=zoom>=12&&r.level>=2;
@@ -810,6 +853,7 @@ function togglePlay(){
 
 async function selectLayer(layer){
   state.layer=layer;
+  $("probe").classList.add("hidden");
   document.querySelectorAll(".layer").forEach(b=>b.classList.toggle("active",b.dataset.layer===layer));
   clearRadar();stopParticles();stopTimer();
   if(layer==="radar"){
@@ -845,6 +889,7 @@ function renderAll(redrawTimeline=true){
     }
   }
   renderRisk();renderActual();renderScale();updateReadout();updateModelBadge();updateConfidence();updateModelDiffControl();
+  if(state.flagMarker)updateSelectionFlag();
   if(redrawTimeline&&state.layer!=="radar")configureTimeline();
 }
 
@@ -872,6 +917,52 @@ function updateModelBadge(){
   }
 }
 
+function flagMetric(lat,lon){
+  if(state.layer==="radar"){
+    const frame=state.radarMeta?.frames?.[state.radarIndex];
+    return {value:"Radar",unit:"",sub:frame?localStamp(new Date(frame.time*1000).toISOString(),false):"NOW"};
+  }
+  const row=nearestRow(state.currentRows,lat,lon);
+  if(state.layer==="wind")return {value:fmt(row?.wind_kmh,0),unit:"km/h",sub:"Wind"+(num(row?.wind_direction_deg)!==null?" · "+fmt(row.wind_direction_deg,0)+"°":"")};
+  if(state.layer==="rain")return {value:fmt(row?.rain_mm,1),unit:"mm",sub:"Rain"};
+  if(state.layer==="waves")return {value:fmt(row?.wave_hs_m,1),unit:"m",sub:"Waves"};
+  if(state.layer==="current")return {value:fmt(row?.speed_kmh,2),unit:"km/h",sub:"Current"};
+  return {value:fmt(row?.convective_score,0),unit:"/100",sub:"Cloud"};
+}
+function updateSelectionFlag(){
+  if(!state.flagMarker)return;
+  const ll=state.flagMarker.getLatLng();
+  const metric=flagMetric(ll.lat,ll.lng);
+  const anchor=state.selected.anchor;
+  const place=POINTS[anchor]?.name||"Điểm chọn";
+  const icon=L.divIcon({
+    className:"",
+    html:'<div class="windy-flag"><div class="windy-flag-place">'+esc(place)+'</div><div class="windy-flag-value">'+esc(metric.value)+' <small>'+esc(metric.unit)+'</small></div><div class="windy-flag-sub">'+esc(metric.sub)+' · chạm để xem chi tiết</div><i></i></div>',
+    iconSize:[142,72],
+    iconAnchor:[22,78]
+  });
+  state.flagMarker.setIcon(icon);
+}
+function showSelectionFlag(lat,lon,anchor=nearestAnchor(lat,lon)){
+  state.selected={lat,lon,anchor};
+  $("probe").classList.add("hidden");
+  updateReadout();updateConfidence();
+  if(state.flagMarker)state.map.removeLayer(state.flagMarker);
+  state.flagMarker=L.marker([lat,lon],{
+    icon:L.divIcon({className:"",html:"",iconSize:[142,72],iconAnchor:[22,78]}),
+    zIndexOffset:1700
+  }).addTo(state.map);
+  state.flagMarker.on("click",e=>{
+    L.DomEvent.stopPropagation(e);
+    showMapProbe(lat,lon);
+  });
+  updateSelectionFlag();
+}
+function selectAnchorFlag(id){
+  const p=POINTS[id];
+  if(!p)return;
+  showSelectionFlag(p.lat,p.lon,id);
+}
 function showProbe(title,source,items,extra){
   $("probe").classList.remove("hidden");$("probeTitle").textContent=title;$("probeSource").textContent=source;
   $("probeGrid").innerHTML=items.map(x=>'<div class="probe-item"><span>'+esc(x[0])+'</span><b>'+esc(x[1])+'</b></div>').join("");
@@ -947,10 +1038,7 @@ function showActualProbe(name,g){
 }
 
 function onMapClick(e){
-  state.selected={lat:e.latlng.lat,lon:e.latlng.lng,anchor:nearestAnchor(e.latlng.lat,e.latlng.lng)};
-  updateReadout();updateConfidence();
-  if(state.layer==="radar")showProbe("Radar","RAINVIEWER",[["Vị trí",fmt(e.latlng.lat,2)+", "+fmt(e.latlng.lng,2)],["Frame",localStamp(new Date((state.radarMeta?.frames?.[state.radarIndex]?.time||0)*1000).toISOString())]],"Không suy cường độ dBZ từ màu tile.");
-  else showMapProbe(e.latlng.lat,e.latlng.lng);
+  showSelectionFlag(e.latlng.lat,e.latlng.lng,nearestAnchor(e.latlng.lat,e.latlng.lng));
 }
 
 function renderAlert(){
@@ -1022,6 +1110,7 @@ function bind(){
   $("playBtn").addEventListener("click",togglePlay);
   $("timeSlider").addEventListener("input",e=>{
     stopTimer();
+    $("probe").classList.add("hidden");
     if(state.layer==="radar"){showRadar(Number(e.target.value));state.radarIndex=Number(e.target.value);return}
     state.frameIndex=Number(e.target.value);
     renderAll(false);
