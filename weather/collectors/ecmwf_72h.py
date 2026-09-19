@@ -192,6 +192,25 @@ def _temp_c(value: float | None, unit: str | None) -> float | None:
     return round(v, 3)
 
 
+def _valid_scalar(value: float | None, low: float | None = None, high: float | None = None) -> float | None:
+    if value is None:
+        return None
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(v):
+        return None
+    # ECMWF wave GRIB may expose 9999 at land / unavailable cells.
+    if abs(v) >= 9000:
+        return None
+    if low is not None and v < low:
+        return None
+    if high is not None and v > high:
+        return None
+    return v
+
+
 def _rain_mm(value: float | None, unit: str | None) -> float | None:
     if value is None:
         return None
@@ -248,9 +267,18 @@ def _spatial_frames(records: list[dict]) -> list[dict]:
             "gust_kmh": _speed_kmh(float(gust["value"]), gust.get("unit")) if gust else None,
             "tp_accum_mm": _rain_mm(float(tp["value"]), tp.get("unit")) if tp else None,
             "rain_mm": None,
-            "wave_hs_m": round(float(swh["value"]), 3) if swh else None,
-            "wave_direction_deg": round(float(mwd["value"]), 1) if mwd else None,
-            "wave_period_s": round(float(period["value"]), 2) if period else None,
+            "wave_hs_m": (
+                round(_valid_scalar(swh["value"], 0.0, 30.0), 3)
+                if swh and _valid_scalar(swh["value"], 0.0, 30.0) is not None else None
+            ),
+            "wave_direction_deg": (
+                round(_valid_scalar(mwd["value"], 0.0, 360.0), 1)
+                if mwd and _valid_scalar(mwd["value"], 0.0, 360.0) is not None else None
+            ),
+            "wave_period_s": (
+                round(_valid_scalar(period["value"], 0.0, 60.0), 2)
+                if period and _valid_scalar(period["value"], 0.0, 60.0) is not None else None
+            ),
         }
         per_cell.setdefault(cell_id, []).append(row)
 
