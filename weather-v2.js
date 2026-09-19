@@ -7,6 +7,9 @@ const AQI=["/data/weather-aqi/latest.json","https://raw.githubusercontent.com/ke
 const NOWCAST=["/data/weather-nowcast/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast/latest.json","/weather/nowcast.json"];
 const JOTRIP_FORECAST="/weather/jotrip-forecast.json";
 const LIVE_REFRESH_MS=10*60*1000;
+const FEEDBACK_ENDPOINT="/feedback";
+const FEEDBACK_QUEUE_KEY="pq_weather_feedback_queue_v1";
+const FEEDBACK_HISTORY_KEY="pq_weather_field_feedback_v1";
 const WINDY={
   radar:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=radar&product=radar&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1",
   wind:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=wind&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C",
@@ -772,7 +775,76 @@ function installMapObserver(){
   ob.observe(target);
 }
 
-function feedback(kind,button){
+async function sendFeedbackRemote(item){
+  const response=await fetch(FEEDBACK_ENDPOINT,{
+    method:"POST",
+    headers:{"content-type":"application/json"},
+    body:JSON.stringify(item),
+    cache:"no-store",
+    keepalive:true
+  });
+  if(!response.ok)throw new Error("feedback_http_"+response.status);
+  let body={};
+  try{body=await response.json()}catch{}
+  return body;
+}
+function readFeedbackQueue(){
+  try{
+    const q=JSON.parse(localStorage.getItem(FEEDBACK_QUEUE_KEY)||"[]");
+    return Array.isArray(q)?q:[];
+  }catch{return []}
+}
+function writeFeedbackQueue(q){
+  localStorage.setItem(FEEDBACK_QUEUE_KEY,JSON.stringify((q||[]).slice(-100)));
+}
+function saveFeedbackHistory(item){
+  let h=[];
+  try{h=JSON.parse(localStorage.getItem(FEEDBACK_HISTORY_KEY)||"[]")}catch{}
+  if(!Array.isArray(h))h=[];
+  h.push(item);
+  try{localStorage.setItem(FEEDBACK_HISTORY_KEY,JSON.stringify(h.slice(-100)))}catch{}
+  return h.length;
+}
+function queueFeedback(item){
+  const q=readFeedbackQueue();
+  if(!q.some(x=>x?.id===item.id))q.push(item);
+  try{writeFeedbackQueue(q)}catch{}
+  return q.length;
+}
+function dequeueFeedback(id){
+  const q=readFeedbackQueue().filter(x=>x?.id!==id);
+  try{writeFeedbackQueue(q)}catch{}
+  return q.length;
+}
+function feedbackMessage(message,kind="ok"){
+  const state=$("feedbackState"),toast=$("feedbackToast");
+  if(state)state.textContent=message;
+  if(toast){
+    toast.textContent=message;
+    toast.classList.remove("error");
+    if(kind==="error")toast.classList.add("error");
+    toast.classList.add("show");
+    clearTimeout(feedbackMessage._timer);
+    feedbackMessage._timer=setTimeout(()=>toast.classList.remove("show","error"),2800);
+  }
+}
+async function flushFeedbackQueue(){
+  const q=readFeedbackQueue();
+  if(!q.length)return {sent:0,pending:0};
+  let sent=0;
+  for(const item of q){
+    try{
+      await sendFeedbackRemote(item);
+      dequeueFeedback(item.id);
+      sent++;
+    }catch(e){
+      console.warn("[Weather V2] feedback retry",e);
+      break;
+    }
+  }
+  return {sent,pending:readFeedbackQueue().length};
+}
+async function feedback(kind,button){
   const feedbackPoint=$("feedbackPoint")?.value||current;
   const p=critical?.points?.[feedbackPoint]||point(),l=p.local||{};
   const labels={
@@ -784,59 +856,48 @@ function feedback(kind,button){
     THUNDER:"Có dông"
   };
   const item={
-    schema_version:"1.1",
+    schema_version:"1.2",
     id:(globalThis.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now()),
-    at:new Date().toISOString(),
+    observed_at:new Date().toISOString(),
     point_id:feedbackPoint,
     point_name:p.name||feedbackPoint,
     category:kind,
     category_label:labels[kind]||kind,
+    evidence_class:"FIELD_FEEDBACK_UNVERIFIED",
+    accepted_as_ground_truth:false,
     engine:critical?.source_state?.local_engine||"PQ_LOCAL_NOW_V1",
     snapshot_id:critical?.snapshot_id||null,
-    estimate:{temperature_c:l.temperature_c,wind_kmh:l.wind_kmh,rain_rate_mm_h:l.rain_rate_mm_h,rain_confidence:l.rain_confidence}
+    source_cycles:critical?.source_cycles||null,
+    estimate:{
+      temperature_c:l.temperature_c,
+      wind_kmh:l.wind_kmh,
+      rain_rate_mm_h:l.rain_rate_mm_h,
+      rain_confidence:l.rain_confidence,
+      wave_hs_m:p?.marine?.wave_hs_m??null
+    }
   };
 
-  let q=[];
-  try{q=JSON.parse(localStorage.getItem("pq_weather_field_feedback_v1")||"[]")}catch{}
-  if(!Array.isArray(q))q=[];
-  q.push(item);q=q.slice(-100);
+  saveFeedbackHistory(item);
+  const pending=queueFeedback(item);
 
-  let saved=false;
-  try{
-    localStorage.setItem("pq_weather_field_feedback_v1",JSON.stringify(q));
-    saved=true;
-  }catch(e){
-    console.warn("[Weather V2] feedback storage",e);
+  document.querySelectorAll("[data-feedback]").forEach(b=>b.classList.toggle("selected",b===button));
+  if(button){
+    button.setAttribute("aria-pressed","true");
+    setTimeout(()=>{button.classList.remove("selected");button.removeAttribute("aria-pressed")},1600);
   }
+  if(navigator.vibrate)navigator.vibrate(25);
 
-  const state=$("feedbackState"),toast=$("feedbackToast");
-  if(saved){
-    if(state)state.textContent="Đã lưu "+q.length+" phản hồi trên thiết bị này · chưa gửi lên máy chủ.";
-    if(toast){
-      toast.textContent="Đã ghi nhận: "+(labels[kind]||kind)+" · "+(p.name||feedbackPoint);
-      toast.classList.add("show");
-      clearTimeout(feedback._toastTimer);
-      feedback._toastTimer=setTimeout(()=>toast.classList.remove("show"),2400);
-    }
-    document.querySelectorAll("[data-feedback]").forEach(b=>b.classList.toggle("selected",b===button));
-    if(button){
-      button.setAttribute("aria-pressed","true");
-      setTimeout(()=>{
-        button.classList.remove("selected");
-        button.removeAttribute("aria-pressed");
-      },1600);
-    }
-    if(navigator.vibrate)navigator.vibrate(25);
-  }else{
-    if(state)state.textContent="Không lưu được phản hồi trên thiết bị này.";
-    if(toast){
-      toast.textContent="Không lưu được phản hồi.";
-      toast.classList.add("show","error");
-      setTimeout(()=>toast.classList.remove("show","error"),2400);
-    }
+  feedbackMessage("Đang gửi phản hồi về JoTrip...");
+  try{
+    await sendFeedbackRemote(item);
+    const left=dequeueFeedback(item.id);
+    feedbackMessage("Đã gửi về JoTrip · "+(labels[kind]||kind)+" · "+(p.name||feedbackPoint)+(left?" · còn "+left+" phản hồi chờ gửi":""));
+    flushFeedbackQueue();
+  }catch(e){
+    console.warn("[Weather V2] feedback send",e);
+    feedbackMessage("Đã lưu trên thiết bị · sẽ tự gửi lại khi có mạng ("+pending+" chờ gửi)");
   }
 }
-
 function shareWeather(){
   const data={title:"JoTrip Weather - Phú Quốc",text:"Theo dõi thời tiết hiện tại, biển, chất lượng không khí và Dự báo JoTrip 10 ngày cho Phú Quốc.",url:location.href};
   if(navigator.share){navigator.share(data).catch(()=>{})}
@@ -903,7 +964,10 @@ async function boot(){
     });
     window.addEventListener("online",()=>{
       if(Date.now()-lastLiveRefreshAt>2*60*1000)refreshLive();
+      flushFeedbackQueue();
     });
+    setTimeout(flushFeedbackQueue,1800);
+    setInterval(flushFeedbackQueue,5*60*1000);
   }catch(e){
     $("heroSummary").textContent="Không tải được dữ liệu ban đầu. Bạn thử tải lại trang giúp mình.";
     $("liveLabel").textContent="LỖI DỮ LIỆU";$("liveDot").className="warn";
