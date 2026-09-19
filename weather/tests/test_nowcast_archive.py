@@ -33,6 +33,20 @@ def snapshot(sampled: str, score_delta: int = 0, temp_delta: float = 0.0, level:
         "sampled_time": sampled,
         "source": "JMA_HIMAWARI9_VIA_NOAA_OPEN_DATA",
         "points": points,
+        "spatial": {
+            "status": "READY",
+            "cell_count": 1,
+            "frames": [{
+                "sampled_time": sampled,
+                "cells": [{
+                    "lat": 10.0,
+                    "lon": 104.0,
+                    "cloud_top_cold_c": -60.0 + temp_delta,
+                    "convective_score": 40 + score_delta,
+                    "convective_level": level,
+                }],
+            }],
+        },
     }
 
 
@@ -64,11 +78,18 @@ class NowcastArchiveTests(unittest.TestCase):
 
             raw = json.loads((root / "raw" / f"{day}.json").read_text(encoding="utf-8"))
             self.assertEqual(raw["sampled_time"], "2026-09-16T02:00:00Z")
+            self.assertEqual(len(raw["spatial"]["frames"]), 3)
+            self.assertEqual(raw["spatial"]["frames"][0]["sampled_time"], "2026-09-16T01:00:00Z")
+            self.assertEqual(raw["spatial"]["frames"][-1]["sampled_time"], "2026-09-16T02:00:00Z")
+            self.assertEqual(raw["spatial"]["frame_history_limit"], 12)
 
             catalog = json.loads((root / "catalog.json").read_text(encoding="utf-8"))
             self.assertEqual(catalog["latest_date"], day)
             self.assertEqual(catalog["dates"][0]["sample_count"], 3)
-            self.assertFalse(json.loads((root / "health.json").read_text(encoding="utf-8"))["full_snapshot_history"])
+            health = json.loads((root / "health.json").read_text(encoding="utf-8"))
+            self.assertFalse(health["full_snapshot_history"])
+            self.assertEqual(health["spatial_frame_history"], 12)
+            self.assertEqual(health["spatial_frames_available"], 3)
 
     def test_rejects_invalid_snapshot(self):
         with tempfile.TemporaryDirectory() as tmp:
