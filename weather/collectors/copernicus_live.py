@@ -88,6 +88,116 @@ def _regional_max(array, lat: float, lon: float, target_time: datetime, radius_k
             "sampled_time": sampled_time}
 
 
+
+def _grid_resolution(values) -> float | None:
+    import numpy as np
+    arr = np.asarray(values, dtype=float)
+    arr = np.unique(arr[np.isfinite(arr)])
+    if arr.size < 2:
+        return None
+    return round(float(np.median(np.diff(np.sort(arr)))), 4)
+
+
+def _spatial_current(path: Path, target_time: datetime) -> dict:
+    import numpy as np
+    import xarray as xr
+
+    with xr.open_dataset(path) as dataset:
+        if not {"uo", "vo"}.issubset(dataset.data_vars):
+            return {"status": "UNAVAILABLE", "reason": "MISSING_UV"}
+
+        u, sampled_time = _select_time(dataset["uo"], target_time)
+        v, sampled_time_v = _select_time(dataset["vo"], target_time)
+        u = _surface(u)
+        v = _surface(v)
+
+        u_values, lat_grid, lon_grid = _grid(u)
+        v_values, _, _ = _grid(v)
+        valid = np.isfinite(u_values) & np.isfinite(v_values)
+
+        cells = []
+        for row, col in zip(*np.where(valid)):
+            vector = current_from_uv(float(u_values[row, col]), float(v_values[row, col]))
+            cells.append({
+                "lat": round(float(lat_grid[row, col]), 5),
+                "lon": round(float(lon_grid[row, col]), 5),
+                "u_ms": round(float(u_values[row, col]), 5),
+                "v_ms": round(float(v_values[row, col]), 5),
+                "speed_kmh": vector["speed_kmh"],
+                "direction_toward_deg": vector["direction_toward_deg"],
+            })
+
+        lat_name = "latitude" if "latitude" in u.coords else "lat"
+        lon_name = "longitude" if "longitude" in u.coords else "lon"
+        return {
+            "status": "READY" if cells else "UNAVAILABLE",
+            "sampled_time": sampled_time or sampled_time_v,
+            "cell_count": len(cells),
+            "native_resolution_deg": {
+                "lat": _grid_resolution(u[lat_name].values),
+                "lon": _grid_resolution(u[lon_name].values),
+            },
+            "display_interpolation": "RENDER_ONLY",
+            "depth_selection": "SHALLOWEST_0_TO_5M",
+            "cells": cells,
+            "note": "Copernicus Marine surface current grid. Direction is toward, not from.",
+        }
+
+
+def _spatial_wave(path: Path, target_time: datetime) -> dict:
+    import numpy as np
+    import xarray as xr
+
+    with xr.open_dataset(path) as dataset:
+        if "VHM0" not in dataset.data_vars:
+            return {"status": "UNAVAILABLE", "reason": "MISSING_VHM0"}
+
+        names = [name for name in ("VHM0", "VMDR", "VTM10", "VTPK") if name in dataset.data_vars]
+        selected = {}
+        sampled_time = None
+        for name in names:
+            arr, time = _select_time(dataset[name], target_time)
+            selected[name] = _surface(arr)
+            sampled_time = sampled_time or time
+
+        hs_values, lat_grid, lon_grid = _grid(selected["VHM0"])
+        arrays = {"VHM0": hs_values}
+        for name in names:
+            if name == "VHM0":
+                continue
+            arrays[name] = _grid(selected[name])[0]
+
+        valid = np.isfinite(hs_values)
+        cells = []
+        for row, col in zip(*np.where(valid)):
+            cells.append({
+                "lat": round(float(lat_grid[row, col]), 5),
+                "lon": round(float(lon_grid[row, col]), 5),
+                "wave_hs_m": round(float(hs_values[row, col]), 3),
+                "wave_direction_deg": round(float(arrays["VMDR"][row, col]), 1)
+                    if "VMDR" in arrays and np.isfinite(arrays["VMDR"][row, col]) else None,
+                "wave_mean_period_s": round(float(arrays["VTM10"][row, col]), 2)
+                    if "VTM10" in arrays and np.isfinite(arrays["VTM10"][row, col]) else None,
+                "wave_peak_period_s": round(float(arrays["VTPK"][row, col]), 2)
+                    if "VTPK" in arrays and np.isfinite(arrays["VTPK"][row, col]) else None,
+            })
+
+        lat_name = "latitude" if "latitude" in selected["VHM0"].coords else "lat"
+        lon_name = "longitude" if "longitude" in selected["VHM0"].coords else "lon"
+        return {
+            "status": "READY" if cells else "UNAVAILABLE",
+            "sampled_time": sampled_time,
+            "cell_count": len(cells),
+            "native_resolution_deg": {
+                "lat": _grid_resolution(selected["VHM0"][lat_name].values),
+                "lon": _grid_resolution(selected["VHM0"][lon_name].values),
+            },
+            "display_interpolation": "RENDER_ONLY",
+            "cells": cells,
+            "note": "Copernicus Marine wave grid near current time.",
+        }
+
+
 def _inspect(path: Path, requested: list[str], target_time: datetime) -> dict:
     import numpy as np
     import xarray as xr
@@ -136,6 +246,8 @@ def run(output: Path | None = None) -> dict:
                                       bbox=BBOX, output=current_path, minimum_depth=0, maximum_depth=5)
             wave = _inspect(wave_path, wave_vars, now) if wave_path.exists() else {"error": wave_download}
             current = _inspect(current_path, current_vars, now) if current_path.exists() else {"error": current_download}
+            spatial_wave = _spatial_wave(wave_path, now) if wave_path.exists() else {"status": "UNAVAILABLE"}
+            spatial_current = _spatial_current(current_path, now) if current_path.exists() else {"status": "UNAVAILABLE"}
             if not current.get("missing_variables"):
                 vectors = {}
                 for point in POINTS:
@@ -158,6 +270,8 @@ def run(output: Path | None = None) -> dict:
                 "regional_radius_km": REGIONAL_RADIUS_KM,
                 "wave_dataset": WAVE_DATASET, "current_dataset": CURRENT_DATASET,
                 "wave": wave, "current": current,
+                "spatial_wave": spatial_wave,
+                "spatial_current": spatial_current,
             }
     if output:
         output.parent.mkdir(parents=True, exist_ok=True)
