@@ -44,6 +44,20 @@ class SpatialFieldTests(unittest.TestCase):
         self.assertAlmostEqual(second["rain_mm"], 2.0, places=2)
         self.assertIsNotNone(first["wind_direction_deg"])
 
+
+    def test_wave_missing_sentinel_is_rejected(self):
+        valid = "2026-09-18T00:00:00+00:00"
+        records = [
+            rec("grid_10.00_104.00", valid, 0, "swh", 9999.0, "m"),
+            rec("grid_10.00_104.00", valid, 0, "mwd", 9999.0, "degree"),
+            rec("grid_10.00_104.00", valid, 0, "mwp", 9999.0, "s"),
+        ]
+        frames = _spatial_frames(records)
+        cell = frames[0]["cells"][0]
+        self.assertIsNone(cell["wave_hs_m"])
+        self.assertIsNone(cell["wave_direction_deg"])
+        self.assertIsNone(cell["wave_period_s"])
+
     def test_merge_never_differences_tp_across_cycles(self):
         short = [
             rec("grid_10.00_104.00", "2026-09-18T00:00:00+00:00", 0, "tp", 0.001, "m"),
