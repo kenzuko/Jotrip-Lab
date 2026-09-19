@@ -2,12 +2,12 @@
 "use strict";
 
 const URLS={
-  ecmwf:["./spatial-ecmwf.json","/weather/spatial-ecmwf.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/spatial-ecmwf.json"],
-  marine:["./spatial-marine.json","/weather/spatial-marine.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/spatial-marine.json"],
-  gefs:["./data/weather-ensemble/spatial.json","/data/weather-ensemble/spatial.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-ensemble/spatial.json"],
-  nowcast:["./data/weather-nowcast/latest.json","/data/weather-nowcast/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast/latest.json"],
-  critical:["./data/critical.json","/weather/critical.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/gh-pages/weather/data/critical.json"],
-  forecast:["./jotrip-forecast.json","/weather/jotrip-forecast.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/gh-pages/weather/jotrip-forecast.json"]
+  ecmwf:["./spatial-ecmwf.json","/Jotrip-Lab/weather/spatial-ecmwf.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/spatial-ecmwf.json"],
+  marine:["./spatial-marine.json","/Jotrip-Lab/weather/spatial-marine.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/spatial-marine.json"],
+  gefs:["./data/weather-ensemble/spatial.json","/Jotrip-Lab/weather/data/weather-ensemble/spatial.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-ensemble/spatial.json"],
+  nowcast:["./data/weather-nowcast/latest.json","/Jotrip-Lab/weather/data/weather-nowcast/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast/latest.json"],
+  critical:["./data/critical.json","/Jotrip-Lab/weather/data/critical.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/gh-pages/weather/data/critical.json"],
+  forecast:["./jotrip-forecast.json","/Jotrip-Lab/weather/jotrip-forecast.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/gh-pages/weather/jotrip-forecast.json"]
 };
 
 const POINTS={
@@ -102,7 +102,7 @@ function distance2(a,b,c,d){return (a-c)*(a-c)+(b-d)*(b-d)}
 
 function initMap(){
   state.map=L.map("map",{zoomControl:false,attributionControl:true,minZoom:8,maxZoom:13,preferCanvas:true}).setView([10.17,103.98],10);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=cb1_3q98_1_d8112ce70cc7ec9b9276b0a0",{
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=cb1_3q98_1_d8112ce70cc7ec9b9276b0a0",{
     subdomains:"abcd",
     maxZoom:19,
     attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>'
@@ -148,11 +148,11 @@ function nearestAnchor(lat,lon){
 }
 
 const PALETTES={
-  wind:[[0,[63,83,171]],[.18,[53,128,197]],[.38,[54,179,186]],[.58,[65,195,112]],[.76,[220,197,65]],[.9,[232,125,61]],[1,[202,66,89]]],
-  rain:[[0,[54,82,164]],[.18,[54,124,197]],[.35,[51,175,207]],[.52,[57,201,132]],[.72,[225,212,68]],[.88,[236,130,61]],[1,[205,66,93]]],
-  waves:[[0,[55,76,153]],[.2,[52,117,189]],[.42,[54,167,200]],[.62,[69,197,155]],[.8,[216,189,68]],[1,[202,71,103]]],
-  current:[[0,[48,88,161]],[.2,[42,137,190]],[.42,[40,184,188]],[.62,[67,201,145]],[.82,[225,194,66]],[1,[220,92,72]]],
-  storm:[[0,[55,73,145]],[.28,[66,104,184]],[.52,[109,92,190]],[.72,[176,77,170]],[.86,[229,105,78]],[1,[190,52,91]]]
+  wind:[[0,[57,58,164]],[.16,[50,91,190]],[.32,[41,151,202]],[.5,[48,193,153]],[.66,[83,198,87]],[.8,[231,205,57]],[.91,[238,132,52]],[1,[203,55,76]]],
+  rain:[[0,[39,46,126]],[.12,[45,82,179]],[.28,[38,145,211]],[.45,[35,194,190]],[.62,[55,202,113]],[.78,[232,216,62]],[.9,[237,127,49]],[1,[205,50,82]]],
+  waves:[[0,[46,53,143]],[.2,[43,105,186]],[.4,[36,162,203]],[.58,[45,196,164]],[.75,[92,198,93]],[.88,[229,190,59]],[1,[201,66,91]]],
+  current:[[0,[39,63,153]],[.18,[36,119,190]],[.38,[31,176,199]],[.58,[43,201,156]],[.76,[89,198,91]],[.9,[231,183,55]],[1,[213,77,65]]],
+  storm:[[0,[30,36,94]],[.22,[52,68,160]],[.42,[83,80,188]],[.62,[135,71,183]],[.78,[204,77,132]],[.9,[235,110,62]],[1,[191,48,74]]]
 };
 function colorAt(name,t){
   const p=PALETTES[name]||PALETTES.wind;t=clamp(t,0,1);
@@ -182,6 +182,25 @@ function fieldNorm(row,layer){
   if(layer==="current")return clamp((num(row.speed_kmh)??0)/3.0,0,1);
   return clamp((num(row.convective_score)??0)/100,0,1);
 }
+function median(values){
+  if(!values.length)return 0;
+  const a=[...values].sort((x,y)=>x-y),m=Math.floor(a.length/2);
+  return a.length%2?a[m]:(a[m-1]+a[m])/2;
+}
+function spatialSupportRadius(pts){
+  if(pts.length<3)return Infinity;
+  const nearest=[];
+  for(let i=0;i<pts.length;i++){
+    let best=Infinity;
+    for(let k=0;k<pts.length;k++){
+      if(i===k)continue;
+      const dx=pts[i].x-pts[k].x,dy=pts[i].y-pts[k].y;
+      best=Math.min(best,Math.sqrt(dx*dx+dy*dy));
+    }
+    if(Number.isFinite(best))nearest.push(best);
+  }
+  return median(nearest)*.92;
+}
 function drawIDW(rows,layer,alpha=.76){
   const c=$("fieldCanvas"),ctx=c.getContext("2d"),s=canvasSize(c,.30);
   ctx.clearRect(0,0,c.width,c.height);
@@ -190,16 +209,24 @@ function drawIDW(rows,layer,alpha=.76){
     return {x:p.x*s.sx,y:p.y*s.sy,n:fieldNorm(r,layer)};
   }).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y));
   if(!pts.length)return;
+  const marine=layer==="waves"||layer==="current";
+  const support=marine?spatialSupportRadius(pts):Infinity;
+  const support2=support*support;
   const img=ctx.createImageData(c.width,c.height);
   for(let y=0;y<c.height;y++){
     for(let x=0;x<c.width;x++){
-      let sw=0,sv=0;
+      let sw=0,sv=0,near2=Infinity;
       for(const p of pts){
         const dx=x-p.x,dy=y-p.y,d2=dx*dx+dy*dy+3,w=1/d2;
+        near2=Math.min(near2,d2);
         sw+=w;sv+=w*p.n;
       }
+      if(marine&&near2>support2)continue;
       const v=sv/sw,rgb=colorAt(layer,v),k=(y*c.width+x)*4;
-      img.data[k]=rgb[0];img.data[k+1]=rgb[1];img.data[k+2]=rgb[2];img.data[k+3]=Math.round(255*alpha);
+      let localAlpha=alpha;
+      if(layer==="rain")localAlpha*=clamp(.08+v*1.6,.08,1);
+      if(layer==="storm")localAlpha*=clamp(.18+v*1.15,.18,1);
+      img.data[k]=rgb[0];img.data[k+1]=rgb[1];img.data[k+2]=rgb[2];img.data[k+3]=Math.round(255*localAlpha);
     }
   }
   ctx.putImageData(img,0,0);
@@ -259,9 +286,14 @@ function activeRows(){
     const f=cloudFrames()[clamp(state.frameIndex,0,Math.max(0,cloudFrames().length-1))];
     return f?.cells||[];
   }
-  if(state.layer==="current")return marineCurrentRows();
+  if(state.layer==="current")return marineCurrentRows().filter(r=>num(r.speed_kmh)!==null);
   const frame=activeECMWFFrame();
-  if(frame?.cells?.length)return frame.cells;
+  if(frame?.cells?.length){
+    if(state.layer==="waves")return frame.cells.filter(r=>num(r.wave_hs_m)!==null);
+    if(state.layer==="rain")return frame.cells.filter(r=>num(r.rain_mm)!==null);
+    if(state.layer==="wind")return frame.cells.filter(r=>num(r.wind_kmh)!==null);
+    return frame.cells;
+  }
   const gf=gefsFrames()[clamp(state.frameIndex,0,Math.max(0,gefsFrames().length-1))];
   return genericRowsFromGEFS(gf,state.layer);
 }
@@ -275,7 +307,7 @@ function renderField(){
     :state.layer==="current"
       ?state.marine?.current||null
       :activeECMWFFrame();
-  drawIDW(rows,state.layer,state.layer==="storm"?.55:.57);
+  drawIDW(rows,state.layer,state.layer==="storm"?.76:state.layer==="rain"?.82:.88);
 }
 
 function drawUncertaintyField(rows,layer){
