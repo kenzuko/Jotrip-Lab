@@ -73,12 +73,14 @@ for(const [name,width,height] of sizes){
       fatal:/Không tải được dữ liệu ban đầu/i.test(document.body.innerText)
     };
   });
+  checks.feedbackCheck=feedbackCheck;
 
   await page.screenshot({path:`artifacts/weather-ui-${name}.png`,fullPage:true});
   const ok=checks.overflow<=2&&checks.heroInside&&checks.heroImage&&checks.place&&checks.temp&&checks.statusInside&&
     checks.pointTabs>=8&&checks.metrics===8&&checks.actualCards>=1&&checks.aqiItems>=4&&checks.tideItems>=4&&
     checks.tideSpark&&checks.tideSeries&&checks.feedback===6&&checks.command&&checks.mapBox&&checks.hazards===4&&
     checks.regions===4&&checks.days>=7&&checks.forecastRows>=1&&checks.historyLink&&
+    checks.feedbackCheck?.stored>=1&&checks.feedbackCheck?.toast&&/Đã lưu/.test(checks.feedbackCheck?.state||"")&&
     (width>760||(checks.situationGap>=0&&checks.situationGap<=24&&checks.situationHeight<760))&&!checks.fatal&&errors.length===0;
   console.log(name,JSON.stringify(checks),errors);
   if(!ok)failed=true;
@@ -108,6 +110,14 @@ for(const [name,width,height] of [["history390",390,844],["historyDesktop",1440,
   await page.waitForSelector(".archive-row",{timeout:10000});
   await page.waitForSelector(".compare-card",{timeout:10000});
   await page.waitForSelector(".event",{timeout:10000});
+  await page.locator('[data-feedback="MATCH"]').click();
+  await page.waitForTimeout(120);
+  const feedbackCheck=await page.evaluate(()=>({
+    stored:(()=>{try{return JSON.parse(localStorage.getItem("pq_weather_field_feedback_v1")||"[]").length}catch{return 0}})(),
+    toast:document.querySelector("#feedbackToast")?.classList.contains("show")||false,
+    state:document.querySelector("#feedbackState")?.textContent||""
+  }));
+
   const checks=await page.evaluate(()=>({
     overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
     archiveRows:document.querySelectorAll('.archive-row').length,
