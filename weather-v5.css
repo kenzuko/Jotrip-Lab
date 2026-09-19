@@ -16,20 +16,22 @@ button{cursor:pointer}
 .app{position:relative;width:100%;height:100svh;overflow:hidden;background:#b9d9e4}
 .map{position:absolute;inset:0;z-index:1}
 .leaflet-container{background:#b9d9e4;font-family:inherit}
-.map .leaflet-tile-pane{filter:saturate(.88) brightness(.96) contrast(1.02)}
+.map .leaflet-tile-pane{filter:saturate(.88) brightness(.74) contrast(1.14)}
 .leaflet-control-attribution{font-size:7px!important;background:rgba(255,255,255,.72)!important;color:#667f8a!important}
 .leaflet-control-attribution a{color:#2d728a!important}
 .leaflet-control-zoom{display:none!important}
 .map-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.field-canvas{z-index:4;opacity:.92}
+.field-canvas{z-index:4;opacity:.96}
 .uncertainty-canvas{z-index:5;opacity:.9}
 .flow-canvas{z-index:6}
 
 .topbar{position:absolute;z-index:40;left:8px;right:8px;top:max(8px,env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;gap:8px}
 .brand,.status-pill{background:rgba(255,255,255,.92);border:1px solid rgba(255,255,255,.84);backdrop-filter:blur(16px);box-shadow:var(--shadow)}
-.brand{height:44px;border-radius:15px;padding:5px 9px 5px 6px;display:flex;align-items:center;gap:8px}
-.brand-mark{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(145deg,#69d6ee,#169fc5);font-weight:950;color:#062f41}
-.brand b{display:block;font-size:13px}.brand small{display:block;font-size:7px;letter-spacing:.13em;color:#708a95;font-weight:850;margin-top:1px}
+.brand{height:44px;border-radius:15px;padding:5px 9px 5px 8px;display:flex;align-items:center;gap:8px}
+.brand-logo{display:block;width:78px;height:auto;object-fit:contain;filter:none}
+.brand-copy{display:flex;flex-direction:column;justify-content:center;min-width:0}
+.brand-copy b{display:block;font-size:11px;line-height:1;color:#16313c}
+.brand-copy small{display:block;font-size:6px;letter-spacing:.13em;color:#708a95;font-weight:850;margin-top:3px;white-space:nowrap}
 .status-pill{height:36px;padding:0 9px;border-radius:999px;display:flex;align-items:center;gap:7px;font-size:8px;font-weight:900;color:#567481;white-space:nowrap}
 .status-pill i{width:8px;height:8px;border-radius:50%;background:#9fb2ba;box-shadow:0 0 0 4px rgba(159,178,186,.14)}
 .status-pill.live i{background:var(--green);box-shadow:0 0 0 4px rgba(53,199,122,.14)}
@@ -104,7 +106,7 @@ button{cursor:pointer}
 
 
 /* V5.1 mobile readability + motion hierarchy */
-.field-canvas{opacity:.78}
+.field-canvas{opacity:.92;mix-blend-mode:screen}
 .map .leaflet-tile-pane{filter:saturate(.96) brightness(1.01) contrast(1.07)}
 .risk-dot{width:10px;height:10px;border-width:2px}
 .risk-label{font-size:7px;padding:3px 5px;background:rgba(255,255,255,.90)}
@@ -201,4 +203,31 @@ button{cursor:pointer}
   .timeline{bottom:57px}
   .scale{bottom:44px}
   .layer{min-width:56px}
+}
+
+
+/* V5.3 high-contrast weather-map visual system */
+.app{background:#233846}
+.map{background:#233846}
+.readout,.brand,.status-pill,.right-controls button,.alert-bar,.probe{
+  background:rgba(247,250,251,.92);
+}
+.readout{box-shadow:0 10px 30px rgba(4,18,27,.26)}
+.uncertainty-canvas{mix-blend-mode:screen;opacity:.78}
+.flow-canvas{filter:drop-shadow(0 0 1.3px rgba(0,0,0,.45))}
+.scale-gradient{border-color:rgba(255,255,255,.72)}
+.layerbar,.timeline{background:rgba(17,30,39,.96)}
+.layer{background:rgba(255,255,255,.08)}
+.layer.active{box-shadow:0 5px 18px rgba(239,181,46,.24)}
+.risk-dot{box-shadow:0 0 0 2px rgba(255,255,255,.8),0 2px 8px rgba(0,0,0,.3)}
+@media(max-width:760px){
+  .brand{min-width:150px}
+  .brand-logo{width:72px}
+  .brand-copy b{font-size:10px}
+  .brand-copy small{font-size:5.7px}
+}
+@media(max-width:480px){
+  .brand{height:38px;min-width:142px;padding-left:7px}
+  .brand-logo{width:67px}
+  .brand-copy b{font-size:9px}
 }
