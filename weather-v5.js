@@ -293,10 +293,20 @@ function drawIDW(rows,layer,alpha=.76){
 function cloudOpacity(row){
   const score=clamp((num(row?.convective_score)??0)/100,0,1);
   const cold=num(row?.cloud_top_cold_c);
-  const coldness=cold===null?0:clamp((-cold-20)/60,0,1);
+  const medianTemp=num(row?.cloud_top_median_c);
   const high=num(row?.cloud_top_high_m);
-  const height=high===null?0:clamp((high-2500)/12000,0,1);
-  return clamp(score*.5+coldness*.3+height*.2,0,1);
+  const medianHeight=num(row?.cloud_top_median_m);
+
+  // Cloud rendering is not the convective proxy. Himawari cloud-top presence,
+  // height and temperature establish the cloud mass; convection only adds a
+  // small emphasis for deep/cold tops.
+  const hasCloud=[cold,medianTemp,high,medianHeight].some(v=>v!==null&&Number.isFinite(v));
+  if(!hasCloud)return 0;
+  const coldness=cold===null?0:clamp((-cold-5)/65,0,1);
+  const medianCold=medianTemp===null?0:clamp((-medianTemp)/55,0,1);
+  const height=high===null?0:clamp((high-500)/13000,0,1);
+  const medianH=medianHeight===null?0:clamp((medianHeight-300)/12000,0,1);
+  return clamp(.10+height*.34+medianH*.24+coldness*.18+medianCold*.10+score*.08,0,1);
 }
 function drawCloudMass(rows,{clear=true,alphaScale=1}={}){
   const c=$("fieldCanvas"),ctx=c.getContext("2d"),s=canvasSize(c,.24);
