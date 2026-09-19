@@ -360,3 +360,59 @@ button{cursor:pointer}
 .leaflet-weatherLabels-pane{opacity:.96!important}
 .leaflet-weatherLabels-pane .leaflet-tile{filter:contrast(1.08) brightness(.92)!important}
 .flow-canvas{filter:drop-shadow(0 0 1px rgba(20,42,52,.5))!important}
+
+
+/* V5.7 center picker */
+.map-crosshair{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:30px;
+  height:30px;
+  transform:translate(-50%,-50%);
+  z-index:720;
+  pointer-events:none;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.45));
+}
+.map-crosshair.hidden{display:none}
+.map-crosshair:before,.map-crosshair:after{
+  content:"";
+  position:absolute;
+  background:rgba(255,255,255,.96);
+  border-radius:2px;
+}
+.map-crosshair:before{
+  left:14px;top:0;width:2px;height:30px;
+}
+.map-crosshair:after{
+  left:0;top:14px;width:30px;height:2px;
+}
+.map-crosshair span{
+  position:absolute;
+  left:9px;top:9px;
+  width:12px;height:12px;
+  border:2px solid rgba(16,46,58,.92);
+  border-radius:50%;
+  background:rgba(255,255,255,.08);
+  box-shadow:0 0 0 2px rgba(255,255,255,.85);
+}
+.map-crosshair i{
+  position:absolute;
+  left:13px;top:13px;
+  width:4px;height:4px;
+  border-radius:50%;
+  background:#efb52e;
+}
+#crosshairBtn.active{
+  background:#173f52;
+  color:#fff;
+  border-color:#173f52;
+}
+#crosshairBtn.active span{color:#fff}
+@media(max-width:760px){
+  .map-crosshair{width:26px;height:26px}
+  .map-crosshair:before{left:12px;height:26px}
+  .map-crosshair:after{top:12px;width:26px}
+  .map-crosshair span{left:8px;top:8px;width:10px;height:10px}
+  .map-crosshair i{left:11px;top:11px}
+}
