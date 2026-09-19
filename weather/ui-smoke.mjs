@@ -18,6 +18,14 @@ function inside(r,w){
 for(const [name,width,height] of sizes){
   const context=await browser.newContext({viewport:{width,height},serviceWorkers:"block"});
   const page=await context.newPage(),errors=[];
+  let feedbackPosts=0;
+  await page.route("**/feedback",async route=>{
+    if(route.request().method()==="POST"){
+      feedbackPosts++;
+      return route.fulfill({status:201,contentType:"application/json",body:JSON.stringify({ok:true,store:"D1_READY"})});
+    }
+    return route.fulfill({status:405,contentType:"application/json",body:JSON.stringify({ok:false})});
+  });
   await page.route("**/weather/critical.json*",route=>route.fulfill({status:200,contentType:"application/json",body:liveCritical}));
   await page.route("**/weather/jotrip-forecast.json*",route=>route.fulfill({status:200,contentType:"application/json",body:liveForecast}));
   await page.route("**/weather/tide.json*",route=>route.fulfill({status:200,contentType:"application/json",body:liveTide}));
@@ -41,6 +49,16 @@ for(const [name,width,height] of sizes){
   await page.waitForSelector("#forecastRegionTabs button",{timeout:10000});
   await page.waitForSelector("#forecastDayRibbon .forecast-day",{timeout:10000});
   await page.waitForTimeout(500);
+
+  await page.locator('[data-feedback="MATCH"]').click();
+  await page.waitForTimeout(220);
+  const feedbackCheck=await page.evaluate(()=>({
+    stored:(()=>{try{return JSON.parse(localStorage.getItem("pq_weather_field_feedback_v1")||"[]").length}catch{return 0}})(),
+    pending:(()=>{try{return JSON.parse(localStorage.getItem("pq_weather_feedback_queue_v1")||"[]").length}catch{return 0}})(),
+    toast:document.querySelector("#feedbackToast")?.classList.contains("show")||false,
+    state:document.querySelector("#feedbackState")?.textContent||""
+  }));
+  feedbackCheck.posted=feedbackPosts;
 
   const checks=await page.evaluate(()=>{
     const W=document.documentElement.clientWidth;
@@ -80,7 +98,7 @@ for(const [name,width,height] of sizes){
     checks.pointTabs>=8&&checks.metrics===8&&checks.actualCards>=1&&checks.aqiItems>=4&&checks.tideItems>=4&&
     checks.tideSpark&&checks.tideSeries&&checks.feedback===6&&checks.command&&checks.mapBox&&checks.hazards===4&&
     checks.regions===4&&checks.days>=7&&checks.forecastRows>=1&&checks.historyLink&&
-    checks.feedbackCheck?.stored>=1&&checks.feedbackCheck?.toast&&/Đã lưu/.test(checks.feedbackCheck?.state||"")&&
+    checks.feedbackCheck?.stored>=1&&checks.feedbackCheck?.pending===0&&checks.feedbackCheck?.posted>=1&&checks.feedbackCheck?.toast&&/Đã gửi về JoTrip/.test(checks.feedbackCheck?.state||"")&&
     (width>760||(checks.situationGap>=0&&checks.situationGap<=24&&checks.situationHeight<760))&&!checks.fatal&&errors.length===0;
   console.log(name,JSON.stringify(checks),errors);
   if(!ok)failed=true;
@@ -110,13 +128,6 @@ for(const [name,width,height] of [["history390",390,844],["historyDesktop",1440,
   await page.waitForSelector(".archive-row",{timeout:10000});
   await page.waitForSelector(".compare-card",{timeout:10000});
   await page.waitForSelector(".event",{timeout:10000});
-  await page.locator('[data-feedback="MATCH"]').click();
-  await page.waitForTimeout(120);
-  const feedbackCheck=await page.evaluate(()=>({
-    stored:(()=>{try{return JSON.parse(localStorage.getItem("pq_weather_field_feedback_v1")||"[]").length}catch{return 0}})(),
-    toast:document.querySelector("#feedbackToast")?.classList.contains("show")||false,
-    state:document.querySelector("#feedbackState")?.textContent||""
-  }));
 
   const checks=await page.evaluate(()=>({
     overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
