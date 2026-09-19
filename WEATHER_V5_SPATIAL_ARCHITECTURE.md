@@ -154,7 +154,7 @@ Uncertainty overlay:
 GEFS probability / spread.
 
 Observed cloud layer:
-Himawari spatial frames.
+Himawari spatial frames. Persistent archive keeps a compact rolling ring of up to 12 recent observed spatial frames for animation.
 
 Actual overlay:
 station markers only.
@@ -230,8 +230,8 @@ Actual:
 2. do not substitute model
 
 Marine:
-1. verified spatial marine source
-2. ECMWF wave field
+1. Copernicus Marine spatial near-now current/wave grid
+2. ECMWF wave field for forecast timeline
 3. point model context clearly labeled
 
 ## 9. Scientific integrity
