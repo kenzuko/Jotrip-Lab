@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="preconnect" href="https://a.basemaps.cartocdn.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="weather-v5.css?v=20260919-56">
+  <link rel="stylesheet" href="weather-v5.css?v=20260919-57">
 </head>
 <body>
 <div class="app">
@@ -39,6 +39,7 @@
   <nav class="right-controls" aria-label="Overlay">
     <button id="recenterBtn" class="tool" title="Về Phú Quốc">⌂</button>
     <button id="ensembleBtn" class="toggle"><span>ENS</span><small>Uncertainty</small></button>
+    <button id="modelDiffBtn" class="toggle model-diff hidden" title="ECMWF vs ICON"><span>Δ</span><small>Models</small></button>
     <button id="riskBtn" class="toggle active"><span>!</span><small>Risk</small></button>
     <button id="actualBtn" class="toggle"><span>●</span><small>Actual</small></button>
   </nav>
@@ -89,6 +90,6 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="weather-v5.js?v=20260919-56"></script>
+<script src="weather-v5.js?v=20260919-57"></script>
 </body>
 </html>
