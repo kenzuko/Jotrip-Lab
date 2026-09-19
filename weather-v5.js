@@ -3,6 +3,7 @@
 
 const URLS={
   ecmwf:["./spatial-ecmwf.json","/weather/spatial-ecmwf.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/spatial-ecmwf.json"],
+  icon:["./spatial-icon.json","/weather/spatial-icon.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/spatial-icon.json"],
   marine:["./spatial-marine.json","/weather/spatial-marine.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/spatial-marine.json"],
   gefs:["./data/weather-ensemble/spatial.json","/data/weather-ensemble/spatial.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-ensemble/spatial.json"],
   nowcast:["./data/weather-nowcast/latest.json","/data/weather-nowcast/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast/latest.json"],
@@ -23,6 +24,7 @@ const POINTS={
 const state={
   map:null,
   ecmwf:null,
+  icon:null,
   marine:null,
   gefs:null,
   nowcast:null,
@@ -43,6 +45,7 @@ const state={
   particles:[],
   particleRows:null,
   particleRAF:null,
+  cloudTween:0,
   currentRows:null,
   currentFrame:null,
   loading:false
@@ -118,6 +121,7 @@ function gefsFrames(){return state.gefs?.spatial?.frames||[]}
 function cloudFrames(){return state.nowcast?.spatial?.frames||[]}
 function marineCurrentRows(){return state.marine?.current?.cells||[]}
 function marineWaveRows(){return state.marine?.wave?.cells||[]}
+function iconRows(){return state.icon?.spatial?.cells||[]}
 function baseFrames(){return ecmwfFrames().length?ecmwfFrames():gefsFrames()}
 
 function nearestFrame(frames,targetTime){
@@ -283,8 +287,31 @@ function activeValidTime(){
 }
 function activeRows(){
   if(state.layer==="storm"){
-    const f=cloudFrames()[clamp(state.frameIndex,0,Math.max(0,cloudFrames().length-1))];
-    return f?.cells||[];
+    const fs=cloudFrames();
+    const i=clamp(state.frameIndex,0,Math.max(0,fs.length-1));
+    const a=fs[i]?.cells||[];
+    if(!a.length||!state.cloudTween||fs.length<2)return a;
+    const b=fs[(i+1)%fs.length]?.cells||[];
+    if(a.length!==b.length)return a;
+    const t=clamp(state.cloudTween/5,0,1);
+    return a.map((row,k)=>{
+      const next=b[k]||row;
+      const mix=(x,y)=>{
+        const ax=num(x),by=num(y);
+        if(ax===null)return by;
+        if(by===null)return ax;
+        return ax+(by-ax)*t;
+      };
+      return {
+        ...row,
+        cloud_top_cold_c:mix(row.cloud_top_cold_c,next.cloud_top_cold_c),
+        cloud_top_median_c:mix(row.cloud_top_median_c,next.cloud_top_median_c),
+        cloud_top_high_m:mix(row.cloud_top_high_m,next.cloud_top_high_m),
+        cloud_top_median_m:mix(row.cloud_top_median_m,next.cloud_top_median_m),
+        cooling_c_per_20m_proxy:mix(row.cooling_c_per_20m_proxy,next.cooling_c_per_20m_proxy),
+        convective_score:mix(row.convective_score,next.convective_score),
+      };
+    });
   }
   if(state.layer==="current")return marineCurrentRows().filter(r=>num(r.speed_kmh)!==null);
   const frame=activeECMWFFrame();
@@ -698,6 +725,7 @@ function selectNearestNowFrame(){
 
 function stopTimer(){
   if(state.timer){clearInterval(state.timer);state.timer=null}
+  state.cloudTween=0;
   $("playBtn").textContent="▶";
 }
 function togglePlay(){
@@ -705,13 +733,28 @@ function togglePlay(){
   $("playBtn").textContent="❚❚";
   if(state.layer==="radar"){
     state.timer=setInterval(()=>{showRadar((state.radarIndex+1)%(state.radarMeta?.frames?.length||1));$("timeSlider").value=state.radarIndex},800);
+  }else if(state.layer==="storm"){
+    const max=Number($("timeSlider").max)||0;
+    state.cloudTween=0;
+    state.timer=setInterval(()=>{
+      state.cloudTween++;
+      if(state.cloudTween>5){
+        state.cloudTween=0;
+        state.frameIndex=state.frameIndex>=max?0:state.frameIndex+1;
+        $("timeSlider").value=state.frameIndex;
+        const f=cloudFrames()[state.frameIndex];
+        $("timeLabel").textContent=f?localStamp(f.sampled_time):"NOW";
+      }
+      renderField();
+      updateReadout();
+    },150);
   }else{
     const max=Number($("timeSlider").max)||0;
     state.timer=setInterval(()=>{
       state.frameIndex=state.frameIndex>=max?0:state.frameIndex+1;
       $("timeSlider").value=state.frameIndex;
       renderAll(false);
-    },state.layer==="storm"?900:650);
+    },650);
   }
 }
 
@@ -795,14 +838,21 @@ function showMapProbe(lat,lon){
   const ens=ensembleAt(lat,lon);
   const anchor=nearestAnchor(lat,lon),p=state.critical?.points?.[anchor]||{},l=p.local||{},m=p.model||{},t=p.tide||{},aq=p.aqi||{};
   const items=[];
-  if(state.layer==="wind")items.push(
-    ["ECMWF",fmt(row?.wind_kmh,0)+" km/h"],
-    ["GEFS p50",fmt(ens?.wind?.q50,0)+" km/h"],
-    ["GEFS p90",fmt(ens?.wind?.q90,0)+" km/h"],
-    ["GEFS p95",fmt(ens?.wind?.q95,0)+" km/h"],
-    ["P ≥30",ens?.wind?.prob==null?"-":Math.round(ens.wind.prob*100)+"%"],
-    ["Spread",fmt(ens?.wind?.spread,1)+" km/h"]
-  );
+  if(state.layer==="wind"){
+    const icon=nearestRow(iconRows(),lat,lon);
+    const ecmwfWind=num(row?.wind_kmh),iconWind=num(icon?.wind_kmh);
+    const delta=ecmwfWind!==null&&iconWind!==null?Math.abs(ecmwfWind-iconWind):null;
+    items.push(
+      ["ECMWF",fmt(ecmwfWind,0)+" km/h"],
+      ["ICON",fmt(iconWind,0)+" km/h"],
+      ["Δ model",delta===null?"-":fmt(delta,0)+" km/h"],
+      ["GEFS p50",fmt(ens?.wind?.q50,0)+" km/h"],
+      ["GEFS p90",fmt(ens?.wind?.q90,0)+" km/h"],
+      ["GEFS p95",fmt(ens?.wind?.q95,0)+" km/h"],
+      ["P ≥30",ens?.wind?.prob==null?"-":Math.round(ens.wind.prob*100)+"%"],
+      ["Spread",fmt(ens?.wind?.spread,1)+" km/h"]
+    );
+  }
   else if(state.layer==="rain")items.push(
     ["ECMWF",fmt(row?.rain_mm,1)+" mm"],
     ["GEFS p50",fmt(ens?.rain?.q50,1)+" mm"],
@@ -873,6 +923,7 @@ function setStatus(){
 function sourceFreshness(){
   const parts=[];
   if(state.ecmwf?.generated_at)parts.push("ECMWF "+ageText(state.ecmwf.generated_at));
+  if(state.icon?.generated_at)parts.push("ICON spatial");
   if(state.gefs?.generated_at)parts.push("GEFS "+ageText(state.gefs.generated_at));
   if(state.nowcast?.sampled_time)parts.push("Himawari "+ageText(state.nowcast.sampled_time));
   if(state.marine?.generated_at)parts.push("Marine "+ageText(state.marine.generated_at));
@@ -881,10 +932,10 @@ function sourceFreshness(){
 
 async function loadAll(){
   if(state.loading)return;state.loading=true;
-  const [ecmwf,marine,gefs,nowcast,critical,forecast]=await Promise.all([
-    optional(URLS.ecmwf),optional(URLS.marine),optional(URLS.gefs),optional(URLS.nowcast),optional(URLS.critical),optional(URLS.forecast)
+  const [ecmwf,icon,marine,gefs,nowcast,critical,forecast]=await Promise.all([
+    optional(URLS.ecmwf),optional(URLS.icon),optional(URLS.marine),optional(URLS.gefs),optional(URLS.nowcast),optional(URLS.critical),optional(URLS.forecast)
   ]);
-  state.ecmwf=ecmwf;state.marine=marine;state.gefs=gefs;state.nowcast=nowcast;state.critical=critical;state.forecast=forecast;
+  state.ecmwf=ecmwf;state.icon=icon;state.marine=marine;state.gefs=gefs;state.nowcast=nowcast;state.critical=critical;state.forecast=forecast;
   setStatus();
   if(state.ecmwf)selectNearestNowFrame();
   renderAlert();
