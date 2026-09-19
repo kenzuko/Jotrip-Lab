@@ -772,21 +772,69 @@ function installMapObserver(){
   ob.observe(target);
 }
 
-function feedback(kind){
+function feedback(kind,button){
   const feedbackPoint=$("feedbackPoint")?.value||current;
-  const p=critical?.points?.[feedbackPoint]||point(),l=p.local||{},item={
-    schema_version:"1.0",
-    id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),
+  const p=critical?.points?.[feedbackPoint]||point(),l=p.local||{};
+  const labels={
+    MATCH:"Khớp",
+    RAIN_MORE:"Mưa nhiều hơn",
+    RAIN_LESS:"Mưa ít hơn",
+    WIND_MORE:"Gió mạnh hơn",
+    WIND_LESS:"Gió yếu hơn",
+    THUNDER:"Có dông"
+  };
+  const item={
+    schema_version:"1.1",
+    id:(globalThis.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now()),
     at:new Date().toISOString(),
     point_id:feedbackPoint,
+    point_name:p.name||feedbackPoint,
     category:kind,
+    category_label:labels[kind]||kind,
     engine:critical?.source_state?.local_engine||"PQ_LOCAL_NOW_V1",
+    snapshot_id:critical?.snapshot_id||null,
     estimate:{temperature_c:l.temperature_c,wind_kmh:l.wind_kmh,rain_rate_mm_h:l.rain_rate_mm_h,rain_confidence:l.rain_confidence}
   };
-  let q=[];try{q=JSON.parse(localStorage.getItem("pq_weather_field_feedback_v1")||"[]")}catch{}
-  if(!Array.isArray(q))q=[];q.push(item);q=q.slice(-100);
-  try{localStorage.setItem("pq_weather_field_feedback_v1",JSON.stringify(q))}catch{}
-  $("feedbackState").textContent="Đã lưu phản hồi trên thiết bị. Cảm ơn bạn.";
+
+  let q=[];
+  try{q=JSON.parse(localStorage.getItem("pq_weather_field_feedback_v1")||"[]")}catch{}
+  if(!Array.isArray(q))q=[];
+  q.push(item);q=q.slice(-100);
+
+  let saved=false;
+  try{
+    localStorage.setItem("pq_weather_field_feedback_v1",JSON.stringify(q));
+    saved=true;
+  }catch(e){
+    console.warn("[Weather V2] feedback storage",e);
+  }
+
+  const state=$("feedbackState"),toast=$("feedbackToast");
+  if(saved){
+    if(state)state.textContent="Đã lưu "+q.length+" phản hồi trên thiết bị này · chưa gửi lên máy chủ.";
+    if(toast){
+      toast.textContent="Đã ghi nhận: "+(labels[kind]||kind)+" · "+(p.name||feedbackPoint);
+      toast.classList.add("show");
+      clearTimeout(feedback._toastTimer);
+      feedback._toastTimer=setTimeout(()=>toast.classList.remove("show"),2400);
+    }
+    document.querySelectorAll("[data-feedback]").forEach(b=>b.classList.toggle("selected",b===button));
+    if(button){
+      button.setAttribute("aria-pressed","true");
+      setTimeout(()=>{
+        button.classList.remove("selected");
+        button.removeAttribute("aria-pressed");
+      },1600);
+    }
+    if(navigator.vibrate)navigator.vibrate(25);
+  }else{
+    if(state)state.textContent="Không lưu được phản hồi trên thiết bị này.";
+    if(toast){
+      toast.textContent="Không lưu được phản hồi.";
+      toast.classList.add("show","error");
+      setTimeout(()=>toast.classList.remove("show","error"),2400);
+    }
+  }
 }
 
 function shareWeather(){
@@ -804,7 +852,12 @@ function events(){
     const b=e.target.closest("[data-region]");if(!b)return;
     currentRegion=b.dataset.region;renderJoTripForecast();
   });
-  document.querySelectorAll("[data-feedback]").forEach(b=>b.addEventListener("click",()=>feedback(b.dataset.feedback)));
+  document.addEventListener("click",e=>{
+    const b=e.target.closest("[data-feedback]");
+    if(!b)return;
+    e.preventDefault();
+    feedback(b.dataset.feedback,b);
+  });
   $("shareWeather")?.addEventListener("click",shareWeather);
 }
 
