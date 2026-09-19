@@ -181,8 +181,19 @@ jobs:
           python -m pip install --quiet eccodes
       - name: Remap live ICON field and extract Phu Quoc
         run: python -m weather.collectors.icon_point --output /tmp/icon-point.json
-      - name: Enforce point readiness
-        run: python -c 'import json; p=json.load(open("/tmp/icon-point.json")); assert p["status"] == "POINT_NUMERIC_READY"; assert "phu_quoc_point" in p["decoded"]'
+      - name: Enforce point and spatial readiness
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open("/tmp/icon-point.json"))
+          assert p["status"] == "POINT_NUMERIC_READY", p
+          assert "phu_quoc_point" in p["decoded"], p
+          spatial=p.get("spatial") or {}
+          assert spatial.get("status") == "READY", spatial
+          assert spatial.get("cell_count",0) >= 20, spatial
+          assert spatial.get("display_interpolation") == "RENDER_ONLY", spatial
+          assert all(cell.get("u10_ms") is not None and cell.get("v10_ms") is not None for cell in spatial["cells"]), spatial
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: icon-live-point-smoke
@@ -301,6 +312,27 @@ jobs:
           target.write_text(json.dumps(payload,ensure_ascii=False,separators=(',',':'))+'\n',encoding='utf-8')
           assert target.stat().st_size < 2500000, target.stat().st_size
           PY
+      - name: Publish compact ICON spatial wind cross-check for V5
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          source=json.load(open('/tmp/weather-artifacts/icon/icon-point.json'))
+          spatial=source.get('spatial') or {}
+          assert spatial.get('status') == 'READY', spatial
+          payload={
+              'schema_version':'weather-spatial-v1',
+              'product':'JOTRIP_ICON_SPATIAL_WIND_CROSSCHECK',
+              'generated_at':source.get('cycle_stamp'),
+              'source':'DWD_ICON_DIRECT',
+              'method':source.get('method'),
+              'spatial':spatial,
+          }
+          target=Path('weather/spatial-icon.json')
+          target.write_text(json.dumps(payload,ensure_ascii=False,separators=(',',':'))+'\n',encoding='utf-8')
+          assert target.stat().st_size < 500000, target.stat().st_size
+          PY
       - name: Publish compact Copernicus marine spatial field for V5
         shell: bash
         run: |
@@ -349,7 +381,7 @@ jobs:
         run: |
           git config user.name "jotrip-weather-bot"
           git config user.email "jotrip-weather-bot@users.noreply.github.com"
-          git add weather/dashboard-data.json weather/spatial-ecmwf.json weather/spatial-marine.json
+          git add weather/dashboard-data.json weather/spatial-ecmwf.json weather/spatial-icon.json weather/spatial-marine.json
           if git diff --cached --quiet; then
             echo "Dashboard snapshot unchanged"
             exit 0
