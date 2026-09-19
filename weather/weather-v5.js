@@ -2,11 +2,12 @@
 "use strict";
 
 const URLS={
-  ecmwf:["./spatial-ecmwf.json","/Jotrip-Lab/weather/spatial-ecmwf.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/spatial-ecmwf.json"],
-  gefs:["./data/weather-ensemble/spatial.json","/Jotrip-Lab/weather/data/weather-ensemble/spatial.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-ensemble/spatial.json"],
-  nowcast:["./data/weather-nowcast/latest.json","/Jotrip-Lab/weather/data/weather-nowcast/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast/latest.json"],
-  critical:["./data/critical.json","/Jotrip-Lab/weather/data/critical.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/gh-pages/weather/data/critical.json"],
-  forecast:["./jotrip-forecast.json","/Jotrip-Lab/weather/jotrip-forecast.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/gh-pages/weather/jotrip-forecast.json"]
+  ecmwf:["./spatial-ecmwf.json","/weather/spatial-ecmwf.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/spatial-ecmwf.json"],
+  marine:["./spatial-marine.json","/weather/spatial-marine.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/spatial-marine.json"],
+  gefs:["./data/weather-ensemble/spatial.json","/data/weather-ensemble/spatial.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-ensemble/spatial.json"],
+  nowcast:["./data/weather-nowcast/latest.json","/data/weather-nowcast/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast/latest.json"],
+  critical:["./data/critical.json","/weather/critical.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/gh-pages/weather/data/critical.json"],
+  forecast:["./jotrip-forecast.json","/weather/jotrip-forecast.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/gh-pages/weather/jotrip-forecast.json"]
 };
 
 const POINTS={
@@ -22,6 +23,7 @@ const POINTS={
 const state={
   map:null,
   ecmwf:null,
+  marine:null,
   gefs:null,
   nowcast:null,
   critical:null,
@@ -114,6 +116,8 @@ function initMap(){
 function ecmwfFrames(){return state.ecmwf?.spatial?.frames||[]}
 function gefsFrames(){return state.gefs?.spatial?.frames||[]}
 function cloudFrames(){return state.nowcast?.spatial?.frames||[]}
+function marineCurrentRows(){return state.marine?.current?.cells||[]}
+function marineWaveRows(){return state.marine?.wave?.cells||[]}
 function baseFrames(){return ecmwfFrames().length?ecmwfFrames():gefsFrames()}
 
 function nearestFrame(frames,targetTime){
@@ -147,6 +151,7 @@ const PALETTES={
   wind:[[0,[63,83,171]],[.18,[53,128,197]],[.38,[54,179,186]],[.58,[65,195,112]],[.76,[220,197,65]],[.9,[232,125,61]],[1,[202,66,89]]],
   rain:[[0,[54,82,164]],[.18,[54,124,197]],[.35,[51,175,207]],[.52,[57,201,132]],[.72,[225,212,68]],[.88,[236,130,61]],[1,[205,66,93]]],
   waves:[[0,[55,76,153]],[.2,[52,117,189]],[.42,[54,167,200]],[.62,[69,197,155]],[.8,[216,189,68]],[1,[202,71,103]]],
+  current:[[0,[48,88,161]],[.2,[42,137,190]],[.42,[40,184,188]],[.62,[67,201,145]],[.82,[225,194,66]],[1,[220,92,72]]],
   storm:[[0,[55,73,145]],[.28,[66,104,184]],[.52,[109,92,190]],[.72,[176,77,170]],[.86,[229,105,78]],[1,[190,52,91]]]
 };
 function colorAt(name,t){
@@ -174,6 +179,7 @@ function fieldNorm(row,layer){
   if(layer==="wind")return clamp((num(row.wind_kmh)??0)/45,0,1);
   if(layer==="rain")return clamp((num(row.rain_mm)??0)/12,0,1);
   if(layer==="waves")return clamp((num(row.wave_hs_m)??0)/2.5,0,1);
+  if(layer==="current")return clamp((num(row.speed_kmh)??0)/3.0,0,1);
   return clamp((num(row.convective_score)??0)/100,0,1);
 }
 function drawIDW(rows,layer,alpha=.76){
@@ -245,6 +251,7 @@ function activeValidTime(){
     const f=state.radarMeta?.frames?.[state.radarIndex];
     return f?f.time*1000:Date.now();
   }
+  if(state.layer==="current")return parseTime(state.marine?.current?.sampled_time);
   return parseTime(activeBaseFrame()?.valid_time);
 }
 function activeRows(){
@@ -252,6 +259,7 @@ function activeRows(){
     const f=cloudFrames()[clamp(state.frameIndex,0,Math.max(0,cloudFrames().length-1))];
     return f?.cells||[];
   }
+  if(state.layer==="current")return marineCurrentRows();
   const frame=activeECMWFFrame();
   if(frame?.cells?.length)return frame.cells;
   const gf=gefsFrames()[clamp(state.frameIndex,0,Math.max(0,gefsFrames().length-1))];
@@ -264,7 +272,9 @@ function renderField(){
   state.currentRows=rows;
   state.currentFrame=state.layer==="storm"
     ?cloudFrames()[clamp(state.frameIndex,0,Math.max(0,cloudFrames().length-1))]
-    :activeECMWFFrame();
+    :state.layer==="current"
+      ?state.marine?.current||null
+      :activeECMWFFrame();
   drawIDW(rows,state.layer,state.layer==="storm"?.55:.57);
 }
 
@@ -327,6 +337,11 @@ function resetParticles(){
   }));
 }
 function vectorRows(rows,kind){
+  if(kind==="current"){
+    return (rows||[]).filter(r=>num(r.u_ms)!==null&&num(r.v_ms)!==null).map(r=>({
+      ...r,u:num(r.u_ms),v:num(r.v_ms),mag:(num(r.speed_kmh)??0)/3.6
+    }));
+  }
   if(kind==="waves"){
     return (rows||[]).filter(r=>num(r.wave_direction_deg)!==null&&num(r.wave_hs_m)!==null).map(r=>{
       const to=(num(r.wave_direction_deg)+180)*Math.PI/180;
@@ -532,7 +547,7 @@ function riskClass(v){return v>=3?"alert":v>=1?"watch":"ok"}
 function riskLabel(v){return v>=3?"CAO":v>=2?"THEO DÕI":v>=1?"LƯU Ý":"ỔN"}
 
 function currentLeadHours(){
-  if(state.layer==="storm"||state.layer==="radar")return 0;
+  if(state.layer==="storm"||state.layer==="radar"||state.layer==="current")return 0;
   const f=activeBaseFrame();
   if(f&&num(f.lead_hours)!==null)return num(f.lead_hours);
   const t=activeValidTime();return Number.isFinite(t)?Math.max(0,Math.round((t-Date.now())/3600000)):0;
@@ -548,6 +563,21 @@ function regionalForecastRow(){
   return best;
 }
 function updateConfidence(){
+  if(state.layer==="current"){
+    $("confidenceLabel").textContent="Copernicus near-now";
+    $("trendLabel").textContent="SURFACE CURRENT";
+    return;
+  }
+  if(state.layer==="storm"){
+    $("confidenceLabel").textContent="Observed satellite";
+    $("trendLabel").textContent="HIMAWARI";
+    return;
+  }
+  if(state.layer==="radar"){
+    $("confidenceLabel").textContent="Observed radar";
+    $("trendLabel").textContent="RADAR";
+    return;
+  }
   const row=regionalForecastRow();
   const lead=currentLeadHours();
   $("confidenceLabel").textContent=row?"Confidence "+fmt(row.confidence_score,0)+"/100":"Confidence --";
@@ -559,6 +589,7 @@ function renderScale(){
     wind:{g:"linear-gradient(90deg,#3f53ab,#3580c5,#36b3ba,#41c370,#dcc541,#e87d3d,#ca4259)",l:["0","10","20","30","40+"]},
     rain:{g:"linear-gradient(90deg,#3652a4,#367cc5,#34afcf,#39c984,#dfd444,#ec823d,#cd425d)",l:["0","1","3","8","15+"]},
     waves:{g:"linear-gradient(90deg,#374c99,#3474bd,#36a7c8,#45c59b,#d8bd44,#ca4767)",l:["0",".5","1","1.5","2+"]},
+    current:{g:"linear-gradient(90deg,#3058a1,#2a89be,#28b8bc,#43c991,#e1c242,#dc5c48)",l:["0",".5","1","2","3+"]},
     storm:{g:"linear-gradient(90deg,#374991,#4268b8,#6d5cbe,#b04daa,#e56950,#be345b)",l:["0","25","50","75","100"]},
     radar:{g:"linear-gradient(90deg,#4559ad,#39a2c9,#4bc77d,#e5d64a,#e57b3d,#cb455c)",l:["Light","","","","Heavy"]}
   }[state.layer];
@@ -588,6 +619,10 @@ function updateReadout(){
     $("readoutSource").textContent="ECMWF WAVE · MOST LIKELY";
     $("readoutValue").textContent=fmt(row?.wave_hs_m,1);$("readoutUnit").textContent="m Hs";
     $("readoutMeta").textContent="Chu kỳ "+fmt(row?.wave_period_s,1)+" s";
+  }else if(state.layer==="current"){
+    $("readoutSource").textContent="COPERNICUS · SURFACE CURRENT";
+    $("readoutValue").textContent=fmt(row?.speed_kmh,2);$("readoutUnit").textContent="km/h";
+    $("readoutMeta").textContent="Hướng tới "+fmt(row?.direction_toward_deg,0)+"° · near-now";
   }else{
     $("readoutSource").textContent="HIMAWARI-9 · OBSERVED";
     $("readoutValue").textContent=fmt(row?.convective_score,0);$("readoutUnit").textContent="/100";
@@ -598,7 +633,14 @@ function updateReadout(){
 function configureTimeline(){
   stopTimer();
   const slider=$("timeSlider");
-  if(state.layer==="storm"){
+  $("playBtn").disabled=false;
+  slider.disabled=false;
+  if(state.layer==="current"){
+    slider.min=0;slider.max=0;slider.step=1;slider.value=0;slider.disabled=true;
+    $("playBtn").disabled=true;
+    $("timelineTicks").innerHTML='<span>NEAR-NOW</span>';
+    $("timeLabel").textContent=state.marine?.current?.sampled_time?localStamp(state.marine.current.sampled_time,false):"NOW";
+  }else if(state.layer==="storm"){
     const fs=cloudFrames();slider.min=0;slider.max=Math.max(0,fs.length-1);slider.step=1;state.frameIndex=clamp(state.frameIndex,0,Math.max(0,fs.length-1));slider.value=state.frameIndex;
     $("timelineTicks").innerHTML=fs.map(f=>"<span>"+localStamp(f.sampled_time,false)+"</span>").join("");
     $("timeLabel").textContent=fs[state.frameIndex]?localStamp(fs[state.frameIndex].sampled_time,false):"NOW";
@@ -653,7 +695,8 @@ async function selectLayer(layer){
       togglePlay();
     }catch(e){console.warn(e)}
   }else{
-    if(layer!=="storm")selectNearestNowFrame();
+    if(layer==="current")state.frameIndex=0;
+    else if(layer!=="storm")selectNearestNowFrame();
     else state.frameIndex=Math.max(0,cloudFrames().length-1);
     configureTimeline();
   }
@@ -667,6 +710,7 @@ function renderAll(redrawTimeline=true){
   stopParticles();
   if(state.layer==="wind"||state.layer==="rain")startParticles(activeRows(),"wind");
   if(state.layer==="waves")startParticles(activeRows(),"waves");
+  if(state.layer==="current")startParticles(activeRows(),"current");
   if(state.layer==="storm"){
     const ef=nearestFrame(ecmwfFrames(),activeValidTime()||Date.now());
     if(ef)startParticles(ef.cells||[],"wind");
@@ -685,6 +729,11 @@ function updateModelBadge(){
   }
   if(state.layer==="radar"){
     $("modelName").textContent="RADAR";$("modelRun").textContent="RainViewer";return;
+  }
+  if(state.layer==="current"){
+    $("modelName").textContent="COPERNICUS";
+    $("modelRun").textContent=state.marine?.current?.sampled_time?localStamp(state.marine.current.sampled_time):"-";
+    return;
   }
   if(activeECMWFFrame()){
     $("modelName").textContent="ECMWF";$("modelRun").textContent=state.ecmwf?.run_time?localStamp(state.ecmwf.run_time):"-";
@@ -731,6 +780,7 @@ function showMapProbe(lat,lon){
     ["Spread",fmt(ens?.rain?.spread,1)+" mm"]
   );
   else if(state.layer==="waves")items.push(["Hs",fmt(row?.wave_hs_m,1)+" m"],["Hướng",fmt(row?.wave_direction_deg,0)+"°"],["Chu kỳ",fmt(row?.wave_period_s,1)+" s"],["Hmax anchor",fmt(m.wave_hmax_m,1)+" m"]);
+  else if(state.layer==="current")items.push(["Dòng",fmt(row?.speed_kmh,2)+" km/h"],["Hướng tới",fmt(row?.direction_toward_deg,0)+"°"],["U",fmt(row?.u_ms,3)+" m/s"],["V",fmt(row?.v_ms,3)+" m/s"]);
   else items.push(["Đối lưu",fmt(row?.convective_score,0)+"/100"],["Đỉnh mây",fmt(row?.cloud_top_cold_c,1)+"°C"],["Độ cao",fmt(row?.cloud_top_high_m,0)+" m"],["Δ20p",fmt(row?.cooling_c_per_20m_proxy,1)+"°C"]);
   const regional=regionalForecastRow();
   const extra=(POINTS[anchor]?.name||anchor)+
@@ -793,15 +843,16 @@ function sourceFreshness(){
   if(state.ecmwf?.generated_at)parts.push("ECMWF "+ageText(state.ecmwf.generated_at));
   if(state.gefs?.generated_at)parts.push("GEFS "+ageText(state.gefs.generated_at));
   if(state.nowcast?.sampled_time)parts.push("Himawari "+ageText(state.nowcast.sampled_time));
+  if(state.marine?.generated_at)parts.push("Marine "+ageText(state.marine.generated_at));
   return parts.join(" · ");
 }
 
 async function loadAll(){
   if(state.loading)return;state.loading=true;
-  const [ecmwf,gefs,nowcast,critical,forecast]=await Promise.all([
-    optional(URLS.ecmwf),optional(URLS.gefs),optional(URLS.nowcast),optional(URLS.critical),optional(URLS.forecast)
+  const [ecmwf,marine,gefs,nowcast,critical,forecast]=await Promise.all([
+    optional(URLS.ecmwf),optional(URLS.marine),optional(URLS.gefs),optional(URLS.nowcast),optional(URLS.critical),optional(URLS.forecast)
   ]);
-  state.ecmwf=ecmwf;state.gefs=gefs;state.nowcast=nowcast;state.critical=critical;state.forecast=forecast;
+  state.ecmwf=ecmwf;state.marine=marine;state.gefs=gefs;state.nowcast=nowcast;state.critical=critical;state.forecast=forecast;
   setStatus();
   if(state.ecmwf)selectNearestNowFrame();
   renderAlert();
@@ -834,8 +885,8 @@ function bind(){
 async function start(){
   initMap();bind();await loadAll();
   setInterval(async()=>{
-    const [nowcast,critical,forecast]=await Promise.all([optional(URLS.nowcast),optional(URLS.critical),optional(URLS.forecast)]);
-    if(nowcast)state.nowcast=nowcast;if(critical)state.critical=critical;if(forecast)state.forecast=forecast;
+    const [nowcast,marine,critical,forecast]=await Promise.all([optional(URLS.nowcast),optional(URLS.marine),optional(URLS.critical),optional(URLS.forecast)]);
+    if(nowcast)state.nowcast=nowcast;if(marine)state.marine=marine;if(critical)state.critical=critical;if(forecast)state.forecast=forecast;
     setStatus();renderAlert();renderRisk();renderActual();
     if(state.layer==="storm")renderAll(false);
   },10*60*1000);
