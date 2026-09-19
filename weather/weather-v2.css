@@ -827,3 +827,11 @@ footer{font-size:9.5px}
   .island-summary{font-size:10.5px}.hazard-board small{font-size:9.5px}
 }
 @media(prefers-reduced-motion:reduce){.quick-alert.alert .quick-alert-icon span{animation:none}}
+
+.feedback-actions.compact button{cursor:pointer;touch-action:manipulation;min-height:38px;transition:transform .12s ease,background .12s ease,border-color .12s ease,color .12s ease}
+.feedback-actions.compact button:active{transform:scale(.97)}
+.feedback-actions.compact button.selected,.feedback-actions.compact button[aria-pressed="true"]{background:#143f5d;color:#fff;border-color:#143f5d;box-shadow:0 5px 14px rgba(20,63,93,.16)}
+.feedback-toast{display:none;margin-top:9px;border-radius:10px;padding:9px 11px;background:#e9f7ef;color:#246b48;font-size:10px;font-weight:750;line-height:1.4}
+.feedback-toast.show{display:block}
+.feedback-toast.error{background:#fff0f1;color:#a34248}
+@media(max-width:700px){.feedback-actions.compact{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.feedback-actions.compact button{font-size:11px;padding:10px 9px;min-height:42px}.feedback-toast{font-size:10.5px}}

@@ -2,13 +2,17 @@
 "use strict";
 
 const URLS={
-  ecmwf:["./spatial-ecmwf.json","/weather/spatial-ecmwf.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/spatial-ecmwf.json"],
-  icon:["./spatial-icon.json","/weather/spatial-icon.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/spatial-icon.json"],
-  marine:["./spatial-marine.json","/weather/spatial-marine.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/spatial-marine.json"],
-  gefs:["./data/weather-ensemble/spatial.json","/data/weather-ensemble/spatial.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-ensemble/spatial.json"],
-  nowcast:["./data/weather-nowcast/latest.json","/data/weather-nowcast/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast/latest.json"],
-  critical:["./data/critical.json","/weather/critical.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/gh-pages/weather/data/critical.json"],
-  forecast:["./jotrip-forecast.json","/weather/jotrip-forecast.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/gh-pages/weather/jotrip-forecast.json"]
+  production:[
+    "https://raw.githubusercontent.com/kenzuko/Jotrip-Weather/main/data/dashboard-data.json",
+    "https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/dashboard-data.json"
+  ],
+  ecmwf:["./spatial-ecmwf.json","/Jotrip-Lab/weather/spatial-ecmwf.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/spatial-ecmwf.json"],
+  icon:["./spatial-icon.json","/Jotrip-Lab/weather/spatial-icon.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/spatial-icon.json"],
+  marine:["./spatial-marine.json","/Jotrip-Lab/weather/spatial-marine.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/feat/weather-lab-data-engine-v1/weather/spatial-marine.json"],
+  gefs:["./data/weather-ensemble/spatial.json","/Jotrip-Lab/weather/data/weather-ensemble/spatial.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-ensemble/spatial.json"],
+  nowcast:["./data/weather-nowcast/latest.json","/Jotrip-Lab/weather/data/weather-nowcast/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast/latest.json"],
+  critical:["./data/critical.json","/Jotrip-Lab/weather/data/critical.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/gh-pages/weather/data/critical.json"],
+  forecast:["./jotrip-forecast.json","/Jotrip-Lab/weather/jotrip-forecast.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/gh-pages/weather/jotrip-forecast.json"]
 };
 
 const POINTS={
@@ -23,6 +27,7 @@ const POINTS={
 
 const state={
   map:null,
+  production:null,
   ecmwf:null,
   icon:null,
   marine:null,
@@ -33,6 +38,7 @@ const state={
   layer:"wind",
   frameIndex:0,
   selected:{lat:10.2172,lon:103.9593,anchor:"duong_dong"},
+  crosshair:true,
   ensemble:false,
   modelDiff:false,
   risk:true,
@@ -66,7 +72,56 @@ const validWaveHs=v=>validRange(v,0,30);
 const validWaveDir=v=>validRange(v,0,360);
 const validWavePeriod=v=>validRange(v,0,60);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const fmt=(v,d=1)=>{v=num(v);return v===null?"-":Number(v.toFixed(d)).toString()};
+const fmt=(v,d=1)=>{v=num(v);return v===null?"Chưa có":Number(v.toFixed(d)).toString()};
+const COMPASS16=[
+  "Bắc","Bắc Đông Bắc","Đông Bắc","Đông Đông Bắc",
+  "Đông","Đông Đông Nam","Đông Nam","Nam Đông Nam",
+  "Nam","Nam Tây Nam","Tây Nam","Tây Tây Nam",
+  "Tây","Tây Tây Bắc","Tây Bắc","Bắc Tây Bắc"
+];
+function directionText(deg){
+  const d=validRange(deg,0,360);
+  if(d===null)return "Chưa rõ hướng";
+  return COMPASS16[Math.round(d/22.5)%16];
+}
+function directionWithDegrees(deg){
+  const d=validRange(deg,0,360);
+  if(d===null)return "Chưa rõ hướng";
+  return directionText(d)+" ("+Math.round(d)+"°)";
+}
+function productionPointAt(anchor,targetTime=activeValidTime()){
+  const p=state.production?.points?.[anchor];
+  if(!p)return null;
+  const rows=p.hours||[];
+  let hour=null,dist=Infinity;
+  for(const r of rows){
+    const t=Date.parse(r.time_iso||"");
+    if(!Number.isFinite(t))continue;
+    const d=Math.abs(t-(Number.isFinite(targetTime)?targetTime:Date.now()));
+    if(d<dist){dist=d;hour=r}
+  }
+  return {point:p,hour};
+}
+function productionMetric(anchor,key,targetTime=activeValidTime()){
+  const prod=productionPointAt(anchor,targetTime);
+  if(!prod)return null;
+  if(prod.hour&&prod.hour[key]!==null&&prod.hour[key]!==undefined)return num(prod.hour[key]);
+  const map={wind:"wind",gust:"gust",rain:"rain",wave:"wave",period:"period",current:"current"};
+  const k=map[key]||key;
+  return num(prod.point?.[k]);
+}
+function windDisagreement(control,ens){
+  const c=num(control),q=num(ens?.wind?.q50);
+  if(c===null||q===null)return {level:"unknown",delta:null};
+  const delta=Math.abs(q-c);
+  const ratio=c>1?Math.max(q,c)/Math.max(1,Math.min(q,c)):delta;
+  if(delta>=10||(delta>=6&&ratio>=1.8))return {level:"strong",delta};
+  if(delta>=6)return {level:"moderate",delta};
+  return {level:"low",delta};
+}
+function disagreementLabel(level){
+  return level==="strong"?"BẤT ĐỒNG MẠNH":level==="moderate"?"BẤT ĐỒNG":"TƯƠNG ĐỐI ĐỒNG THUẬN";
+}
 const esc=v=>String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
 
 async function fetchJSON(url){
@@ -114,6 +169,21 @@ function ageText(s){
   return (m/60).toFixed(1)+" giờ";
 }
 function distance2(a,b,c,d){return (a-c)*(a-c)+(b-d)*(b-d)}
+
+function syncCrosshairSelection(){
+  if(!state.crosshair||!state.map)return;
+  const c=state.map.getCenter();
+  state.selected={lat:c.lat,lon:c.lng,anchor:nearestAnchor(c.lat,c.lng)};
+  if(state.flagMarker){state.map.removeLayer(state.flagMarker);state.flagMarker=null}
+  updateReadout();
+  updateConfidence();
+}
+function setCrosshair(enabled){
+  state.crosshair=!!enabled;
+  $("mapCrosshair")?.classList.toggle("hidden",!state.crosshair);
+  $("crosshairBtn")?.classList.toggle("active",state.crosshair);
+  if(state.crosshair)syncCrosshairSelection();
+}
 
 function initMap(){
   const pqBounds=L.latLngBounds([[9.64,103.64],[10.60,104.32]]);
@@ -165,7 +235,8 @@ function initMap(){
   state.actualLayer=L.layerGroup().addTo(state.map);
   state.map.on("moveend zoomend",()=>{
     renderField();resetParticles();renderUncertainty();
-    if(state.flagMarker)updateSelectionFlag();
+    if(state.crosshair)syncCrosshairSelection();
+    else if(state.flagMarker)updateSelectionFlag();
   });
   state.map.on("click",onMapClick);
 }
@@ -869,22 +940,28 @@ function updateReadout(){
   const row=nearestRow(state.currentRows,state.selected.lat,state.selected.lon);
   $("readoutPlace").textContent=POINTS[state.selected.anchor]?.name||"Điểm chọn";
   if(state.layer==="wind"){
-    $("readoutSource").textContent=activeECMWFFrame()?"ECMWF · MOST LIKELY":"GEFS · P50";
-    $("readoutValue").textContent=fmt(row?.wind_kmh,0);$("readoutUnit").textContent="km/h";
-    $("readoutMeta").textContent="Gió · "+(row?.gust_kmh!=null?"giật "+fmt(row.gust_kmh,0)+" km/h":"ensemble vector");
+    const control=productionMetric(state.selected.anchor,"wind");
+    const gust=productionMetric(state.selected.anchor,"gust");
+    const speed=control??num(row?.wind_kmh);
+    const dir=row?.wind_direction_deg;
+    $("readoutSource").textContent=control!==null?"JOTRIP WEATHER · ECMWF CONTROL":(activeECMWFFrame()?"ECMWF · SPATIAL":"GEFS · RAW P50");
+    $("readoutValue").textContent=fmt(speed,0);$("readoutUnit").textContent="km/h";
+    $("readoutMeta").textContent="Gió từ "+directionText(dir)+(gust!==null?" · giật "+fmt(gust,0)+" km/h":"");
   }else if(state.layer==="rain"){
-    $("readoutSource").textContent=activeECMWFFrame()?"ECMWF · MOST LIKELY":"GEFS · P50";
-    $("readoutValue").textContent=fmt(row?.rain_mm,1);$("readoutUnit").textContent="mm";
+    const control=productionMetric(state.selected.anchor,"rain");
+    $("readoutSource").textContent=control!==null?"JOTRIP WEATHER · ECMWF CONTROL":(activeECMWFFrame()?"ECMWF · SPATIAL":"GEFS · RAW P50");
+    $("readoutValue").textContent=fmt(control??row?.rain_mm,1);$("readoutUnit").textContent="mm";
     $("readoutMeta").textContent="Mưa trong bước thời gian đang chọn";
   }else if(state.layer==="waves"){
     const near=isNearNowMarine()&&marineWaveRows().length;
     $("readoutSource").textContent=near?"COPERNICUS · WAVE NEAR-NOW":"ECMWF WAVE · MOST LIKELY";
     $("readoutValue").textContent=fmt(validWaveHs(row?.wave_hs_m),1);$("readoutUnit").textContent="m Hs";
-    $("readoutMeta").textContent="Chu kỳ "+fmt(validWavePeriod(row?.wave_period_s??row?.wave_mean_period_s??row?.wave_peak_period_s),1)+" s";
+    const waveDir=validWaveDir(row?.wave_direction_deg);
+    $("readoutMeta").textContent="Sóng từ "+directionText(waveDir)+" · chu kỳ "+fmt(validWavePeriod(row?.wave_period_s??row?.wave_mean_period_s??row?.wave_peak_period_s),1)+" s";
   }else if(state.layer==="current"){
     $("readoutSource").textContent="COPERNICUS · SURFACE CURRENT";
     $("readoutValue").textContent=fmt(row?.speed_kmh,2);$("readoutUnit").textContent="km/h";
-    $("readoutMeta").textContent="Hướng tới "+fmt(row?.direction_toward_deg,0)+"° · near-now";
+    $("readoutMeta").textContent="Chảy về "+directionText(row?.direction_toward_deg)+" · near-now";
   }else{
     $("readoutSource").textContent="HIMAWARI-9 · OBSERVED";
     $("readoutValue").textContent=fmt(row?.convective_score,0);$("readoutUnit").textContent="/100";
@@ -1030,10 +1107,13 @@ function flagMetric(lat,lon){
     return {value:"Radar",unit:"",sub:frame?localStamp(new Date(frame.time*1000).toISOString(),false):"NOW"};
   }
   const row=nearestRow(state.currentRows,lat,lon);
-  if(state.layer==="wind")return {value:fmt(row?.wind_kmh,0),unit:"km/h",sub:"Wind"+(num(row?.wind_direction_deg)!==null?" · "+fmt(row.wind_direction_deg,0)+"°":"")};
+  if(state.layer==="wind"){
+    const control=productionMetric(state.selected.anchor,"wind");
+    return {value:fmt(control??row?.wind_kmh,0),unit:"km/h",sub:"Gió từ "+directionText(row?.wind_direction_deg)};
+  }
   if(state.layer==="rain")return {value:fmt(row?.rain_mm,1),unit:"mm",sub:"Rain"};
-  if(state.layer==="waves")return {value:fmt(validWaveHs(row?.wave_hs_m),1),unit:"m",sub:"Waves"};
-  if(state.layer==="current")return {value:fmt(row?.speed_kmh,2),unit:"km/h",sub:"Current"};
+  if(state.layer==="waves")return {value:fmt(validWaveHs(row?.wave_hs_m),1),unit:"m",sub:"Sóng từ "+directionText(row?.wave_direction_deg)};
+  if(state.layer==="current")return {value:fmt(row?.speed_kmh,2),unit:"km/h",sub:"Chảy về "+directionText(row?.direction_toward_deg)};
   return {value:fmt(row?.convective_score,0),unit:"/100",sub:"Cloud"};
 }
 function updateSelectionFlag(){
@@ -1112,17 +1192,20 @@ function showMapProbe(lat,lon){
   const items=[];
   if(state.layer==="wind"){
     const icon=nearestRow(iconRows(),lat,lon);
-    const ecmwfWind=num(row?.wind_kmh),iconWind=num(icon?.wind_kmh);
-    const delta=ecmwfWind!==null&&iconWind!==null?Math.abs(ecmwfWind-iconWind):null;
+    const productionControl=productionMetric(anchor,"wind");
+    const ecmwfWind=productionControl??num(row?.wind_kmh),iconWind=num(icon?.wind_kmh);
+    const iconDelta=ecmwfWind!==null&&iconWind!==null?Math.abs(ecmwfWind-iconWind):null;
+    const disagreement=windDisagreement(ecmwfWind,ens);
     items.push(
-      ["ECMWF",fmt(ecmwfWind,0)+" km/h"],
+      ["ECMWF control",fmt(ecmwfWind,0)+" km/h"],
+      ["Hướng",directionWithDegrees(row?.wind_direction_deg)],
       ["ICON",fmt(iconWind,0)+" km/h"],
-      ["Δ model",delta===null?"-":fmt(delta,0)+" km/h"],
-      ["GEFS p50",fmt(ens?.wind?.q50,0)+" km/h"],
-      ["GEFS p90",fmt(ens?.wind?.q90,0)+" km/h"],
-      ["GEFS p95",fmt(ens?.wind?.q95,0)+" km/h"],
-      ["P ≥30",ens?.wind?.prob==null?"-":Math.round(ens.wind.prob*100)+"%"],
-      ["Spread",fmt(ens?.wind?.spread,1)+" km/h"]
+      ["Δ ECMWF↔ICON",iconDelta===null?"Chưa có":fmt(iconDelta,0)+" km/h"],
+      ["GEFS q50",fmt(ens?.wind?.q50,0)+" km/h"],
+      ["GEFS q90 · đuôi rủi ro",fmt(ens?.wind?.q90,0)+" km/h"],
+      ["GEFS q95",fmt(ens?.wind?.q95,0)+" km/h"],
+      ["P(gió ≥30)",ens?.wind?.prob==null?"Chưa có":Math.round(ens.wind.prob*100)+"%"],
+      ["Mức đồng thuận",disagreementLabel(disagreement.level)]
     );
   }
   else if(state.layer==="rain")items.push(
@@ -1133,8 +1216,8 @@ function showMapProbe(lat,lon){
     ["P ≥5",ens?.rain?.prob==null?"-":Math.round(ens.rain.prob*100)+"%"],
     ["Spread",fmt(ens?.rain?.spread,1)+" mm"]
   );
-  else if(state.layer==="waves")items.push(["Hs",fmt(validWaveHs(row?.wave_hs_m),1)+" m"],["Hướng",fmt(validWaveDir(row?.wave_direction_deg),0)+"°"],["Chu kỳ",fmt(validWavePeriod(row?.wave_period_s??row?.wave_mean_period_s??row?.wave_peak_period_s),1)+" s"],["Hmax anchor",fmt(m.wave_hmax_m,1)+" m"]);
-  else if(state.layer==="current")items.push(["Dòng",fmt(row?.speed_kmh,2)+" km/h"],["Hướng tới",fmt(row?.direction_toward_deg,0)+"°"],["U",fmt(row?.u_ms,3)+" m/s"],["V",fmt(row?.v_ms,3)+" m/s"]);
+  else if(state.layer==="waves")items.push(["Hs",fmt(validWaveHs(row?.wave_hs_m),1)+" m"],["Sóng từ",directionWithDegrees(row?.wave_direction_deg)],["Chu kỳ",fmt(validWavePeriod(row?.wave_period_s??row?.wave_mean_period_s??row?.wave_peak_period_s),1)+" s"],["Hmax anchor",fmt(m.wave_hmax_m,1)+" m"]);
+  else if(state.layer==="current")items.push(["Dòng",fmt(row?.speed_kmh,2)+" km/h"],["Chảy về",directionWithDegrees(row?.direction_toward_deg)],["U",fmt(row?.u_ms,3)+" m/s"],["V",fmt(row?.v_ms,3)+" m/s"]);
   else items.push(["Đối lưu",fmt(row?.convective_score,0)+"/100"],["Đỉnh mây",fmt(row?.cloud_top_cold_c,1)+"°C"],["Độ cao",fmt(row?.cloud_top_high_m,0)+" m"],["Δ20p",fmt(row?.cooling_c_per_20m_proxy,1)+"°C"]);
   const regional=regionalForecastRow();
   const extra=(POINTS[anchor]?.name||anchor)+
@@ -1164,6 +1247,10 @@ function showActualProbe(name,g){
 }
 
 function onMapClick(e){
+  if(state.crosshair){
+    state.map.panTo(e.latlng,{animate:true,duration:.25});
+    return;
+  }
   showSelectionFlag(e.latlng.lat,e.latlng.lng,nearestAnchor(e.latlng.lat,e.latlng.lng));
 }
 
@@ -1201,10 +1288,10 @@ function sourceFreshness(){
 
 async function loadAll(){
   if(state.loading)return;state.loading=true;
-  const [ecmwf,icon,marine,gefs,nowcast,critical,forecast]=await Promise.all([
-    optional(URLS.ecmwf),optional(URLS.icon),optional(URLS.marine),optional(URLS.gefs),optional(URLS.nowcast),optional(URLS.critical),optional(URLS.forecast)
+  const [production,ecmwf,icon,marine,gefs,nowcast,critical,forecast]=await Promise.all([
+    optional(URLS.production),optional(URLS.ecmwf),optional(URLS.icon),optional(URLS.marine),optional(URLS.gefs),optional(URLS.nowcast),optional(URLS.critical),optional(URLS.forecast)
   ]);
-  state.ecmwf=ecmwf;state.icon=icon;state.marine=marine;state.gefs=gefs;state.nowcast=nowcast;state.critical=critical;state.forecast=forecast;
+  state.production=production;state.ecmwf=ecmwf;state.icon=icon;state.marine=marine;state.gefs=gefs;state.nowcast=nowcast;state.critical=critical;state.forecast=forecast;
   setStatus();
   if(state.ecmwf)selectNearestNowFrame();
   renderAlert();
@@ -1231,6 +1318,7 @@ function bind(){
   });
   $("riskBtn").addEventListener("click",()=>{state.risk=!state.risk;$("riskBtn").classList.toggle("active",state.risk);renderRisk()});
   $("actualBtn").addEventListener("click",()=>{state.actual=!state.actual;$("actualBtn").classList.toggle("active",state.actual);renderActual()});
+  $("crosshairBtn").addEventListener("click",()=>setCrosshair(!state.crosshair));
   $("recenterBtn").addEventListener("click",()=>state.map.setView([10.17,103.98],10.15,{animate:true}));
   $("probeClose").addEventListener("click",()=>$("probe").classList.add("hidden"));
   $("playBtn").addEventListener("click",togglePlay);
@@ -1248,7 +1336,7 @@ function bind(){
 }
 
 async function start(){
-  initMap();bind();await loadAll();
+  initMap();bind();setCrosshair(true);await loadAll();
   setInterval(async()=>{
     const [nowcast,marine,critical,forecast]=await Promise.all([optional(URLS.nowcast),optional(URLS.marine),optional(URLS.critical),optional(URLS.forecast)]);
     if(nowcast)state.nowcast=nowcast;if(marine)state.marine=marine;if(critical)state.critical=critical;if(forecast)state.forecast=forecast;

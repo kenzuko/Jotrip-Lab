@@ -7,6 +7,9 @@ const AQI=["/Jotrip-Lab/weather/data/weather-aqi/latest.json","https://raw.githu
 const NOWCAST=["/Jotrip-Lab/weather/data/weather-nowcast/latest.json","https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast/latest.json","/weather/nowcast.json"];
 const JOTRIP_FORECAST="/Jotrip-Lab/weather/jotrip-forecast.json";
 const LIVE_REFRESH_MS=10*60*1000;
+const FEEDBACK_ENDPOINT="/feedback";
+const FEEDBACK_QUEUE_KEY="pq_weather_feedback_queue_v1";
+const FEEDBACK_HISTORY_KEY="pq_weather_field_feedback_v1";
 const WINDY={
   radar:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=radar&product=radar&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1",
   wind:"https://embed.windy.com/embed2.html?lat=10.20&lon=104.00&detailLat=10.20&detailLon=104.00&width=1000&height=650&zoom=8&level=surface&overlay=wind&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C",
@@ -333,14 +336,26 @@ function renderActual(){
   const a=critical.actual||{},v=a.vvpq||{},g=a.rain_gauges||[],cards=[];
   cards.push('<article class="actual-card"><header><b>VVPQ</b><em class="badge actual">ĐO THỰC</em></header><strong>'+fmt(v.temperature_c,1)+'°C</strong><small>Gió '+fmt(v.wind_kmh,1)+' km/h · '+(v.weather?esc(v.weather)+' · ':'')+ageText(v.observed_at)+'</small></article>');
   g.forEach(x=>{
-    const observed=x.rain_observed===true?"CÓ MƯA":x.rain_observed===false?"KHÔNG MƯA":"CHƯA RÕ";
-    const win=num(x.increment_min),inc=num(x.increment_mm),rate=num(x.rain_intensity_mm_h);
-    let detail="Chưa có cửa sổ quan trắc 5-20 phút hợp lệ để xác định mưa hiện tại";
-    if(x.increment_qc==="PASS"&&win!==null&&inc!==null){
+    const win=num(x.increment_min),inc=num(x.increment_mm),rate=num(x.rain_intensity_mm_h),acc=num(x.accum_mm);
+    let observed="CHƯA CÓ DỮ LIỆU HIỆN TẠI";
+    let detail="Không đủ dữ liệu mới để xác định trạng thái mưa.";
+
+    if(x.rain_observed===true){
+      observed="CÓ MƯA";
       detail="Lượng mưa "+fmt(inc,2)+" mm / "+fmt(win,0)+" phút";
       if(rate!==null)detail+=" · cường độ "+fmt(rate,2)+" mm/h";
+    }else if(x.rain_observed===false){
+      observed="KHÔNG MƯA";
+      detail="Không ghi nhận thêm lượng mưa trong "+fmt(win,0)+" phút gần nhất.";
+    }else if(acc===0){
+      observed="KHÔNG MƯA";
+      detail="VRain hiện ghi 0 mm trong kỳ quan trắc.";
+    }else if(acc!==null&&acc>0){
+      observed="ĐÃ CÓ MƯA TRONG KỲ";
+      detail="Tổng kỳ "+fmt(acc,1)+" mm · chưa đủ hai mẫu gần nhau để kết luận đang mưa ngay lúc này.";
     }
-    if(num(x.accum_mm)!==null)detail+=" · tổng kỳ "+fmt(x.accum_mm,1)+" mm";
+
+    if(acc!==null&&x.rain_observed!==true&&!(acc>0&&x.rain_observed===null))detail+=" · tổng kỳ "+fmt(acc,1)+" mm";
     cards.push('<article class="actual-card rain-actual"><header><b>'+esc(x.name)+'</b><em class="badge actual">ĐO THỰC</em></header><strong>'+observed+'</strong><small>'+detail+'</small></article>');
   });
   $("actualStrip").innerHTML=cards.join("");
@@ -772,23 +787,129 @@ function installMapObserver(){
   ob.observe(target);
 }
 
-function feedback(kind){
-  const feedbackPoint=$("feedbackPoint")?.value||current;
-  const p=critical?.points?.[feedbackPoint]||point(),l=p.local||{},item={
-    schema_version:"1.0",
-    id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),
-    at:new Date().toISOString(),
-    point_id:feedbackPoint,
-    category:kind,
-    engine:critical?.source_state?.local_engine||"PQ_LOCAL_NOW_V1",
-    estimate:{temperature_c:l.temperature_c,wind_kmh:l.wind_kmh,rain_rate_mm_h:l.rain_rate_mm_h,rain_confidence:l.rain_confidence}
-  };
-  let q=[];try{q=JSON.parse(localStorage.getItem("pq_weather_field_feedback_v1")||"[]")}catch{}
-  if(!Array.isArray(q))q=[];q.push(item);q=q.slice(-100);
-  try{localStorage.setItem("pq_weather_field_feedback_v1",JSON.stringify(q))}catch{}
-  $("feedbackState").textContent="Đã lưu phản hồi trên thiết bị. Cảm ơn bạn.";
+async function sendFeedbackRemote(item){
+  const response=await fetch(FEEDBACK_ENDPOINT,{
+    method:"POST",
+    headers:{"content-type":"application/json"},
+    body:JSON.stringify(item),
+    cache:"no-store",
+    keepalive:true
+  });
+  if(!response.ok)throw new Error("feedback_http_"+response.status);
+  let body={};
+  try{body=await response.json()}catch{}
+  return body;
 }
+function readFeedbackQueue(){
+  try{
+    const q=JSON.parse(localStorage.getItem(FEEDBACK_QUEUE_KEY)||"[]");
+    return Array.isArray(q)?q:[];
+  }catch{return []}
+}
+function writeFeedbackQueue(q){
+  localStorage.setItem(FEEDBACK_QUEUE_KEY,JSON.stringify((q||[]).slice(-100)));
+}
+function saveFeedbackHistory(item){
+  let h=[];
+  try{h=JSON.parse(localStorage.getItem(FEEDBACK_HISTORY_KEY)||"[]")}catch{}
+  if(!Array.isArray(h))h=[];
+  h.push(item);
+  try{localStorage.setItem(FEEDBACK_HISTORY_KEY,JSON.stringify(h.slice(-100)))}catch{}
+  return h.length;
+}
+function queueFeedback(item){
+  const q=readFeedbackQueue();
+  if(!q.some(x=>x?.id===item.id))q.push(item);
+  try{writeFeedbackQueue(q)}catch{}
+  return q.length;
+}
+function dequeueFeedback(id){
+  const q=readFeedbackQueue().filter(x=>x?.id!==id);
+  try{writeFeedbackQueue(q)}catch{}
+  return q.length;
+}
+function feedbackMessage(message,kind="ok"){
+  const state=$("feedbackState"),toast=$("feedbackToast");
+  if(state)state.textContent=message;
+  if(toast){
+    toast.textContent=message;
+    toast.classList.remove("error");
+    if(kind==="error")toast.classList.add("error");
+    toast.classList.add("show");
+    clearTimeout(feedbackMessage._timer);
+    feedbackMessage._timer=setTimeout(()=>toast.classList.remove("show","error"),2800);
+  }
+}
+async function flushFeedbackQueue(){
+  const q=readFeedbackQueue();
+  if(!q.length)return {sent:0,pending:0};
+  let sent=0;
+  for(const item of q){
+    try{
+      await sendFeedbackRemote(item);
+      dequeueFeedback(item.id);
+      sent++;
+    }catch(e){
+      console.warn("[Weather V2] feedback retry",e);
+      break;
+    }
+  }
+  return {sent,pending:readFeedbackQueue().length};
+}
+async function feedback(kind,button){
+  const feedbackPoint=$("feedbackPoint")?.value||current;
+  const p=critical?.points?.[feedbackPoint]||point(),l=p.local||{};
+  const labels={
+    MATCH:"Khớp",
+    RAIN_MORE:"Mưa nhiều hơn",
+    RAIN_LESS:"Mưa ít hơn",
+    WIND_MORE:"Gió mạnh hơn",
+    WIND_LESS:"Gió yếu hơn",
+    THUNDER:"Có dông"
+  };
+  const item={
+    schema_version:"1.2",
+    id:(globalThis.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now()),
+    observed_at:new Date().toISOString(),
+    point_id:feedbackPoint,
+    point_name:p.name||feedbackPoint,
+    category:kind,
+    category_label:labels[kind]||kind,
+    evidence_class:"FIELD_FEEDBACK_UNVERIFIED",
+    accepted_as_ground_truth:false,
+    engine:critical?.source_state?.local_engine||"PQ_LOCAL_NOW_V1",
+    snapshot_id:critical?.snapshot_id||null,
+    source_cycles:critical?.source_cycles||null,
+    estimate:{
+      temperature_c:l.temperature_c,
+      wind_kmh:l.wind_kmh,
+      rain_rate_mm_h:l.rain_rate_mm_h,
+      rain_confidence:l.rain_confidence,
+      wave_hs_m:p?.marine?.wave_hs_m??null
+    }
+  };
 
+  saveFeedbackHistory(item);
+  const pending=queueFeedback(item);
+
+  document.querySelectorAll("[data-feedback]").forEach(b=>b.classList.toggle("selected",b===button));
+  if(button){
+    button.setAttribute("aria-pressed","true");
+    setTimeout(()=>{button.classList.remove("selected");button.removeAttribute("aria-pressed")},1600);
+  }
+  if(navigator.vibrate)navigator.vibrate(25);
+
+  feedbackMessage("Đang gửi phản hồi về JoTrip...");
+  try{
+    await sendFeedbackRemote(item);
+    const left=dequeueFeedback(item.id);
+    feedbackMessage("Đã gửi về JoTrip · "+(labels[kind]||kind)+" · "+(p.name||feedbackPoint)+(left?" · còn "+left+" phản hồi chờ gửi":""));
+    flushFeedbackQueue();
+  }catch(e){
+    console.warn("[Weather V2] feedback send",e);
+    feedbackMessage("Đã lưu trên thiết bị · sẽ tự gửi lại khi có mạng ("+pending+" chờ gửi)");
+  }
+}
 function shareWeather(){
   const data={title:"JoTrip Weather - Phú Quốc",text:"Theo dõi thời tiết hiện tại, biển, chất lượng không khí và Dự báo JoTrip 10 ngày cho Phú Quốc.",url:location.href};
   if(navigator.share){navigator.share(data).catch(()=>{})}
@@ -804,7 +925,12 @@ function events(){
     const b=e.target.closest("[data-region]");if(!b)return;
     currentRegion=b.dataset.region;renderJoTripForecast();
   });
-  document.querySelectorAll("[data-feedback]").forEach(b=>b.addEventListener("click",()=>feedback(b.dataset.feedback)));
+  document.addEventListener("click",e=>{
+    const b=e.target.closest("[data-feedback]");
+    if(!b)return;
+    e.preventDefault();
+    feedback(b.dataset.feedback,b);
+  });
   $("shareWeather")?.addEventListener("click",shareWeather);
 }
 
@@ -850,7 +976,10 @@ async function boot(){
     });
     window.addEventListener("online",()=>{
       if(Date.now()-lastLiveRefreshAt>2*60*1000)refreshLive();
+      flushFeedbackQueue();
     });
+    setTimeout(flushFeedbackQueue,1800);
+    setInterval(flushFeedbackQueue,5*60*1000);
   }catch(e){
     $("heroSummary").textContent="Không tải được dữ liệu ban đầu. Bạn thử tải lại trang giúp mình.";
     $("liveLabel").textContent="LỖI DỮ LIỆU";$("liveDot").className="warn";
