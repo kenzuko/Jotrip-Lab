@@ -106,7 +106,19 @@ function ageText(s){
 function distance2(a,b,c,d){return (a-c)*(a-c)+(b-d)*(b-d)}
 
 function initMap(){
-  state.map=L.map("map",{zoomControl:false,attributionControl:true,minZoom:8,maxZoom:13,preferCanvas:true}).setView([10.17,103.98],10);
+  const pqBounds=L.latLngBounds([[9.72,103.72],[10.53,104.24]]);
+  state.map=L.map("map",{
+    zoomControl:false,
+    attributionControl:true,
+    minZoom:9.5,
+    maxZoom:13,
+    zoomSnap:.25,
+    zoomDelta:.5,
+    maxBounds:pqBounds,
+    maxBoundsViscosity:.82,
+    preferCanvas:true
+  });
+  state.map.fitBounds([[9.82,103.80],[10.47,104.15]],{padding:[18,18],maxZoom:10.75});
 
   // Windy-style render stack:
   // basemap geometry -> weather canvases -> labels -> JoTrip markers/flag.
@@ -115,13 +127,13 @@ function initMap(){
   labelPane.style.zIndex="580";
   labelPane.style.pointerEvents="none";
 
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}{r}.png?key=cb1_3q98_1_d8112ce70cc7ec9b9276b0a0",{
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png?key=cb1_3q98_1_d8112ce70cc7ec9b9276b0a0",{
     subdomains:"abcd",
     maxZoom:19,
     attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>'
   }).addTo(state.map);
 
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/dark_only_labels/{z}/{x}/{y}{r}.png?key=cb1_3q98_1_d8112ce70cc7ec9b9276b0a0",{
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png?key=cb1_3q98_1_d8112ce70cc7ec9b9276b0a0",{
     subdomains:"abcd",
     maxZoom:19,
     pane:"weatherLabels"
@@ -267,6 +279,43 @@ function drawIDW(rows,layer,alpha=.76){
   ctx.putImageData(img,0,0);
 }
 
+function cloudOpacity(row){
+  const score=clamp((num(row?.convective_score)??0)/100,0,1);
+  const cold=num(row?.cloud_top_cold_c);
+  const coldness=cold===null?0:clamp((-cold-20)/60,0,1);
+  const high=num(row?.cloud_top_high_m);
+  const height=high===null?0:clamp((high-2500)/12000,0,1);
+  return clamp(score*.5+coldness*.3+height*.2,0,1);
+}
+function drawCloudMass(rows){
+  const c=$("fieldCanvas"),ctx=c.getContext("2d"),s=canvasSize(c,.24);
+  ctx.clearRect(0,0,c.width,c.height);
+  const pts=(rows||[]).map(r=>{
+    const p=state.map.latLngToContainerPoint([r.lat,r.lon]);
+    return {x:p.x*s.sx,y:p.y*s.sy,n:cloudOpacity(r)};
+  }).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y));
+  if(!pts.length)return;
+  const img=ctx.createImageData(c.width,c.height);
+  for(let y=0;y<c.height;y++){
+    for(let x=0;x<c.width;x++){
+      let sw=0,sv=0;
+      for(const p of pts){
+        const dx=x-p.x,dy=y-p.y,d2=dx*dx+dy*dy+8,w=1/d2;
+        sw+=w;sv+=w*p.n;
+      }
+      const v=sv/sw;
+      if(v<.08)continue;
+      const k=(y*c.width+x)*4;
+      const shade=Math.round(210+35*v);
+      img.data[k]=shade;
+      img.data[k+1]=Math.min(255,shade+6);
+      img.data[k+2]=Math.min(255,shade+12);
+      img.data[k+3]=Math.round(185*clamp((v-.05)/.95,0,1));
+    }
+  }
+  ctx.putImageData(img,0,0);
+}
+
 function genericRowsFromGEFS(frame,layer){
   return (frame?.cells||[]).map(c=>{
     if(layer==="wind")return {
@@ -366,6 +415,9 @@ function activeRows(){
 
 function renderField(){
   if(state.layer==="radar"){clearCanvas("fieldCanvas");clearCanvas("uncertaintyCanvas");return}
+  const fieldCanvas=$("fieldCanvas");
+  fieldCanvas.style.filter=state.layer==="storm"?"blur(5px)":"none";
+  fieldCanvas.style.opacity=state.layer==="storm"?"0.88":"1";
   const rows=activeRows();
   state.currentRows=rows;
   state.currentFrame=state.layer==="storm"
@@ -373,12 +425,17 @@ function renderField(){
     :state.layer==="current"
       ?state.marine?.current||null
       :activeECMWFFrame();
-  const alpha=state.layer==="wind"?.58
-    :state.layer==="rain"?.68
-    :state.layer==="waves"?.64
-    :state.layer==="current"?.62
-    :state.layer==="storm"?.70
-    :.62;
+
+  if(state.layer==="storm"){
+    drawCloudMass(rows);
+    return;
+  }
+
+  const alpha=state.layer==="wind"?.72
+    :state.layer==="rain"?.78
+    :state.layer==="waves"?.70
+    :state.layer==="current"?.68
+    :.68;
   drawIDW(rows,state.layer,alpha);
 }
 
@@ -530,8 +587,14 @@ function startParticles(rows,kind){
     ctx.fillStyle=lowMotion?"rgba(0,0,0,.075)":"rgba(0,0,0,.036)";
     ctx.fillRect(0,0,c.width,c.height);
     ctx.globalCompositeOperation="source-over";
-    ctx.strokeStyle=kind==="waves"?"rgba(245,253,255,.96)":"rgba(255,255,255,.99)";
-    ctx.lineWidth=innerWidth<700?(kind==="waves"?2.05:1.9):(kind==="waves"?1.8:1.65);
+    ctx.strokeStyle=kind==="waves"
+      ?"rgba(224,245,255,.90)"
+      :kind==="current"
+        ?"rgba(190,245,239,.90)"
+        :"rgba(245,252,255,.97)";
+    ctx.lineWidth=innerWidth<700
+      ?(kind==="waves"?1.45:kind==="current"?1.35:1.75)
+      :(kind==="waves"?1.35:kind==="current"?1.25:1.55);
     ctx.shadowColor="rgba(0,0,0,.46)";
     ctx.shadowBlur=1.15;
     const dpr=Number(c.dataset.dpr)||1;
@@ -550,8 +613,10 @@ function startParticles(rows,kind){
         return;
       }
       let scale=kind==="waves"
-        ?clamp((n.mag||0)*1.7,.55,2.7)
-        :clamp((n.mag||0)/3.15,1.0,5.2);
+        ?clamp((n.mag||0)*1.15,.38,1.85)
+        :kind==="current"
+          ?clamp((n.mag||0)*2.2,.28,1.35)
+          :clamp((n.mag||0)/3.15,1.0,5.2);
       if(lowMotion)scale*=.42;
       const m=Math.max(.001,Math.hypot(n.u,n.v));
       const dx=(n.u/m)*scale,dy=-(n.v/m)*scale;
@@ -877,17 +942,13 @@ function renderAll(redrawTimeline=true){
   renderField();
   renderUncertainty();
   stopParticles();
-  if(state.layer==="wind"||state.layer==="rain")startParticles(activeRows(),"wind");
+
+  // V5.5: each weather layer gets its own visual grammar.
+  if(state.layer==="wind")startParticles(activeRows(),"wind");
   if(state.layer==="waves")startParticles(activeRows(),"waves");
   if(state.layer==="current")startParticles(activeRows(),"current");
-  if(state.layer==="storm"){
-    const ef=nearestFrame(ecmwfFrames(),activeValidTime()||Date.now());
-    if(ef)startParticles(ef.cells||[],"wind");
-    else{
-      const gf=nearestFrame(gefsFrames(),activeValidTime()||Date.now());
-      if(gf)startParticles(genericRowsFromGEFS(gf,"wind"),"wind");
-    }
-  }
+  // Rain = color field only. Cloud = Himawari cloud mass only.
+
   renderRisk();renderActual();renderScale();updateReadout();updateModelBadge();updateConfidence();updateModelDiffControl();
   if(state.flagMarker)updateSelectionFlag();
   if(redrawTimeline&&state.layer!=="radar")configureTimeline();
@@ -1124,7 +1185,7 @@ function bind(){
   });
   $("riskBtn").addEventListener("click",()=>{state.risk=!state.risk;$("riskBtn").classList.toggle("active",state.risk);renderRisk()});
   $("actualBtn").addEventListener("click",()=>{state.actual=!state.actual;$("actualBtn").classList.toggle("active",state.actual);renderActual()});
-  $("recenterBtn").addEventListener("click",()=>state.map.setView([10.17,103.98],10,{animate:true}));
+  $("recenterBtn").addEventListener("click",()=>state.map.fitBounds([[9.82,103.80],[10.47,104.15]],{padding:[18,18],maxZoom:10.75,animate:true}));
   $("probeClose").addEventListener("click",()=>$("probe").classList.add("hidden"));
   $("playBtn").addEventListener("click",togglePlay);
   $("timeSlider").addEventListener("input",e=>{
