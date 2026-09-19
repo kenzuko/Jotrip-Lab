@@ -235,3 +235,115 @@ button{cursor:pointer}
 .toggle.hidden{display:none!important}
 #modelDiffBtn.active{background:#c65d38;border-color:#c65d38;color:#fff}
 #modelDiffBtn:not(.active){background:rgba(255,255,255,.91)}
+
+
+/* V5.4 Clear Map + Windy-style picker */
+#fieldCanvas{
+  opacity:1!important;
+  mix-blend-mode:normal!important;
+  filter:none!important;
+}
+#uncertaintyCanvas{
+  mix-blend-mode:normal!important;
+  opacity:1!important;
+}
+#flowCanvas{
+  display:block!important;
+  opacity:1!important;
+  filter:drop-shadow(0 0 1.4px rgba(0,0,0,.55))!important;
+}
+.map .leaflet-tile-pane{
+  filter:none!important;
+}
+.leaflet-weatherLabels-pane{
+  filter:none!important;
+  opacity:.98;
+}
+.leaflet-weatherLabels-pane .leaflet-tile{
+  filter:none!important;
+}
+.windy-flag{
+  position:relative;
+  width:138px;
+  min-height:62px;
+  padding:8px 10px 7px;
+  border-radius:10px;
+  background:rgba(18,29,36,.95);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 7px 22px rgba(0,0,0,.34);
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  pointer-events:auto;
+}
+.windy-flag:before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:4px;
+  border-radius:10px 0 0 10px;
+  background:#efb52e;
+}
+.windy-flag-place{
+  padding-left:3px;
+  font-size:8px;
+  font-weight:850;
+  color:#c9d8de;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.windy-flag-value{
+  padding-left:3px;
+  margin-top:1px;
+  font-size:20px;
+  font-weight:950;
+  line-height:1;
+  letter-spacing:-.03em;
+}
+.windy-flag-value small{
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:0;
+  color:#d7e3e7;
+}
+.windy-flag-sub{
+  padding-left:3px;
+  margin-top:4px;
+  font-size:6.5px;
+  color:#9fb4bd;
+  white-space:nowrap;
+}
+.windy-flag>i{
+  position:absolute;
+  left:15px;
+  bottom:-8px;
+  width:15px;
+  height:15px;
+  background:rgba(18,29,36,.95);
+  transform:rotate(45deg);
+  border-right:1px solid rgba(255,255,255,.18);
+  border-bottom:1px solid rgba(255,255,255,.18);
+}
+.probe{
+  max-height:min(46vh,430px);
+  overflow:auto;
+}
+@media(max-width:760px){
+  .windy-flag{
+    width:126px;
+    min-height:58px;
+    padding:7px 9px 6px;
+  }
+  .windy-flag-value{font-size:18px}
+  .windy-flag-sub{font-size:6px}
+  .probe{
+    bottom:118px;
+    max-height:42vh;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #flowCanvas{display:block!important}
+}
