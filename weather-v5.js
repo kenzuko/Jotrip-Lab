@@ -628,7 +628,7 @@ function renderActual(){
   if(v.status){
     const ic=L.divIcon({className:"",html:'<div class="actual-pin metar"></div>',iconSize:[15,15],iconAnchor:[7,7]});
     const m=L.marker([10.169,103.995],{icon:ic,zIndexOffset:1000}).addTo(state.actualLayer);
-    m.on("click",()=>showActualProbe("VVPQ",v));
+    m.on("click",e=>{L.DomEvent.stopPropagation(e);showActualFlag("VVPQ",v,10.169,103.995)});
     const li=L.divIcon({className:"",html:'<div class="actual-label">VVPQ · '+fmt(v.wind_kmh,0)+' km/h</div>',iconSize:[100,20],iconAnchor:[50,-9]});
     L.marker([10.169,103.995],{icon:li,interactive:false,zIndexOffset:950}).addTo(state.actualLayer);
   }
@@ -636,7 +636,7 @@ function renderActual(){
     if(num(g.lat)===null||num(g.lon)===null)return;
     const ic=L.divIcon({className:"",html:'<div class="actual-pin rain"></div>',iconSize:[15,15],iconAnchor:[7,7]});
     const m=L.marker([g.lat,g.lon],{icon:ic,zIndexOffset:1000}).addTo(state.actualLayer);
-    m.on("click",()=>showActualProbe(g.name||"VRain",g));
+    m.on("click",e=>{L.DomEvent.stopPropagation(e);showActualFlag(g.name||"VRain",g,g.lat,g.lon)});
     const val=num(g.rain_intensity_mm_h)!==null?fmt(g.rain_intensity_mm_h,1)+" mm/h":fmt(g.accum_mm,1)+" mm";
     const li=L.divIcon({className:"",html:'<div class="actual-label">'+esc(g.name||"VRain")+' · '+val+'</div>',iconSize:[120,20],iconAnchor:[60,-9]});
     L.marker([g.lat,g.lon],{icon:li,interactive:false,zIndexOffset:950}).addTo(state.actualLayer);
@@ -962,6 +962,25 @@ function selectAnchorFlag(id){
   const p=POINTS[id];
   if(!p)return;
   showSelectionFlag(p.lat,p.lon,id);
+}
+function showActualFlag(name,g,lat,lon){
+  $("probe").classList.add("hidden");
+  if(state.flagMarker)state.map.removeLayer(state.flagMarker);
+  const isWind=g.wind_kmh!==undefined;
+  const value=isWind?fmt(g.wind_kmh,0):fmt(g.rain_intensity_mm_h??g.accum_mm,1);
+  const unit=isWind?"km/h":(g.rain_intensity_mm_h!=null?"mm/h":"mm");
+  const sub=isWind?"Actual wind":"Actual rain";
+  const icon=L.divIcon({
+    className:"",
+    html:'<div class="windy-flag actual-flag"><div class="windy-flag-place">'+esc(name)+'</div><div class="windy-flag-value">'+esc(value)+' <small>'+esc(unit)+'</small></div><div class="windy-flag-sub">'+esc(sub)+' · chạm để xem chi tiết</div><i></i></div>',
+    iconSize:[142,72],
+    iconAnchor:[22,78]
+  });
+  state.flagMarker=L.marker([lat,lon],{icon,zIndexOffset:1800}).addTo(state.map);
+  state.flagMarker.on("click",e=>{
+    L.DomEvent.stopPropagation(e);
+    showActualProbe(name,g);
+  });
 }
 function showProbe(title,source,items,extra){
   $("probe").classList.remove("hidden");$("probeTitle").textContent=title;$("probeSource").textContent=source;
