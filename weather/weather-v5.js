@@ -100,8 +100,10 @@ function distance2(a,b,c,d){return (a-c)*(a-c)+(b-d)*(b-d)}
 
 function initMap(){
   state.map=L.map("map",{zoomControl:false,attributionControl:true,minZoom:8,maxZoom:13,preferCanvas:true}).setView([10.17,103.98],10);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{
-    subdomains:"abcd",maxZoom:19,attribution:"&copy; OpenStreetMap &copy; CARTO"
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=cb1_3q98_1_d8112ce70cc7ec9b9276b0a0",{
+    subdomains:"abcd",
+    maxZoom:19,
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>'
   }).addTo(state.map);
   state.riskLayer=L.layerGroup().addTo(state.map);
   state.actualLayer=L.layerGroup().addTo(state.map);
