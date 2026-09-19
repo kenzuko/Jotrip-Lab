@@ -568,7 +568,8 @@ function resetParticles(){
   const lowMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
   const count=lowMotion?(innerWidth<700?120:180):(innerWidth<700?360:620);
   state.particles=Array.from({length:count},()=>({
-    x:Math.random()*c.width,y:Math.random()*c.height,age:Math.random()*125,max:100+Math.random()*175
+    x:Math.random()*c.width,y:Math.random()*c.height,
+    vx:0,vy:0,age:Math.random()*125,max:100+Math.random()*175
   }));
 }
 function vectorRows(rows,kind){
@@ -647,7 +648,7 @@ function startParticles(rows,kind){
       const n=interpolatedVectorAt(p,pv);
       if(!n)return;
       if(marine&&n.near2>support2){
-        p.x=Math.random()*c.width;p.y=Math.random()*c.height;p.age=0;
+        p.x=Math.random()*c.width;p.y=Math.random()*c.height;p.vx=0;p.vy=0;p.age=0;
         return;
       }
       let scale=kind==="waves"
@@ -657,13 +658,19 @@ function startParticles(rows,kind){
           :clamp((n.mag||0)/3.15,1.0,5.2);
       if(lowMotion)scale*=.42;
       const m=Math.max(.001,Math.hypot(n.u,n.v));
-      const dx=(n.u/m)*scale,dy=-(n.v/m)*scale;
+      const targetX=(n.u/m)*scale,targetY=-(n.v/m)*scale;
+      const turn=kind==="waves"?.10:kind==="current"?.18:.36;
+      if(!p.vx&&!p.vy){p.vx=targetX;p.vy=targetY}
+      else{
+        p.vx+= (targetX-p.vx)*turn;
+        p.vy+= (targetY-p.vy)*turn;
+      }
       const trail=innerWidth<700?3.15:2.8;
-      const nx=p.x+dx*trail,ny=p.y+dy*trail;
+      const nx=p.x+p.vx*trail,ny=p.y+p.vy*trail;
       ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(nx,ny);ctx.stroke();
       p.x=nx;p.y=ny;p.age++;
       if(p.age>p.max||p.x<0||p.y<0||p.x>c.width||p.y>c.height){
-        p.x=Math.random()*c.width;p.y=Math.random()*c.height;p.age=0;p.max=85+Math.random()*150;
+        p.x=Math.random()*c.width;p.y=Math.random()*c.height;p.vx=0;p.vy=0;p.age=0;p.max=85+Math.random()*150;
       }
     });
     state.particleRAF=requestAnimationFrame(tick);
