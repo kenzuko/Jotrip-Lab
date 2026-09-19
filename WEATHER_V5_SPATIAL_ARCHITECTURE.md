@@ -269,3 +269,18 @@ A V5 build is spatial-ready only when:
 - interpolation is marked render-only in metadata
 - Actual remains point-only
 - D4-D10 uses the regional 240h ensemble product
+
+
+## 12. V5.3 renderer rules
+
+- Header embeds the original JoTrip wordmark with transparent background.
+- CARTO Dark Matter-style raster basemap is used for higher weather-field contrast.
+- Physical color scales remain fixed. Do not auto-stretch weak weather into severe colors.
+- Rain / cloud alpha is reduced near zero values so no-event areas expose the basemap.
+- Waves / surface current use a spatial-support mask. No field or particle motion should be extrapolated far beyond valid marine cells.
+- Copernicus Marine is the near-now source for Waves and Current.
+- ECMWF remains the forecast Waves source beyond near-now.
+- Himawari rolling observed frames may be visually tweened between scans, but intermediate frames are display interpolation only and must not be labelled as new observations.
+- ICON step-000 U/V spatial wind is a model cross-check only.
+- Model disagreement overlay is available only at Wind near-now and only when both ECMWF and ICON spatial fields are valid.
+- MapLibre/WebGL is the next renderer generation after V5.3 stability, not an in-place live migration.
