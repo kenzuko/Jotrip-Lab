@@ -34,6 +34,7 @@ const state={
   frameIndex:0,
   selected:{lat:10.2172,lon:103.9593,anchor:"duong_dong"},
   ensemble:false,
+  modelDiff:false,
   risk:true,
   actual:false,
   riskLayer:null,
@@ -345,7 +346,7 @@ function renderField(){
   drawIDW(rows,state.layer,state.layer==="storm"?.76:state.layer==="rain"?.82:.88);
 }
 
-function drawUncertaintyField(rows,layer){
+function drawUncertaintyField(rows,layer,kind="ensemble"){
   const c=$("uncertaintyCanvas"),ctx=c.getContext("2d"),s=canvasSize(c,.24);
   ctx.clearRect(0,0,c.width,c.height);
   if(!rows?.length)return;
@@ -365,13 +366,46 @@ function drawUncertaintyField(rows,layer){
       const v=sv/sw;
       if(v<.08)continue;
       const k=(y*c.width+x)*4;
-      img.data[k]=117;img.data[k+1]=67;img.data[k+2]=170;img.data[k+3]=Math.round(145*clamp((v-.05)/.95,0,1));
+      if(kind==="modelDiff"){
+        img.data[k]=236;img.data[k+1]=91;img.data[k+2]=54;
+        img.data[k+3]=Math.round(170*clamp((v-.05)/.95,0,1));
+      }else{
+        img.data[k]=117;img.data[k+1]=67;img.data[k+2]=170;
+        img.data[k+3]=Math.round(145*clamp((v-.05)/.95,0,1));
+      }
     }
   }
   ctx.putImageData(img,0,0);
 }
+function modelDiffAvailable(){
+  return state.layer==="wind"&&isNearNowMarine()&&iconRows().length>0&&activeRows().length>0;
+}
+function updateModelDiffControl(){
+  const btn=$("modelDiffBtn");
+  const available=modelDiffAvailable();
+  btn.classList.toggle("hidden",!available);
+  if(!available&&state.modelDiff){
+    state.modelDiff=false;
+    btn.classList.remove("active");
+  }
+}
+function renderModelDiff(){
+  const ecmwf=activeRows();
+  const rows=iconRows().map(icon=>{
+    const base=nearestRow(ecmwf,icon.lat,icon.lon);
+    const a=num(base?.wind_kmh),b=num(icon?.wind_kmh);
+    const diff=a!==null&&b!==null?Math.abs(a-b):0;
+    return {lat:icon.lat,lon:icon.lon,u:clamp(diff/15,0,1)};
+  });
+  drawUncertaintyField(rows,"wind","modelDiff");
+}
 function renderUncertainty(){
   clearCanvas("uncertaintyCanvas");
+  updateModelDiffControl();
+  if(state.modelDiff&&modelDiffAvailable()){
+    renderModelDiff();
+    return;
+  }
   if(!state.ensemble||!state.gefs||!["wind","rain"].includes(state.layer))return;
   const t=activeValidTime();
   const frame=nearestFrame(gefsFrames(),Number.isFinite(t)?t:Date.now());
@@ -810,7 +844,7 @@ function renderAll(redrawTimeline=true){
       if(gf)startParticles(genericRowsFromGEFS(gf,"wind"),"wind");
     }
   }
-  renderRisk();renderActual();renderScale();updateReadout();updateModelBadge();updateConfidence();
+  renderRisk();renderActual();renderScale();updateReadout();updateModelBadge();updateConfidence();updateModelDiffControl();
   if(redrawTimeline&&state.layer!=="radar")configureTimeline();
 }
 
@@ -968,7 +1002,19 @@ async function loadAll(){
 
 function bind(){
   document.querySelectorAll(".layer").forEach(b=>b.addEventListener("click",()=>selectLayer(b.dataset.layer)));
-  $("ensembleBtn").addEventListener("click",()=>{state.ensemble=!state.ensemble;$("ensembleBtn").classList.toggle("active",state.ensemble);renderUncertainty()});
+  $("ensembleBtn").addEventListener("click",()=>{
+    state.ensemble=!state.ensemble;
+    if(state.ensemble&&state.modelDiff){state.modelDiff=false;$("modelDiffBtn").classList.remove("active")}
+    $("ensembleBtn").classList.toggle("active",state.ensemble);
+    renderUncertainty();
+  });
+  $("modelDiffBtn").addEventListener("click",()=>{
+    if(!modelDiffAvailable())return;
+    state.modelDiff=!state.modelDiff;
+    if(state.modelDiff&&state.ensemble){state.ensemble=false;$("ensembleBtn").classList.remove("active")}
+    $("modelDiffBtn").classList.toggle("active",state.modelDiff);
+    renderUncertainty();
+  });
   $("riskBtn").addEventListener("click",()=>{state.risk=!state.risk;$("riskBtn").classList.toggle("active",state.risk);renderRisk()});
   $("actualBtn").addEventListener("click",()=>{state.actual=!state.actual;$("actualBtn").classList.toggle("active",state.actual);renderActual()});
   $("recenterBtn").addEventListener("click",()=>state.map.setView([10.17,103.98],10,{animate:true}));
