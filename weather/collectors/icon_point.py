@@ -32,14 +32,14 @@ def _field_stamp(name: str) -> str | None:
 def _discover_variable(variable_dir: str, token: str) -> dict[str, str]:
     errors = []
     found: dict[str, str] = {}
-    pattern = rf'href="([^"]+_000_{token}\\.grib2\\.bz2)"'
+    pattern = rf'href="([^"]+_000_{token}\.grib2\.bz2)"'
     for hour in (0, 6, 12, 18):
         directory = f"{DWD_ROOT}/{hour:02d}/{variable_dir}/"
         try:
             html = _request(directory).decode("utf-8", errors="replace")
             names = re.findall(pattern, html, flags=re.I)
             for name in set(names):
-                stamp = re.search(r"_(\\d{10})_000_", name)
+                stamp = re.search(r"_(\d{10})_000_", name)
                 if stamp:
                     found[stamp.group(1)] = directory + name
         except Exception as exc:
