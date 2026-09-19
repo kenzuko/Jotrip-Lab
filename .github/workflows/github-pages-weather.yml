@@ -76,6 +76,9 @@ jobs:
           if [ -f source/weather/spatial-ecmwf.json ]; then
             cp source/weather/spatial-ecmwf.json /tmp/weather-pages/
           fi
+          if [ -f source/weather/spatial-marine.json ]; then
+            cp source/weather/spatial-marine.json /tmp/weather-pages/
+          fi
           cp source/weather-brand.svg /tmp/weather-pages/
           cp source/weather-history.html /tmp/weather-pages/
           cp source/weather-history.css /tmp/weather-pages/
@@ -126,6 +129,7 @@ jobs:
               '/weather/critical.json': base + 'data/critical.json',
               '/weather/jotrip-forecast.json': base + 'jotrip-forecast.json',
               '/weather/spatial-ecmwf.json': base + 'spatial-ecmwf.json',
+              '/weather/spatial-marine.json': base + 'spatial-marine.json',
               '/weather-v2.css': base + 'weather-v2.css',
               '/weather-v2.js': base + 'weather-v2.js',
               '/weather-brand.svg': base + 'weather-brand.svg',
@@ -261,3 +265,5 @@ jobs:
 # weather-v5-cache-bust-2
 
 # weather-v5-1-mobile-visual-refresh
+
+# weather-v5-2-spatial-marine
