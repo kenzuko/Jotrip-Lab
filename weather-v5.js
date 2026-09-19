@@ -55,6 +55,16 @@ const state={
 
 const $=id=>document.getElementById(id);
 const num=v=>v===null||v===undefined||v===""||Number.isNaN(Number(v))?null:Number(v);
+const validRange=(v,min,max)=>{
+  const n=num(v);
+  if(n===null||!Number.isFinite(n)||Math.abs(n)>=9000)return null;
+  if(min!==undefined&&n<min)return null;
+  if(max!==undefined&&n>max)return null;
+  return n;
+};
+const validWaveHs=v=>validRange(v,0,30);
+const validWaveDir=v=>validRange(v,0,360);
+const validWavePeriod=v=>validRange(v,0,60);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const fmt=(v,d=1)=>{v=num(v);return v===null?"-":Number(v.toFixed(d)).toString()};
 const esc=v=>String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
@@ -106,19 +116,20 @@ function ageText(s){
 function distance2(a,b,c,d){return (a-c)*(a-c)+(b-d)*(b-d)}
 
 function initMap(){
-  const pqBounds=L.latLngBounds([[9.72,103.72],[10.53,104.24]]);
+  const pqBounds=L.latLngBounds([[9.64,103.64],[10.60,104.32]]);
   state.map=L.map("map",{
     zoomControl:false,
     attributionControl:true,
-    minZoom:9.5,
+    minZoom:9,
     maxZoom:13,
     zoomSnap:.25,
     zoomDelta:.5,
+    bounceAtZoomLimits:false,
     maxBounds:pqBounds,
-    maxBoundsViscosity:.82,
+    maxBoundsViscosity:.28,
     preferCanvas:true
   });
-  state.map.fitBounds([[9.82,103.80],[10.47,104.15]],{padding:[18,18],maxZoom:10.75});
+  state.map.setView([10.17,103.98],10.15);
 
   // Windy-style render stack:
   // basemap geometry -> weather canvases -> labels -> JoTrip markers/flag.
@@ -225,7 +236,7 @@ function clearCanvas(id){
 function fieldNorm(row,layer){
   if(layer==="wind")return clamp((num(row.wind_kmh)??0)/45,0,1);
   if(layer==="rain")return clamp((num(row.rain_mm)??0)/12,0,1);
-  if(layer==="waves")return clamp((num(row.wave_hs_m)??0)/2.5,0,1);
+  if(layer==="waves")return clamp((validWaveHs(row.wave_hs_m)??0)/2.5,0,1);
   if(layer==="current")return clamp((num(row.speed_kmh)??0)/3.0,0,1);
   return clamp((num(row.convective_score)??0)/100,0,1);
 }
@@ -287,9 +298,9 @@ function cloudOpacity(row){
   const height=high===null?0:clamp((high-2500)/12000,0,1);
   return clamp(score*.5+coldness*.3+height*.2,0,1);
 }
-function drawCloudMass(rows){
+function drawCloudMass(rows,{clear=true,alphaScale=1}={}){
   const c=$("fieldCanvas"),ctx=c.getContext("2d"),s=canvasSize(c,.24);
-  ctx.clearRect(0,0,c.width,c.height);
+  if(clear)ctx.clearRect(0,0,c.width,c.height);
   const pts=(rows||[]).map(r=>{
     const p=state.map.latLngToContainerPoint([r.lat,r.lon]);
     return {x:p.x*s.sx,y:p.y*s.sy,n:cloudOpacity(r)};
@@ -310,10 +321,20 @@ function drawCloudMass(rows){
       img.data[k]=shade;
       img.data[k+1]=Math.min(255,shade+6);
       img.data[k+2]=Math.min(255,shade+12);
-      img.data[k+3]=Math.round(185*clamp((v-.05)/.95,0,1));
+      img.data[k+3]=Math.round(185*alphaScale*clamp((v-.05)/.95,0,1));
     }
   }
   ctx.putImageData(img,0,0);
+}
+
+function latestCloudRows(){
+  const fs=cloudFrames();
+  return fs.length?(fs[fs.length-1].cells||[]):[];
+}
+function rainGetsObservedCloudContext(){
+  if(state.layer!=="rain")return false;
+  const lead=currentLeadHours();
+  return lead<=3&&latestCloudRows().length>0;
 }
 
 function genericRowsFromGEFS(frame,layer){
@@ -400,11 +421,11 @@ function activeRows(){
   }
   if(state.layer==="current")return marineCurrentRows().filter(r=>num(r.speed_kmh)!==null);
   if(state.layer==="waves"&&isNearNowMarine()&&marineWaveRows().length){
-    return marineWaveRows().filter(r=>num(r.wave_hs_m)!==null);
+    return marineWaveRows().filter(r=>validWaveHs(r.wave_hs_m)!==null&&validWaveDir(r.wave_direction_deg)!==null);
   }
   const frame=activeECMWFFrame();
   if(frame?.cells?.length){
-    if(state.layer==="waves")return frame.cells.filter(r=>num(r.wave_hs_m)!==null);
+    if(state.layer==="waves")return frame.cells.filter(r=>validWaveHs(r.wave_hs_m)!==null&&validWaveDir(r.wave_direction_deg)!==null);
     if(state.layer==="rain")return frame.cells.filter(r=>num(r.rain_mm)!==null);
     if(state.layer==="wind")return frame.cells.filter(r=>num(r.wind_kmh)!==null);
     return frame.cells;
@@ -432,11 +453,18 @@ function renderField(){
   }
 
   const alpha=state.layer==="wind"?.72
-    :state.layer==="rain"?.78
+    :state.layer==="rain"?.82
     :state.layer==="waves"?.70
     :state.layer==="current"?.68
     :.68;
   drawIDW(rows,state.layer,alpha);
+
+  // Near-NOW Rain gets a subtle observed Himawari cloud context, similar to
+  // weather-map products that layer precipitation under current cloud cover.
+  // Never project a current satellite scan into future forecast frames.
+  if(rainGetsObservedCloudContext()){
+    drawCloudMass(latestCloudRows(),{clear:false,alphaScale:.22});
+  }
 }
 
 function drawUncertaintyField(rows,layer,kind="ensemble"){
@@ -540,9 +568,9 @@ function vectorRows(rows,kind){
     }));
   }
   if(kind==="waves"){
-    return (rows||[]).filter(r=>num(r.wave_direction_deg)!==null&&num(r.wave_hs_m)!==null).map(r=>{
-      const to=(num(r.wave_direction_deg)+180)*Math.PI/180;
-      const mag=num(r.wave_hs_m)||0;
+    return (rows||[]).filter(r=>validWaveDir(r.wave_direction_deg)!==null&&validWaveHs(r.wave_hs_m)!==null).map(r=>{
+      const to=(validWaveDir(r.wave_direction_deg)+180)*Math.PI/180;
+      const mag=validWaveHs(r.wave_hs_m)||0;
       return {...r,u:Math.sin(to)*mag,v:Math.cos(to)*mag,mag};
     });
   }
@@ -834,8 +862,8 @@ function updateReadout(){
   }else if(state.layer==="waves"){
     const near=isNearNowMarine()&&marineWaveRows().length;
     $("readoutSource").textContent=near?"COPERNICUS · WAVE NEAR-NOW":"ECMWF WAVE · MOST LIKELY";
-    $("readoutValue").textContent=fmt(row?.wave_hs_m,1);$("readoutUnit").textContent="m Hs";
-    $("readoutMeta").textContent="Chu kỳ "+fmt(row?.wave_period_s??row?.wave_mean_period_s??row?.wave_peak_period_s,1)+" s";
+    $("readoutValue").textContent=fmt(validWaveHs(row?.wave_hs_m),1);$("readoutUnit").textContent="m Hs";
+    $("readoutMeta").textContent="Chu kỳ "+fmt(validWavePeriod(row?.wave_period_s??row?.wave_mean_period_s??row?.wave_peak_period_s),1)+" s";
   }else if(state.layer==="current"){
     $("readoutSource").textContent="COPERNICUS · SURFACE CURRENT";
     $("readoutValue").textContent=fmt(row?.speed_kmh,2);$("readoutUnit").textContent="km/h";
@@ -942,8 +970,9 @@ function renderAll(redrawTimeline=true){
   renderField();
   renderUncertainty();
   stopParticles();
+  clearCanvas("flowCanvas");
 
-  // V5.5: each weather layer gets its own visual grammar.
+  // V5.6: each weather layer gets its own visual grammar.
   if(state.layer==="wind")startParticles(activeRows(),"wind");
   if(state.layer==="waves")startParticles(activeRows(),"waves");
   if(state.layer==="current")startParticles(activeRows(),"current");
@@ -986,7 +1015,7 @@ function flagMetric(lat,lon){
   const row=nearestRow(state.currentRows,lat,lon);
   if(state.layer==="wind")return {value:fmt(row?.wind_kmh,0),unit:"km/h",sub:"Wind"+(num(row?.wind_direction_deg)!==null?" · "+fmt(row.wind_direction_deg,0)+"°":"")};
   if(state.layer==="rain")return {value:fmt(row?.rain_mm,1),unit:"mm",sub:"Rain"};
-  if(state.layer==="waves")return {value:fmt(row?.wave_hs_m,1),unit:"m",sub:"Waves"};
+  if(state.layer==="waves")return {value:fmt(validWaveHs(row?.wave_hs_m),1),unit:"m",sub:"Waves"};
   if(state.layer==="current")return {value:fmt(row?.speed_kmh,2),unit:"km/h",sub:"Current"};
   return {value:fmt(row?.convective_score,0),unit:"/100",sub:"Cloud"};
 }
@@ -1087,7 +1116,7 @@ function showMapProbe(lat,lon){
     ["P ≥5",ens?.rain?.prob==null?"-":Math.round(ens.rain.prob*100)+"%"],
     ["Spread",fmt(ens?.rain?.spread,1)+" mm"]
   );
-  else if(state.layer==="waves")items.push(["Hs",fmt(row?.wave_hs_m,1)+" m"],["Hướng",fmt(row?.wave_direction_deg,0)+"°"],["Chu kỳ",fmt(row?.wave_period_s??row?.wave_mean_period_s??row?.wave_peak_period_s,1)+" s"],["Hmax anchor",fmt(m.wave_hmax_m,1)+" m"]);
+  else if(state.layer==="waves")items.push(["Hs",fmt(validWaveHs(row?.wave_hs_m),1)+" m"],["Hướng",fmt(validWaveDir(row?.wave_direction_deg),0)+"°"],["Chu kỳ",fmt(validWavePeriod(row?.wave_period_s??row?.wave_mean_period_s??row?.wave_peak_period_s),1)+" s"],["Hmax anchor",fmt(m.wave_hmax_m,1)+" m"]);
   else if(state.layer==="current")items.push(["Dòng",fmt(row?.speed_kmh,2)+" km/h"],["Hướng tới",fmt(row?.direction_toward_deg,0)+"°"],["U",fmt(row?.u_ms,3)+" m/s"],["V",fmt(row?.v_ms,3)+" m/s"]);
   else items.push(["Đối lưu",fmt(row?.convective_score,0)+"/100"],["Đỉnh mây",fmt(row?.cloud_top_cold_c,1)+"°C"],["Độ cao",fmt(row?.cloud_top_high_m,0)+" m"],["Δ20p",fmt(row?.cooling_c_per_20m_proxy,1)+"°C"]);
   const regional=regionalForecastRow();
@@ -1185,7 +1214,7 @@ function bind(){
   });
   $("riskBtn").addEventListener("click",()=>{state.risk=!state.risk;$("riskBtn").classList.toggle("active",state.risk);renderRisk()});
   $("actualBtn").addEventListener("click",()=>{state.actual=!state.actual;$("actualBtn").classList.toggle("active",state.actual);renderActual()});
-  $("recenterBtn").addEventListener("click",()=>state.map.fitBounds([[9.82,103.80],[10.47,104.15]],{padding:[18,18],maxZoom:10.75,animate:true}));
+  $("recenterBtn").addEventListener("click",()=>state.map.setView([10.17,103.98],10.15,{animate:true}));
   $("probeClose").addEventListener("click",()=>$("probe").classList.add("hidden"));
   $("playBtn").addEventListener("click",togglePlay);
   $("timeSlider").addEventListener("input",e=>{
