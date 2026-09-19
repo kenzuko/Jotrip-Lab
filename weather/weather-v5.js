@@ -285,6 +285,11 @@ function activeValidTime(){
   if(state.layer==="current")return parseTime(state.marine?.current?.sampled_time);
   return parseTime(activeBaseFrame()?.valid_time);
 }
+function isNearNowMarine(){
+  const f=activeBaseFrame();
+  const lead=num(f?.lead_hours);
+  return lead===null||lead<=3;
+}
 function activeRows(){
   if(state.layer==="storm"){
     const fs=cloudFrames();
@@ -314,6 +319,9 @@ function activeRows(){
     });
   }
   if(state.layer==="current")return marineCurrentRows().filter(r=>num(r.speed_kmh)!==null);
+  if(state.layer==="waves"&&isNearNowMarine()&&marineWaveRows().length){
+    return marineWaveRows().filter(r=>num(r.wave_hs_m)!==null);
+  }
   const frame=activeECMWFFrame();
   if(frame?.cells?.length){
     if(state.layer==="waves")return frame.cells.filter(r=>num(r.wave_hs_m)!==null);
@@ -682,9 +690,10 @@ function updateReadout(){
     $("readoutValue").textContent=fmt(row?.rain_mm,1);$("readoutUnit").textContent="mm";
     $("readoutMeta").textContent="Mưa trong bước thời gian đang chọn";
   }else if(state.layer==="waves"){
-    $("readoutSource").textContent="ECMWF WAVE · MOST LIKELY";
+    const near=isNearNowMarine()&&marineWaveRows().length;
+    $("readoutSource").textContent=near?"COPERNICUS · WAVE NEAR-NOW":"ECMWF WAVE · MOST LIKELY";
     $("readoutValue").textContent=fmt(row?.wave_hs_m,1);$("readoutUnit").textContent="m Hs";
-    $("readoutMeta").textContent="Chu kỳ "+fmt(row?.wave_period_s,1)+" s";
+    $("readoutMeta").textContent="Chu kỳ "+fmt(row?.wave_period_s??row?.wave_mean_period_s??row?.wave_peak_period_s,1)+" s";
   }else if(state.layer==="current"){
     $("readoutSource").textContent="COPERNICUS · SURFACE CURRENT";
     $("readoutValue").textContent=fmt(row?.speed_kmh,2);$("readoutUnit").textContent="km/h";
@@ -817,6 +826,11 @@ function updateModelBadge(){
     $("modelRun").textContent=state.marine?.current?.sampled_time?localStamp(state.marine.current.sampled_time):"-";
     return;
   }
+  if(state.layer==="waves"&&isNearNowMarine()&&marineWaveRows().length){
+    $("modelName").textContent="COPERNICUS WAVE";
+    $("modelRun").textContent=state.marine?.wave?.sampled_time?localStamp(state.marine.wave.sampled_time):"-";
+    return;
+  }
   if(activeECMWFFrame()){
     $("modelName").textContent="ECMWF";$("modelRun").textContent=state.ecmwf?.run_time?localStamp(state.ecmwf.run_time):"-";
   }else{
@@ -868,7 +882,7 @@ function showMapProbe(lat,lon){
     ["P ≥5",ens?.rain?.prob==null?"-":Math.round(ens.rain.prob*100)+"%"],
     ["Spread",fmt(ens?.rain?.spread,1)+" mm"]
   );
-  else if(state.layer==="waves")items.push(["Hs",fmt(row?.wave_hs_m,1)+" m"],["Hướng",fmt(row?.wave_direction_deg,0)+"°"],["Chu kỳ",fmt(row?.wave_period_s,1)+" s"],["Hmax anchor",fmt(m.wave_hmax_m,1)+" m"]);
+  else if(state.layer==="waves")items.push(["Hs",fmt(row?.wave_hs_m,1)+" m"],["Hướng",fmt(row?.wave_direction_deg,0)+"°"],["Chu kỳ",fmt(row?.wave_period_s??row?.wave_mean_period_s??row?.wave_peak_period_s,1)+" s"],["Hmax anchor",fmt(m.wave_hmax_m,1)+" m"]);
   else if(state.layer==="current")items.push(["Dòng",fmt(row?.speed_kmh,2)+" km/h"],["Hướng tới",fmt(row?.direction_toward_deg,0)+"°"],["U",fmt(row?.u_ms,3)+" m/s"],["V",fmt(row?.v_ms,3)+" m/s"]);
   else items.push(["Đối lưu",fmt(row?.convective_score,0)+"/100"],["Đỉnh mây",fmt(row?.cloud_top_cold_c,1)+"°C"],["Độ cao",fmt(row?.cloud_top_high_m,0)+" m"],["Δ20p",fmt(row?.cooling_c_per_20m_proxy,1)+"°C"]);
   const regional=regionalForecastRow();
