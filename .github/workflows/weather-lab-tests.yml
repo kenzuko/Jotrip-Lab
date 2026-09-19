@@ -218,6 +218,11 @@ jobs:
           assert p["wave"]["available_variables"] == ["VHM0","VMDR","VTM10","VTPK"]
           assert p["current"]["available_variables"] == ["uo","vo"]
           assert set(p["current"]["derived_vectors"]) == set(POINTS), p["current"]["derived_vectors"].keys()
+          assert p["spatial_current"]["status"] == "READY", p["spatial_current"]
+          assert p["spatial_current"]["cell_count"] >= 20, p["spatial_current"]
+          assert p["spatial_current"]["display_interpolation"] == "RENDER_ONLY"
+          assert p["spatial_wave"]["status"] == "READY", p["spatial_wave"]
+          assert p["spatial_wave"]["cell_count"] >= 20, p["spatial_wave"]
           PY
       - uses: actions/upload-artifact@v4
         if: always()
@@ -296,6 +301,31 @@ jobs:
           target.write_text(json.dumps(payload,ensure_ascii=False,separators=(',',':'))+'\n',encoding='utf-8')
           assert target.stat().st_size < 2500000, target.stat().st_size
           PY
+      - name: Publish compact Copernicus marine spatial field for V5
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          source=json.load(open('/tmp/weather-artifacts/copernicus/copernicus-live.json'))
+          current=source.get('spatial_current') or {}
+          wave=source.get('spatial_wave') or {}
+          assert current.get('status') == 'READY', current
+          assert wave.get('status') == 'READY', wave
+          payload={
+              'schema_version':'weather-spatial-v1',
+              'product':'JOTRIP_COPERNICUS_MARINE_SPATIAL',
+              'generated_at':source.get('target_time'),
+              'source':'COPERNICUS_MARINE',
+              'current_dataset':source.get('current_dataset'),
+              'wave_dataset':source.get('wave_dataset'),
+              'current':current,
+              'wave':wave,
+          }
+          target=Path('weather/spatial-marine.json')
+          target.write_text(json.dumps(payload,ensure_ascii=False,separators=(',',':'))+'\n',encoding='utf-8')
+          assert target.stat().st_size < 1500000, target.stat().st_size
+          PY
       - name: Enforce dashboard publication gate
         run: |
           python - <<'PY'
@@ -319,7 +349,7 @@ jobs:
         run: |
           git config user.name "jotrip-weather-bot"
           git config user.email "jotrip-weather-bot@users.noreply.github.com"
-          git add weather/dashboard-data.json weather/spatial-ecmwf.json
+          git add weather/dashboard-data.json weather/spatial-ecmwf.json weather/spatial-marine.json
           if git diff --cached --quiet; then
             echo "Dashboard snapshot unchanged"
             exit 0
