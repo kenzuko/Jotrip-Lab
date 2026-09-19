@@ -91,6 +91,24 @@ def _remap_field(source_url: str, work: Path, target_grid: Path, weights: Path, 
     return remapped, len(compressed), completed.stderr[-1000:]
 
 
+def _lead_hours(value) -> int:
+    text = str(value).strip().lower()
+    if text.endswith("m"):
+        try:
+            return int(round(float(text[:-1]) / 60.0))
+        except ValueError:
+            return 0
+    if text.endswith("h"):
+        try:
+            return int(round(float(text[:-1])))
+        except ValueError:
+            return 0
+    try:
+        return int(round(float(text)))
+    except ValueError:
+        return 0
+
+
 def _decode_spatial_uv(u_path: Path, v_path: Path) -> dict:
     from eccodes import (
         codes_get,
@@ -137,7 +155,7 @@ def _decode_spatial_uv(u_path: Path, v_path: Path) -> dict:
             "display_interpolation": "RENDER_ONLY",
             "data_date": data_date,
             "data_time": data_time,
-            "lead_hours": int(codes_get(gu, "endStep")),
+            "lead_hours": _lead_hours(codes_get(gu, "endStep")),
             "cell_count": len(cells),
             "cells": cells,
             "note": "DWD ICON global official conservative remap to 0.25°; step-000 spatial wind cross-check only.",
