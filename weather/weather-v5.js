@@ -429,7 +429,7 @@ function interpolatedVectorAt(p,pv){
     const w=1/item.d2;
     sw+=w;u+=item.v.u*w;vv+=item.v.v*w;mag+=(item.v.mag||0)*w;
   }
-  return sw?{u:u/sw,v:vv/sw,mag:mag/sw}:null;
+  return sw?{u:u/sw,v:vv/sw,mag:mag/sw,near2:nearest[0]?.d2??Infinity}:null;
 }
 function startParticles(rows,kind){
   stopParticles();
@@ -456,9 +456,16 @@ function startParticles(rows,kind){
       const p=state.map.latLngToContainerPoint([r.lat,r.lon]);
       return {x:p.x*dpr,y:p.y*dpr,u:r.u,v:r.v,mag:r.mag};
     });
+    const marine=kind==="waves"||kind==="current";
+    const support=marine?spatialSupportRadius(pv):Infinity;
+    const support2=support*support+18;
     state.particles.forEach(p=>{
       const n=interpolatedVectorAt(p,pv);
       if(!n)return;
+      if(marine&&n.near2>support2){
+        p.x=Math.random()*c.width;p.y=Math.random()*c.height;p.age=0;
+        return;
+      }
       const scale=kind==="waves"
         ?clamp((n.mag||0)*1.7,.55,2.7)
         :clamp((n.mag||0)/3.4,.85,4.8);
