@@ -4,8 +4,10 @@ from weather.pipeline.build_jotrip_forecast import build
 class JoTripRegionalForecastTests(unittest.TestCase):
     def sample_row(self,lead,base):
         def v(q50,q90,spread,prob=None):
+            members=[q50-6,q50-4,q50-2,q50,q50+2,q50+4,q90]
             return {"corrected":{"q50":q50,"q90":q90,"q95":q90+1,"spread":spread,
-                                 "exceedance_probability":prob,"member_count":31}}
+                                 "exceedance_probability":prob,"member_count":31},
+                    "member_values_corrected":members}
         return {
             "lead_hours":lead,
             "valid_time":f"2026-09-{18+lead//24:02d}T00:00:00+00:00",
@@ -41,6 +43,9 @@ class JoTripRegionalForecastTests(unittest.TestCase):
             self.assertEqual(len(leads),26)
         north=p["regions"]["north_northwest"]["rows"][0]
         self.assertEqual(north["point_count"],2)
+        self.assertIsNotNone(north["wind_q10_kmh"])
+        self.assertLessEqual(north["wind_q10_kmh"],north["wind_kmh"])
+        self.assertLessEqual(north["wind_kmh"],north["wind_q90_kmh"])
         self.assertIn(north["risk_driver"]["rain"],{"Gành Dầu","Cửa Cạn"})
         self.assertEqual(north["confidence_band"],"KHÁ")
 
