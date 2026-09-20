@@ -354,13 +354,17 @@ def _rain_imminence(model_rain_3h: float | None, nowcast_point: dict, ensemble_c
     model_mm = max(0.0, _num(model_rain_3h) or 0.0)
     q90 = max(0.0, _num((ensemble_context or {}).get("rain_q90_mm")) or 0.0)
     prob5 = _num((ensemble_context or {}).get("rain_probability_5"))
+    motion = nowcast_point.get("cloud_motion") or {}
+    motion_status = str(motion.get("status") or "").upper()
+    eta_minutes = _num(motion.get("eta_minutes"))
+    approaching = bool(motion.get("approaching"))
 
     if conv is None and model_mm <= 0 and q90 <= 0:
         return {
             "score": None,
             "level": "UNAVAILABLE",
             "window_minutes": 60,
-            "method": "PQ_RAIN_IMMINENCE_V1_HEURISTIC_NOT_PROBABILITY",
+            "method": "PQ_RAIN_IMMINENCE_V2_SATELLITE_MOTION_ENSEMBLE_HEURISTIC_NOT_PROBABILITY",
             "not_probability": True,
         }
 
@@ -368,7 +372,21 @@ def _rain_imminence(model_rain_3h: float | None, nowcast_point: dict, ensemble_c
     model_component = 18.0 * _clamp(model_mm / 6.0, 0.0, 1.0)
     cooling_component = 12.0 * _clamp((-(cooling or 0.0)) / 6.0, 0.0, 1.0)
     ensemble_component = 10.0 * _clamp(q90 / 5.0, 0.0, 1.0)
-    raw = _clamp(conv_component + model_component + cooling_component + ensemble_component, 0.0, 100.0)
+    motion_component = 0.0
+    if motion_status == "NEARBY":
+        motion_component = 15.0
+    elif approaching and eta_minutes is not None:
+        if eta_minutes <= 60:
+            motion_component = 15.0
+        elif eta_minutes <= 120:
+            motion_component = 8.0
+        elif eta_minutes <= 180:
+            motion_component = 4.0
+    raw = _clamp(
+        conv_component + model_component + cooling_component + ensemble_component + motion_component,
+        0.0,
+        100.0,
+    )
 
     if raw >= 75:
         level = "HIGH"
@@ -388,7 +406,20 @@ def _rain_imminence(model_rain_3h: float | None, nowcast_point: dict, ensemble_c
         "model_rain_3h_mm": model_rain_3h,
         "ensemble_q90_mm": q90 if q90 > 0 else None,
         "ensemble_probability_5": prob5,
-        "method": "PQ_RAIN_IMMINENCE_V1_HEURISTIC_NOT_PROBABILITY",
+        "cloud_motion": {
+            "status": motion.get("status"),
+            "source_sector": motion.get("source_sector"),
+            "nearest_corridor": motion.get("nearest_corridor"),
+            "motion_heading_deg": _num(motion.get("motion_heading_deg")),
+            "motion_heading": motion.get("motion_heading"),
+            "motion_speed_kmh": _num(motion.get("motion_speed_kmh")),
+            "distance_to_target_km": _num(motion.get("distance_to_target_km")),
+            "approaching": approaching,
+            "eta_minutes": eta_minutes,
+            "tracking_confidence": motion.get("tracking_confidence"),
+        },
+        "motion_component": round(motion_component, 1),
+        "method": "PQ_RAIN_IMMINENCE_V2_SATELLITE_MOTION_ENSEMBLE_HEURISTIC_NOT_PROBABILITY",
         "not_probability": True,
         "note": "Short-range convective context only. It does not replace ACTUAL rain observations or claim a numeric rain probability.",
     }
