@@ -3,6 +3,25 @@ const $=s=>document.querySelector(s);
 const setText=(el,text)=>{if(el&&el.textContent!==text)el.textContent=text};
 const replaceText=(el,replacements)=>{if(!el||!el.textContent)return;let next=el.textContent;for(const [a,b] of replacements)next=next.replace(a,b);if(next!==el.textContent)el.textContent=next};
 const replaceHtml=(el,replacements)=>{if(!el||!el.textContent)return;let next=el.innerHTML;for(const [a,b] of replacements)next=next.replace(a,b);if(next!==el.innerHTML)el.innerHTML=next};
+const validFlightNumber=v=>/^[A-Z0-9]{2,3}\d{1,4}[A-Z]?$/.test(String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,''));
+const addFr24DetailRow=flight=>{
+  const number=String(flight||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(!validFlightNumber(number))return;
+  const meta=$('#drawerContent .drawer-meta');
+  if(!meta||meta.querySelector('.fr24-detail-row'))return;
+  const row=document.createElement('div');
+  row.className='fr24-detail-row';
+  const label=document.createElement('span');
+  label.textContent='Theo dõi chuyến bay';
+  const link=document.createElement('a');
+  link.href='https://www.flightradar24.com/data/flights/'+encodeURIComponent(number.toLowerCase());
+  link.target='_blank';
+  link.rel='noopener noreferrer';
+  link.textContent='Mở FR24 ↗';
+  link.setAttribute('aria-label','Mở '+number+' trên Flightradar24');
+  row.append(label,link);
+  meta.appendChild(row);
+};
 const cleanPublicCopy=()=>{
   setText($('.source-label'),'JoTrip Live · Auto refresh');
   replaceText($('#updatedAt'),[[/JoTrip Live API/g,'JoTrip Live']]);
@@ -29,7 +48,7 @@ if(typeof renderHealth==='function'){
 }
 if(typeof openDrawer==='function'){
   const base=openDrawer;
-  openDrawer=function(...args){base(...args);cleanPublicCopy();};
+  openDrawer=function(...args){base(...args);cleanPublicCopy();addFr24DetailRow(args[0]);};
 }
 const observer=new MutationObserver(cleanPublicCopy);observer.observe(document.body,{subtree:true,childList:true,characterData:true});
 cleanPublicCopy();
