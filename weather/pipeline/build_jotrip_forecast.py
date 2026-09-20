@@ -72,7 +72,34 @@ def variability_score(wind_spread:float|None,rain_spread:float|None)->int:
     r=max(0.0,rain_spread or 0.0)/10.0
     return round(100*min(1.0,max(w,r)))
 
-def build(ensemble:dict)->dict:
+def _point_nowcast(nowcast:dict|None,pid:str)->dict:
+    if not nowcast:return {}
+    p=(nowcast.get("points") or {}).get(pid) or {}
+    sig=p.get("convective_signal") or {}
+    motion=p.get("cloud_motion") or {}
+    score=num(p.get("score"))
+    if score is None: score=num(sig.get("score"))
+    eta=num(motion.get("eta_minutes"))
+    approaching=bool(motion.get("approaching"))
+    level="LOW"
+    if score is not None and score>=75: level="HIGH"
+    elif score is not None and score>=50: level="ELEVATED"
+    elif score is not None and score>=25: level="WATCH"
+    if approaching and eta is not None and eta<=120:
+        level="HIGH" if eta<=60 else "ELEVATED"
+    return {
+        "convective_score":score,
+        "level":level,
+        "motion_status":motion.get("status"),
+        "source_sector":motion.get("source_sector"),
+        "motion_heading":motion.get("motion_heading"),
+        "motion_speed_kmh":num(motion.get("motion_speed_kmh")),
+        "eta_minutes":eta,
+        "approaching":approaching,
+        "tracking_confidence":motion.get("tracking_confidence"),
+    }
+
+def build(ensemble:dict,nowcast:dict|None=None)->dict:
     points=ensemble.get("points") or {}
     by_point={pid:{int(r.get("lead_hours")):r for r in rows if r.get("lead_hours") is not None}
               for pid,rows in points.items() if isinstance(rows,list)}
@@ -109,6 +136,19 @@ def build(ensemble:dict)->dict:
             vol_driver=max(items,key=lambda x:max((x["wind_spread"] or 0)/10,(x["rain_spread"] or 0)/4))
             conf_score=confidence_score(lead,completion,cal)
             var_score=variability_score(vol_driver["wind_spread"],vol_driver["rain_spread"])
+            now_items=[(pid,_point_nowcast(nowcast,pid)) for pid in meta["points"]]
+            now_items=[x for x in now_items if x[1]]
+            now_driver=max(
+                now_items,
+                key=lambda x:(
+                    1 if x[1].get("approaching") else 0,
+                    -(x[1].get("eta_minutes") if x[1].get("eta_minutes") is not None else 999),
+                    x[1].get("convective_score") or 0,
+                ),
+                default=(None,{})
+            )
+            near_now=now_driver[1] if lead<=12 else {}
+            near_level=near_now.get("level") if near_now else None
             rows.append({
                 "lead_hours":lead,
                 "valid_time":next((x["valid_time"] for x in items if x["valid_time"]),None),
@@ -129,13 +169,21 @@ def build(ensemble:dict)->dict:
                     "wind":wind_driver["point_name"],
                     "rain":rain_driver["point_name"],
                     "variability":vol_driver["point_name"],
+                    "nowcast":POINT_NAMES.get(now_driver[0],now_driver[0]) if near_now else None,
                 },
+                "nowcast_overlay":{
+                    "applies":bool(near_now),
+                    "scope":"D0_12H_OPERATIONAL_CONTEXT_ONLY",
+                    "level":near_level,
+                    **near_now,
+                    "note":"Observed-satellite short-range context. Raw ensemble q50/q90/probabilities above are not rewritten.",
+                } if near_now else None,
                 "members_min":min([x["members"] for x in items if x["members"] is not None],default=None),
                 "point_count":len(items),
             })
         out_regions[rid]={"name":meta["name"],"points":[POINT_NAMES.get(p,p) for p in meta["points"]],"rows":rows}
     return {
-        "schema_version":"1.0",
+        "schema_version":"1.1",
         "product":"JOTRIP_FORECAST_10D_REGIONAL",
         "run_time":ensemble.get("run_time"),
         "generated_at":ensemble.get("generated_at"),
@@ -147,15 +195,17 @@ def build(ensemble:dict)->dict:
         "calibration_total_groups":ensemble.get("calibration_total_groups",0),
         "cadence":{"d0_d3_hours":6,"d4_d10_hours":12},
         "regions":out_regions,
-        "note":"D0-D3 shown every 6h; D4-D10 every 12h. confidence_score is an operational confidence index, not probability of correctness; variability_score is normalized ensemble spread, not hazard probability.",
+        "note":"D0-D3 shown every 6h; D4-D10 every 12h. D0-12h may carry a Himawari nowcast overlay for operational context; raw ensemble q50/q90/probabilities are never rewritten. confidence_score is an operational confidence index, not probability of correctness; variability_score is normalized ensemble spread, not hazard probability.",
     }
 
 def main():
     p=argparse.ArgumentParser()
     p.add_argument("--ensemble",type=Path,required=True)
+    p.add_argument("--nowcast",type=Path,required=False)
     p.add_argument("--output",type=Path,required=True)
     a=p.parse_args()
-    payload=build(load(a.ensemble))
+    nowcast=load(a.nowcast) if a.nowcast and a.nowcast.exists() else None
+    payload=build(load(a.ensemble),nowcast)
     a.output.parent.mkdir(parents=True,exist_ok=True)
     raw=json.dumps(payload,ensure_ascii=False,separators=(",",":"))
     a.output.write_text(raw+"\n",encoding="utf-8")
