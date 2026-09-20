@@ -460,6 +460,40 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
     imminence = _rain_imminence(model_rain_3h, nowcast_point, ensemble_context)
 
     if weight_sum > 0:
+        # If the target itself has a fresh passing gauge, that local observation
+        # must dominate the rain analysis. Remote gauges are useful for ungauged
+        # points, but must not dilute or inflate a co-located ACTUAL rate.
+        colocated = [a for a in anchors if a["distance_km"] <= 1.5 and a["rate_mm_h"] is not None]
+        if colocated:
+            local_anchor = min(colocated, key=lambda a: a["distance_km"])
+            local_rate = max(0.0, float(local_anchor["rate_mm_h"]))
+            return {
+                "rain_rate_mm_h": round(local_rate, 2),
+                "data_class": "ESTIMATED_NOW",
+                "method": "PQ_LOCAL_NOW_V3_COLOCATED_GAUGE_ANCHORED",
+                "confidence": 0.88,
+                "gauge_anchor_count": len(anchors),
+                "gauge_anchors": anchors,
+                "model_rain_3h_mm": model_rain_3h,
+                "model_share": 0.0,
+                "gauge_share": 1.0,
+                "nearest_gauge_km": round(local_anchor["distance_km"], 1),
+                "convective_score": score,
+                "imminence": imminence,
+                "colocated_actual_station": local_anchor["station"],
+                "colocated_actual_rate_mm_h": round(local_rate, 2),
+                "ensemble_context": {
+                    "valid_time": (ensemble_context or {}).get("valid_time"),
+                    "gap_hours": (ensemble_context or {}).get("gap_hours"),
+                    "q50_mm": (ensemble_context or {}).get("rain_q50_mm"),
+                    "q90_mm": (ensemble_context or {}).get("rain_q90_mm"),
+                    "spread_mm": (ensemble_context or {}).get("rain_spread_mm"),
+                    "probability_5": (ensemble_context or {}).get("rain_probability_5"),
+                    "role": "UNCERTAINTY_CONTEXT_ONLY_LOCAL_ACTUAL_DOMINATES",
+                },
+                "note": "Fresh co-located VRain observation dominates this point. Remote gauges and model/ensemble remain context only.",
+            }
+
         gauge_rate = weighted / weight_sum
         # Let a fresh co-located gauge dominate current-rain analysis. Model
         # contribution grows gradually only as the nearest gauge gets farther
