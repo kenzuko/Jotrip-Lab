@@ -6,6 +6,7 @@ on:
       - "weather/collectors/phuquoc_ground_truth.py"
       - "weather/processing/local_now.py"
       - "weather/processing/calibration_pipeline.py"
+      - "weather/processing/source_skill.py"
       - "weather/tests/test_ground_truth_local_now.py"
       - "weather/tests/test_calibration_pipeline.py"
       - ".github/workflows/weather-ground-truth.yml"
@@ -34,6 +35,7 @@ env:
   ANALYTICS_ROOT: data/weather-analytics
   ENSEMBLE_ROOT: data/weather-ensemble
   CURRENT_ROOT: data/weather-current
+  SOURCE_SKILL_ROOT: data/weather-source-skill
 
 jobs:
   ground-truth:
@@ -53,7 +55,7 @@ jobs:
         shell: bash
         run: |
           git fetch origin "$DATA_BRANCH" --depth=1
-          for path in "$DATA_ROOT" "$NOWCAST_ROOT" "$FORECAST_ARCHIVE_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$ENSEMBLE_ROOT" "$CURRENT_ROOT"; do
+          for path in "$DATA_ROOT" "$NOWCAST_ROOT" "$FORECAST_ARCHIVE_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$ENSEMBLE_ROOT" "$CURRENT_ROOT" "$SOURCE_SKILL_ROOT"; do
             git checkout "origin/$DATA_BRANCH" -- "$path" 2>/dev/null || true
           done
 
@@ -71,6 +73,15 @@ jobs:
           fi
           python -m weather.collectors.phuquoc_ground_truth --output /tmp/groundtruth.json $PREVIOUS
 
+      - name: Restore provisional source-skill weights
+        shell: bash
+        run: |
+          if [ -f "$SOURCE_SKILL_ROOT/latest.json" ]; then
+            cp "$SOURCE_SKILL_ROOT/latest.json" /tmp/source-skill-prior.json
+          else
+            printf '{}\n' > /tmp/source-skill-prior.json
+          fi
+
       - name: Build PQ Local Now
         shell: bash
         run: |
@@ -83,7 +94,7 @@ jobs:
           if [ -f "$ENSEMBLE" ]; then
             EXTRA_ENSEMBLE="--ensemble $ENSEMBLE"
           fi
-          python -m weather.processing.local_now             --groundtruth /tmp/groundtruth.json             --dashboard weather/dashboard-data.json             --nowcast "$NOWCAST"             $EXTRA_ENSEMBLE             --output /tmp/local-now.json
+          python -m weather.processing.local_now             --groundtruth /tmp/groundtruth.json             --dashboard weather/dashboard-data.json             --nowcast "$NOWCAST"             $EXTRA_ENSEMBLE             --source-skill /tmp/source-skill-prior.json             --output /tmp/local-now.json
 
       - name: Validate semantic safety gates
         run: |
@@ -283,20 +294,22 @@ jobs:
           cp /tmp/weather-calibration.json /tmp/weather-calibration-latest.json
           cp /tmp/weather-analytics.json /tmp/weather-analytics-latest.json
           cp /tmp/weather-current.json /tmp/weather-current-latest.json
+          cp /tmp/weather-source-skill.json /tmp/weather-source-skill-latest.json
 
           git reset --hard HEAD
           rm -rf "$DATA_ROOT"
           git fetch origin "$DATA_BRANCH"
           git checkout -B "$DATA_BRANCH" "origin/$DATA_BRANCH"
-          mkdir -p "$DATA_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$CURRENT_ROOT"
+          mkdir -p "$DATA_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$CURRENT_ROOT" "$SOURCE_SKILL_ROOT"
           cp -a /tmp/weather-groundtruth-export/. "$DATA_ROOT"/
           cp /tmp/weather-calibration-latest.json "$CALIBRATION_ROOT/latest.json"
           cp /tmp/weather-analytics-latest.json "$ANALYTICS_ROOT/latest.json"
           cp /tmp/weather-current-latest.json "$CURRENT_ROOT/latest.json"
+          cp /tmp/weather-source-skill-latest.json "$SOURCE_SKILL_ROOT/latest.json"
 
           git config user.name "jotrip-weather-bot"
           git config user.email "jotrip-weather-bot@users.noreply.github.com"
-          git add "$DATA_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$CURRENT_ROOT"
+          git add "$DATA_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$CURRENT_ROOT" "$SOURCE_SKILL_ROOT"
           if git diff --cached --quiet; then
             echo "Ground truth state unchanged"
             exit 0
@@ -322,4 +335,5 @@ jobs:
             /tmp/weather-calibration.json
             /tmp/weather-analytics.json
             /tmp/weather-current.json
+            /tmp/weather-source-skill.json
           retention-days: 7
