@@ -187,6 +187,9 @@ def _vrain(current: Any, timing: Any, previous: dict | None, now: datetime) -> d
             "increment_window_minutes": None,
             "rain_observed": None,
             "rain_intensity_mm_h": None,
+            "recent_change_mm": None,
+            "recent_change_window_minutes": None,
+            "rain_recently_observed": None,
             "increment_qc": "NO_PREVIOUS_SAMPLE",
             "qc": "PASS" if accum is not None else "MISSING",
             "provenance_url": VRAIN_CURRENT_URL,
@@ -201,6 +204,11 @@ def _vrain(current: Any, timing: Any, previous: dict | None, now: datetime) -> d
             if prev_accum is not None and prev_start == period_start and prev_end_dt and end_dt and end_dt > prev_end_dt:
                 minutes = (end_dt - prev_end_dt).total_seconds() / 60.0
                 delta = accum - prev_accum
+                if delta >= -0.05 and minutes >= 5:
+                    recent_change = round(max(0.0, delta), 3)
+                    item["recent_change_mm"] = recent_change
+                    item["recent_change_window_minutes"] = round(minutes, 1)
+                    item["rain_recently_observed"] = recent_change > 0
                 if -0.05 <= delta and 5 <= minutes <= 20:
                     increment = round(max(0.0, delta), 3)
                     item["increment_mm"] = increment
