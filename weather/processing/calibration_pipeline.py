@@ -37,6 +37,12 @@ LEAD_BUCKETS = (
 )
 RAIN_COVERAGE_MIN = 0.70
 VVPQ_TOLERANCE_MINUTES = 45
+EXPECTED_TARGET_VARIABLES = {
+    "vvpq": ("temperature", "wind"),
+    "vrain_cua_can": ("rain",),
+    "vrain_bai_thom": ("rain",),
+    "vrain_an_thoi": ("rain",),
+}
 
 
 def _num(v: Any) -> float | None:
@@ -305,6 +311,11 @@ def build_calibration(cases: list[dict], min_samples: int = DEFAULT_MIN_SAMPLES)
     for c in cases:
         key = (str(c["target"]), str(c["variable"]), str(c["lead_bucket"]))
         grouped.setdefault(key, []).append(c)
+
+    for target, variables in EXPECTED_TARGET_VARIABLES.items():
+        for variable in variables:
+            for bucket, _, _ in LEAD_BUCKETS:
+                grouped.setdefault((target, variable, bucket), [])
 
     ready = 0
     total = 0
