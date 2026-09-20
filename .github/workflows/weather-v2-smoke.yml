@@ -8,7 +8,9 @@ on:
       - "weather-v2.js"
       - "weather-brand.svg"
       - "weather/pipeline/build_critical_payload.py"
+      - "weather/pipeline/build_jotrip_forecast.py"
       - "weather/tests/test_critical_payload.py"
+      - "weather/tests/test_jotrip_forecast.py"
       - "weather/ui-v2-smoke.mjs"
       - ".github/workflows/weather-v2-smoke.yml"
   workflow_dispatch:
@@ -48,6 +50,7 @@ jobs:
             --output weather/critical.json
           python -m weather.pipeline.build_jotrip_forecast \
             --ensemble live-data/data/weather-ensemble/latest.json \
+            --nowcast live-data/data/weather-nowcast/compact-latest.json \
             --output weather/jotrip-forecast.json
           test $(wc -c < weather/critical.json) -lt 60000
           test $(wc -c < weather/jotrip-forecast.json) -lt 120000
