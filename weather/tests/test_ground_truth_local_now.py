@@ -75,7 +75,7 @@ class GroundTruthTests(unittest.TestCase):
                             "age_minutes": 10, "accumulation_mm": 14.8, "increment_mm": 0.4,
                             "increment_window_minutes": 20, "increment_qc": "PASS"},
             }},
-            "station_status": {"60018": {"readiness": "FEED_EMPTY"}, "408": {"readiness": "FEED_UNRESOLVED"}},
+            "station_status": {},
         }
         rows = [{"time_iso": "2026-09-18T07:00:00+07:00", "temperature": 28, "wind": 20, "rain": 3,
                  "wave": 0.6, "wave_max": 1.0, "period": 4, "current": 0.5}]
@@ -260,7 +260,7 @@ class GroundTruthTests(unittest.TestCase):
                     "increment_window_minutes": 10, "increment_qc": "PASS", "qc": "PASS",
                 }
             }},
-            "station_status": {"089907": {"readiness": "VERIFIED_STATION_NO_LIVE_FEED"}},
+            "station_status": {},
         }
         def pt(temp,wind,gust,rain,wave=.2):
             row={"time_iso":"2026-09-20T13:00:00+07:00","temperature":temp,"wind":wind,
@@ -285,7 +285,10 @@ class GroundTruthTests(unittest.TestCase):
         self.assertEqual(rg["wind"]["data_class"],"MODEL_ONLY")
         self.assertEqual(rg["rain"]["data_class"],"MODEL_ONLY")
         self.assertAlmostEqual(rg["rain"]["rain_rate_mm_h"],1.34/3,places=2)
-        self.assertEqual(rg["actual_anchors"]["rach_gia_089907"]["status"],"VERIFIED_STATION_NO_LIVE_FEED")
+        self.assertEqual(rg["actual_anchors"], {})
+        self.assertNotIn("rach_gia_089907", out["source_status"])
+        self.assertNotIn("duong_dong_60018", out["source_status"])
+        self.assertNotIn("an_thoi_408", out["source_status"])
 
 
 if __name__ == "__main__":
