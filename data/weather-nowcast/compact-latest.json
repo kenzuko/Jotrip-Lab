@@ -2,77 +2,279 @@
   "schema_version": "weather-nowcast-compact-v1",
   "status": "POINT_NUMERIC_READY",
   "source": "JMA_HIMAWARI9_VIA_NOAA_OPEN_DATA",
-  "sampled_time": "2026-09-20T07:10:21Z",
-  "generated_at": "2026-09-20T07:38:33.638794+00:00",
+  "sampled_time": "2026-09-20T07:20:20Z",
+  "generated_at": "2026-09-20T07:48:48.791244+00:00",
   "lightning_observed": {
     "status": "NOT_CONNECTED",
     "count_30m": null,
     "nearest_km": null,
     "detail": "Chưa có feed sét quan trắc trực tiếp miễn phí với quyền sử dụng phù hợp. Convective signal bên dưới là proxy từ quan sát vệ tinh, không phải tia sét quan sát."
   },
+  "corridor_watch": {
+    "ha_tien": {
+      "name": "Hà Tiên",
+      "lat": 10.3831,
+      "lon": 104.487534
+    },
+    "rach_gia": {
+      "name": "Rạch Giá",
+      "lat": 10.00677,
+      "lon": 105.07845
+    }
+  },
+  "corridor_motion": {
+    "ha_tien": {
+      "status": "TRACKED",
+      "sampled_time": "2026-09-20T07:20:20Z",
+      "previous_sampled_time": "2026-09-20T07:10:21Z",
+      "cloud_center_lat": 10.1536,
+      "cloud_center_lon": 104.5098,
+      "distance_to_target_km": 25.6,
+      "source_bearing_deg": 174.5,
+      "source_sector": "Nam",
+      "nearest_corridor": {
+        "id": "ha_tien",
+        "name": "Hà Tiên",
+        "distance_km": 25.6
+      },
+      "motion_heading_deg": null,
+      "motion_heading": null,
+      "motion_speed_kmh": 5.1,
+      "alignment_to_target_deg": null,
+      "approaching": false,
+      "eta_minutes": null,
+      "support_cells": 644,
+      "max_convective_score": 100.0,
+      "tracking_confidence": "MEDIUM",
+      "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1",
+      "note": "Theo dõi chuyển động cụm mây đối lưu từ hai ảnh vệ tinh liên tiếp; ETA là ngoại suy mây, không phải thời điểm mưa chắc chắn."
+    },
+    "rach_gia": {
+      "status": "TRACKED",
+      "sampled_time": "2026-09-20T07:20:20Z",
+      "previous_sampled_time": "2026-09-20T07:10:21Z",
+      "cloud_center_lat": 10.1021,
+      "cloud_center_lon": 104.7346,
+      "distance_to_target_km": 39.1,
+      "source_bearing_deg": 285.8,
+      "source_sector": "Tây",
+      "nearest_corridor": {
+        "id": "rach_gia",
+        "name": "Rạch Giá",
+        "distance_km": 39.1
+      },
+      "motion_heading_deg": null,
+      "motion_heading": null,
+      "motion_speed_kmh": 5.2,
+      "alignment_to_target_deg": null,
+      "approaching": false,
+      "eta_minutes": null,
+      "support_cells": 601,
+      "max_convective_score": 100.0,
+      "tracking_confidence": "MEDIUM",
+      "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1",
+      "note": "Theo dõi chuyển động cụm mây đối lưu từ hai ảnh vệ tinh liên tiếp; ETA là ngoại suy mây, không phải thời điểm mưa chắc chắn."
+    }
+  },
   "points": {
     "duong_dong": {
       "score": 75.0,
       "level": "HIGH",
-      "cold_cloud_top_temp_c": -77.8,
-      "high_cloud_top_height_m": 16181.0,
-      "cooling_c_per_20m_proxy": 0.3,
+      "cold_cloud_top_temp_c": -77.6,
+      "high_cloud_top_height_m": 16154.0,
+      "cooling_c_per_20m_proxy": 0.2,
+      "cloud_motion": {
+        "status": "TRACKED",
+        "source_sector": "Đông",
+        "nearest_corridor": {
+          "id": "ha_tien",
+          "name": "Hà Tiên",
+          "distance_km": 33.6
+        },
+        "motion_heading_deg": null,
+        "motion_heading": null,
+        "motion_speed_kmh": 4.0,
+        "distance_to_target_km": 39.3,
+        "approaching": false,
+        "eta_minutes": null,
+        "tracking_confidence": "MEDIUM",
+        "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1"
+      },
       "lightning_observed": "NOT_CONNECTED"
     },
     "an_thoi": {
       "score": 75.0,
       "level": "HIGH",
-      "cold_cloud_top_temp_c": -75.1,
-      "high_cloud_top_height_m": 15795.0,
-      "cooling_c_per_20m_proxy": 1.2,
+      "cold_cloud_top_temp_c": -74.6,
+      "high_cloud_top_height_m": 15713.0,
+      "cooling_c_per_20m_proxy": 0.5,
+      "cloud_motion": {
+        "status": "TRACKED",
+        "source_sector": "Đông Bắc",
+        "nearest_corridor": {
+          "id": "ha_tien",
+          "name": "Hà Tiên",
+          "distance_km": 36.5
+        },
+        "motion_heading_deg": null,
+        "motion_heading": null,
+        "motion_speed_kmh": 4.6,
+        "distance_to_target_km": 41.6,
+        "approaching": false,
+        "eta_minutes": null,
+        "tracking_confidence": "MEDIUM",
+        "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1"
+      },
       "lightning_observed": "NOT_CONNECTED"
     },
     "ganh_dau": {
       "score": 75.0,
       "level": "HIGH",
-      "cold_cloud_top_temp_c": -77.8,
-      "high_cloud_top_height_m": 16191.0,
-      "cooling_c_per_20m_proxy": 0.2,
+      "cold_cloud_top_temp_c": -77.7,
+      "high_cloud_top_height_m": 16168.0,
+      "cooling_c_per_20m_proxy": 0.1,
+      "cloud_motion": {
+        "status": "TRACKED",
+        "source_sector": "Đông Nam",
+        "nearest_corridor": {
+          "id": "ha_tien",
+          "name": "Hà Tiên",
+          "distance_km": 36.0
+        },
+        "motion_heading_deg": null,
+        "motion_heading": null,
+        "motion_speed_kmh": null,
+        "distance_to_target_km": 50.3,
+        "approaching": false,
+        "eta_minutes": null,
+        "tracking_confidence": "LOW",
+        "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1"
+      },
       "lightning_observed": "NOT_CONNECTED"
     },
     "rach_gia": {
       "score": 75.0,
       "level": "HIGH",
-      "cold_cloud_top_temp_c": -79.1,
-      "high_cloud_top_height_m": 16359.0,
-      "cooling_c_per_20m_proxy": -0.5,
+      "cold_cloud_top_temp_c": -78.3,
+      "high_cloud_top_height_m": 16365.0,
+      "cooling_c_per_20m_proxy": 0.8,
+      "cloud_motion": {
+        "status": "TRACKED",
+        "source_sector": "Tây",
+        "nearest_corridor": {
+          "id": "rach_gia",
+          "name": "Rạch Giá",
+          "distance_km": 39.1
+        },
+        "motion_heading_deg": null,
+        "motion_heading": null,
+        "motion_speed_kmh": 5.2,
+        "distance_to_target_km": 39.1,
+        "approaching": false,
+        "eta_minutes": null,
+        "tracking_confidence": "MEDIUM",
+        "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1"
+      },
       "lightning_observed": "NOT_CONNECTED"
     },
     "cua_can": {
       "score": 75.0,
       "level": "HIGH",
-      "cold_cloud_top_temp_c": -77.9,
-      "high_cloud_top_height_m": 16200.0,
+      "cold_cloud_top_temp_c": -77.7,
+      "high_cloud_top_height_m": 16169.0,
       "cooling_c_per_20m_proxy": 0.2,
+      "cloud_motion": {
+        "status": "TRACKED",
+        "source_sector": "Đông",
+        "nearest_corridor": {
+          "id": "ha_tien",
+          "name": "Hà Tiên",
+          "distance_km": 34.3
+        },
+        "motion_heading_deg": null,
+        "motion_heading": null,
+        "motion_speed_kmh": null,
+        "distance_to_target_km": 43.5,
+        "approaching": false,
+        "eta_minutes": null,
+        "tracking_confidence": "LOW",
+        "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1"
+      },
       "lightning_observed": "NOT_CONNECTED"
     },
     "bai_thom": {
       "score": 75.0,
       "level": "HIGH",
-      "cold_cloud_top_temp_c": -77.9,
-      "high_cloud_top_height_m": 16207.0,
+      "cold_cloud_top_temp_c": -77.7,
+      "high_cloud_top_height_m": 16194.0,
       "cooling_c_per_20m_proxy": 0.2,
+      "cloud_motion": {
+        "status": "TRACKED",
+        "source_sector": "Đông Nam",
+        "nearest_corridor": {
+          "id": "ha_tien",
+          "name": "Hà Tiên",
+          "distance_km": 29.1
+        },
+        "motion_heading_deg": null,
+        "motion_heading": null,
+        "motion_speed_kmh": 4.1,
+        "distance_to_target_km": 44.1,
+        "approaching": false,
+        "eta_minutes": null,
+        "tracking_confidence": "MEDIUM",
+        "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1"
+      },
       "lightning_observed": "NOT_CONNECTED"
     },
     "ham_ninh": {
       "score": 75.0,
       "level": "HIGH",
-      "cold_cloud_top_temp_c": -77.7,
-      "high_cloud_top_height_m": 16181.0,
-      "cooling_c_per_20m_proxy": 0.4,
+      "cold_cloud_top_temp_c": -77.5,
+      "high_cloud_top_height_m": 16157.0,
+      "cooling_c_per_20m_proxy": 0.2,
+      "cloud_motion": {
+        "status": "TRACKED",
+        "source_sector": "Đông",
+        "nearest_corridor": {
+          "id": "ha_tien",
+          "name": "Hà Tiên",
+          "distance_km": 31.5
+        },
+        "motion_heading_deg": null,
+        "motion_heading": null,
+        "motion_speed_kmh": 4.1,
+        "distance_to_target_km": 34.5,
+        "approaching": false,
+        "eta_minutes": null,
+        "tracking_confidence": "MEDIUM",
+        "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1"
+      },
       "lightning_observed": "NOT_CONNECTED"
     },
     "bai_sao": {
       "score": 75.0,
       "level": "HIGH",
-      "cold_cloud_top_temp_c": -77.5,
-      "high_cloud_top_height_m": 16169.0,
-      "cooling_c_per_20m_proxy": 0.5,
+      "cold_cloud_top_temp_c": -77.7,
+      "high_cloud_top_height_m": 16175.0,
+      "cooling_c_per_20m_proxy": -0.2,
+      "cloud_motion": {
+        "status": "TRACKED",
+        "source_sector": "Đông",
+        "nearest_corridor": {
+          "id": "ha_tien",
+          "name": "Hà Tiên",
+          "distance_km": 33.5
+        },
+        "motion_heading_deg": null,
+        "motion_heading": null,
+        "motion_speed_kmh": 4.4,
+        "distance_to_target_km": 35.0,
+        "approaching": false,
+        "eta_minutes": null,
+        "tracking_confidence": "MEDIUM",
+        "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1"
+      },
       "lightning_observed": "NOT_CONNECTED"
     }
   }
