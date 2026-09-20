@@ -357,6 +357,8 @@ def _rain_imminence(model_rain_3h: float | None, nowcast_point: dict, ensemble_c
     motion = nowcast_point.get("cloud_motion") or {}
     motion_status = str(motion.get("status") or "").upper()
     eta_minutes = _num(motion.get("eta_minutes"))
+    predicted_impact = bool(motion.get("predicted_impact"))
+    public_track_usable = bool(motion.get("public_track_usable"))
     approaching = bool(motion.get("approaching"))
 
     if conv is None and model_mm <= 0 and q90 <= 0:
@@ -373,9 +375,9 @@ def _rain_imminence(model_rain_3h: float | None, nowcast_point: dict, ensemble_c
     cooling_component = 12.0 * _clamp((-(cooling or 0.0)) / 6.0, 0.0, 1.0)
     ensemble_component = 10.0 * _clamp(q90 / 5.0, 0.0, 1.0)
     motion_component = 0.0
-    if motion_status == "NEARBY":
+    if motion_status == "NEARBY" or (predicted_impact and eta_minutes == 0):
         motion_component = 15.0
-    elif approaching and eta_minutes is not None:
+    elif predicted_impact and eta_minutes is not None:
         if eta_minutes <= 60:
             motion_component = 15.0
         elif eta_minutes <= 120:
@@ -397,6 +399,26 @@ def _rain_imminence(model_rain_3h: float | None, nowcast_point: dict, ensemble_c
     else:
         level = "LOW"
 
+    # Public impact wording is intentionally qualitative. The model 3h mean is
+    # the background intensity; deep satellite convection only expands the
+    # local-tail wording, it never invents a numeric peak rate.
+    model_hourly = model_mm / 3.0
+    if model_hourly >= 7.5:
+        impact_label = "Mưa mạnh"
+    elif model_hourly >= 2.5:
+        impact_label = "Mưa vừa"
+    elif model_hourly >= 0.5:
+        impact_label = "Mưa nhẹ đến vừa"
+    elif model_hourly > 0.05:
+        impact_label = "Mưa nhẹ"
+    else:
+        impact_label = "Nền mô hình ít mưa"
+    if predicted_impact and (conv or 0.0) >= 75:
+        if model_hourly < 2.5:
+            impact_label += ", cục bộ có thể mạnh hơn"
+        else:
+            impact_label += ", cục bộ có thể mưa mạnh"
+
     return {
         "score": round(raw, 1),
         "level": level,
@@ -415,9 +437,17 @@ def _rain_imminence(model_rain_3h: float | None, nowcast_point: dict, ensemble_c
             "motion_speed_kmh": _num(motion.get("motion_speed_kmh")),
             "distance_to_target_km": _num(motion.get("distance_to_target_km")),
             "approaching": approaching,
+            "predicted_impact": predicted_impact,
+            "public_track_usable": public_track_usable,
             "eta_minutes": eta_minutes,
+            "arrival_time": motion.get("arrival_time"),
+            "exit_time": motion.get("exit_time"),
+            "closest_approach_km": _num(motion.get("closest_approach_km")),
             "tracking_confidence": motion.get("tracking_confidence"),
         },
+        "rain_impact_label": impact_label,
+        "background_model_rate_mm_h": round(model_hourly, 2),
+        "impact_basis": "MODEL_3H_BACKGROUND_PLUS_SATELLITE_CONVECTIVE_TAIL",
         "motion_component": round(motion_component, 1),
         "method": "PQ_RAIN_IMMINENCE_V2_SATELLITE_MOTION_ENSEMBLE_HEURISTIC_NOT_PROBABILITY",
         "not_probability": True,
