@@ -321,25 +321,75 @@ def _cloud_motion_for_target(spatial: dict, target_lat: float, target_lon: float
     distance = cur_c["distance_to_target_km"]
 
     reliable_speed = 4.0 <= speed <= 100.0
-    approaching = bool(reliable_speed and alignment is not None and alignment <= 50.0)
-    eta = None
-    state = "NEARBY" if distance <= 18.0 else "TRACKED"
-    if distance <= 18.0:
-        eta = 0
-    elif approaching and speed > 0:
-        candidate = distance / speed * 60.0
-        if 0.0 <= candidate <= 180.0:
-            eta = round(candidate)
-            state = "APPROACHING"
-    elif reliable_speed and alignment is not None and alignment >= 110.0:
-        state = "MOVING_AWAY"
-
     corridor = _nearest_corridor(cur_c["lat"], cur_c["lon"])
     confidence = "LOW"
     if cur_c["support_cells"] >= 4 and prev_c["support_cells"] >= 4 and reliable_speed:
         confidence = "MEDIUM"
     if cur_c["support_cells"] >= 8 and prev_c["support_cells"] >= 8 and reliable_speed and displacement >= 3.0:
         confidence = "MEDIUM_HIGH"
+
+    # Public arrival guidance must be stricter than merely saying a cloud mass is
+    # "approaching". Project the observed motion vector and ask whether it
+    # intersects an 18 km operational radius around the target within 3 hours.
+    # LOW-confidence tracks remain diagnostic only and never produce a public ETA.
+    impact_radius_km = 18.0
+    horizon_h = 3.0
+    track_usable = confidence in {"MEDIUM", "MEDIUM_HIGH"} and reliable_speed and heading is not None
+    predicted_impact = False
+    eta = None
+    exit_eta = None
+    closest_approach_km = None
+    closest_approach_minutes = None
+    state = "NEARBY" if distance <= impact_radius_km else ("TRACK_UNCERTAIN" if not track_usable else "TRACKED")
+
+    if distance <= impact_radius_km:
+        predicted_impact = True
+        eta = 0
+        closest_approach_km = round(distance, 1)
+        closest_approach_minutes = 0
+    elif track_usable:
+        # Local tangent-plane approximation is sufficient over this <=150 km domain.
+        mean_lat = math.radians((cur_c["lat"] + target_lat) / 2.0)
+        east_km = math.radians(target_lon - cur_c["lon"]) * 6371.0088 * math.cos(mean_lat)
+        north_km = math.radians(target_lat - cur_c["lat"]) * 6371.0088
+        hrad = math.radians(heading)
+        vx = speed * math.sin(hrad)
+        vy = speed * math.cos(hrad)
+        speed2 = vx * vx + vy * vy
+        dot = east_km * vx + north_km * vy
+        t_closest = dot / speed2 if speed2 > 0 else -1.0
+
+        if t_closest >= 0:
+            cx = east_km - vx * t_closest
+            cy = north_km - vy * t_closest
+            closest = math.sqrt(cx * cx + cy * cy)
+            closest_approach_km = round(closest, 1)
+            closest_approach_minutes = round(t_closest * 60.0)
+
+            if t_closest <= horizon_h and closest <= impact_radius_km:
+                # Solve entry/exit times for the impact-radius circle.
+                c = east_km * east_km + north_km * north_km - impact_radius_km * impact_radius_km
+                disc = max(0.0, dot * dot - speed2 * c)
+                root = math.sqrt(disc)
+                t_enter = max(0.0, (dot - root) / speed2)
+                t_exit = max(t_enter, (dot + root) / speed2)
+                if t_enter <= horizon_h:
+                    predicted_impact = True
+                    eta = round(t_enter * 60.0)
+                    exit_eta = round(min(t_exit, horizon_h) * 60.0)
+                    state = "IMPACT_EXPECTED"
+                else:
+                    state = "BEYOND_HORIZON"
+            elif t_closest > horizon_h:
+                state = "BEYOND_HORIZON"
+            else:
+                state = "PASSING_BY"
+        else:
+            state = "MOVING_AWAY"
+
+    approaching = bool(predicted_impact and eta is not None and eta > 0)
+    arrival_time = (cur_t + timedelta(minutes=eta)).isoformat() if eta is not None and cur_t else None
+    exit_time = (cur_t + timedelta(minutes=exit_eta)).isoformat() if exit_eta is not None and cur_t else None
 
     return {
         "status": state,
@@ -356,12 +406,20 @@ def _cloud_motion_for_target(spatial: dict, target_lat: float, target_lon: float
         "motion_speed_kmh": round(speed, 1) if reliable_speed else None,
         "alignment_to_target_deg": round(alignment, 1) if alignment is not None else None,
         "approaching": approaching,
+        "predicted_impact": predicted_impact,
+        "impact_radius_km": impact_radius_km,
         "eta_minutes": eta,
+        "arrival_time": arrival_time,
+        "exit_eta_minutes": exit_eta,
+        "exit_time": exit_time,
+        "closest_approach_km": closest_approach_km,
+        "closest_approach_minutes": closest_approach_minutes,
         "support_cells": cur_c["support_cells"],
         "max_convective_score": round(cur_c["max_score"], 1),
         "tracking_confidence": confidence,
-        "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1",
-        "note": "Theo dõi chuyển động cụm mây đối lưu từ hai ảnh vệ tinh liên tiếp; ETA là ngoại suy mây, không phải thời điểm mưa chắc chắn.",
+        "public_track_usable": track_usable,
+        "method": "HIMAWARI_PATH_INTERSECTION_V2",
+        "note": "ETA chỉ phát khi đường đi đủ ổn định và quỹ đạo ngoại suy cắt bán kính 18 km quanh điểm trong 3 giờ; đây không phải cam kết thời điểm bắt đầu mưa.",
     }
 
 
