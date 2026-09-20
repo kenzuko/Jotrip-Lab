@@ -1,14 +1,14 @@
 {
   "schema_version": "1.0",
   "product": "JOTRIP_WEATHER_ANALYTICS",
-  "generated_at": "2026-09-20T05:11:07.405420+00:00",
+  "generated_at": "2026-09-20T06:00:26.740575+00:00",
   "learning_status": "LEARNING",
   "minimum_samples": 30,
   "ready_groups": 0,
   "total_groups": 25,
-  "matched_cases": 0,
+  "matched_cases": 2,
   "forecast_archive_files": 1,
-  "groundtruth_archive_files": 36,
+  "groundtruth_archive_files": 37,
   "groups": [
     {
       "target": "vrain_an_thoi",
@@ -224,15 +224,15 @@
       "target": "vvpq",
       "variable": "temperature",
       "lead_bucket": "D0_24",
-      "sample_count": 0,
+      "sample_count": 1,
       "status": "LEARNING",
-      "mae": null,
-      "rmse": null,
-      "mean_error": null,
-      "median_error": null,
+      "mae": 0.877,
+      "rmse": 0.877,
+      "mean_error": 0.877,
+      "median_error": 0.877,
       "applied_bias": 0.0,
       "applied_factor": null,
-      "shrinkage": 0.0
+      "shrinkage": 0.0323
     },
     {
       "target": "vvpq",
@@ -294,15 +294,15 @@
       "target": "vvpq",
       "variable": "wind",
       "lead_bucket": "D0_24",
-      "sample_count": 0,
+      "sample_count": 1,
       "status": "LEARNING",
-      "mae": null,
-      "rmse": null,
-      "mean_error": null,
-      "median_error": null,
+      "mae": 7.3279,
+      "rmse": 7.3279,
+      "mean_error": 7.3279,
+      "median_error": 7.3279,
       "applied_bias": 0.0,
       "applied_factor": null,
-      "shrinkage": 0.0
+      "shrinkage": 0.0323
     },
     {
       "target": "vvpq",
@@ -363,35 +363,62 @@
   ],
   "latest_actual": {
     "vvpq": {
-      "observed_at": "2026-09-20T05:00:00+00:00",
-      "temperature_c": 29.0,
-      "wind_kmh": 24.08
+      "observed_at": "2026-09-20T05:30:00+00:00",
+      "temperature_c": 30.0,
+      "wind_kmh": 22.22
     },
     "rain": {
       "vrain_cua_can": {
-        "observed_at": "2026-09-20T05:11:07+00:00",
-        "increment_mm": 0.0,
-        "window_minutes": 14.1,
-        "increment_qc": "PASS",
+        "observed_at": "2026-09-20T06:00:26+00:00",
+        "increment_mm": null,
+        "window_minutes": null,
+        "increment_qc": "WINDOW_TOO_OLD_FOR_CURRENT_RAIN",
         "accumulation_mm": 0.0
       },
       "vrain_bai_thom": {
-        "observed_at": "2026-09-20T05:11:07+00:00",
-        "increment_mm": 0.0,
-        "window_minutes": 14.1,
-        "increment_qc": "PASS",
+        "observed_at": "2026-09-20T06:00:26+00:00",
+        "increment_mm": null,
+        "window_minutes": null,
+        "increment_qc": "WINDOW_TOO_OLD_FOR_CURRENT_RAIN",
         "accumulation_mm": 0.0
       },
       "vrain_an_thoi": {
-        "observed_at": "2026-09-20T05:11:07+00:00",
-        "increment_mm": 0.0,
-        "window_minutes": 14.1,
-        "increment_qc": "PASS",
+        "observed_at": "2026-09-20T06:00:26+00:00",
+        "increment_mm": null,
+        "window_minutes": null,
+        "increment_qc": "WINDOW_TOO_OLD_FOR_CURRENT_RAIN",
         "accumulation_mm": 0.0
       }
     }
   },
-  "recent_cases": [],
+  "recent_cases": [
+    {
+      "target": "vvpq",
+      "variable": "temperature",
+      "lead_bucket": "D0_24",
+      "lead_hours": 6.0,
+      "run_time": "2026-09-20T00:00:00+00:00",
+      "valid_time": "2026-09-20T06:00:00+00:00",
+      "forecast": 29.122998,
+      "observed": 30.0,
+      "observation_class": "ACTUAL",
+      "error": 0.877002000000001,
+      "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
+    },
+    {
+      "target": "vvpq",
+      "variable": "wind",
+      "lead_bucket": "D0_24",
+      "lead_hours": 6.0,
+      "run_time": "2026-09-20T00:00:00+00:00",
+      "valid_time": "2026-09-20T06:00:00+00:00",
+      "forecast": 14.892105,
+      "observed": 22.22,
+      "observation_class": "ACTUAL",
+      "error": 7.327894999999998,
+      "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
+    }
+  ],
   "policy": {
     "training_labels": "ACTUAL only",
     "estimated_now_is_training_label": false,
