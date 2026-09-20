@@ -8,6 +8,8 @@ from weather.collectors.gefs_local_matrix import (
     _wind_from_direction_deg,
     _wind_sector,
     _wind_exposure_factor,
+    _verification_summaries,
+    _summaries,
 )
 from weather.processing.ensemble_local import correct_distribution
 
@@ -78,6 +80,71 @@ class GefsLocalMatrixTests(unittest.TestCase):
         self.assertLess(_wind_exposure_factor("bai_sao", 225.0), 0.7)
         self.assertLess(_wind_exposure_factor("bai_sao", 270.0), 0.7)
         self.assertEqual(_wind_exposure_factor("an_thoi", 225.0), 1.0)
+
+    def test_verification_anchor_summary_is_compact(self):
+        vectors = {
+            "vvpq|6|2026-09-20T06:00:00+00:00": {
+                "point_id": "vvpq",
+                "lead_hours": 6,
+                "valid_time": "2026-09-20T06:00:00+00:00",
+                "members": {
+                    "c00": {
+                        "temperature_c": 29.0, "wind_kmh": 10.0, "rain_mm": 1.0,
+                        "rain_period_start_lead": 0, "sampled_lat": 10.0,
+                        "sampled_lon": 104.0, "distance_km": 12.0,
+                    },
+                    "p01": {
+                        "temperature_c": 31.0, "wind_kmh": 14.0, "rain_mm": 3.0,
+                        "rain_period_start_lead": 0, "sampled_lat": 10.0,
+                        "sampled_lon": 104.0, "distance_km": 12.0,
+                    },
+                },
+            }
+        }
+        out = _verification_summaries(vectors)
+        row = out["vvpq"][0]
+        self.assertEqual(row["temperature_q50_c"], 30.0)
+        self.assertEqual(row["wind_q50_kmh"], 12.0)
+        self.assertEqual(row["rain_q50_mm"], 2.0)
+        self.assertEqual(row["rain_period_start_lead"], 0)
+
+    def test_ready_calibration_changes_duong_dong_wind_distribution(self):
+        members = {
+            "c00": {
+                "temperature_c": 29.0, "wind_kmh": 10.0, "wind_local_kmh": 10.0,
+                "wind_exposure_factor": 1.0, "rain_mm": 0.0,
+            },
+            "p01": {
+                "temperature_c": 29.0, "wind_kmh": 12.0, "wind_local_kmh": 12.0,
+                "wind_exposure_factor": 1.0, "rain_mm": 0.0,
+            },
+        }
+        vectors = {
+            "duong_dong|6|2026-09-20T06:00:00+00:00": {
+                "point_id": "duong_dong",
+                "lead_hours": 6,
+                "valid_time": "2026-09-20T06:00:00+00:00",
+                "members": members,
+            }
+        }
+        bundle = {
+            "targets": {
+                "vvpq": {
+                    "wind": {
+                        "D0_24": {
+                            "status": "READY",
+                            "applied_bias": 2.0,
+                            "sample_count": 30,
+                            "minimum_samples": 30,
+                        }
+                    }
+                }
+            }
+        }
+        out = _summaries(vectors, bundle)
+        wind = out["duong_dong"][0]["variables"]["wind"]
+        self.assertEqual(wind["status"], "CALIBRATED")
+        self.assertAlmostEqual(wind["corrected"]["q50"], wind["raw"]["q50"] + 2.0, places=6)
 
 if __name__=="__main__":
     unittest.main()
