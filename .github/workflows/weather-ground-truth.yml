@@ -243,6 +243,10 @@ jobs:
                       continue
                   rows.append({
                       'time':row.get('time_iso'),
+                      'temperature_c':row.get('temperature'),
+                      'wind_kmh':row.get('wind'),
+                      'gust_kmh':row.get('gust'),
+                      'rain_3h_mm':row.get('rain'),
                       'wave_hs_m':row.get('wave'),
                       'wave_hmax_m':row.get('wave_max'),
                       'period_s':row.get('period'),
