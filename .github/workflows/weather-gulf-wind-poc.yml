@@ -1,0 +1,101 @@
+name: Gulf Wind Renderer POC
+
+on:
+  push:
+    branches:
+      - feat/gulf-wind-poc
+    paths:
+      - "weather/collectors/ecmwf_gulf_wind_poc.py"
+      - ".github/workflows/weather-gulf-wind-poc.yml"
+  schedule:
+    - cron: "25 */6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: weather-gulf-wind-poc
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  DATA_BRANCH: data-weather
+  OUTPUT_PATH: data/weather-poc/gulf-wind.json
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/gulf-wind-poc
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ECMWF client and GRIB decoder
+        run: python -m pip install --quiet ecmwf-opendata eccodes
+
+      - name: Build compact Gulf wind render pack
+        run: python -m weather.collectors.ecmwf_gulf_wind_poc --output /tmp/gulf-wind.json
+
+      - name: Validate POC contract
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/gulf-wind.json'))
+          assert p['status'] == 'READY', p
+          assert p['schema'] == 'JOTRIP_GULF_WIND_POC_V1', p
+          assert p['grid']['step_deg'] == 0.25, p
+          assert p['grid']['nx'] >= 20 and p['grid']['ny'] >= 20, p['grid']
+          assert len(p['frames']) >= 20, len(p['frames'])
+          n=p['grid']['nx'] * p['grid']['ny']
+          for frame in p['frames']:
+              assert len(frame['u_ms']) == n
+              assert len(frame['v_ms']) == n
+              assert len(frame['speed_kmh']) == n
+          print({
+              'frames': len(p['frames']),
+              'cells': n,
+              'run_time': p['run_time'],
+              'endpoint': p['selected_endpoint'],
+          })
+          PY
+
+      - name: Publish isolated POC data
+        shell: bash
+        run: |
+          git fetch origin "$DATA_BRANCH"
+          git checkout -B "$DATA_BRANCH" "origin/$DATA_BRANCH"
+          mkdir -p "$(dirname "$OUTPUT_PATH")"
+          cp /tmp/gulf-wind.json "$OUTPUT_PATH"
+          git config user.name "jotrip-weather-bot"
+          git config user.email "jotrip-weather-bot@users.noreply.github.com"
+          git add "$OUTPUT_PATH"
+
+          if git diff --cached --quiet; then
+            echo "No POC data changes"
+            exit 0
+          fi
+
+          git commit -m "data: update Gulf wind renderer POC"
+          for attempt in 1 2 3; do
+            if git pull --rebase origin "$DATA_BRANCH" && git push origin "HEAD:$DATA_BRANCH"; then
+              echo "POC data published on attempt $attempt"
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+          echo "Failed to publish Gulf wind POC"
+          exit 1
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gulf-wind-render-pack
+          path: /tmp/gulf-wind.json
+          retention-days: 7
