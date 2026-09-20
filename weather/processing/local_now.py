@@ -384,7 +384,18 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
         conv_factor = _clamp(0.65 + score / 125.0, 0.65, 1.45)
         model_signal = model_rate * conv_factor
         nearest = min(a["distance_km"] for a in anchors)
-        model_share = _clamp(nearest / 50.0 * 0.25, 0.0, 0.20)
+        # Base model contribution increases with distance from a real gauge.
+        base_model_share = _clamp(nearest / 50.0 * 0.25, 0.0, 0.20)
+        # A co-located dry gauge is ACTUAL evidence that rain is not reaching
+        # the sensor yet, but it does not prove the surrounding/local field is
+        # convection-free. When satellite/nowcast convection is strong, retain
+        # a limited model contribution in ESTIMATED_NOW. ACTUAL remains separate.
+        dry_near_gauge = nearest <= 1.5 and gauge_rate <= 0.01
+        convective_model_share = (
+            _clamp((score - 65.0) / 20.0 * 0.20, 0.0, 0.20)
+            if dry_near_gauge else 0.0
+        )
+        model_share = max(base_model_share, convective_model_share)
         gauge_share = 1.0 - model_share
         estimate = gauge_share * gauge_rate + model_share * model_signal
         spatial_support = math.exp(-nearest / 25.0)
@@ -398,7 +409,7 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
         return {
             "rain_rate_mm_h": round(max(0.0, estimate), 2),
             "data_class": "ESTIMATED_NOW",
-            "method": "PQ_LOCAL_NOW_V2_DISTANCE_ADAPTIVE_GAUGE_BLEND",
+            "method": "PQ_LOCAL_NOW_V2_GAUGE_CONVECTIVE_BLEND",
             "confidence": round(confidence, 2),
             "gauge_anchor_count": len(anchors),
             "gauge_anchors": anchors,
@@ -416,7 +427,7 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
                 "probability_5": (ensemble_context or {}).get("rain_probability_5"),
                 "role": "UNCERTAINTY_CONTEXT_NOT_DIRECT_RAIN_OBSERVATION",
             },
-            "note": "Fresh nearby VRain dominates current-rain analysis. Model share increases only with gauge distance; ensemble remains uncertainty context and never overrides ACTUAL.",
+            "note": "ACTUAL VRain remains separate from ESTIMATED_NOW. A dry nearby gauge suppresses the estimate, but strong convective evidence may retain up to 20% model signal so approaching/localized rain is not forced to zero.",
         }
 
     conv_factor = _clamp(0.55 + score / 95.0, 0.55, 1.60)
