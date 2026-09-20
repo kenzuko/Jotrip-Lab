@@ -536,9 +536,8 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | No
         }
 
     # Rạch Giá is a separate coastal reference. Do not transport
-    # Phú Quốc VVPQ/VRain corrections across ~120 km of sea. Until station
-    # 089907 has a verified machine-readable numeric feed in this pipeline,
-    # expose Rạch Giá as MODEL_ONLY + remote-sensing context.
+    # Phú Quốc VVPQ/VRain corrections across ~120 km of sea. With no connected
+    # numeric ACTUAL feed, expose Rạch Giá as MODEL_ONLY + remote-sensing context.
     rg_id = "rach_gia"
     rg = points_model.get(rg_id, {})
     if rg:
@@ -612,12 +611,7 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | No
                 "confidence": None,
                 "note": "Rạch Giá marine model reference; not in-situ observation.",
             },
-            "actual_anchors": {
-                "rach_gia_089907": {
-                    "status": (groundtruth.get("station_status", {}).get("089907", {}) or {}).get("readiness", "UNCONNECTED"),
-                    "note": "Known station anchor; numeric live feed is not yet connected to Local Now.",
-                }
-            },
+            "actual_anchors": {},
         }
 
     return {
@@ -639,9 +633,6 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | No
             "himawari": nowcast.get("status") if isinstance(nowcast, dict) else "UNAVAILABLE",
             "ensemble": (ensemble or {}).get("status", "UNAVAILABLE"),
             "source_skill": (source_skill or {}).get("schema_version", "UNAVAILABLE"),
-            "duong_dong_60018": groundtruth.get("station_status", {}).get("60018", {}).get("readiness"),
-            "an_thoi_408": groundtruth.get("station_status", {}).get("408", {}).get("readiness"),
-            "rach_gia_089907": groundtruth.get("station_status", {}).get("089907", {}).get("readiness"),
         },
     }
 
