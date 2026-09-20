@@ -245,6 +245,63 @@ class GroundTruthTests(unittest.TestCase):
         self.assertIn("ENSEMBLE_AWARE", w["method"])
         self.assertEqual(w["data_class"], "ESTIMATED_NOW")
 
+    def test_remote_dry_gauges_do_not_mask_local_convective_rain_signal(self):
+        gt = {
+            "generated_at": "2026-09-20T06:40:00+00:00",
+            "atmosphere": {"vvpq": {
+                "status": "FRESH", "qc": "PASS", "age_minutes": 10,
+                "temperature_c": 30, "wind_speed_kmh": 18.5, "wind_direction_deg": 260,
+                "weather": None, "observed_at": "2026-09-20T06:30:00+00:00",
+            }},
+            "rainfall": {"status": "FRESH", "stations": {
+                "cua_can": {
+                    "station_name": "Cửa Cạn", "lat": 10.292693, "lon": 103.914799,
+                    "age_minutes": 0, "accumulation_mm": 0, "increment_mm": None,
+                    "increment_window_minutes": None, "increment_qc": "WINDOW_TOO_SHORT", "qc": "PASS",
+                },
+                "bai_thom": {
+                    "station_name": "Bãi Thơm", "lat": 10.411765, "lon": 104.031055,
+                    "age_minutes": 0, "accumulation_mm": 0, "increment_mm": None,
+                    "increment_window_minutes": None, "increment_qc": "WINDOW_TOO_SHORT", "qc": "PASS",
+                },
+                "an_thoi": {
+                    "station_name": "An Thới", "lat": 10.018482, "lon": 104.0149,
+                    "age_minutes": 0, "accumulation_mm": 0, "increment_mm": None,
+                    "increment_window_minutes": None, "increment_qc": "WINDOW_TOO_SHORT", "qc": "PASS",
+                },
+            }},
+            "station_status": {},
+        }
+        row = {"time_iso": "2026-09-20T13:00:00+07:00", "temperature": 27.6,
+               "wind": 5.8, "gust": 22.2, "rain": 5.54, "wave": 0.25,
+               "wave_max": 0.47, "period": 4.41, "current": 0.54}
+        dashboard = {
+            "generated_at": "2026-09-20T13:00:00+07:00",
+            "points": {k: {**row, "hours": [row]}
+                       for k in ("duong_dong", "an_thoi", "ganh_dau")},
+        }
+        nowcast = {"status": "POINT_NUMERIC_READY", "points": {
+            "duong_dong": {"cooling_c_per_20m_proxy": -3.3, "convective_signal": {"score": 90}},
+            "an_thoi": {"cooling_c_per_20m_proxy": -1.0, "convective_signal": {"score": 60}},
+            "ganh_dau": {"cooling_c_per_20m_proxy": -1.0, "convective_signal": {"score": 60}},
+        }}
+        ensemble = {"status": "MEMBER_MATRIX_READY", "points": {
+            "duong_dong": [{
+                "valid_time": "2026-09-20T13:00:00+07:00",
+                "variables": {"rain": {"corrected": {
+                    "q50": 1.5, "q90": 2.6, "spread": 1.61,
+                    "exceedance_probability": 0.0323,
+                }}},
+            }]
+        }}
+        out = build(gt, dashboard, nowcast, ensemble)
+        rain = out["points"]["duong_dong"]["rain"]
+        self.assertGreaterEqual(rain["model_share"], 0.15)
+        self.assertGreater(rain["rain_rate_mm_h"], 0.35)
+        self.assertEqual(rain["imminence"]["level"], "HIGH")
+        self.assertTrue(rain["imminence"]["not_probability"])
+        self.assertIn("HEURISTIC_NOT_PROBABILITY", rain["imminence"]["method"])
+
     def test_rach_gia_is_model_only_and_not_corrected_by_phu_quoc_anchors(self):
         gt = {
             "generated_at": "2026-09-20T06:20:00+00:00",
