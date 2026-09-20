@@ -1,0 +1,51 @@
+name: Airport Live Worker deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'cloudflare/airport-live-worker.mjs'
+      - 'server/airport-live-core.mjs'
+      - 'wrangler.airport-live.jsonc'
+      - '.github/workflows/airport-live-worker-deploy.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check Cloudflare credentials
+        id: creds
+        shell: bash
+        run: |
+          if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "Cloudflare deploy skipped: CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID not configured in this repository."
+          fi
+      - name: Deploy Airport Live Worker
+        if: steps.creds.outputs.available == 'true'
+        run: npx --yes wrangler@latest deploy --config wrangler.airport-live.jsonc
+      - name: Verify deployment
+        if: steps.creds.outputs.available == 'true'
+        run: |
+          node --input-type=module <<'NODE'
+          const base = 'https://jotrip-airport-live.kenzuko.workers.dev';
+          const meta = await fetch(base + '/version', { headers: { accept: 'application/json' } });
+          if (!meta.ok) throw new Error(`version endpoint HTTP ${meta.status}`);
+          const body = await meta.json();
+          if (!body.version) throw new Error('version endpoint missing version');
+          console.log(JSON.stringify(body));
+          NODE
