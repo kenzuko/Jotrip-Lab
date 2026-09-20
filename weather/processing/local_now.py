@@ -102,7 +102,24 @@ def _model_value(point: dict, row: dict, key: str) -> float | None:
     return _num(point.get(key))
 
 
-def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model: dict, vvpq: dict) -> dict:
+def _convective_score(nowcast_point: dict) -> float | None:
+    direct = _num(nowcast_point.get("convective_score"))
+    if direct is not None:
+        return direct
+    return _num((nowcast_point.get("convective_signal") or {}).get("score"))
+
+
+def _convective_wind_floor(model_wind: float | None, model_gust: float | None, score: float | None) -> float | None:
+    if model_wind is None or model_gust is None or score is None or score < 55:
+        return None
+    severity = _clamp((score - 55.0) / 35.0, 0.0, 1.0)
+    gust_gap = max(0.0, model_gust - model_wind)
+    # Conservative outflow proxy: never jump to gust speed. Satellite/nowcast
+    # only lifts the local background by up to 30% of the model gust gap.
+    return model_wind + 0.30 * severity * gust_gap
+
+
+def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model: dict, vvpq: dict, nowcast_point: dict | None = None) -> dict:
     p = POINTS[point_id]
     distance = _haversine(p["lat"], p["lon"], VVPQ["lat"], VVPQ["lon"])
     freshness = _freshness(vvpq.get("age_minutes"))
@@ -139,12 +156,20 @@ def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model
         }
 
     model_wind = _num(model_point.get("wind"))
+    model_gust = _num(model_point.get("gust"))
     anchor_model_wind = _num(anchor_model.get("wind"))
     obs_wind = _num(vvpq.get("wind_speed_kmh"))
     obs_dir = _num(vvpq.get("wind_direction_deg"))
     anchor_dir = _num(anchor_model.get("wind_direction_deg"))
     point_dir = _num(model_point.get("wind_direction_deg"))
     wind_alpha = math.exp(-distance / WIND_DECAY_KM) * freshness * source_q
+    conv_score = _convective_score(nowcast_point or {})
+    conv_floor = _convective_wind_floor(model_wind, model_gust, conv_score)
+    conv_severity = _clamp(((conv_score or 0.0) - 55.0) / 35.0, 0.0, 1.0)
+    # A calm airport observation can be very local during active convection.
+    # Reduce its spatial authority as convective structure strengthens.
+    if obs_wind is not None and obs_wind < 2.0 and conv_severity > 0:
+        wind_alpha *= 1.0 - 0.70 * conv_severity
 
     # Direction is not present in the current dashboard point payload. When it is
     # unavailable, scale speed by the observed/model ratio instead of inventing a direction.
@@ -161,22 +186,39 @@ def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model
         else:
             ratio = _clamp(obs_wind / anchor_model_wind, 0.35, 2.2)
             corrected = model_wind * (1.0 + wind_alpha * (ratio - 1.0))
+            corrected = max(corrected, conv_floor) if conv_floor is not None else corrected
             result["wind_kmh"] = round(max(0.0, corrected), 1)
             result["wind_direction_deg"] = None
             result["wind_reference_direction_deg"] = obs_dir
-            method = "PQ_LOCAL_NOW_V1_SPEED_RATIO"
+            method = "PQ_LOCAL_NOW_V1_CONVECTIVE_GUARDED_SPEED_RATIO" if conv_floor is not None else "PQ_LOCAL_NOW_V1_SPEED_RATIO"
         result["wind"] = {
             "data_class": "ESTIMATED_NOW",
             "method": method,
             "baseline_model": model_wind,
             "anchor_observed_kmh": obs_wind,
             "anchor_model_proxy_kmh": anchor_model_wind,
-            "confidence": round(_clamp(0.30 + 0.58 * wind_alpha, 0.0, 0.90), 2),
+            "model_gust_kmh": model_gust,
+            "convective_score": conv_score,
+            "convective_floor_kmh": round(conv_floor, 1) if conv_floor is not None else None,
+            "confidence": round(_clamp(0.30 + 0.58 * wind_alpha - 0.12 * conv_severity, 0.0, 0.90), 2),
         }
     else:
-        result["wind_kmh"] = model_wind
+        estimated = conv_floor if conv_floor is not None else model_wind
+        result["wind_kmh"] = round(estimated, 1) if estimated is not None else None
         result["wind_direction_deg"] = obs_dir
-        result["wind"] = {"data_class": "MODEL_ONLY", "method": "MODEL_FALLBACK", "confidence": 0.30}
+        if conv_floor is not None:
+            result["wind"] = {
+                "data_class": "ESTIMATED_NOW",
+                "method": "PQ_LOCAL_NOW_V1_CONVECTIVE_BACKGROUND",
+                "baseline_model": model_wind,
+                "model_gust_kmh": model_gust,
+                "convective_score": conv_score,
+                "convective_floor_kmh": round(conv_floor, 1),
+                "confidence": round(_clamp(0.24 + 0.20 * conv_severity, 0.24, 0.44), 2),
+                "note": "Conservative convective background estimate; not an in-situ wind observation.",
+            }
+        else:
+            result["wind"] = {"data_class": "MODEL_ONLY", "method": "MODEL_FALLBACK", "confidence": 0.30}
     return result
 
 
@@ -278,6 +320,7 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict) -> dict:
         model = {
             "temperature": _model_value(mp, row, "temperature"),
             "wind": _model_value(mp, row, "wind"),
+            "gust": _model_value(mp, row, "gust"),
             "wind_direction_deg": None,
             "rain": _model_value(mp, row, "rain"),
             "wave": _model_value(mp, row, "wave"),
@@ -285,7 +328,7 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict) -> dict:
             "period": _model_value(mp, row, "period"),
             "current": _model_value(mp, row, "current"),
         }
-        corrected = _vvpq_correction(point_id, meta, model, anchor_model, vvpq)
+        corrected = _vvpq_correction(point_id, meta, model, anchor_model, vvpq, nowcast_points.get(point_id, {}))
         rain = _rain_estimate(point_id, model["rain"], gauges, nowcast_points.get(point_id, {}), vvpq)
         output_points[point_id] = {
             **meta,
