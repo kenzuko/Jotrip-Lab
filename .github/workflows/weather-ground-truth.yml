@@ -27,6 +27,9 @@ env:
   DATA_BRANCH: data-weather
   DATA_ROOT: data/weather-groundtruth
   NOWCAST_ROOT: data/weather-nowcast
+  FORECAST_ARCHIVE_ROOT: data/weather-forecast-archive
+  CALIBRATION_ROOT: data/weather-calibration
+  ANALYTICS_ROOT: data/weather-analytics
 
 jobs:
   ground-truth:
@@ -46,7 +49,7 @@ jobs:
         shell: bash
         run: |
           git fetch origin "$DATA_BRANCH" --depth=1
-          git checkout "origin/$DATA_BRANCH" -- "$DATA_ROOT" "$NOWCAST_ROOT" 2>/dev/null || true
+          git checkout "origin/$DATA_BRANCH" -- "$DATA_ROOT" "$NOWCAST_ROOT" "$FORECAST_ARCHIVE_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" 2>/dev/null || true
 
       - name: Test ground truth and local analysis formulas
         run: python -m unittest weather.tests.test_ground_truth_local_now -v
@@ -89,6 +92,20 @@ jobs:
               assert p['temperature']['data_class'] in {'ESTIMATED_NOW','MODEL_ONLY'}
               assert p['wind']['data_class'] in {'ESTIMATED_NOW','MODEL_ONLY'}
               assert p['rain']['data_class']=='ESTIMATED_NOW'
+          PY
+
+      - name: Build ACTUAL-only forecast verification and calibration
+        shell: bash
+        run: |
+          python -m weather.processing.calibration_pipeline             --forecast-root "$FORECAST_ARCHIVE_ROOT"             --groundtruth-root "$DATA_ROOT"             --current-groundtruth /tmp/groundtruth.json             --output-calibration /tmp/weather-calibration.json             --output-analytics /tmp/weather-analytics.json
+
+          python - <<'PY'
+          import json
+          cal=json.load(open('/tmp/weather-calibration.json'))
+          ana=json.load(open('/tmp/weather-analytics.json'))
+          assert cal['training_policy']['estimated_now_allowed'] is False
+          assert ana['policy']['estimated_now_is_training_label'] is False
+          assert cal['status'] in {'LEARNING','PARTIAL','READY'}
           PY
 
       - name: Build compact calibration archive
@@ -135,17 +152,21 @@ jobs:
           rm -rf /tmp/weather-groundtruth-export
           mkdir -p /tmp/weather-groundtruth-export
           cp -a "$DATA_ROOT"/. /tmp/weather-groundtruth-export/
+          cp /tmp/weather-calibration.json /tmp/weather-calibration-latest.json
+          cp /tmp/weather-analytics.json /tmp/weather-analytics-latest.json
 
           git reset --hard HEAD
           rm -rf "$DATA_ROOT"
           git fetch origin "$DATA_BRANCH"
           git checkout -B "$DATA_BRANCH" "origin/$DATA_BRANCH"
-          mkdir -p "$DATA_ROOT"
+          mkdir -p "$DATA_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT"
           cp -a /tmp/weather-groundtruth-export/. "$DATA_ROOT"/
+          cp /tmp/weather-calibration-latest.json "$CALIBRATION_ROOT/latest.json"
+          cp /tmp/weather-analytics-latest.json "$ANALYTICS_ROOT/latest.json"
 
           git config user.name "jotrip-weather-bot"
           git config user.email "jotrip-weather-bot@users.noreply.github.com"
-          git add "$DATA_ROOT"
+          git add "$DATA_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT"
           if git diff --cached --quiet; then
             echo "Ground truth state unchanged"
             exit 0
@@ -168,4 +189,6 @@ jobs:
           path: |
             /tmp/groundtruth.json
             /tmp/local-now.json
+            /tmp/weather-calibration.json
+            /tmp/weather-analytics.json
           retention-days: 7
