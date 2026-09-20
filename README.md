@@ -22,6 +22,7 @@ The collector is Playwright on GitHub Actions. Normalization and QA happen befor
 - `STALE`: snapshot age > 90 minutes.
 - Fetch failure is shown as a data failure. The UI must not present cached/old data as live.
 - Aircraft position is not inferred from scheduled time or airport status. Until an independent aircraft-tracking source is added, the flight detail only displays verified board status.
+- Flightradar24 is linked only as an external flight-number lookup. The UI says `Track live` only when the current source explicitly marks the flight `AIRBORNE`, `EN_ROUTE`, or `IN_AIR`; otherwise it says `Check FR24` and does not claim the aircraft is currently being tracked.
 
 ## UI modes
 
