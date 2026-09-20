@@ -32,6 +32,7 @@ env:
   FORECAST_ARCHIVE_ROOT: data/weather-forecast-archive
   CALIBRATION_ROOT: data/weather-calibration
   ANALYTICS_ROOT: data/weather-analytics
+  ENSEMBLE_ROOT: data/weather-ensemble
 
 jobs:
   ground-truth:
@@ -51,7 +52,7 @@ jobs:
         shell: bash
         run: |
           git fetch origin "$DATA_BRANCH" --depth=1
-          for path in "$DATA_ROOT" "$NOWCAST_ROOT" "$FORECAST_ARCHIVE_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT"; do
+          for path in "$DATA_ROOT" "$NOWCAST_ROOT" "$FORECAST_ARCHIVE_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$ENSEMBLE_ROOT"; do
             git checkout "origin/$DATA_BRANCH" -- "$path" 2>/dev/null || true
           done
 
@@ -76,7 +77,12 @@ jobs:
           if [ ! -f "$NOWCAST" ]; then
             NOWCAST="weather/nowcast.json"
           fi
-          python -m weather.processing.local_now             --groundtruth /tmp/groundtruth.json             --dashboard weather/dashboard-data.json             --nowcast "$NOWCAST"             --output /tmp/local-now.json
+          ENSEMBLE="$ENSEMBLE_ROOT/latest.json"
+          EXTRA_ENSEMBLE=""
+          if [ -f "$ENSEMBLE" ]; then
+            EXTRA_ENSEMBLE="--ensemble $ENSEMBLE"
+          fi
+          python -m weather.processing.local_now             --groundtruth /tmp/groundtruth.json             --dashboard weather/dashboard-data.json             --nowcast "$NOWCAST"             $EXTRA_ENSEMBLE             --output /tmp/local-now.json
 
       - name: Validate semantic safety gates
         run: |
@@ -91,7 +97,7 @@ jobs:
               for s in gt['rainfall'].get('stations',{}).values():
                   assert s['data_class']=='ACTUAL'
                   assert s['statistic']=='ACCUMULATION'
-          assert ln['engine']=='PQ_LOCAL_NOW_V1'
+          assert ln['engine']=='PQ_LOCAL_NOW_V2'
           assert ln['data_class']=='ESTIMATED_NOW'
           for p in ln['points'].values():
               assert p['marine']['data_class']=='MODEL_ONLY'
