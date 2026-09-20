@@ -235,10 +235,28 @@ function renderHazardBoard(){
   setHazard("hazardStorm",storm?fmt(storm.score,0)+"/100":"-",storm?"Chỉ số đối lưu · "+esc(storm.p.name)+(storm.cooling!==null?" · Δ20p "+fmt(storm.cooling,1)+"°C":"")+" · không phải xác suất dông":"Chưa có Himawari",stormLevel);
 
   const wind=future.map(x=>({...x,val:num(x.row.wind?.prob)||0})).sort((a,b)=>b.val-a.val)[0];
-  const windLvl=probabilityLevel(wind?.val);
+  const regionalWindRows=Object.values(regionalForecast?.regions||{}).flatMap(region=>
+    (region.rows||[]).map(row=>({region:region.name||"Phú Quốc",row}))
+  );
+  const nearWindRows=regionalWindRows.filter(x=>{
+    const lead=num(x.row.lead_hours);
+    return lead!==null&&lead>=0&&lead<=24;
+  });
+  const windHeadline=(nearWindRows.length?nearWindRows:regionalWindRows)
+    .sort((a,b)=>(num(b.row.wind_kmh)??-1)-(num(a.row.wind_kmh)??-1))[0];
+  const windP50=num(windHeadline?.row?.wind_kmh);
+  const windP10=num(windHeadline?.row?.wind_q10_kmh);
+  const windP90=num(windHeadline?.row?.wind_q90_kmh);
+  const windThresholdProb=num(windHeadline?.row?.wind_prob_30)??num(wind?.val);
+  const windLvl=probabilityLevel(windThresholdProb);
   const waves=points.map(x=>({name:x.p.name,hs:num(x.p.local?.wave_hs_m??x.p.model?.wave_hs_m)||0})).sort((a,b)=>b.hs-a.hs)[0];
-  const windMeta=wind?"P(gió ≥30 km/h) · "+esc(wind.p.name)+" · "+leadMoment(wind.row)+(waves?.hs?" · Hs cao nhất "+fmt(waves.hs,1)+" m":""):"Chưa đủ dữ liệu tổ hợp";
-  setHazard("hazardWind",wind?pct(wind.val):"-",windMeta,Math.max(windLvl.score,waves?.hs>=2?3:waves?.hs>=1.5?2:0));
+  const rangeText=windP10!==null&&windP90!==null
+    ? "P10-P90 "+fmt(windP10,1)+"-"+fmt(windP90,1)+" km/h"
+    : (windP90!==null?"P50-P90 "+fmt(windP50,1)+"-"+fmt(windP90,1)+" km/h":"Chưa đủ range");
+  const windMeta=windHeadline
+    ? rangeText+" · xác suất ≥30 km/h "+pct(windThresholdProb)+" · "+esc(windHeadline.region)+" · "+leadMoment(windHeadline.row)+(waves?.hs?" · Hs cao nhất "+fmt(waves.hs,1)+" m":"")
+    : "Đang chờ dự báo ensemble theo vùng";
+  setHazard("hazardWind",windP50!==null?fmt(windP50,1)+" km/h":"-",windMeta,Math.max(windLvl.score,waves?.hs>=2?3:waves?.hs>=1.5?2:0));
 
   const vol=future.map(x=>({...x,v:variationLevel(x.row.wind,x.row.rain)})).sort((a,b)=>b.v.index-a.v.index)[0];
   setHazard("hazardVolatility",vol?vol.v.index+"/100":"-",vol?"Biến động ensemble · "+esc(vol.p.name)+" · mạnh nhất "+leadMoment(vol.row)+" · không phải xác suất":"Chưa đủ dữ liệu",vol?.v.score||0);
@@ -536,18 +554,23 @@ function renderForecastDayRibbon(rows){
   root.innerHTML=days.map(({day,rows})=>{
     const temps=rows.map(r=>num(r.temperature_c)).filter(v=>v!==null);
     const winds=rows.map(r=>num(r.wind_kmh)).filter(v=>v!==null);
+    const windQ10s=rows.map(r=>num(r.wind_q10_kmh)).filter(v=>v!==null);
+    const windQ90s=rows.map(r=>num(r.wind_q90_kmh)).filter(v=>v!==null);
     const rainProb=Math.max(0,...rows.map(r=>num(r.rain_prob_5)).filter(v=>v!==null));
     const windProb=Math.max(0,...rows.map(r=>num(r.wind_prob_30)).filter(v=>v!==null));
     const state=forecastCardState(windProb,rainProb);
-    const bft=beaufort(winds.length?Math.max(...winds):0);
+    const windP50=winds.length?Math.max(...winds):null;
+    const windLow=windQ10s.length?Math.min(...windQ10s):null;
+    const windHigh=windQ90s.length?Math.max(...windQ90s):null;
+    const bft=beaufort(windP50||0);
     const conf=worstConfidence(rows.map(r=>r.confidence_band).filter(Boolean));
     const confScore=Math.min(...rows.map(rowConfidence));
     return '<article class="forecast-day '+state.cls+'">'+
       '<header><b>'+esc(day.label)+'</b><span>'+esc(day.date)+'</span></header>'+
       '<strong>'+(temps.length?fmt(Math.min(...temps),0)+'-'+fmt(Math.max(...temps),0)+'°':'-')+'</strong>'+
-      '<div><span>Mưa ≥5 mm</span><b>'+pct(rainProb)+'</b></div>'+
-      '<div><span>Gió ≥30</span><b>'+pct(windProb)+' · Bft '+bft.force+'</b></div>'+
-      '<small>Tin cậy '+confScore+'/100 · '+esc(conf)+'</small>'+
+      '<div><span>Xác suất mưa ≥5 mm</span><b>'+pct(rainProb)+'</b></div>'+
+      '<div><span>Gió ensemble</span><b>'+(windP50===null?'-':fmt(windP50,0)+' km/h')+' · Bft '+bft.force+'</b></div>'+
+      '<small>'+(windLow!==null&&windHigh!==null?'P10-P90 '+fmt(windLow,0)+'-'+fmt(windHigh,0)+' km/h · ':'')+'Xác suất gió ≥30 km/h '+pct(windProb)+' · Tin cậy '+confScore+'/100 · '+esc(conf)+'</small>'+
     '</article>';
   }).join("")||'<span class="inline-loader">Chưa đủ dữ liệu để tóm tắt 10 ngày.</span>';
 }
@@ -592,7 +615,7 @@ function renderQuickAlert(){
     cls=x.rain>=.50||x.wind>=.25||x.variability>=.70?"alert":"watch";
     const drivers=[];
     if(x.rain>=.25)drivers.push("mưa "+pct(x.rain));
-    if(x.wind>=.15)drivers.push("gió "+pct(x.wind));
+    if(x.wind>=.15)drivers.push("xác suất gió ≥30 km/h "+pct(x.wind));
     if(x.variability>=.45)drivers.push("biến động "+Math.round(x.variability*100)+"/100");
     headline=(cls==="alert"?"Có tín hiệu nhiễu động đáng chú ý":"Có dao động thời tiết cần theo dõi");
     detail=x.region+" · "+drivers.join(" · ")+" · mốc "+leadMoment(x.row)+".";
@@ -651,10 +674,10 @@ function renderJoTripForecast(){
     return '<tr class="'+state.cls+'">'+
       '<td><b>'+esc(r.valid_time?localTime(r.valid_time):("+"+fmt(r.lead_hours,0)+" giờ"))+'</b><small>+'+fmt(r.lead_hours,0)+' giờ</small></td>'+
       '<td>'+fmt(r.temperature_c,1)+'°C</td>'+
-      '<td><b>'+fmt(r.wind_kmh,0)+' km/h</b><small>q90 '+fmt(r.wind_q90_kmh,0)+'</small></td>'+
+      '<td><b>'+fmt(r.wind_kmh,1)+' km/h</b><small>'+(num(r.wind_q10_kmh)!==null?'P10-P90 '+fmt(r.wind_q10_kmh,1)+'-'+fmt(r.wind_q90_kmh,1)+' km/h':'P90 '+fmt(r.wind_q90_kmh,1)+' km/h')+'</small></td>'+
       '<td><b>Bft '+bft.force+'</b><small>'+esc(bft.label)+'</small></td>'+
       '<td><b>'+pct(r.rain_prob_5)+'</b><small>'+forecastBand(r.rain_prob_5)+'</small></td>'+
-      '<td><b>'+pct(r.wind_prob_30)+'</b><small>'+forecastBand(r.wind_prob_30)+'</small></td>'+
+      '<td><b>'+pct(r.wind_prob_30)+'</b><small>≥30 km/h · '+forecastBand(r.wind_prob_30)+'</small></td>'+
       '<td><b>'+rowVariability(r)+'/100</b><small>'+variation.label.toLowerCase()+'</small></td>'+
       '<td><b>'+rowConfidence(r)+'/100</b><small>'+esc((r.confidence_band||"-").toLowerCase())+'</small></td>'+
       '<td>'+esc(driverText)+'</td>'+
