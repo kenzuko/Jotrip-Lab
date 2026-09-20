@@ -226,6 +226,7 @@ def archive(snapshot: dict[str, Any], root: Path) -> dict[str, Any]:
     summary_path = root / "summary" / f"{day}.json"
     catalog_path = root / "catalog.json"
     latest_path = root / "latest.json"
+    compact_latest_path = root / "compact-latest.json"
     health_path = root / "health.json"
 
     previous_raw = _read_json(raw_path)
@@ -279,6 +280,20 @@ def archive(snapshot: dict[str, Any], root: Path) -> dict[str, Any]:
     # than accumulating per-poll files. Git history lives on the isolated branch.
     _write_json(raw_path, persisted_snapshot)
     _write_json(latest_path, persisted_snapshot)
+
+    compact_latest = {
+        "schema_version": "weather-nowcast-compact-v1",
+        "status": snapshot.get("status"),
+        "source": snapshot.get("source"),
+        "sampled_time": sampled_time,
+        "generated_at": snapshot.get("generated_at"),
+        "lightning_observed": snapshot.get("lightning_observed"),
+        "points": {
+            point_id: _compact_point(points[point_id])
+            for point_id in POINT_ORDER
+        },
+    }
+    _write_json(compact_latest_path, compact_latest)
 
     catalog = _read_json(catalog_path) or {
         "schema_version": "weather-nowcast-catalog-v1",
