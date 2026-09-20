@@ -260,16 +260,22 @@ def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model
             result["wind_direction_deg"] = round(direction)
             method = "PQ_LOCAL_NOW_V1_UV_RESIDUAL"
         else:
-            ratio = _clamp(obs_wind / anchor_model_wind, 0.35, 2.2)
-            corrected = model_wind * (1.0 + wind_alpha * (ratio - 1.0))
+            # Scalar residual correction when vector direction is unavailable.
+            # This is closer to Optimal Interpolation than a capped speed ratio:
+            # preserve the local model structure, then transport only the anchor
+            # innovation (ACTUAL - anchor background) with distance/freshness/
+            # ensemble-aware gain.
+            innovation = obs_wind - anchor_model_wind
+            corrected = model_wind + wind_alpha * innovation
             corrected = max(corrected, conv_floor) if conv_floor is not None else corrected
             result["wind_kmh"] = round(max(0.0, corrected), 1)
             result["wind_direction_deg"] = None
             result["wind_reference_direction_deg"] = obs_dir
             if ens_gain.get("available"):
-                method = "PQ_LOCAL_NOW_V2_ENSEMBLE_AWARE_CONVECTIVE" if conv_floor is not None else "PQ_LOCAL_NOW_V2_ENSEMBLE_AWARE"
+                method = "PQ_LOCAL_NOW_V2_ENSEMBLE_AWARE_RESIDUAL_CONVECTIVE" if conv_floor is not None else "PQ_LOCAL_NOW_V2_ENSEMBLE_AWARE_RESIDUAL"
             else:
-                method = "PQ_LOCAL_NOW_V1_CONVECTIVE_GUARDED_SPEED_RATIO" if conv_floor is not None else "PQ_LOCAL_NOW_V1_SPEED_RATIO"
+                method = "PQ_LOCAL_NOW_V2_SPEED_RESIDUAL_CONVECTIVE" if conv_floor is not None else "PQ_LOCAL_NOW_V2_SPEED_RESIDUAL"
+            result["wind_innovation_kmh"] = round(innovation, 2)
         result["wind"] = {
             "data_class": "ESTIMATED_NOW",
             "method": method,
