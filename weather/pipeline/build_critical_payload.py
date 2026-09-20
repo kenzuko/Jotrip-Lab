@@ -223,6 +223,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
         }
 
     v=(ground.get("atmosphere") or {}).get("vvpq",{})
+    rg_station=(ground.get("station_status") or {}).get("089907",{})
     gauges=[]
     for s in ((ground.get("rainfall") or {}).get("stations") or {}).values():
         gauges.append({
@@ -340,6 +341,12 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
                 "convective_cloud":bool(v.get("convective_cloud")),
             },
             "rain_gauges":gauges,
+            "rach_gia_station":{
+                "station_id":"089907",
+                "station_name":rg_station.get("station_name","KT RACH GIA"),
+                "readiness":rg_station.get("readiness","UNCONNECTED"),
+                "note":rg_station.get("note"),
+            },
         },
         "source_state":{
             "vvpq":v.get("status","UNAVAILABLE"),
@@ -349,6 +356,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
             "nowcast":nowcast.get("status","UNAVAILABLE"),
             "ensemble":ensemble.get("status","UNAVAILABLE"),
             "local_engine":local.get("engine"),
+            "rach_gia_089907":rg_station.get("readiness","UNCONNECTED"),
         },
     }
 
