@@ -30,6 +30,18 @@ from weather.collectors.live_smoke import _candidate_cycles
 from weather.points import POINTS
 
 ISLAND_POINT_IDS = tuple(point_id for point_id in POINTS if point_id != "rach_gia")
+VERIFICATION_TARGETS = {
+    "vvpq": (10.169, 103.995),
+    "vrain_cua_can": (10.292693, 103.914799),
+    "vrain_bai_thom": (10.411765, 104.031055),
+    "vrain_an_thoi": (10.018482, 104.0149),
+}
+CALIBRATION_ANCHORS = {
+    "duong_dong": {"temperature": "vvpq", "wind": "vvpq"},
+    "cua_can": {"rain": "vrain_cua_can"},
+    "bai_thom": {"rain": "vrain_bai_thom"},
+    "an_thoi": {"rain": "vrain_an_thoi"},
+}
 from weather.processing.ensemble import summarize_members
 from weather.processing.ensemble_local import correct_distribution
 
@@ -143,6 +155,9 @@ def _decode(path: Path, cycle: datetime, member: str) -> list[dict]:
                 targets = [
                     (point_id, POINTS[point_id][0], POINTS[point_id][1], "OPERATIONAL_ANCHOR")
                     for point_id in ISLAND_POINT_IDS
+                ] + [
+                    (point_id, lat, lon, "VERIFICATION_ANCHOR")
+                    for point_id, (lat, lon) in VERIFICATION_TARGETS.items()
                 ] + [
                     (_grid_id(lat, lon), lat, lon, "SPATIAL_GRID")
                     for lat, lon in SPATIAL_GRID_REQUESTS
@@ -263,7 +278,56 @@ def _learning_calibration(variable: str) -> dict:
     }
 
 
-def _summaries(vectors: dict) -> dict:
+def _lead_bucket(lead_hours: int) -> str | None:
+    for name, lo, hi in (
+        ("D0_24", 0, 24),
+        ("D1_48", 25, 48),
+        ("D2_72", 49, 72),
+        ("D3_5", 73, 120),
+        ("D6_10", 121, 240),
+    ):
+        if lo <= int(lead_hours) <= hi:
+            return name
+    return None
+
+
+def _calibration_for(bundle: dict | None, point_id: str, variable: str, lead_hours: int) -> dict:
+    target = (CALIBRATION_ANCHORS.get(point_id) or {}).get(variable)
+    bucket = _lead_bucket(lead_hours)
+    if not bundle or not target or not bucket:
+        return _learning_calibration(variable)
+    cal = ((((bundle.get("targets") or {}).get(target) or {}).get(variable) or {}).get(bucket))
+    return cal if isinstance(cal, dict) else _learning_calibration(variable)
+
+
+def _verification_summaries(vectors: dict) -> dict:
+    points: dict[str, list[dict]] = {point_id: [] for point_id in VERIFICATION_TARGETS}
+    for item in sorted(vectors.values(), key=lambda x: (x["point_id"], x["lead_hours"])):
+        point_id = item["point_id"]
+        if point_id not in points:
+            continue
+        members = item["members"]
+        temp = [m["temperature_c"] for m in members.values() if "temperature_c" in m]
+        wind = [m["wind_kmh"] for m in members.values() if "wind_kmh" in m]
+        rain = [m["rain_mm"] for m in members.values() if "rain_mm" in m]
+        starts = [m.get("rain_period_start_lead") for m in members.values() if m.get("rain_period_start_lead") is not None]
+        sample = next(iter(members.values()), {})
+        points[point_id].append({
+            "lead_hours": item["lead_hours"],
+            "valid_time": item["valid_time"],
+            "member_count": len(members),
+            "temperature_q50_c": summarize_members(temp).get("q50"),
+            "wind_q50_kmh": summarize_members(wind).get("q50"),
+            "rain_q50_mm": summarize_members(rain).get("q50"),
+            "rain_period_start_lead": statistics.median(starts) if starts else None,
+            "sampled_lat": sample.get("sampled_lat"),
+            "sampled_lon": sample.get("sampled_lon"),
+            "distance_km": sample.get("distance_km"),
+        })
+    return points
+
+
+def _summaries(vectors: dict, calibration_bundle: dict | None = None) -> dict:
     points: dict[str, list[dict]] = {point_id: [] for point_id in ISLAND_POINT_IDS}
     for item in sorted(vectors.values(), key=lambda x: (x["point_id"], x["lead_hours"])):
         if item["point_id"] not in points:
@@ -282,7 +346,7 @@ def _summaries(vectors: dict) -> dict:
             ("rain", "rain_mm", 5.0),
         ):
             values = [m[member_key] for m in members.values() if member_key in m]
-            calibration = _learning_calibration(variable)
+            calibration = _calibration_for(calibration_bundle, item["point_id"], variable, item["lead_hours"])
             dist = correct_distribution(values, calibration, variable=variable, threshold=threshold)
             if variable == "wind":
                 local_values = [m["wind_local_kmh"] for m in members.values() if "wind_local_kmh" in m]
@@ -405,7 +469,8 @@ def _spatial_summaries(vectors: dict) -> dict:
 
 
 def collect(output: Path | None = None, *, members: list[str] | None = None,
-            leads: list[int] | None = None, max_workers: int = 3) -> dict:
+            leads: list[int] | None = None, max_workers: int = 3,
+            calibration_bundle: dict | None = None) -> dict:
     members = members or MEMBERS
     leads = leads or LEADS
     attempts: list[dict] = []
@@ -464,13 +529,16 @@ def collect(output: Path | None = None, *, members: list[str] | None = None,
         "completed_member_step_files": len(completed),
         "completion_ratio": round(completion, 4),
         "box": BOX,
-        "points": _summaries(vectors),
+        "points": _summaries(vectors, calibration_bundle),
+        "verification_points": _verification_summaries(vectors),
         "spatial": _spatial_summaries(vectors),
         "calibration_engine": "PQ_ENSEMBLE_LOCAL_V1",
         "wind_exposure_engine": WIND_EXPOSURE_ENGINE,
         "wind_exposure_points": sorted(WIND_EXPOSURE_8),
-        "calibration_status": "LEARNING",
-        "calibration_note": "Raw member distributions are preserved until >=30 matched ACTUAL verification cases exist for the relevant point/variable/lead/regime.",
+        "calibration_status": (calibration_bundle or {}).get("status", "LEARNING"),
+        "calibration_ready_groups": (calibration_bundle or {}).get("ready_groups", 0),
+        "calibration_total_groups": (calibration_bundle or {}).get("total_groups", 0),
+        "calibration_note": "Only ACTUAL VVPQ/VRain verification cases can train coefficients. A group is applied only after >=30 matched cases.",
         "raw_member_records": len(all_records),
         "attempts": [a for a in attempts if a.get("status") == "FAIL"][-80:],
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -487,9 +555,22 @@ if __name__ == "__main__":
     p.add_argument("--members", type=int, default=31)
     p.add_argument("--lead", type=int, action="append")
     p.add_argument("--workers", type=int, default=3)
+    p.add_argument("--calibration", type=Path)
     args = p.parse_args()
     selected = MEMBERS[:max(1, min(31, args.members))]
-    result = collect(args.output, members=selected, leads=args.lead or LEADS, max_workers=args.workers)
+    calibration_bundle = {}
+    if args.calibration and args.calibration.exists():
+        try:
+            calibration_bundle = json.loads(args.calibration.read_text(encoding="utf-8"))
+        except Exception:
+            calibration_bundle = {}
+    result = collect(
+        args.output,
+        members=selected,
+        leads=args.lead or LEADS,
+        max_workers=args.workers,
+        calibration_bundle=calibration_bundle,
+    )
     print(json.dumps({
         "status": result.get("status"),
         "run_time": result.get("run_time"),
