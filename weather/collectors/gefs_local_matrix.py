@@ -481,12 +481,25 @@ def collect(output: Path | None = None, *, members: list[str] | None = None,
         work = Path(tmp)
         probe_member = members[0]
         probe_lead = leads[0]
+        horizon_probe = max(leads)
+        partial_cycle = None
+        # Prefer the newest cycle whose full requested horizon is already
+        # published. NOMADS releases long leads progressively, so probing only
+        # f006 made a fresh-but-incomplete cycle collapse a nominal 10-day
+        # product to ~3 days.
         for candidate in _candidate_cycles(days=3):
-            recs, meta = _fetch_one(candidate, probe_member, probe_lead, work)
-            attempts.append({"cycle_probe": candidate.isoformat(), **meta})
+            recs, meta = _fetch_one(candidate, probe_member, horizon_probe, work)
+            attempts.append({"cycle_horizon_probe": candidate.isoformat(), **meta})
             if recs:
                 cycle = candidate
                 break
+            if partial_cycle is None:
+                early, early_meta = _fetch_one(candidate, probe_member, probe_lead, work)
+                attempts.append({"cycle_early_probe": candidate.isoformat(), **early_meta})
+                if early:
+                    partial_cycle = candidate
+        if cycle is None:
+            cycle = partial_cycle
         if cycle is None:
             result = {"status": "UNAVAILABLE", "readiness": "UNAVAILABLE", "attempts": attempts}
             if output:
@@ -522,7 +535,8 @@ def collect(output: Path | None = None, *, members: list[str] | None = None,
         "source": "NOAA_NOMADS_GEFS_GRIB_FILTER",
         "model": "GEFS_0P50",
         "run_time": cycle.isoformat(),
-        "horizon_hours": max(leads),
+        "horizon_hours": max((int(r["lead_hours"]) for r in all_records), default=0),
+        "requested_horizon_hours": max(leads),
         "step_hours": sorted(leads),
         "members": members,
         "expected_member_step_files": expected_files,
