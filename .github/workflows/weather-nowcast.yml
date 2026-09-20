@@ -166,12 +166,3 @@ jobs:
           name: himawari-nowcast
           path: /tmp/nowcast.json
           retention-days: 7
-
-  refresh-local-now:
-    needs: himawari-nowcast
-    if: ${{ needs.himawari-nowcast.result == 'success' }}
-    uses: ./.github/workflows/weather-ground-truth.yml
-    with:
-      target_ref: ${{ inputs.target_ref || github.ref_name }}
-    secrets: inherit
-
