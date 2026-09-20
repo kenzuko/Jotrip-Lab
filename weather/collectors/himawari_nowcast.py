@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -36,6 +37,15 @@ SPATIAL_BOUNDS = {
     "east": 105.40,
 }
 SPATIAL_STEP_DEG = 0.05
+
+# Coastal corridor anchors are used only to describe where observed cloud fields
+# are located. They do not become atmospheric ACTUAL stations or model points.
+CORRIDOR_WATCH = {
+    "ha_tien": {"name": "Hà Tiên", "lat": 10.3831, "lon": 104.487534},
+    "rach_gia": {"name": "Rạch Giá", "lat": 10.00677, "lon": 105.07845},
+}
+MOTION_RADIUS_KM = 150.0
+MOTION_SCORE_MIN = 50.0
 
 
 def _write(path: Path, payload: dict) -> None:
@@ -175,6 +185,173 @@ def _sample(ds, lat: float, lon: float) -> dict:
 
 
 
+def _parse_iso(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        dt = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    r = 6371.0088
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dp = math.radians(lat2 - lat1)
+    dl = math.radians(lon2 - lon1)
+    a = math.sin(dp / 2.0) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2.0) ** 2
+    return 2.0 * r * math.asin(math.sqrt(a))
+
+
+def _bearing_deg(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dl = math.radians(lon2 - lon1)
+    y = math.sin(dl) * math.cos(p2)
+    x = math.cos(p1) * math.sin(p2) - math.sin(p1) * math.cos(p2) * math.cos(dl)
+    return (math.degrees(math.atan2(y, x)) + 360.0) % 360.0
+
+
+def _angle_diff(a: float, b: float) -> float:
+    return abs((a - b + 180.0) % 360.0 - 180.0)
+
+
+def _cardinal(deg: float | None) -> str | None:
+    if deg is None:
+        return None
+    labels = ("Bắc", "Đông Bắc", "Đông", "Đông Nam", "Nam", "Tây Nam", "Tây", "Tây Bắc")
+    return labels[int((deg + 22.5) // 45.0) % 8]
+
+
+def _weighted_cloud_centroid(cells: list[dict], target_lat: float, target_lon: float) -> dict | None:
+    selected = []
+    for cell in cells:
+        score = cell.get("convective_score")
+        try:
+            score = float(score)
+            lat = float(cell.get("lat"))
+            lon = float(cell.get("lon"))
+        except (TypeError, ValueError):
+            continue
+        if score < MOTION_SCORE_MIN:
+            continue
+        dist = _haversine_km(target_lat, target_lon, lat, lon)
+        if dist > MOTION_RADIUS_KM:
+            continue
+        # Stronger and nearer convective cloud gets more influence, while still
+        # preserving broad spatial motion instead of chasing one noisy pixel.
+        weight = max(1.0, score - 35.0) * math.exp(-dist / 110.0)
+        selected.append((lat, lon, score, dist, weight))
+    if not selected:
+        return None
+    total = sum(row[4] for row in selected)
+    lat = sum(row[0] * row[4] for row in selected) / total
+    lon = sum(row[1] * row[4] for row in selected) / total
+    return {
+        "lat": lat,
+        "lon": lon,
+        "support_cells": len(selected),
+        "max_score": max(row[2] for row in selected),
+        "mean_score": sum(row[2] * row[4] for row in selected) / total,
+        "distance_to_target_km": _haversine_km(lat, lon, target_lat, target_lon),
+    }
+
+
+def _nearest_corridor(lat: float, lon: float) -> dict | None:
+    candidates = []
+    for key, anchor in CORRIDOR_WATCH.items():
+        dist = _haversine_km(lat, lon, anchor["lat"], anchor["lon"])
+        candidates.append((dist, key, anchor))
+    if not candidates:
+        return None
+    dist, key, anchor = min(candidates, key=lambda row: row[0])
+    # Do not attach a place-name to a cloud mass that is nowhere near it.
+    if dist > 70.0:
+        return None
+    return {"id": key, "name": anchor["name"], "distance_km": round(dist, 1)}
+
+
+def _cloud_motion_for_target(spatial: dict, target_lat: float, target_lon: float) -> dict:
+    frames = list(spatial.get("frames") or [])
+    if len(frames) < 2:
+        return {
+            "status": "INSUFFICIENT_FRAMES",
+            "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1",
+            "eta_minutes": None,
+        }
+    previous, current = frames[-2], frames[-1]
+    prev_t = _parse_iso(previous.get("sampled_time"))
+    cur_t = _parse_iso(current.get("sampled_time"))
+    if not prev_t or not cur_t:
+        return {"status": "INVALID_TIME", "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1", "eta_minutes": None}
+    dt_h = (cur_t - prev_t).total_seconds() / 3600.0
+    if dt_h <= 0 or dt_h > 1.0:
+        return {"status": "INVALID_INTERVAL", "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1", "eta_minutes": None}
+
+    prev_c = _weighted_cloud_centroid(previous.get("cells") or [], target_lat, target_lon)
+    cur_c = _weighted_cloud_centroid(current.get("cells") or [], target_lat, target_lon)
+    if not prev_c or not cur_c:
+        return {
+            "status": "NO_TRACKABLE_CONVECTIVE_CLOUD",
+            "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1",
+            "eta_minutes": None,
+        }
+
+    displacement = _haversine_km(prev_c["lat"], prev_c["lon"], cur_c["lat"], cur_c["lon"])
+    speed = displacement / dt_h
+    heading = _bearing_deg(prev_c["lat"], prev_c["lon"], cur_c["lat"], cur_c["lon"]) if displacement >= 1.0 else None
+    toward = _bearing_deg(cur_c["lat"], cur_c["lon"], target_lat, target_lon)
+    source_bearing = _bearing_deg(target_lat, target_lon, cur_c["lat"], cur_c["lon"])
+    alignment = _angle_diff(heading, toward) if heading is not None else None
+    distance = cur_c["distance_to_target_km"]
+
+    reliable_speed = 4.0 <= speed <= 100.0
+    approaching = bool(reliable_speed and alignment is not None and alignment <= 50.0)
+    eta = None
+    state = "NEARBY" if distance <= 18.0 else "TRACKED"
+    if distance <= 18.0:
+        eta = 0
+    elif approaching and speed > 0:
+        candidate = distance / speed * 60.0
+        if 0.0 <= candidate <= 180.0:
+            eta = round(candidate)
+            state = "APPROACHING"
+    elif reliable_speed and alignment is not None and alignment >= 110.0:
+        state = "MOVING_AWAY"
+
+    corridor = _nearest_corridor(cur_c["lat"], cur_c["lon"])
+    confidence = "LOW"
+    if cur_c["support_cells"] >= 4 and prev_c["support_cells"] >= 4 and reliable_speed:
+        confidence = "MEDIUM"
+    if cur_c["support_cells"] >= 8 and prev_c["support_cells"] >= 8 and reliable_speed and displacement >= 3.0:
+        confidence = "MEDIUM_HIGH"
+
+    return {
+        "status": state,
+        "sampled_time": current.get("sampled_time"),
+        "previous_sampled_time": previous.get("sampled_time"),
+        "cloud_center_lat": round(cur_c["lat"], 4),
+        "cloud_center_lon": round(cur_c["lon"], 4),
+        "distance_to_target_km": round(distance, 1),
+        "source_bearing_deg": round(source_bearing, 1),
+        "source_sector": _cardinal(source_bearing),
+        "nearest_corridor": corridor,
+        "motion_heading_deg": round(heading, 1) if heading is not None else None,
+        "motion_heading": _cardinal(heading),
+        "motion_speed_kmh": round(speed, 1) if reliable_speed else None,
+        "alignment_to_target_deg": round(alignment, 1) if alignment is not None else None,
+        "approaching": approaching,
+        "eta_minutes": eta,
+        "support_cells": cur_c["support_cells"],
+        "max_convective_score": round(cur_c["max_score"], 1),
+        "tracking_confidence": confidence,
+        "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1",
+        "note": "Theo dõi chuyển động cụm mây đối lưu từ hai ảnh vệ tinh liên tiếp; ETA là ngoại suy mây, không phải thời điểm mưa chắc chắn.",
+    }
+
+
 def _axis(start: float, end: float, step: float) -> list[float]:
     values = []
     value = start
@@ -250,7 +427,7 @@ def _spatial_field(ds_now, ds_prev, now_time: str, prev_time: str | None) -> dic
     if previous_cells and prev_time:
         frames.append({"sampled_time": str(prev_time), "cells": previous_cells})
     frames.append({"sampled_time": str(now_time), "cells": current_cells})
-    return {
+    payload = {
         "status": "READY" if current_cells else "UNAVAILABLE",
         "bounds": SPATIAL_BOUNDS,
         "display_grid_deg": SPATIAL_STEP_DEG,
@@ -259,8 +436,14 @@ def _spatial_field(ds_now, ds_prev, now_time: str, prev_time: str | None) -> dic
         "sampling_method": "REGULAR_LATLON_RENDER_GRID_FROM_HIMAWARI_AHI_L2_CLOUD_TOP",
         "display_interpolation": "RENDER_ONLY",
         "frames": frames,
+        "corridor_watch": CORRIDOR_WATCH,
         "note": "Observed satellite cloud-top field. It is not radar rainfall and not lightning observation.",
     }
+    payload["corridor_motion"] = {
+        key: _cloud_motion_for_target(payload, anchor["lat"], anchor["lon"])
+        for key, anchor in CORRIDOR_WATCH.items()
+    }
+    return payload
 
 
 def _open_s3_dataset(fs, key: str):
@@ -316,6 +499,7 @@ def collect() -> dict:
                 **current,
                 "cooling_c_per_20m_proxy": cooling,
                 "convective_signal": signal,
+                "cloud_motion": _cloud_motion_for_target(spatial, lat, lon),
                 "lightning_observed": "NOT_CONNECTED",
             }
 
