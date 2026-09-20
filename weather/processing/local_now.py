@@ -377,12 +377,16 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
 
     if weight_sum > 0:
         gauge_rate = weighted / weight_sum
-        # Preserve observed gauge dominance. Model/satellite contributes only a
-        # small stabilizing term in sparse spatial coverage.
+        # Let a fresh co-located gauge dominate current-rain analysis. Model
+        # contribution grows gradually only as the nearest gauge gets farther
+        # away. This avoids inventing rain at Cửa Cạn/Bãi Thơm when the local
+        # public gauge is currently dry.
         conv_factor = _clamp(0.65 + score / 125.0, 0.65, 1.45)
         model_signal = model_rate * conv_factor
-        estimate = 0.80 * gauge_rate + 0.20 * model_signal
         nearest = min(a["distance_km"] for a in anchors)
+        model_share = _clamp(nearest / 50.0 * 0.25, 0.0, 0.20)
+        gauge_share = 1.0 - model_share
+        estimate = gauge_share * gauge_rate + model_share * model_signal
         spatial_support = math.exp(-nearest / 25.0)
         network_support = min(1.0, weight_sum / 1.5)
         convective_penalty = 1.0 - 0.30 * _clamp(score / 100.0, 0.0, 1.0)
@@ -394,11 +398,14 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
         return {
             "rain_rate_mm_h": round(max(0.0, estimate), 2),
             "data_class": "ESTIMATED_NOW",
-            "method": "PQ_LOCAL_NOW_V1_GAUGE_IDW_MODEL_BLEND",
+            "method": "PQ_LOCAL_NOW_V2_DISTANCE_ADAPTIVE_GAUGE_BLEND",
             "confidence": round(confidence, 2),
             "gauge_anchor_count": len(anchors),
             "gauge_anchors": anchors,
             "model_rain_3h_mm": model_rain_3h,
+            "model_share": round(model_share, 3),
+            "gauge_share": round(gauge_share, 3),
+            "nearest_gauge_km": round(nearest, 1),
             "convective_score": score,
             "ensemble_context": {
                 "valid_time": (ensemble_context or {}).get("valid_time"),
@@ -409,7 +416,7 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
                 "probability_5": (ensemble_context or {}).get("rain_probability_5"),
                 "role": "UNCERTAINTY_CONTEXT_NOT_DIRECT_RAIN_OBSERVATION",
             },
-            "note": "Observed rain anchors dominate the estimate. Ensemble informs uncertainty/hazard context only; it does not override VRain.",
+            "note": "Fresh nearby VRain dominates current-rain analysis. Model share increases only with gauge distance; ensemble remains uncertainty context and never overrides ACTUAL.",
         }
 
     conv_factor = _clamp(0.55 + score / 95.0, 0.55, 1.60)
