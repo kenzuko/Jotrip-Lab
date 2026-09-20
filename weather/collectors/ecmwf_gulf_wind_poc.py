@@ -32,6 +32,8 @@ def _axis(start: float, end: float, step: float) -> list[float]:
 
 LATS = _axis(BOUNDS["south"], BOUNDS["north"], STEP_DEG)
 LONS = _axis(BOUNDS["west"], BOUNDS["east"], STEP_DEG)
+TARGET_LATS = tuple(lat for lat in LATS for _lon in LONS)
+TARGET_LONS = tuple(lon for _lat in LATS for lon in LONS)
 
 
 def _iso(value) -> str:
@@ -45,7 +47,7 @@ def _iso(value) -> str:
 def _sample_grib(path: Path, run_time: datetime) -> list[dict]:
     from eccodes import (
         codes_get,
-        codes_grib_find_nearest,
+        codes_grib_find_nearest_multiple,
         codes_grib_new_from_file,
         codes_release,
     )
@@ -63,12 +65,16 @@ def _sample_grib(path: Path, run_time: datetime) -> list[dict]:
                     continue
 
                 canonical = "u" if variable in {"10u", "u10"} else "v"
+                nearest = codes_grib_find_nearest_multiple(
+                    gid,
+                    False,
+                    TARGET_LATS,
+                    TARGET_LONS,
+                )
                 values: list[float] = []
-                for lat in LATS:
-                    for lon in LONS:
-                        nearest = codes_grib_find_nearest(gid, lat, lon)[0]
-                        value = float(nearest["value"])
-                        values.append(round(value, 3) if math.isfinite(value) else None)
+                for item in nearest:
+                    value = float(item.value if hasattr(item, "value") else item["value"])
+                    values.append(round(value, 3) if math.isfinite(value) else None)
 
                 by_lead.setdefault(lead, {})[canonical] = values
             finally:
