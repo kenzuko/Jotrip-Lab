@@ -162,6 +162,46 @@ class GroundTruthTests(unittest.TestCase):
         self.assertEqual(rain["gauge_anchors"][0]["evidence"], "FRESH_ZERO_ACCUMULATION")
         self.assertLess(rain["rain_rate_mm_h"], 0.4)
 
+    def test_colocated_dry_vrain_dominates_model_rain(self):
+        gt = {
+            "generated_at": "2026-09-20T06:20:00+00:00",
+            "atmosphere": {"vvpq": {
+                "status": "FRESH", "qc": "PASS", "age_minutes": 5,
+                "temperature_c": 30, "wind_speed_kmh": 15, "wind_direction_deg": 250,
+                "weather": None, "observed_at": "2026-09-20T06:15:00+00:00",
+            }},
+            "rainfall": {"status": "FRESH", "stations": {
+                "cua_can": {
+                    "station_name": "Cửa Cạn", "lat": 10.292693, "lon": 103.914799,
+                    "age_minutes": 0, "accumulation_mm": 0, "increment_mm": 0,
+                    "increment_window_minutes": 10, "increment_qc": "PASS", "qc": "PASS",
+                },
+            }},
+            "station_status": {},
+        }
+        row = {"time_iso": "2026-09-20T13:00:00+07:00", "temperature": 28,
+               "wind": 5, "gust": 12, "rain": 5.54, "wave": 0.2,
+               "wave_max": 0.4, "period": 4.5, "current": 0.5}
+        dashboard = {
+            "generated_at": "2026-09-20T13:00:00+07:00",
+            "points": {"cua_can": {**row, "hours": [row]},
+                       "duong_dong": {**row, "hours": [row]},
+                       "an_thoi": {**row, "hours": [row]},
+                       "ganh_dau": {**row, "hours": [row]}},
+        }
+        nowcast = {"status": "POINT_NUMERIC_READY", "points": {
+            "cua_can": {"convective_signal": {"score": 90}},
+            "duong_dong": {"convective_signal": {"score": 90}},
+            "an_thoi": {"convective_signal": {"score": 90}},
+            "ganh_dau": {"convective_signal": {"score": 90}},
+        }}
+        out = build(gt, dashboard, nowcast)
+        rain = out["points"]["cua_can"]["rain"]
+        self.assertEqual(rain["nearest_gauge_km"], 0.0)
+        self.assertEqual(rain["model_share"], 0.0)
+        self.assertEqual(rain["rain_rate_mm_h"], 0.0)
+        self.assertEqual(rain["method"], "PQ_LOCAL_NOW_V2_DISTANCE_ADAPTIVE_GAUGE_BLEND")
+
     def test_ensemble_spread_modulates_wind_correction_without_becoming_observation(self):
         gt = {
             "generated_at": "2026-09-20T04:00:00+00:00",
