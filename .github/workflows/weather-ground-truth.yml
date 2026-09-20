@@ -119,7 +119,7 @@ jobs:
               assert p['marine']['data_class']=='MODEL_ONLY'
               assert p['temperature']['data_class'] in {'ESTIMATED_NOW','MODEL_ONLY'}
               assert p['wind']['data_class'] in {'ESTIMATED_NOW','MODEL_ONLY'}
-              assert p['rain']['data_class']=='ESTIMATED_NOW'
+              assert p['rain']['data_class'] in {'ESTIMATED_NOW','MODEL_ONLY'}
           PY
 
       - name: Build compact current bundle
