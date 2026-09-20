@@ -31,7 +31,9 @@ SPATIAL_BOUNDS = {
     "south": 9.70,
     "north": 10.55,
     "west": 103.65,
-    "east": 104.30,
+    # Include the Gulf corridor through Rach Gia so short-range convective
+    # evolution is visible on both ends of the Phu Quoc transport axis.
+    "east": 105.40,
 }
 SPATIAL_STEP_DEG = 0.05
 
