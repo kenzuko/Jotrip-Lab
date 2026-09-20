@@ -233,7 +233,7 @@
         <section id="hazardBoard" class="hazard-board" aria-label="Các nguy cơ cần theo dõi">
           <article><span>Mưa lớn</span><b id="hazardRain">Đang tính</b><small id="hazardRainMeta">-</small></article>
           <article><span>Đối lưu - dông</span><b id="hazardStorm">Đang tính</b><small id="hazardStormMeta">-</small></article>
-          <article><span>Gió - biển</span><b id="hazardWind">Đang tính</b><small id="hazardWindMeta">-</small></article>
+          <article><span>Gió ensemble</span><b id="hazardWind">Đang tính</b><small id="hazardWindMeta">-</small></article>
           <article><span>Biến động 10 ngày</span><b id="hazardVolatility">Đang tính</b><small id="hazardVolatilityMeta">-</small></article>
         </section>
       </aside>
@@ -261,8 +261,8 @@
             <th>Nhiệt độ</th>
             <th>Gió vùng</th>
             <th>Beaufort</th>
-            <th>Mưa ≥5 mm</th>
-            <th>Gió ≥30 km/h</th>
+            <th>Xác suất mưa ≥5 mm</th>
+            <th>Xác suất gió mạnh</th>
             <th>Biến động</th>
             <th>Độ tin cậy</th>
             <th>Điểm rủi ro cao nhất</th>
@@ -276,7 +276,7 @@
     <small id="ensembleMeta" class="panel-foot"></small>
     <details class="forecast-method">
       <summary>JoTrip tính dự báo theo vùng như thế nào?</summary>
-      <div>Nhiệt độ của vùng lấy giá trị trung tâm từ các điểm đại diện. Với gió, mưa và rủi ro, hệ thống ưu tiên điểm có tín hiệu bất lợi hơn để không làm mất cảnh báo cục bộ. Gió tại các điểm ven bờ có thể được hiệu chỉnh theo hướng phơi gió và mức che chắn địa phương trước khi tính xác suất. Điểm biến động /100 là chỉ số độ phân tán ensemble, còn điểm tin cậy /100 là chỉ số chất lượng vận hành - cả hai đều không phải xác suất dự báo chắc chắn đúng. Ba ngày đầu giữ bước 6 giờ; từ ngày 4 đến ngày 10 dùng bước 12 giờ và giảm dần mức tin cậy.</div>
+      <div>Nhiệt độ của vùng lấy giá trị trung tâm từ các điểm đại diện. Gió ensemble hiển thị bằng km/h: P50 là giá trị trung tâm, còn P10-P90 là khoảng chứa phần lớn kịch bản của tổ hợp. Phần trăm chỉ dùng cho xác suất vượt ngưỡng cụ thể, ví dụ gió ≥30 km/h hoặc mưa ≥5 mm. Với gió, mưa và rủi ro, hệ thống ưu tiên điểm có tín hiệu bất lợi hơn để không làm mất cảnh báo cục bộ. Gió tại các điểm ven bờ có thể được hiệu chỉnh theo hướng phơi gió và mức che chắn địa phương trước khi tổng hợp. Điểm biến động /100 là chỉ số độ phân tán ensemble, còn điểm tin cậy /100 là chỉ số chất lượng vận hành - cả hai đều không phải xác suất dự báo chắc chắn đúng. Ba ngày đầu giữ bước 6 giờ; từ ngày 4 đến ngày 10 dùng bước 12 giờ và giảm dần mức tin cậy.</div>
     </details>
   </section>
 
