@@ -112,7 +112,10 @@ jobs:
         run: |
           python - <<'PY'
           import json
+          from datetime import datetime, timedelta, timezone
           from pathlib import Path
+
+          VN=timezone(timedelta(hours=7))
           gt=json.load(open('/tmp/groundtruth.json'))
           ln=json.load(open('/tmp/local-now.json'))
           compact=Path('data/weather-nowcast/compact-latest.json')
@@ -120,12 +123,98 @@ jobs:
           if compact.exists():
               try: nowcast=json.loads(compact.read_text(encoding='utf-8'))
               except Exception: nowcast={}
+
+          def parse_time(v):
+              try:
+                  return datetime.fromisoformat(str(v).replace('Z','+00:00'))
+              except Exception:
+                  return None
+
+          local_now_time=parse_time(ln.get('generated_at')) or datetime.now(timezone.utc)
+          today=local_now_time.astimezone(VN).date()
+          root=Path('data/weather-groundtruth')
+
+          # Keep the public bundle small: one latest Estimated Now sample per
+          # 30-minute local bucket, enough for a smooth intraday chart.
+          by_point={}
+          snapshots=[]
+          for p in (root/'analysis').rglob('*.json'):
+              try:
+                  payload=json.loads(p.read_text(encoding='utf-8'))
+              except Exception:
+                  continue
+              t=parse_time(payload.get('generated_at'))
+              if t and t.astimezone(VN).date()==today:
+                  snapshots.append(payload)
+          snapshots.append(ln)
+
+          buckets={}
+          for payload in snapshots:
+              t=parse_time(payload.get('generated_at'))
+              if not t:
+                  continue
+              lt=t.astimezone(VN)
+              bucket=lt.replace(minute=(lt.minute//30)*30,second=0,microsecond=0)
+              for point_id,p in (payload.get('points') or {}).items():
+                  key=(point_id,bucket.isoformat())
+                  row={
+                      'time':t.isoformat(),
+                      'temperature_c':p.get('temperature_c'),
+                      'wind_kmh':p.get('wind_kmh'),
+                      'rain_rate_mm_h':(p.get('rain') or {}).get('rain_rate_mm_h'),
+                      'wave_hs_m':p.get('wave_hs_m'),
+                      'convective_score':(p.get('rain') or {}).get('convective_score'),
+                      'data_class':'ESTIMATED_NOW',
+                  }
+                  previous=buckets.get(key)
+                  if previous is None or str(row['time'])>str(previous['time']):
+                      buckets[key]=row
+          for (point_id,_),row in sorted(buckets.items(),key=lambda item:(item[0][0],item[0][1])):
+              by_point.setdefault(point_id,[]).append(row)
+
+          # VVPQ is retained separately as an ACTUAL anchor. Front-end only
+          # overlays it where spatially appropriate; it is never relabelled as
+          # the selected point's observation.
+          vvpq_buckets={}
+          actual_payloads=[]
+          for p in root.glob('20*/*/*/*.json'):
+              try:
+                  payload=json.loads(p.read_text(encoding='utf-8'))
+              except Exception:
+                  continue
+              v=(payload.get('atmosphere') or {}).get('vvpq') or {}
+              t=parse_time(v.get('observed_at'))
+              if t and t.astimezone(VN).date()==today and v.get('data_class')=='ACTUAL' and v.get('qc')=='PASS':
+                  actual_payloads.append(v)
+          current_v=(gt.get('atmosphere') or {}).get('vvpq') or {}
+          if current_v:
+              actual_payloads.append(current_v)
+          for v in actual_payloads:
+              t=parse_time(v.get('observed_at'))
+              if not t:
+                  continue
+              lt=t.astimezone(VN)
+              key=lt.replace(minute=(lt.minute//30)*30,second=0,microsecond=0).isoformat()
+              vvpq_buckets[key]={
+                  'time':t.isoformat(),
+                  'wind_kmh':v.get('wind_speed_kmh'),
+                  'temperature_c':v.get('temperature_c'),
+                  'data_class':'ACTUAL',
+                  'source':'VVPQ',
+              }
+
           bundle={
-              'schema_version':'weather-current-v1',
+              'schema_version':'weather-current-v2',
               'generated_at':ln.get('generated_at') or gt.get('generated_at'),
               'groundtruth':gt,
               'local_now':ln,
               'nowcast':nowcast,
+              'today_series':{
+                  'date':today.isoformat(),
+                  'cadence_minutes':30,
+                  'points':by_point,
+                  'actual':{'vvpq':list(vvpq_buckets.values())},
+              },
           }
           Path('/tmp/weather-current.json').write_text(
               json.dumps(bundle,ensure_ascii=False,separators=(',',':'))+'\n',
