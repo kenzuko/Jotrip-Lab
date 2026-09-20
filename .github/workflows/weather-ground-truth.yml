@@ -218,8 +218,29 @@ jobs:
                   'source':'VVPQ',
               }
 
+          dashboard=json.load(open('weather/dashboard-data.json'))
+          model_72h={}
+          end72=local_now_time+timedelta(hours=72)
+          for point_id,payload in (dashboard.get('points') or {}).items():
+              rows=[]
+              for row in payload.get('hours') or []:
+                  t=parse_time(row.get('time_iso'))
+                  if not t or t<local_now_time-timedelta(minutes=15) or t>end72:
+                      continue
+                  if row.get('wave') is None and row.get('wave_max') is None and row.get('period') is None:
+                      continue
+                  rows.append({
+                      'time':row.get('time_iso'),
+                      'wave_hs_m':row.get('wave'),
+                      'wave_hmax_m':row.get('wave_max'),
+                      'period_s':row.get('period'),
+                      'data_class':'MODEL_ONLY',
+                  })
+              if rows:
+                  model_72h[point_id]=rows
+
           bundle={
-              'schema_version':'weather-current-v2',
+              'schema_version':'weather-current-v3',
               'generated_at':ln.get('generated_at') or gt.get('generated_at'),
               'groundtruth':gt,
               'local_now':ln,
@@ -229,6 +250,10 @@ jobs:
                   'cadence_minutes':30,
                   'points':by_point,
                   'actual':{'vvpq':list(vvpq_buckets.values())},
+              },
+              'model_72h':{
+                  'points':model_72h,
+                  'note':'Compact 72h marine series from dashboard model; MODEL_ONLY.',
               },
           }
           Path('/tmp/weather-current.json').write_text(
