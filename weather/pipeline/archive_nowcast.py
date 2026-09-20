@@ -302,6 +302,8 @@ def archive(snapshot: dict[str, Any], root: Path) -> dict[str, Any]:
         "sampled_time": sampled_time,
         "generated_at": snapshot.get("generated_at"),
         "lightning_observed": snapshot.get("lightning_observed"),
+        "corridor_watch": ((snapshot.get("spatial") or {}).get("corridor_watch") or {}),
+        "corridor_motion": ((snapshot.get("spatial") or {}).get("corridor_motion") or {}),
         "points": {
             point_id: _compact_point(points[point_id])
             for point_id in POINT_ORDER
