@@ -245,6 +245,48 @@ class GroundTruthTests(unittest.TestCase):
         self.assertIn("ENSEMBLE_AWARE", w["method"])
         self.assertEqual(w["data_class"], "ESTIMATED_NOW")
 
+    def test_rach_gia_is_model_only_and_not_corrected_by_phu_quoc_anchors(self):
+        gt = {
+            "generated_at": "2026-09-20T06:20:00+00:00",
+            "atmosphere": {"vvpq": {
+                "status": "FRESH", "qc": "PASS", "age_minutes": 0,
+                "temperature_c": 35, "wind_speed_kmh": 40, "wind_direction_deg": 250,
+                "observed_at": "2026-09-20T06:20:00+00:00",
+            }},
+            "rainfall": {"status": "FRESH", "stations": {
+                "cua_can": {
+                    "station_name": "Cửa Cạn", "lat": 10.292693, "lon": 103.914799,
+                    "age_minutes": 0, "accumulation_mm": 10, "increment_mm": 10,
+                    "increment_window_minutes": 10, "increment_qc": "PASS", "qc": "PASS",
+                }
+            }},
+            "station_status": {"089907": {"readiness": "VERIFIED_STATION_NO_LIVE_FEED"}},
+        }
+        def pt(temp,wind,gust,rain,wave=.2):
+            row={"time_iso":"2026-09-20T13:00:00+07:00","temperature":temp,"wind":wind,
+                 "gust":gust,"rain":rain,"wave":wave,"wave_max":wave*1.7,"period":2.5,"current":.3}
+            return {**row,"hours":[row]}
+        dashboard={"generated_at":"2026-09-20T13:00:00+07:00","points":{
+            "duong_dong":pt(29,5,10,2),
+            "an_thoi":pt(29,5,10,2),
+            "ganh_dau":pt(29,5,10,2),
+            "rach_gia":pt(27.5,15.1,20.2,1.34,.26),
+        }}
+        nowcast={"status":"POINT_NUMERIC_READY","points":{
+            "duong_dong":{"convective_signal":{"score":80}},
+            "an_thoi":{"convective_signal":{"score":80}},
+            "ganh_dau":{"convective_signal":{"score":80}},
+            "rach_gia":{"convective_signal":{"score":75}},
+        }}
+        out=build(gt,dashboard,nowcast)
+        rg=out["points"]["rach_gia"]
+        self.assertEqual(rg["temperature_c"],27.5)
+        self.assertEqual(rg["wind_kmh"],15.1)
+        self.assertEqual(rg["wind"]["data_class"],"MODEL_ONLY")
+        self.assertEqual(rg["rain"]["data_class"],"MODEL_ONLY")
+        self.assertAlmostEqual(rg["rain"]["rain_rate_mm_h"],1.34/3,places=2)
+        self.assertEqual(rg["actual_anchors"]["rach_gia_089907"]["status"],"VERIFIED_STATION_NO_LIVE_FEED")
+
 
 if __name__ == "__main__":
     unittest.main()
