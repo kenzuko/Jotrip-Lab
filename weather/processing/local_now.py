@@ -222,19 +222,30 @@ def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model
     return result
 
 
-def _gauge_rate(station: dict) -> float | None:
+def _gauge_rate(station: dict) -> tuple[float | None, str | None]:
+    """Return a current rain-rate anchor without inventing wet weather.
+
+    A recent zero accumulation is valid dry evidence even when a short increment
+    cannot be formed. Positive accumulation without a recent increment does NOT
+    prove it is raining now, so it remains unavailable for rate estimation.
+    """
     inc = _num(station.get("increment_mm"))
     minutes = _num(station.get("increment_window_minutes"))
-    if inc is None or minutes is None or minutes <= 0 or station.get("increment_qc") != "PASS":
-        return None
-    return inc * 60.0 / minutes
+    if inc is not None and minutes is not None and minutes > 0 and station.get("increment_qc") == "PASS":
+        return inc * 60.0 / minutes, "RECENT_INCREMENT"
+
+    accumulation = _num(station.get("accumulation_mm"))
+    age = _num(station.get("age_minutes"))
+    if station.get("qc") == "PASS" and accumulation == 0 and age is not None and age <= 20:
+        return 0.0, "FRESH_ZERO_ACCUMULATION"
+    return None, None
 
 
 def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, nowcast_point: dict, vvpq: dict) -> dict:
     p = POINTS[point_id]
     weighted, weight_sum, anchors = 0.0, 0.0, []
     for key, station in gauges.items():
-        rate = _gauge_rate(station)
+        rate, evidence = _gauge_rate(station)
         lat, lon = _num(station.get("lat")), _num(station.get("lon"))
         if rate is None or lat is None or lon is None:
             continue
@@ -245,7 +256,14 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
             continue
         weighted += w * rate
         weight_sum += w
-        anchors.append({"station": station.get("station_name"), "distance_km": round(dist, 1), "rate_mm_h": round(rate, 2), "weight": round(w, 3)})
+        anchors.append({
+            "station": station.get("station_name"),
+            "distance_km": round(dist, 1),
+            "rate_mm_h": round(rate, 2),
+            "weight": round(w, 3),
+            "evidence": evidence,
+            "accumulation_mm": _num(station.get("accumulation_mm")),
+        })
 
     score = _num((nowcast_point.get("convective_signal") or {}).get("score"))
     score = score if score is not None else 35.0
@@ -276,7 +294,7 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
             "gauge_anchors": anchors,
             "model_rain_3h_mm": model_rain_3h,
             "convective_score": score,
-            "note": "80% spatial gauge-rate estimate + 20% model/satellite stabilizer. Experimental until field feedback/backtest is sufficient.",
+            "note": "Observed rain anchors dominate the estimate. A fresh zero accumulation is treated as real dry evidence; positive accumulation still requires a recent increment before it can imply current rain.",
         }
 
     conv_factor = _clamp(0.55 + score / 95.0, 0.55, 1.60)
