@@ -7,6 +7,7 @@ on:
       - "weather/processing/local_now.py"
       - "weather/processing/calibration_pipeline.py"
       - "weather/processing/source_skill.py"
+      - "weather/pipeline/archive_public_snapshot.py"
       - "weather/tests/test_ground_truth_local_now.py"
       - "weather/tests/test_calibration_pipeline.py"
       - ".github/workflows/weather-ground-truth.yml"
@@ -36,6 +37,7 @@ env:
   ENSEMBLE_ROOT: data/weather-ensemble
   CURRENT_ROOT: data/weather-current
   SOURCE_SKILL_ROOT: data/weather-source-skill
+  PUBLISHED_ROOT: data/weather-published
 
 jobs:
   ground-truth:
@@ -55,7 +57,7 @@ jobs:
         shell: bash
         run: |
           git fetch origin "$DATA_BRANCH" --depth=1
-          for path in "$DATA_ROOT" "$NOWCAST_ROOT" "$FORECAST_ARCHIVE_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$ENSEMBLE_ROOT" "$CURRENT_ROOT" "$SOURCE_SKILL_ROOT"; do
+          for path in "$DATA_ROOT" "$NOWCAST_ROOT" "$FORECAST_ARCHIVE_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$ENSEMBLE_ROOT" "$CURRENT_ROOT" "$SOURCE_SKILL_ROOT" "$PUBLISHED_ROOT"; do
             git checkout "origin/$DATA_BRANCH" -- "$path" 2>/dev/null || true
           done
 
@@ -233,6 +235,11 @@ jobs:
           )
           PY
 
+      - name: Archive public Weather values for later backtest
+        shell: bash
+        run: |
+          python -m weather.pipeline.archive_public_snapshot             --bundle /tmp/weather-current.json             --root "$PUBLISHED_ROOT"             --cadence-minutes 30
+
       - name: Build ACTUAL-only forecast verification and calibration
         shell: bash
         run: |
@@ -300,7 +307,7 @@ jobs:
           rm -rf "$DATA_ROOT"
           git fetch origin "$DATA_BRANCH"
           git checkout -B "$DATA_BRANCH" "origin/$DATA_BRANCH"
-          mkdir -p "$DATA_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$CURRENT_ROOT" "$SOURCE_SKILL_ROOT"
+          mkdir -p "$DATA_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$CURRENT_ROOT" "$SOURCE_SKILL_ROOT" "$PUBLISHED_ROOT"
           cp -a /tmp/weather-groundtruth-export/. "$DATA_ROOT"/
           cp /tmp/weather-calibration-latest.json "$CALIBRATION_ROOT/latest.json"
           cp /tmp/weather-analytics-latest.json "$ANALYTICS_ROOT/latest.json"
@@ -309,7 +316,7 @@ jobs:
 
           git config user.name "jotrip-weather-bot"
           git config user.email "jotrip-weather-bot@users.noreply.github.com"
-          git add "$DATA_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$CURRENT_ROOT" "$SOURCE_SKILL_ROOT"
+          git add "$DATA_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$CURRENT_ROOT" "$SOURCE_SKILL_ROOT" "$PUBLISHED_ROOT"
           if git diff --cached --quiet; then
             echo "Ground truth state unchanged"
             exit 0
