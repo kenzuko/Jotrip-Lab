@@ -102,6 +102,80 @@ def _model_value(point: dict, row: dict, key: str) -> float | None:
     return _num(point.get(key))
 
 
+def _nearest_ensemble_row(ensemble: dict, point_id: str, analysis_time: datetime, max_gap_hours: float = 9.0) -> dict:
+    rows = ((ensemble.get("points") or {}).get(point_id) or []) if isinstance(ensemble, dict) else []
+    best, best_gap = None, float("inf")
+    for row in rows:
+        valid = _parse_time(row.get("valid_time"))
+        if valid is None:
+            continue
+        gap = abs((valid - analysis_time).total_seconds()) / 3600.0
+        if gap < best_gap:
+            best, best_gap = row, gap
+    if best is None or best_gap > max_gap_hours:
+        return {}
+    return {**best, "_gap_hours": best_gap}
+
+
+def _ensemble_context(ensemble: dict, point_id: str, analysis_time: datetime) -> dict:
+    row = _nearest_ensemble_row(ensemble, point_id, analysis_time)
+    if not row:
+        return {}
+    variables = row.get("variables") or {}
+    wind = (variables.get("wind") or {}).get("corrected") or (variables.get("wind") or {}).get("raw") or {}
+    rain = (variables.get("rain") or {}).get("corrected") or (variables.get("rain") or {}).get("raw") or {}
+    return {
+        "valid_time": row.get("valid_time"),
+        "gap_hours": round(float(row.get("_gap_hours", 0.0)), 2),
+        "wind_q50_kmh": _num(wind.get("q50")),
+        "wind_q90_kmh": _num(wind.get("q90")),
+        "wind_spread_kmh": _num(wind.get("spread")),
+        "wind_probability_30": _num(wind.get("exceedance_probability")),
+        "rain_q50_mm": _num(rain.get("q50")),
+        "rain_q90_mm": _num(rain.get("q90")),
+        "rain_spread_mm": _num(rain.get("spread")),
+        "rain_probability_5": _num(rain.get("exceedance_probability")),
+    }
+
+
+def _ensemble_gain(model_wind: float | None, context: dict, distance_km: float, age_minutes: Any) -> dict:
+    """Adaptive uncertainty term inspired by OI/EnKF background-error weighting.
+
+    The ensemble does not become another observation. It estimates how uncertain
+    the model background is, which modulates the observation correction.
+    """
+    q50 = _num(context.get("wind_q50_kmh"))
+    spread = _num(context.get("wind_spread_kmh"))
+    if model_wind is None or q50 is None or spread is None:
+        return {"available": False, "gain": 1.0}
+
+    # IQR -> approximate sigma under a near-Gaussian distribution. A floor keeps
+    # small ensembles/spreads from claiming unrealistic certainty.
+    ensemble_sigma = max(1.5, spread / 1.349)
+    disagreement = abs(model_wind - q50)
+    gap = _num(context.get("gap_hours")) or 0.0
+    sigma_b = math.sqrt(ensemble_sigma**2 + (0.50 * disagreement) ** 2 + (0.35 * gap) ** 2)
+
+    age = max(0.0, _num(age_minutes) or 0.0)
+    # Representativeness dominates instrument error here because VVPQ is a point
+    # anchor being transported spatially across an island/marine domain.
+    sigma_o = 1.5 + 0.10 * max(0.0, distance_km) + 0.02 * age
+    kalman_like = sigma_b**2 / (sigma_b**2 + sigma_o**2)
+
+    # Preserve the already-tested distance/freshness correction. Ensemble only
+    # modulates its strength rather than replacing the local analysis.
+    gain = _clamp(0.65 + 0.70 * kalman_like, 0.65, 1.25)
+    return {
+        "available": True,
+        "gain": gain,
+        "kalman_like_gain": kalman_like,
+        "background_sigma_kmh": sigma_b,
+        "observation_repr_sigma_kmh": sigma_o,
+        "ensemble_sigma_kmh": ensemble_sigma,
+        "model_ensemble_disagreement_kmh": disagreement,
+    }
+
+
 def _convective_score(nowcast_point: dict) -> float | None:
     direct = _num(nowcast_point.get("convective_score"))
     if direct is not None:
@@ -119,7 +193,7 @@ def _convective_wind_floor(model_wind: float | None, model_gust: float | None, s
     return model_wind + 0.30 * severity * gust_gap
 
 
-def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model: dict, vvpq: dict, nowcast_point: dict | None = None) -> dict:
+def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model: dict, vvpq: dict, nowcast_point: dict | None = None, ensemble_context: dict | None = None) -> dict:
     p = POINTS[point_id]
     distance = _haversine(p["lat"], p["lon"], VVPQ["lat"], VVPQ["lon"])
     freshness = _freshness(vvpq.get("age_minutes"))
@@ -163,6 +237,8 @@ def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model
     anchor_dir = _num(anchor_model.get("wind_direction_deg"))
     point_dir = _num(model_point.get("wind_direction_deg"))
     wind_alpha = math.exp(-distance / WIND_DECAY_KM) * freshness * source_q
+    ens_gain = _ensemble_gain(model_wind, ensemble_context or {}, distance, vvpq.get("age_minutes"))
+    wind_alpha *= float(ens_gain.get("gain", 1.0))
     conv_score = _convective_score(nowcast_point or {})
     conv_floor = _convective_wind_floor(model_wind, model_gust, conv_score)
     conv_severity = _clamp(((conv_score or 0.0) - 55.0) / 35.0, 0.0, 1.0)
@@ -190,7 +266,10 @@ def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model
             result["wind_kmh"] = round(max(0.0, corrected), 1)
             result["wind_direction_deg"] = None
             result["wind_reference_direction_deg"] = obs_dir
-            method = "PQ_LOCAL_NOW_V1_CONVECTIVE_GUARDED_SPEED_RATIO" if conv_floor is not None else "PQ_LOCAL_NOW_V1_SPEED_RATIO"
+            if ens_gain.get("available"):
+                method = "PQ_LOCAL_NOW_V2_ENSEMBLE_AWARE_CONVECTIVE" if conv_floor is not None else "PQ_LOCAL_NOW_V2_ENSEMBLE_AWARE"
+            else:
+                method = "PQ_LOCAL_NOW_V1_CONVECTIVE_GUARDED_SPEED_RATIO" if conv_floor is not None else "PQ_LOCAL_NOW_V1_SPEED_RATIO"
         result["wind"] = {
             "data_class": "ESTIMATED_NOW",
             "method": method,
@@ -200,7 +279,19 @@ def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model
             "model_gust_kmh": model_gust,
             "convective_score": conv_score,
             "convective_floor_kmh": round(conv_floor, 1) if conv_floor is not None else None,
-            "confidence": round(_clamp(0.30 + 0.58 * wind_alpha - 0.12 * conv_severity, 0.0, 0.90), 2),
+            "ensemble_context": {
+                "available": bool(ens_gain.get("available")),
+                "valid_time": (ensemble_context or {}).get("valid_time"),
+                "gap_hours": (ensemble_context or {}).get("gap_hours"),
+                "q50_kmh": (ensemble_context or {}).get("wind_q50_kmh"),
+                "q90_kmh": (ensemble_context or {}).get("wind_q90_kmh"),
+                "spread_kmh": (ensemble_context or {}).get("wind_spread_kmh"),
+                "adaptive_gain": round(float(ens_gain.get("gain", 1.0)), 3),
+                "kalman_like_gain": round(float(ens_gain.get("kalman_like_gain", 0.0)), 3) if ens_gain.get("available") else None,
+                "background_sigma_kmh": round(float(ens_gain.get("background_sigma_kmh", 0.0)), 2) if ens_gain.get("available") else None,
+                "observation_repr_sigma_kmh": round(float(ens_gain.get("observation_repr_sigma_kmh", 0.0)), 2) if ens_gain.get("available") else None,
+            },
+            "confidence": round(_clamp(0.30 + 0.58 * min(1.0, wind_alpha) - 0.12 * conv_severity, 0.0, 0.90), 2),
         }
     else:
         estimated = conv_floor if conv_floor is not None else model_wind
@@ -241,7 +332,7 @@ def _gauge_rate(station: dict) -> tuple[float | None, str | None]:
     return None, None
 
 
-def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, nowcast_point: dict, vvpq: dict) -> dict:
+def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, nowcast_point: dict, vvpq: dict, ensemble_context: dict | None = None) -> dict:
     p = POINTS[point_id]
     weighted, weight_sum, anchors = 0.0, 0.0, []
     for key, station in gauges.items():
@@ -284,6 +375,9 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
         network_support = min(1.0, weight_sum / 1.5)
         convective_penalty = 1.0 - 0.30 * _clamp(score / 100.0, 0.0, 1.0)
         confidence = (0.30 + 0.25 * spatial_support + 0.12 * network_support + 0.05 * min(len(anchors), 3)) * convective_penalty
+        ens_spread = _num((ensemble_context or {}).get("rain_spread_mm"))
+        if ens_spread is not None:
+            confidence *= 1.0 - min(0.15, max(0.0, ens_spread) / 20.0 * 0.15)
         confidence = _clamp(confidence, 0.25, 0.78)
         return {
             "rain_rate_mm_h": round(max(0.0, estimate), 2),
@@ -294,7 +388,16 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
             "gauge_anchors": anchors,
             "model_rain_3h_mm": model_rain_3h,
             "convective_score": score,
-            "note": "Observed rain anchors dominate the estimate. A fresh zero accumulation is treated as real dry evidence; positive accumulation still requires a recent increment before it can imply current rain.",
+            "ensemble_context": {
+                "valid_time": (ensemble_context or {}).get("valid_time"),
+                "gap_hours": (ensemble_context or {}).get("gap_hours"),
+                "q50_mm": (ensemble_context or {}).get("rain_q50_mm"),
+                "q90_mm": (ensemble_context or {}).get("rain_q90_mm"),
+                "spread_mm": (ensemble_context or {}).get("rain_spread_mm"),
+                "probability_5": (ensemble_context or {}).get("rain_probability_5"),
+                "role": "UNCERTAINTY_CONTEXT_NOT_DIRECT_RAIN_OBSERVATION",
+            },
+            "note": "Observed rain anchors dominate the estimate. Ensemble informs uncertainty/hazard context only; it does not override VRain.",
         }
 
     conv_factor = _clamp(0.55 + score / 95.0, 0.55, 1.60)
@@ -311,11 +414,20 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
         "model_rain_3h_mm": model_rain_3h,
         "convective_score": score,
         "airport_weather_support": airport_rain,
-        "note": "Low-confidence experimental estimate because no fresh gauge increment is available.",
+        "ensemble_context": {
+            "valid_time": (ensemble_context or {}).get("valid_time"),
+            "gap_hours": (ensemble_context or {}).get("gap_hours"),
+            "q50_mm": (ensemble_context or {}).get("rain_q50_mm"),
+            "q90_mm": (ensemble_context or {}).get("rain_q90_mm"),
+            "spread_mm": (ensemble_context or {}).get("rain_spread_mm"),
+            "probability_5": (ensemble_context or {}).get("rain_probability_5"),
+            "role": "UNCERTAINTY_CONTEXT_NOT_DIRECT_RAIN_OBSERVATION",
+        },
+        "note": "Low-confidence estimate because no fresh gauge increment is available. Ensemble is context only, not an observation.",
     }
 
 
-def build(groundtruth: dict, dashboard: dict, nowcast: dict) -> dict:
+def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | None = None) -> dict:
     generated = _parse_time(groundtruth.get("generated_at")) or datetime.now(timezone.utc)
     dashboard_time = _parse_time(dashboard.get("generated_at"))
     points_model = dashboard.get("points", {})
@@ -346,8 +458,14 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict) -> dict:
             "period": _model_value(mp, row, "period"),
             "current": _model_value(mp, row, "current"),
         }
-        corrected = _vvpq_correction(point_id, meta, model, anchor_model, vvpq, nowcast_points.get(point_id, {}))
-        rain = _rain_estimate(point_id, model["rain"], gauges, nowcast_points.get(point_id, {}), vvpq)
+        ens_context = _ensemble_context(ensemble or {}, point_id, generated)
+        corrected = _vvpq_correction(
+            point_id, meta, model, anchor_model, vvpq,
+            nowcast_points.get(point_id, {}), ens_context,
+        )
+        rain = _rain_estimate(
+            point_id, model["rain"], gauges, nowcast_points.get(point_id, {}), vvpq, ens_context,
+        )
         output_points[point_id] = {
             **meta,
             "analysis_time": generated.isoformat(),
@@ -389,13 +507,13 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict) -> dict:
 
     return {
         "schema_version": "1.0",
-        "engine": "PQ_LOCAL_NOW_V1",
+        "engine": "PQ_LOCAL_NOW_V2",
         "generated_at": generated.isoformat(),
         "data_class": "ESTIMATED_NOW",
         "title": "PQ Local Now",
         "policy": {
             "actual": "VVPQ METAR + VRain gauges only when fresh numeric observations exist.",
-            "estimated_now": "Observation-anchored local correction. Never presented as station actual.",
+            "estimated_now": "Observation-anchored local analysis. Ensemble spread/disagreement modulates background uncertainty; ensemble is not treated as an observation.",
             "marine": "MODEL_ONLY until a usable in-situ marine feed is available.",
             "feedback": "Field feedback calibrates categorical/event errors and later numeric coefficients; it never rewrites raw observations.",
         },
@@ -404,6 +522,7 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict) -> dict:
             "vvpq": vvpq.get("status"),
             "vrain": groundtruth.get("rainfall", {}).get("status"),
             "himawari": nowcast.get("status") if isinstance(nowcast, dict) else "UNAVAILABLE",
+            "ensemble": (ensemble or {}).get("status", "UNAVAILABLE"),
             "duong_dong_60018": groundtruth.get("station_status", {}).get("60018", {}).get("readiness"),
             "an_thoi_408": groundtruth.get("station_status", {}).get("408", {}).get("readiness"),
         },
@@ -424,13 +543,15 @@ def main() -> None:
     parser.add_argument("--groundtruth", type=Path, required=True)
     parser.add_argument("--dashboard", type=Path, required=True)
     parser.add_argument("--nowcast", type=Path, required=True)
+    parser.add_argument("--ensemble", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
     groundtruth = json.loads(args.groundtruth.read_text(encoding="utf-8"))
     dashboard = json.loads(args.dashboard.read_text(encoding="utf-8"))
     nowcast = json.loads(args.nowcast.read_text(encoding="utf-8")) if args.nowcast.exists() else {}
-    result = build(groundtruth, dashboard, nowcast)
+    ensemble = json.loads(args.ensemble.read_text(encoding="utf-8")) if args.ensemble and args.ensemble.exists() else {}
+    result = build(groundtruth, dashboard, nowcast, ensemble)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({
