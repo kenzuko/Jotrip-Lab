@@ -1,4 +1,4 @@
-"""Build PQ Local Now V1.
+"""Build PQ Local Now V2.
 
 PQ Local Now is an explicitly estimated, observation-anchored local analysis.
 It is NOT a station observation. The algorithm keeps model spatial structure,
