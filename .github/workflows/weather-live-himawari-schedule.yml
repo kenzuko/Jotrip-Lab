@@ -1,0 +1,19 @@
+name: Weather Live Himawari Schedule
+
+on:
+  push:
+    paths:
+      - ".github/workflows/weather-live-himawari-schedule.yml"
+  schedule:
+    - cron: "0,10,20,30,40,50 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    uses: kenzuko/Jotrip-Lab/.github/workflows/weather-nowcast.yml@feat/weather-lab-data-engine-v1
+    with:
+      target_ref: feat/weather-lab-data-engine-v1
+    secrets: inherit
