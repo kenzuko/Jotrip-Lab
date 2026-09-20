@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from weather.points import POINTS
+from weather.collectors.himawari_nowcast import CORRIDOR_WATCH, _cloud_motion_for_target
 
 VN_TZ = timezone(timedelta(hours=7))
 POINT_ORDER = tuple(POINTS)
@@ -289,6 +290,19 @@ def archive(snapshot: dict[str, Any], root: Path) -> dict[str, Any]:
     # Point observations / metadata remain the newest snapshot.
     persisted_snapshot = deepcopy(snapshot)
     persisted_snapshot["spatial"] = _merge_spatial_frames(previous_latest, snapshot)
+    # Recompute cloud motion after merging the rolling frame history. This lets
+    # the tracker prefer a 20-40 minute baseline instead of being limited to the
+    # collector's newest two scans.
+    for point_id, (lat, lon) in POINTS.items():
+        if point_id in (persisted_snapshot.get("points") or {}):
+            persisted_snapshot["points"][point_id]["cloud_motion"] = _cloud_motion_for_target(
+                persisted_snapshot["spatial"], lat, lon
+            )
+    persisted_snapshot["spatial"]["corridor_watch"] = CORRIDOR_WATCH
+    persisted_snapshot["spatial"]["corridor_motion"] = {
+        key: _cloud_motion_for_target(persisted_snapshot["spatial"], anchor["lat"], anchor["lon"])
+        for key, anchor in CORRIDOR_WATCH.items()
+    }
 
     # Airport-style daily raw: overwrite today's exact latest observation rather
     # than accumulating per-poll files. Git history lives on the isolated branch.
@@ -302,10 +316,10 @@ def archive(snapshot: dict[str, Any], root: Path) -> dict[str, Any]:
         "sampled_time": sampled_time,
         "generated_at": snapshot.get("generated_at"),
         "lightning_observed": snapshot.get("lightning_observed"),
-        "corridor_watch": ((snapshot.get("spatial") or {}).get("corridor_watch") or {}),
-        "corridor_motion": ((snapshot.get("spatial") or {}).get("corridor_motion") or {}),
+        "corridor_watch": ((persisted_snapshot.get("spatial") or {}).get("corridor_watch") or {}),
+        "corridor_motion": ((persisted_snapshot.get("spatial") or {}).get("corridor_motion") or {}),
         "points": {
-            point_id: _compact_point(points[point_id])
+            point_id: _compact_point(persisted_snapshot["points"][point_id])
             for point_id in POINT_ORDER
         },
     }
