@@ -43,13 +43,18 @@ jobs:
         run: |
           python -m unittest weather.tests.test_ensemble_local -v
           python -m unittest weather.tests.test_gefs_local_matrix -v
+      - name: Restore latest ACTUAL-trained calibration
+        shell: bash
+        run: |
+          git fetch origin data-weather --depth=1
+          git show origin/data-weather:data/weather-calibration/latest.json > /tmp/weather-calibration.json 2>/dev/null || printf '{}\n' > /tmp/weather-calibration.json
       - name: Collect local GEFS member matrix
         shell: bash
         run: |
           if [[ "${{ inputs.smoke }}" == "true" || ( "${{ github.event_name }}" == "push" && "${{ github.ref_name }}" != "main" ) ]]; then
-            python -m weather.collectors.gefs_local_matrix --members 3 --lead 6 --lead 12 --workers 2 --output /tmp/gefs-local.json
+            python -m weather.collectors.gefs_local_matrix --members 3 --lead 6 --lead 12 --workers 2 --calibration /tmp/weather-calibration.json --output /tmp/gefs-local.json
           else
-            python -m weather.collectors.gefs_local_matrix --members 31 --workers 4 --output /tmp/gefs-local.json
+            python -m weather.collectors.gefs_local_matrix --members 31 --workers 4 --calibration /tmp/weather-calibration.json --output /tmp/gefs-local.json
           fi
       - name: Validate ensemble semantics
         shell: bash
@@ -60,7 +65,8 @@ jobs:
           assert p['readiness'] in {'MEMBER_MATRIX_READY','PARTIAL_ENSEMBLE'}, p
           assert p['source']=='NOAA_NOMADS_GEFS_GRIB_FILTER'
           assert p['calibration_engine']=='PQ_ENSEMBLE_LOCAL_V1'
-          assert p['calibration_status']=='LEARNING'
+          assert p['calibration_status'] in {'LEARNING','PARTIAL','READY'}, p['calibration_status']
+          assert {'vvpq','vrain_cua_can','vrain_bai_thom','vrain_an_thoi'}.issubset(set(p.get('verification_points') or {}))
           assert {'duong_dong','an_thoi','ganh_dau','cua_can','bai_thom','ham_ninh','bai_sao'}.issubset(set(p['points']))
           assert p.get('wind_exposure_engine')=='PQ_LOCAL_WIND_EXPOSURE_V1'
           assert 'bai_sao' in set(p.get('wind_exposure_points') or [])
@@ -77,8 +83,8 @@ jobs:
               for row in rows:
                   assert {'temperature','wind','rain'}.issubset(row['variables'])
                   for variable, v in row['variables'].items():
-                      assert v['status']=='LEARNING'
-                      if variable != 'wind' or point_id != 'bai_sao':
+                      assert v['status'] in {'LEARNING','CALIBRATED'}
+                      if v['status']=='LEARNING' and (variable != 'wind' or point_id != 'bai_sao'):
                           assert v['raw']['q50']==v['corrected']['q50']
                   wind=row['variables']['wind']
                   if point_id=='bai_sao':
@@ -98,6 +104,7 @@ jobs:
           rm -rf /tmp/gefs-export
           mkdir -p /tmp/gefs-export
           cp /tmp/gefs-local.json /tmp/gefs-export/latest.json
+          mkdir -p /tmp/gefs-export/archive
           python - <<'PY'
           import json
           from pathlib import Path
@@ -118,6 +125,24 @@ jobs:
             json.dumps(spatial_payload,ensure_ascii=False,separators=(',',':'))+'\n',
             encoding='utf-8'
           )
+          archive={
+            'schema_version':'1.0',
+            'product':'JOTRIP_VERIFICATION_FORECAST_ARCHIVE',
+            'run_time':p.get('run_time'),
+            'generated_at':p.get('generated_at'),
+            'source':p.get('source'),
+            'model':p.get('model'),
+            'completion_ratio':p.get('completion_ratio'),
+            'verification_points':p.get('verification_points') or {},
+          }
+          run=str(p.get('run_time') or '').replace(':','').replace('-','')
+          stamp=run.replace('+0000','Z').replace('+00:00','Z')
+          if not stamp:
+            stamp=str(p.get('generated_at') or 'unknown').replace(':','').replace('-','')
+          Path('/tmp/gefs-export/archive/latest.json').write_text(
+            json.dumps(archive,ensure_ascii=False,separators=(',',':'))+'\n',
+            encoding='utf-8'
+          )
           Path('/tmp/gefs-export/health.json').write_text(json.dumps({
             'module':'JoTrip GEFS Local Ensemble',
             'state':p['status'],
@@ -136,11 +161,28 @@ jobs:
           git reset --hard HEAD
           git fetch origin data-weather
           git checkout -B data-weather origin/data-weather
-          mkdir -p data/weather-ensemble
-          cp -a /tmp/gefs-export/. data/weather-ensemble/
+          mkdir -p data/weather-ensemble data/weather-forecast-archive
+          cp /tmp/gefs-export/latest.json data/weather-ensemble/latest.json
+          cp /tmp/gefs-export/spatial.json data/weather-ensemble/spatial.json
+          cp /tmp/gefs-export/health.json data/weather-ensemble/health.json
+
+          python - <<'PY'
+          import json
+          from datetime import datetime
+          from pathlib import Path
+          src=Path('/tmp/gefs-export/archive/latest.json')
+          p=json.loads(src.read_text(encoding='utf-8'))
+          t=datetime.fromisoformat(str(p['run_time']).replace('Z','+00:00'))
+          root=Path('data/weather-forecast-archive')
+          day=root/t.strftime('%Y')/t.strftime('%m')/t.strftime('%d')
+          day.mkdir(parents=True,exist_ok=True)
+          target=day/(t.strftime('%Y%m%dT%H%M%SZ')+'.json')
+          target.write_text(src.read_text(encoding='utf-8'),encoding='utf-8')
+          (root/'latest.json').write_text(src.read_text(encoding='utf-8'),encoding='utf-8')
+          PY
           git config user.name "jotrip-weather-bot"
           git config user.email "jotrip-weather-bot@users.noreply.github.com"
-          git add data/weather-ensemble
+          git add data/weather-ensemble data/weather-forecast-archive
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "data: update Phu Quoc GEFS local ensemble"
           for attempt in 1 2 3; do
