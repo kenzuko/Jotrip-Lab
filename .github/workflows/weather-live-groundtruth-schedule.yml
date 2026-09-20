@@ -1,6 +1,9 @@
 name: Weather Live Ground Truth Schedule
 
 on:
+  push:
+    paths:
+      - ".github/workflows/weather-live-groundtruth-schedule.yml"
   schedule:
     - cron: "*/10 * * * *"
   workflow_dispatch:
