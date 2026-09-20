@@ -43,11 +43,23 @@ jobs:
         run: |
           node --input-type=module <<'NODE'
           const base = 'https://jotrip-airport-live.kenzuko.workers.dev';
-          const meta = await fetch(base + '/version', { headers: { accept: 'application/json' } });
-          if (!meta.ok) throw new Error(`version endpoint HTTP ${meta.status}`);
-          const body = await meta.json();
-          if (!body.version) throw new Error('version endpoint missing version');
-          console.log(JSON.stringify(body));
+          let lastStatus = null;
+          for (let attempt = 1; attempt <= 8; attempt++) {
+            const meta = await fetch(base + '/version?t=' + Date.now(), {
+              headers: { accept: 'application/json' },
+              cache: 'no-store'
+            });
+            lastStatus = meta.status;
+            if (meta.ok) {
+              const body = await meta.json();
+              if (!body.version) throw new Error('version endpoint missing version');
+              console.log(JSON.stringify({ attempt, ...body }));
+              process.exit(0);
+            }
+            console.log(`version verify attempt ${attempt}: HTTP ${meta.status}`);
+            await new Promise(r => setTimeout(r, 5000));
+          }
+          throw new Error(`version endpoint remained unavailable: HTTP ${lastStatus}`);
           NODE
 
 # deploy-trigger: secrets-ready-2026-09-20
