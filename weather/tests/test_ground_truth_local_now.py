@@ -95,6 +95,33 @@ class GroundTruthTests(unittest.TestCase):
         self.assertEqual(out["points"]["duong_dong"]["rain"]["data_class"], "ESTIMATED_NOW")
         self.assertGreater(out["points"]["duong_dong"]["rain"]["gauge_anchor_count"], 0)
 
+    def test_convective_background_prevents_false_calm_when_vvpq_unavailable(self):
+        gt = {
+            "generated_at": "2026-09-20T01:20:00+00:00",
+            "atmosphere": {"vvpq": {"status": "UNAVAILABLE", "qc": "STALE"}},
+            "rainfall": {"status": "FRESH", "stations": {}},
+            "station_status": {},
+        }
+        rows = [{"time_iso": "2026-09-20T08:00:00+07:00", "temperature": 28,
+                 "wind": 2.3, "gust": 7.7, "rain": 0, "wave": 0.3,
+                 "wave_max": 0.6, "period": 4.7, "current": 0.3}]
+        dashboard = {
+            "generated_at": "2026-09-20T08:00:00+07:00",
+            "points": {k: {"temperature": 28, "wind": 2.3, "gust": 7.7, "rain": 0,
+                            "wave": 0.3, "wave_max": 0.6, "period": 4.7,
+                            "current": 0.3, "hours": rows}
+                       for k in ("duong_dong", "an_thoi", "ganh_dau")}
+        }
+        nowcast = {"status": "POINT_NUMERIC_READY", "points": {
+            k: {"convective_signal": {"score": 90}} for k in ("duong_dong", "an_thoi", "ganh_dau")
+        }}
+        out = build(gt, dashboard, nowcast)
+        w = out["points"]["duong_dong"]
+        self.assertGreater(w["wind_kmh"], 2.3)
+        self.assertLess(w["wind_kmh"], 7.7)
+        self.assertEqual(w["wind"]["data_class"], "ESTIMATED_NOW")
+        self.assertEqual(w["wind"]["method"], "PQ_LOCAL_NOW_V1_CONVECTIVE_BACKGROUND")
+
 
 if __name__ == "__main__":
     unittest.main()
