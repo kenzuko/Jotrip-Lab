@@ -32,7 +32,19 @@ class JoTripRegionalForecastTests(unittest.TestCase):
             "calibration_status":"LEARNING",
             "points":points,
         }
-        p=build(ensemble)
+        nowcast={
+            "points":{
+                "duong_dong":{
+                    "score":90,
+                    "cloud_motion":{
+                        "status":"APPROACHING","approaching":True,"eta_minutes":35,
+                        "source_sector":"Đông","motion_heading":"Tây","motion_speed_kmh":28,
+                        "tracking_confidence":"MEDIUM",
+                    },
+                }
+            }
+        }
+        p=build(ensemble,nowcast)
         self.assertEqual(p["horizon_hours"],240)
         self.assertEqual(set(p["regions"]),{"north_northwest","central_west","east_northeast","south_southeast"})
         for region in p["regions"].values():
@@ -48,6 +60,13 @@ class JoTripRegionalForecastTests(unittest.TestCase):
         self.assertLessEqual(north["wind_kmh"],north["wind_q90_kmh"])
         self.assertIn(north["risk_driver"]["rain"],{"Gành Dầu","Cửa Cạn"})
         self.assertEqual(north["confidence_band"],"KHÁ")
+        central=p["regions"]["central_west"]["rows"][0]
+        self.assertEqual(central["nowcast_overlay"]["level"],"HIGH")
+        self.assertTrue(central["nowcast_overlay"]["applies"])
+        self.assertEqual(central["nowcast_overlay"]["eta_minutes"],35)
+        self.assertEqual(central["risk_driver"]["nowcast"],"Dương Đông")
+        # Satellite context must not rewrite raw ensemble distribution values.
+        self.assertEqual(central["rain_mm"],2.0)
 
 if __name__=="__main__":
     unittest.main()
