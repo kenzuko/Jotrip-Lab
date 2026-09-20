@@ -43,8 +43,18 @@ jobs:
       - name: Install free parser dependencies
         run: python -m pip install --quiet requests beautifulsoup4
 
+      - name: Load same-day manual confirmations
+        shell: bash
+        run: |
+          mkdir -p /tmp/marine_manual
+          git fetch origin "$DATA_BRANCH" --depth=1
+          git ls-tree -r --name-only "origin/$DATA_BRANCH" -- data/marine_ops/manual-confirmations | while read -r path; do
+            [ -z "$path" ] && continue
+            git show "origin/$DATA_BRANCH:$path" > "/tmp/marine_manual/$(basename "$path")"
+          done
+
       - name: Collect D0 marine operations evidence
-        run: python -m tourism_intelligence_v2.collectors.marine_ops.collector --output /tmp/marine_ops
+        run: python -m tourism_intelligence_v2.collectors.marine_ops.collector --output /tmp/marine_ops --manual-confirmations /tmp/marine_manual
 
       - name: Inspect collector health
         id: health
