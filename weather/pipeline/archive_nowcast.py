@@ -112,6 +112,7 @@ def _num(value: Any) -> float | None:
 
 def _compact_point(point: dict[str, Any]) -> dict[str, Any]:
     signal = point.get("convective_signal") or {}
+    motion = point.get("cloud_motion") or {}
     return {
         "score": _num(signal.get("score")),
         "level": str(signal.get("level") or "").upper() or None,
@@ -122,6 +123,19 @@ def _compact_point(point: dict[str, Any]) -> dict[str, Any]:
             point.get("regional_high_cloud_top_height_m", point.get("regional_max_cloud_top_height_m"))
         ),
         "cooling_c_per_20m_proxy": _num(point.get("cooling_c_per_20m_proxy")),
+        "cloud_motion": {
+            "status": motion.get("status"),
+            "source_sector": motion.get("source_sector"),
+            "nearest_corridor": motion.get("nearest_corridor"),
+            "motion_heading_deg": _num(motion.get("motion_heading_deg")),
+            "motion_heading": motion.get("motion_heading"),
+            "motion_speed_kmh": _num(motion.get("motion_speed_kmh")),
+            "distance_to_target_km": _num(motion.get("distance_to_target_km")),
+            "approaching": bool(motion.get("approaching")),
+            "eta_minutes": _num(motion.get("eta_minutes")),
+            "tracking_confidence": motion.get("tracking_confidence"),
+            "method": motion.get("method"),
+        },
         "lightning_observed": point.get("lightning_observed"),
     }
 
