@@ -30,6 +30,17 @@ def num(v:Any):
     try:return float(v)
     except Exception:return None
 
+def member_quantile(values:list[Any],q:float)->float|None:
+    xs=sorted(x for v in values if (x:=num(v)) is not None)
+    if not xs:return None
+    if len(xs)==1:return xs[0]
+    pos=max(0.0,min(1.0,q))*(len(xs)-1)
+    lo=int(pos)
+    hi=min(len(xs)-1,lo+1)
+    if lo==hi:return xs[lo]
+    w=pos-lo
+    return xs[lo]*(1.0-w)+xs[hi]*w
+
 def dist(row:dict,var:str)->dict:
     v=(row.get("variables") or {}).get(var) or {}
     return v.get("corrected") or v.get("raw") or {}
@@ -76,11 +87,15 @@ def build(ensemble:dict)->dict:
                 row=by_point.get(pid,{}).get(lead)
                 if not row: continue
                 t,w,r=dist(row,"temperature"),dist(row,"wind"),dist(row,"rain")
+                wind_var=(row.get("variables") or {}).get("wind") or {}
+                wind_q10=num(w.get("q10"))
+                if wind_q10 is None:
+                    wind_q10=member_quantile(wind_var.get("member_values_corrected") or [],.10)
                 items.append({
                     "point_id":pid,"point_name":POINT_NAMES.get(pid,pid),"valid_time":row.get("valid_time"),
                     "members":row.get("member_count"),
                     "temp_q50":num(t.get("q50")),"temp_spread":num(t.get("spread")),
-                    "wind_q50":num(w.get("q50")),"wind_q90":num(w.get("q90")),"wind_spread":num(w.get("spread")),
+                    "wind_q10":wind_q10,"wind_q50":num(w.get("q50")),"wind_q90":num(w.get("q90")),"wind_spread":num(w.get("spread")),
                     "wind_prob":num(w.get("exceedance_probability")),
                     "rain_q50":num(r.get("q50")),"rain_q90":num(r.get("q90")),"rain_spread":num(r.get("spread")),
                     "rain_prob":num(r.get("exceedance_probability")),
@@ -100,6 +115,7 @@ def build(ensemble:dict)->dict:
                 "confidence_band":confidence_band(conf_score),
                 "variability_score":var_score,
                 "temperature_c":round(statistics.median(temps),2) if temps else None,
+                "wind_q10_kmh":round(wind_driver["wind_q10"],2) if wind_driver["wind_q10"] is not None else None,
                 "wind_kmh":round(wind_driver["wind_q50"],2) if wind_driver["wind_q50"] is not None else None,
                 "wind_q90_kmh":round(wind_driver["wind_q90"],2) if wind_driver["wind_q90"] is not None else None,
                 "wind_prob_30":wind_driver["wind_prob"],
