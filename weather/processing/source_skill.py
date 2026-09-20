@@ -14,6 +14,7 @@ import argparse
 import json
 import math
 from collections import defaultdict
+from datetime import datetime, timezone
 from pathlib import Path
 from statistics import mean, median
 from typing import Any
@@ -57,7 +58,7 @@ def _shrunken_multiplier(model_mae: float | None, ensemble_mae: float | None, n:
 
 
 def build(raw_root: Path, analysis_root: Path) -> dict:
-    raw_by_name={p.name:p for p in raw_root.rglob("*.json") if p.name not in {"latest.json","local-now.json","health.json"}}
+    raw_by_name={p.name:p for p in raw_root.rglob("*.json") if "analysis" not in p.parts and p.name not in {"latest.json","local-now.json","health.json"}}
     analysis_by_name={p.name:p for p in analysis_root.rglob("*.json") if p.name not in {"latest.json","local-now.json","health.json"}}
 
     # Dedupe METAR by observed_at so a single hourly METAR is not counted as ten
@@ -148,6 +149,7 @@ def build(raw_root: Path, analysis_root: Path) -> dict:
 
     return {
         "schema_version":"weather-source-skill-v1",
+        "generated_at":datetime.now(timezone.utc).isoformat(),
         "policy":{
             "actual_only":True,
             "early_weight_adjustment_only":True,
