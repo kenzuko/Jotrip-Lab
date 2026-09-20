@@ -1,0 +1,547 @@
+{
+  "schema_version": "1.0",
+  "engine": "PQ_LOCAL_NOW_V1",
+  "generated_at": "2026-09-20T01:17:48.545781+00:00",
+  "data_class": "ESTIMATED_NOW",
+  "title": "PQ Local Now",
+  "policy": {
+    "actual": "VVPQ METAR + VRain gauges only when fresh numeric observations exist.",
+    "estimated_now": "Observation-anchored local correction. Never presented as station actual.",
+    "marine": "MODEL_ONLY until a usable in-situ marine feed is available.",
+    "feedback": "Field feedback calibrates categorical/event errors and later numeric coefficients; it never rewrites raw observations."
+  },
+  "points": {
+    "duong_dong": {
+      "name": "Dương Đông",
+      "lat": 10.2172,
+      "lon": 103.9593,
+      "reference_type": "locality_center",
+      "analysis_time": "2026-09-20T01:17:48.545781+00:00",
+      "temperature_c": 26.0,
+      "temperature": {
+        "data_class": "MODEL_ONLY",
+        "method": "MODEL_FALLBACK",
+        "confidence": 0.35
+      },
+      "wind_kmh": 2.3,
+      "wind_direction_deg": null,
+      "wind": {
+        "data_class": "MODEL_ONLY",
+        "method": "MODEL_FALLBACK",
+        "confidence": 0.3
+      },
+      "rain": {
+        "rain_rate_mm_h": 0.0,
+        "data_class": "ESTIMATED_NOW",
+        "method": "PQ_LOCAL_NOW_V1_MODEL_SATELLITE_BLEND",
+        "confidence": 0.47,
+        "gauge_anchor_count": 0,
+        "gauge_anchors": [],
+        "model_rain_3h_mm": 0.0,
+        "convective_score": 90.0,
+        "airport_weather_support": false,
+        "note": "Low-confidence experimental estimate because no fresh gauge increment is available."
+      },
+      "wave_hs_m": 0.31,
+      "wave_hmax_m": 0.57,
+      "wave_period_s": 4.73,
+      "current_kmh": 0.3,
+      "marine": {
+        "data_class": "MODEL_ONLY",
+        "method": "COPERNICUS_ECMWF_MODEL",
+        "confidence": null,
+        "note": "No usable in-situ marine observation at Phu Quoc. Never label these values actual."
+      },
+      "actual_anchors": {
+        "vvpq": {
+          "status": "UNAVAILABLE",
+          "observed_at": null,
+          "distance_km": 6.6
+        },
+        "rain_gauges": [
+          {
+            "station": "Cửa Cạn",
+            "lat": 10.292693,
+            "lon": 103.914799,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          },
+          {
+            "station": "Bãi Thơm",
+            "lat": 10.411765,
+            "lon": 104.031055,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          },
+          {
+            "station": "An Thới",
+            "lat": 10.018482,
+            "lon": 104.0149,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          }
+        ]
+      }
+    },
+    "an_thoi": {
+      "name": "Biển An Thới - Mây Rút Ngoài",
+      "lat": 9.905,
+      "lon": 104.005,
+      "reference_type": "marine_operations_reference",
+      "analysis_time": "2026-09-20T01:17:48.545781+00:00",
+      "temperature_c": 26.6,
+      "temperature": {
+        "data_class": "MODEL_ONLY",
+        "method": "MODEL_FALLBACK",
+        "confidence": 0.35
+      },
+      "wind_kmh": 11.4,
+      "wind_direction_deg": null,
+      "wind": {
+        "data_class": "MODEL_ONLY",
+        "method": "MODEL_FALLBACK",
+        "confidence": 0.3
+      },
+      "rain": {
+        "rain_rate_mm_h": 0.31,
+        "data_class": "ESTIMATED_NOW",
+        "method": "PQ_LOCAL_NOW_V1_MODEL_SATELLITE_BLEND",
+        "confidence": 0.43,
+        "gauge_anchor_count": 0,
+        "gauge_anchors": [],
+        "model_rain_3h_mm": 0.7,
+        "convective_score": 75.0,
+        "airport_weather_support": false,
+        "note": "Low-confidence experimental estimate because no fresh gauge increment is available."
+      },
+      "wave_hs_m": 0.28,
+      "wave_hmax_m": 0.47,
+      "wave_period_s": 4.3,
+      "current_kmh": 0.47,
+      "marine": {
+        "data_class": "MODEL_ONLY",
+        "method": "COPERNICUS_ECMWF_MODEL",
+        "confidence": null,
+        "note": "No usable in-situ marine observation at Phu Quoc. Never label these values actual."
+      },
+      "actual_anchors": {
+        "vvpq": {
+          "status": "UNAVAILABLE",
+          "observed_at": null,
+          "distance_km": 29.4
+        },
+        "rain_gauges": [
+          {
+            "station": "Cửa Cạn",
+            "lat": 10.292693,
+            "lon": 103.914799,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          },
+          {
+            "station": "Bãi Thơm",
+            "lat": 10.411765,
+            "lon": 104.031055,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          },
+          {
+            "station": "An Thới",
+            "lat": 10.018482,
+            "lon": 104.0149,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          }
+        ]
+      }
+    },
+    "ganh_dau": {
+      "name": "Gành Dầu",
+      "lat": 10.37077,
+      "lon": 103.84472,
+      "reference_type": "locality_center",
+      "analysis_time": "2026-09-20T01:17:48.545781+00:00",
+      "temperature_c": 28.2,
+      "temperature": {
+        "data_class": "MODEL_ONLY",
+        "method": "MODEL_FALLBACK",
+        "confidence": 0.35
+      },
+      "wind_kmh": 6.8,
+      "wind_direction_deg": null,
+      "wind": {
+        "data_class": "MODEL_ONLY",
+        "method": "MODEL_FALLBACK",
+        "confidence": 0.3
+      },
+      "rain": {
+        "rain_rate_mm_h": 0.01,
+        "data_class": "ESTIMATED_NOW",
+        "method": "PQ_LOCAL_NOW_V1_MODEL_SATELLITE_BLEND",
+        "confidence": 0.43,
+        "gauge_anchor_count": 0,
+        "gauge_anchors": [],
+        "model_rain_3h_mm": 0.03,
+        "convective_score": 75.0,
+        "airport_weather_support": false,
+        "note": "Low-confidence experimental estimate because no fresh gauge increment is available."
+      },
+      "wave_hs_m": 0.33,
+      "wave_hmax_m": 0.55,
+      "wave_period_s": 4.3,
+      "current_kmh": 0.24,
+      "marine": {
+        "data_class": "MODEL_ONLY",
+        "method": "COPERNICUS_ECMWF_MODEL",
+        "confidence": null,
+        "note": "No usable in-situ marine observation at Phu Quoc. Never label these values actual."
+      },
+      "actual_anchors": {
+        "vvpq": {
+          "status": "UNAVAILABLE",
+          "observed_at": null,
+          "distance_km": 27.8
+        },
+        "rain_gauges": [
+          {
+            "station": "Cửa Cạn",
+            "lat": 10.292693,
+            "lon": 103.914799,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          },
+          {
+            "station": "Bãi Thơm",
+            "lat": 10.411765,
+            "lon": 104.031055,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          },
+          {
+            "station": "An Thới",
+            "lat": 10.018482,
+            "lon": 104.0149,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          }
+        ]
+      }
+    },
+    "cua_can": {
+      "name": "Cửa Cạn",
+      "lat": 10.292693,
+      "lon": 103.914799,
+      "reference_type": "island_watch_groundtruth_anchor",
+      "analysis_time": "2026-09-20T01:17:48.545781+00:00",
+      "temperature_c": 26.0,
+      "temperature": {
+        "data_class": "MODEL_ONLY",
+        "method": "MODEL_FALLBACK",
+        "confidence": 0.35
+      },
+      "wind_kmh": 2.3,
+      "wind_direction_deg": null,
+      "wind": {
+        "data_class": "MODEL_ONLY",
+        "method": "MODEL_FALLBACK",
+        "confidence": 0.3
+      },
+      "rain": {
+        "rain_rate_mm_h": 0.0,
+        "data_class": "ESTIMATED_NOW",
+        "method": "PQ_LOCAL_NOW_V1_MODEL_SATELLITE_BLEND",
+        "confidence": 0.44,
+        "gauge_anchor_count": 0,
+        "gauge_anchors": [],
+        "model_rain_3h_mm": 0.0,
+        "convective_score": 80.0,
+        "airport_weather_support": false,
+        "note": "Low-confidence experimental estimate because no fresh gauge increment is available."
+      },
+      "wave_hs_m": 0.25,
+      "wave_hmax_m": 0.55,
+      "wave_period_s": 4.68,
+      "current_kmh": 0.3,
+      "marine": {
+        "data_class": "MODEL_ONLY",
+        "method": "COPERNICUS_ECMWF_MODEL",
+        "confidence": null,
+        "note": "No usable in-situ marine observation at Phu Quoc. Never label these values actual."
+      },
+      "actual_anchors": {
+        "vvpq": {
+          "status": "UNAVAILABLE",
+          "observed_at": null,
+          "distance_km": 16.3
+        },
+        "rain_gauges": [
+          {
+            "station": "Cửa Cạn",
+            "lat": 10.292693,
+            "lon": 103.914799,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          },
+          {
+            "station": "Bãi Thơm",
+            "lat": 10.411765,
+            "lon": 104.031055,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          },
+          {
+            "station": "An Thới",
+            "lat": 10.018482,
+            "lon": 104.0149,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          }
+        ]
+      }
+    },
+    "bai_thom": {
+      "name": "Bãi Thơm",
+      "lat": 10.411765,
+      "lon": 104.031055,
+      "reference_type": "island_watch_groundtruth_anchor",
+      "analysis_time": "2026-09-20T01:17:48.545781+00:00",
+      "temperature_c": 27.9,
+      "temperature": {
+        "data_class": "MODEL_ONLY",
+        "method": "MODEL_FALLBACK",
+        "confidence": 0.35
+      },
+      "wind_kmh": 3.7,
+      "wind_direction_deg": null,
+      "wind": {
+        "data_class": "MODEL_ONLY",
+        "method": "MODEL_FALLBACK",
+        "confidence": 0.3
+      },
+      "rain": {
+        "rain_rate_mm_h": 0.0,
+        "data_class": "ESTIMATED_NOW",
+        "method": "PQ_LOCAL_NOW_V1_MODEL_SATELLITE_BLEND",
+        "confidence": 0.43,
+        "gauge_anchor_count": 0,
+        "gauge_anchors": [],
+        "model_rain_3h_mm": 0.0,
+        "convective_score": 75.0,
+        "airport_weather_support": false,
+        "note": "Low-confidence experimental estimate because no fresh gauge increment is available."
+      },
+      "wave_hs_m": 0.06,
+      "wave_hmax_m": 0.1,
+      "wave_period_s": 4.3,
+      "current_kmh": 0.19,
+      "marine": {
+        "data_class": "MODEL_ONLY",
+        "method": "COPERNICUS_ECMWF_MODEL",
+        "confidence": null,
+        "note": "No usable in-situ marine observation at Phu Quoc. Never label these values actual."
+      },
+      "actual_anchors": {
+        "vvpq": {
+          "status": "UNAVAILABLE",
+          "observed_at": null,
+          "distance_km": 27.3
+        },
+        "rain_gauges": [
+          {
+            "station": "Cửa Cạn",
+            "lat": 10.292693,
+            "lon": 103.914799,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          },
+          {
+            "station": "Bãi Thơm",
+            "lat": 10.411765,
+            "lon": 104.031055,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          },
+          {
+            "station": "An Thới",
+            "lat": 10.018482,
+            "lon": 104.0149,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          }
+        ]
+      }
+    },
+    "ham_ninh": {
+      "name": "Hàm Ninh",
+      "lat": 10.18062,
+      "lon": 104.04463,
+      "reference_type": "island_watch_locality",
+      "analysis_time": "2026-09-20T01:17:48.545781+00:00",
+      "temperature_c": 26.0,
+      "temperature": {
+        "data_class": "MODEL_ONLY",
+        "method": "MODEL_FALLBACK",
+        "confidence": 0.35
+      },
+      "wind_kmh": 2.3,
+      "wind_direction_deg": null,
+      "wind": {
+        "data_class": "MODEL_ONLY",
+        "method": "MODEL_FALLBACK",
+        "confidence": 0.3
+      },
+      "rain": {
+        "rain_rate_mm_h": 0.0,
+        "data_class": "ESTIMATED_NOW",
+        "method": "PQ_LOCAL_NOW_V1_MODEL_SATELLITE_BLEND",
+        "confidence": 0.47,
+        "gauge_anchor_count": 0,
+        "gauge_anchors": [],
+        "model_rain_3h_mm": 0.0,
+        "convective_score": 90.0,
+        "airport_weather_support": false,
+        "note": "Low-confidence experimental estimate because no fresh gauge increment is available."
+      },
+      "wave_hs_m": 0.3,
+      "wave_hmax_m": 0.55,
+      "wave_period_s": 4.73,
+      "current_kmh": 0.08,
+      "marine": {
+        "data_class": "MODEL_ONLY",
+        "method": "COPERNICUS_ECMWF_MODEL",
+        "confidence": null,
+        "note": "No usable in-situ marine observation at Phu Quoc. Never label these values actual."
+      },
+      "actual_anchors": {
+        "vvpq": {
+          "status": "UNAVAILABLE",
+          "observed_at": null,
+          "distance_km": 5.6
+        },
+        "rain_gauges": [
+          {
+            "station": "Cửa Cạn",
+            "lat": 10.292693,
+            "lon": 103.914799,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          },
+          {
+            "station": "Bãi Thơm",
+            "lat": 10.411765,
+            "lon": 104.031055,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          },
+          {
+            "station": "An Thới",
+            "lat": 10.018482,
+            "lon": 104.0149,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          }
+        ]
+      }
+    },
+    "bai_sao": {
+      "name": "Bãi Sao",
+      "lat": 10.0572576,
+      "lon": 104.0363948,
+      "reference_type": "island_watch_beach",
+      "analysis_time": "2026-09-20T01:17:48.545781+00:00",
+      "temperature_c": 26.6,
+      "temperature": {
+        "data_class": "MODEL_ONLY",
+        "method": "MODEL_FALLBACK",
+        "confidence": 0.35
+      },
+      "wind_kmh": 11.4,
+      "wind_direction_deg": null,
+      "wind": {
+        "data_class": "MODEL_ONLY",
+        "method": "MODEL_FALLBACK",
+        "confidence": 0.3
+      },
+      "rain": {
+        "rain_rate_mm_h": 0.32,
+        "data_class": "ESTIMATED_NOW",
+        "method": "PQ_LOCAL_NOW_V1_MODEL_SATELLITE_BLEND",
+        "confidence": 0.44,
+        "gauge_anchor_count": 0,
+        "gauge_anchors": [],
+        "model_rain_3h_mm": 0.7,
+        "convective_score": 80.0,
+        "airport_weather_support": false,
+        "note": "Low-confidence experimental estimate because no fresh gauge increment is available."
+      },
+      "wave_hs_m": 0.28,
+      "wave_hmax_m": 0.47,
+      "wave_period_s": 4.3,
+      "current_kmh": 0.17,
+      "marine": {
+        "data_class": "MODEL_ONLY",
+        "method": "COPERNICUS_ECMWF_MODEL",
+        "confidence": null,
+        "note": "No usable in-situ marine observation at Phu Quoc. Never label these values actual."
+      },
+      "actual_anchors": {
+        "vvpq": {
+          "status": "UNAVAILABLE",
+          "observed_at": null,
+          "distance_km": 13.2
+        },
+        "rain_gauges": [
+          {
+            "station": "Cửa Cạn",
+            "lat": 10.292693,
+            "lon": 103.914799,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          },
+          {
+            "station": "Bãi Thơm",
+            "lat": 10.411765,
+            "lon": 104.031055,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          },
+          {
+            "station": "An Thới",
+            "lat": 10.018482,
+            "lon": 104.0149,
+            "accumulation_mm": 0.0,
+            "increment_mm": null,
+            "increment_window_minutes": null
+          }
+        ]
+      }
+    }
+  },
+  "source_status": {
+    "vvpq": "UNAVAILABLE",
+    "vrain": "FRESH",
+    "himawari": "POINT_NUMERIC_READY",
+    "duong_dong_60018": "FEED_EMPTY",
+    "an_thoi_408": "FEED_UNRESOLVED"
+  }
+}
