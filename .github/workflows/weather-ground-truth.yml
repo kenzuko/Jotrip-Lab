@@ -51,7 +51,9 @@ jobs:
         shell: bash
         run: |
           git fetch origin "$DATA_BRANCH" --depth=1
-          git checkout "origin/$DATA_BRANCH" -- "$DATA_ROOT" "$NOWCAST_ROOT" "$FORECAST_ARCHIVE_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" 2>/dev/null || true
+          for path in "$DATA_ROOT" "$NOWCAST_ROOT" "$FORECAST_ARCHIVE_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT"; do
+            git checkout "origin/$DATA_BRANCH" -- "$path" 2>/dev/null || true
+          done
 
       - name: Test ground truth, local analysis and calibration formulas
         run: |
