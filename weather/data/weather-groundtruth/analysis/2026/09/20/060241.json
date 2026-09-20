@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "engine": "PQ_LOCAL_NOW_V2",
-  "generated_at": "2026-09-20T06:30:35.529791+00:00",
+  "generated_at": "2026-09-20T06:02:41.207804+00:00",
   "data_class": "ESTIMATED_NOW",
   "title": "PQ Local Now",
   "policy": {
@@ -16,18 +16,18 @@
       "lat": 10.2172,
       "lon": 103.9593,
       "reference_type": "locality_center",
-      "analysis_time": "2026-09-20T06:30:35.529791+00:00",
-      "temperature_c": 29.8,
+      "analysis_time": "2026-09-20T06:02:41.207804+00:00",
+      "temperature_c": 29.1,
       "temperature": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V1_MODEL_RESIDUAL",
         "baseline_model": 27.6,
-        "anchor_observed": 31.0,
+        "anchor_observed": 30.0,
         "anchor_model_proxy": 27.6,
-        "applied_residual_c": 2.23,
-        "confidence": 0.71
+        "applied_residual_c": 1.55,
+        "confidence": 0.7
       },
-      "wind_kmh": 18.7,
+      "wind_kmh": 18.4,
       "wind_direction_deg": null,
       "wind": {
         "data_class": "ESTIMATED_NOW",
@@ -41,23 +41,23 @@
         "ensemble_context": {
           "available": true,
           "valid_time": "2026-09-20T06:00:00+00:00",
-          "gap_hours": 0.51,
+          "gap_hours": 0.04,
           "q50_kmh": 14.892105,
           "q90_kmh": 19.11783,
           "spread_kmh": 5.546646,
-          "adaptive_gain": 1.231,
-          "kalman_like_gain": 0.83,
+          "adaptive_gain": 1.228,
+          "kalman_like_gain": 0.826,
           "background_sigma_kmh": 6.13,
-          "observation_repr_sigma_kmh": 2.78,
+          "observation_repr_sigma_kmh": 2.82,
           "source_skill_multiplier": 1.0,
-          "source_skill_status": "PROVISIONAL"
+          "source_skill_status": null
         },
         "confidence": 0.63
       },
       "rain": {
-        "rain_rate_mm_h": 0.12,
+        "rain_rate_mm_h": 0.51,
         "data_class": "ESTIMATED_NOW",
-        "method": "PQ_LOCAL_NOW_V2_DISTANCE_ADAPTIVE_GAUGE_BLEND",
+        "method": "PQ_LOCAL_NOW_V1_GAUGE_IDW_MODEL_BLEND",
         "confidence": 0.53,
         "gauge_anchor_count": 3,
         "gauge_anchors": [
@@ -65,45 +65,42 @@
             "station": "Cửa Cạn",
             "distance_km": 9.7,
             "rate_mm_h": 0.0,
-            "weight": 0.681,
+            "weight": 0.707,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           },
           {
             "station": "Bãi Thơm",
             "distance_km": 23.0,
             "rate_mm_h": 0.0,
-            "weight": 0.423,
+            "weight": 0.44,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           },
           {
             "station": "An Thới",
             "distance_km": 22.9,
             "rate_mm_h": 0.0,
-            "weight": 0.425,
+            "weight": 0.441,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           }
         ],
         "model_rain_3h_mm": 5.54,
-        "model_share": 0.048,
-        "gauge_share": 0.952,
-        "nearest_gauge_km": 9.7,
         "convective_score": 90.0,
         "ensemble_context": {
           "valid_time": "2026-09-20T06:00:00+00:00",
-          "gap_hours": 0.51,
+          "gap_hours": 0.04,
           "q50_mm": 1.5,
           "q90_mm": 2.6,
           "spread_mm": 1.61,
           "probability_5": 0.0323,
           "role": "UNCERTAINTY_CONTEXT_NOT_DIRECT_RAIN_OBSERVATION"
         },
-        "note": "Fresh nearby VRain dominates current-rain analysis. Model share increases only with gauge distance; ensemble remains uncertainty context and never overrides ACTUAL."
+        "note": "Observed rain anchors dominate the estimate. Ensemble informs uncertainty/hazard context only; it does not override VRain."
       },
       "wave_hs_m": 0.25,
       "wave_hmax_m": 0.47,
@@ -118,7 +115,7 @@
       "actual_anchors": {
         "vvpq": {
           "status": "FRESH",
-          "observed_at": "2026-09-20T06:00:00+00:00",
+          "observed_at": "2026-09-20T05:30:00+00:00",
           "distance_km": 6.6
         },
         "rain_gauges": [
@@ -154,18 +151,18 @@
       "lat": 9.905,
       "lon": 104.005,
       "reference_type": "marine_operations_reference",
-      "analysis_time": "2026-09-20T06:30:35.529791+00:00",
-      "temperature_c": 28.8,
+      "analysis_time": "2026-09-20T06:02:41.207804+00:00",
+      "temperature_c": 28.4,
       "temperature": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V1_MODEL_RESIDUAL",
         "baseline_model": 27.5,
-        "anchor_observed": 31.0,
+        "anchor_observed": 30.0,
         "anchor_model_proxy": 27.6,
-        "applied_residual_c": 1.34,
-        "confidence": 0.57
+        "applied_residual_c": 0.93,
+        "confidence": 0.56
       },
-      "wind_kmh": 14.4,
+      "wind_kmh": 14.3,
       "wind_direction_deg": null,
       "wind": {
         "data_class": "ESTIMATED_NOW",
@@ -179,23 +176,23 @@
         "ensemble_context": {
           "available": true,
           "valid_time": "2026-09-20T06:00:00+00:00",
-          "gap_hours": 0.51,
+          "gap_hours": 0.04,
           "q50_kmh": 14.892105,
           "q90_kmh": 19.11783,
           "spread_kmh": 5.546646,
-          "adaptive_gain": 1.009,
-          "kalman_like_gain": 0.513,
+          "adaptive_gain": 1.006,
+          "kalman_like_gain": 0.508,
           "background_sigma_kmh": 5.18,
-          "observation_repr_sigma_kmh": 5.05,
+          "observation_repr_sigma_kmh": 5.09,
           "source_skill_multiplier": 1.0,
-          "source_skill_status": "PROVISIONAL"
+          "source_skill_status": null
         },
         "confidence": 0.38
       },
       "rain": {
-        "rain_rate_mm_h": 0.02,
+        "rain_rate_mm_h": 0.05,
         "data_class": "ESTIMATED_NOW",
-        "method": "PQ_LOCAL_NOW_V2_DISTANCE_ADAPTIVE_GAUGE_BLEND",
+        "method": "PQ_LOCAL_NOW_V1_GAUGE_IDW_MODEL_BLEND",
         "confidence": 0.49,
         "gauge_anchor_count": 3,
         "gauge_anchors": [
@@ -203,45 +200,42 @@
             "station": "Cửa Cạn",
             "distance_km": 44.2,
             "rate_mm_h": 0.0,
-            "weight": 0.198,
+            "weight": 0.206,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           },
           {
             "station": "Bãi Thơm",
             "distance_km": 56.4,
             "rate_mm_h": 0.0,
-            "weight": 0.128,
+            "weight": 0.133,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           },
           {
             "station": "An Thới",
             "distance_km": 12.7,
             "rate_mm_h": 0.0,
-            "weight": 0.613,
+            "weight": 0.636,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           }
         ],
         "model_rain_3h_mm": 0.53,
-        "model_share": 0.064,
-        "gauge_share": 0.936,
-        "nearest_gauge_km": 12.7,
         "convective_score": 90.0,
         "ensemble_context": {
           "valid_time": "2026-09-20T06:00:00+00:00",
-          "gap_hours": 0.51,
+          "gap_hours": 0.04,
           "q50_mm": 1.5,
           "q90_mm": 2.6,
           "spread_mm": 1.61,
           "probability_5": 0.0323,
           "role": "UNCERTAINTY_CONTEXT_NOT_DIRECT_RAIN_OBSERVATION"
         },
-        "note": "Fresh nearby VRain dominates current-rain analysis. Model share increases only with gauge distance; ensemble remains uncertainty context and never overrides ACTUAL."
+        "note": "Observed rain anchors dominate the estimate. Ensemble informs uncertainty/hazard context only; it does not override VRain."
       },
       "wave_hs_m": 0.24,
       "wave_hmax_m": 0.41,
@@ -256,7 +250,7 @@
       "actual_anchors": {
         "vvpq": {
           "status": "FRESH",
-          "observed_at": "2026-09-20T06:00:00+00:00",
+          "observed_at": "2026-09-20T05:30:00+00:00",
           "distance_km": 29.4
         },
         "rain_gauges": [
@@ -292,18 +286,18 @@
       "lat": 10.37077,
       "lon": 103.84472,
       "reference_type": "locality_center",
-      "analysis_time": "2026-09-20T06:30:35.529791+00:00",
-      "temperature_c": 28.4,
+      "analysis_time": "2026-09-20T06:02:41.207804+00:00",
+      "temperature_c": 28.0,
       "temperature": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V1_MODEL_RESIDUAL",
         "baseline_model": 27.0,
-        "anchor_observed": 31.0,
+        "anchor_observed": 30.0,
         "anchor_model_proxy": 27.6,
-        "applied_residual_c": 1.39,
+        "applied_residual_c": 0.97,
         "confidence": 0.57
       },
-      "wind_kmh": 12.2,
+      "wind_kmh": 12.1,
       "wind_direction_deg": null,
       "wind": {
         "data_class": "ESTIMATED_NOW",
@@ -317,23 +311,23 @@
         "ensemble_context": {
           "available": true,
           "valid_time": "2026-09-20T06:00:00+00:00",
-          "gap_hours": 0.51,
+          "gap_hours": 0.04,
           "q50_kmh": 15.06012,
           "q90_kmh": 17.614253,
           "spread_kmh": 4.246123,
-          "adaptive_gain": 1.042,
-          "kalman_like_gain": 0.56,
+          "adaptive_gain": 1.039,
+          "kalman_like_gain": 0.555,
           "background_sigma_kmh": 5.52,
-          "observation_repr_sigma_kmh": 4.89,
+          "observation_repr_sigma_kmh": 4.94,
           "source_skill_multiplier": 1.0,
-          "source_skill_status": "PROVISIONAL"
+          "source_skill_status": null
         },
         "confidence": 0.4
       },
       "rain": {
-        "rain_rate_mm_h": 0.02,
+        "rain_rate_mm_h": 0.07,
         "data_class": "ESTIMATED_NOW",
-        "method": "PQ_LOCAL_NOW_V2_DISTANCE_ADAPTIVE_GAUGE_BLEND",
+        "method": "PQ_LOCAL_NOW_V1_GAUGE_IDW_MODEL_BLEND",
         "confidence": 0.51,
         "gauge_anchor_count": 3,
         "gauge_anchors": [
@@ -341,45 +335,42 @@
             "station": "Cửa Cạn",
             "distance_km": 11.6,
             "rate_mm_h": 0.0,
-            "weight": 0.637,
+            "weight": 0.661,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           },
           {
             "station": "Bãi Thơm",
             "distance_km": 20.9,
             "rate_mm_h": 0.0,
-            "weight": 0.457,
+            "weight": 0.474,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           },
           {
             "station": "An Thới",
             "distance_km": 43.4,
             "rate_mm_h": 0.0,
-            "weight": 0.205,
+            "weight": 0.212,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           }
         ],
         "model_rain_3h_mm": 0.76,
-        "model_share": 0.058,
-        "gauge_share": 0.942,
-        "nearest_gauge_km": 11.6,
         "convective_score": 90.0,
         "ensemble_context": {
           "valid_time": "2026-09-20T06:00:00+00:00",
-          "gap_hours": 0.51,
+          "gap_hours": 0.04,
           "q50_mm": 1.1,
           "q90_mm": 3.6,
           "spread_mm": 2.295,
           "probability_5": 0.0323,
           "role": "UNCERTAINTY_CONTEXT_NOT_DIRECT_RAIN_OBSERVATION"
         },
-        "note": "Fresh nearby VRain dominates current-rain analysis. Model share increases only with gauge distance; ensemble remains uncertainty context and never overrides ACTUAL."
+        "note": "Observed rain anchors dominate the estimate. Ensemble informs uncertainty/hazard context only; it does not override VRain."
       },
       "wave_hs_m": 0.29,
       "wave_hmax_m": 0.49,
@@ -394,7 +385,7 @@
       "actual_anchors": {
         "vvpq": {
           "status": "FRESH",
-          "observed_at": "2026-09-20T06:00:00+00:00",
+          "observed_at": "2026-09-20T05:30:00+00:00",
           "distance_km": 27.8
         },
         "rain_gauges": [
@@ -430,18 +421,18 @@
       "lat": 10.292693,
       "lon": 103.914799,
       "reference_type": "island_watch_groundtruth_anchor",
-      "analysis_time": "2026-09-20T06:30:35.529791+00:00",
-      "temperature_c": 29.4,
+      "analysis_time": "2026-09-20T06:02:41.207804+00:00",
+      "temperature_c": 28.8,
       "temperature": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V1_MODEL_RESIDUAL",
         "baseline_model": 27.6,
-        "anchor_observed": 31.0,
+        "anchor_observed": 30.0,
         "anchor_model_proxy": 27.6,
-        "applied_residual_c": 1.79,
+        "applied_residual_c": 1.25,
         "confidence": 0.64
       },
-      "wind_kmh": 15.0,
+      "wind_kmh": 14.8,
       "wind_direction_deg": null,
       "wind": {
         "data_class": "ESTIMATED_NOW",
@@ -455,23 +446,23 @@
         "ensemble_context": {
           "available": true,
           "valid_time": "2026-09-20T06:00:00+00:00",
-          "gap_hours": 0.51,
+          "gap_hours": 0.04,
           "q50_kmh": 15.06012,
           "q90_kmh": 17.614253,
           "spread_kmh": 4.246123,
-          "adaptive_gain": 1.134,
-          "kalman_like_gain": 0.691,
+          "adaptive_gain": 1.13,
+          "kalman_like_gain": 0.686,
           "background_sigma_kmh": 5.6,
-          "observation_repr_sigma_kmh": 3.74,
+          "observation_repr_sigma_kmh": 3.79,
           "source_skill_multiplier": 1.0,
-          "source_skill_status": "PROVISIONAL"
+          "source_skill_status": null
         },
         "confidence": 0.5
       },
       "rain": {
-        "rain_rate_mm_h": 0.0,
+        "rain_rate_mm_h": 0.51,
         "data_class": "ESTIMATED_NOW",
-        "method": "PQ_LOCAL_NOW_V2_DISTANCE_ADAPTIVE_GAUGE_BLEND",
+        "method": "PQ_LOCAL_NOW_V1_GAUGE_IDW_MODEL_BLEND",
         "confidence": 0.59,
         "gauge_anchor_count": 3,
         "gauge_anchors": [
@@ -479,45 +470,42 @@
             "station": "Cửa Cạn",
             "distance_km": 0.0,
             "rate_mm_h": 0.0,
-            "weight": 0.963,
+            "weight": 1.0,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           },
           {
             "station": "Bãi Thơm",
             "distance_km": 18.4,
             "rate_mm_h": 0.0,
-            "weight": 0.5,
+            "weight": 0.519,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           },
           {
             "station": "An Thới",
             "distance_km": 32.4,
             "rate_mm_h": 0.0,
-            "weight": 0.303,
+            "weight": 0.314,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           }
         ],
         "model_rain_3h_mm": 5.54,
-        "model_share": 0.0,
-        "gauge_share": 1.0,
-        "nearest_gauge_km": 0.0,
         "convective_score": 90.0,
         "ensemble_context": {
           "valid_time": "2026-09-20T06:00:00+00:00",
-          "gap_hours": 0.51,
+          "gap_hours": 0.04,
           "q50_mm": 1.1,
           "q90_mm": 3.6,
           "spread_mm": 2.295,
           "probability_5": 0.0323,
           "role": "UNCERTAINTY_CONTEXT_NOT_DIRECT_RAIN_OBSERVATION"
         },
-        "note": "Fresh nearby VRain dominates current-rain analysis. Model share increases only with gauge distance; ensemble remains uncertainty context and never overrides ACTUAL."
+        "note": "Observed rain anchors dominate the estimate. Ensemble informs uncertainty/hazard context only; it does not override VRain."
       },
       "wave_hs_m": 0.21,
       "wave_hmax_m": 0.45,
@@ -532,7 +520,7 @@
       "actual_anchors": {
         "vvpq": {
           "status": "FRESH",
-          "observed_at": "2026-09-20T06:00:00+00:00",
+          "observed_at": "2026-09-20T05:30:00+00:00",
           "distance_km": 16.3
         },
         "rain_gauges": [
@@ -568,18 +556,18 @@
       "lat": 10.411765,
       "lon": 104.031055,
       "reference_type": "island_watch_groundtruth_anchor",
-      "analysis_time": "2026-09-20T06:30:35.529791+00:00",
-      "temperature_c": 28.4,
+      "analysis_time": "2026-09-20T06:02:41.207804+00:00",
+      "temperature_c": 28.0,
       "temperature": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V1_MODEL_RESIDUAL",
         "baseline_model": 27.0,
-        "anchor_observed": 31.0,
+        "anchor_observed": 30.0,
         "anchor_model_proxy": 27.6,
-        "applied_residual_c": 1.41,
-        "confidence": 0.58
+        "applied_residual_c": 0.98,
+        "confidence": 0.57
       },
-      "wind_kmh": 19.3,
+      "wind_kmh": 19.2,
       "wind_direction_deg": null,
       "wind": {
         "data_class": "ESTIMATED_NOW",
@@ -593,23 +581,23 @@
         "ensemble_context": {
           "available": true,
           "valid_time": "2026-09-20T06:00:00+00:00",
-          "gap_hours": 0.51,
+          "gap_hours": 0.04,
           "q50_kmh": 15.06012,
           "q90_kmh": 17.614253,
           "spread_kmh": 4.246123,
-          "adaptive_gain": 0.862,
-          "kalman_like_gain": 0.303,
-          "background_sigma_kmh": 3.19,
-          "observation_repr_sigma_kmh": 4.84,
+          "adaptive_gain": 0.859,
+          "kalman_like_gain": 0.298,
+          "background_sigma_kmh": 3.18,
+          "observation_repr_sigma_kmh": 4.88,
           "source_skill_multiplier": 1.0,
-          "source_skill_status": "PROVISIONAL"
+          "source_skill_status": null
         },
         "confidence": 0.4
       },
       "rain": {
-        "rain_rate_mm_h": 0.0,
+        "rain_rate_mm_h": 0.1,
         "data_class": "ESTIMATED_NOW",
-        "method": "PQ_LOCAL_NOW_V2_DISTANCE_ADAPTIVE_GAUGE_BLEND",
+        "method": "PQ_LOCAL_NOW_V1_GAUGE_IDW_MODEL_BLEND",
         "confidence": 0.61,
         "gauge_anchor_count": 3,
         "gauge_anchors": [
@@ -617,45 +605,42 @@
             "station": "Cửa Cạn",
             "distance_km": 18.4,
             "rate_mm_h": 0.0,
-            "weight": 0.5,
+            "weight": 0.519,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           },
           {
             "station": "Bãi Thơm",
             "distance_km": 0.0,
             "rate_mm_h": 0.0,
-            "weight": 0.963,
+            "weight": 1.0,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           },
           {
             "station": "An Thới",
             "distance_km": 43.8,
             "rate_mm_h": 0.0,
-            "weight": 0.202,
+            "weight": 0.209,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           }
         ],
         "model_rain_3h_mm": 1.14,
-        "model_share": 0.0,
-        "gauge_share": 1.0,
-        "nearest_gauge_km": 0.0,
         "convective_score": 80.0,
         "ensemble_context": {
           "valid_time": "2026-09-20T06:00:00+00:00",
-          "gap_hours": 0.51,
+          "gap_hours": 0.04,
           "q50_mm": 1.1,
           "q90_mm": 3.6,
           "spread_mm": 2.295,
           "probability_5": 0.0323,
           "role": "UNCERTAINTY_CONTEXT_NOT_DIRECT_RAIN_OBSERVATION"
         },
-        "note": "Fresh nearby VRain dominates current-rain analysis. Model share increases only with gauge distance; ensemble remains uncertainty context and never overrides ACTUAL."
+        "note": "Observed rain anchors dominate the estimate. Ensemble informs uncertainty/hazard context only; it does not override VRain."
       },
       "wave_hs_m": 0.13,
       "wave_hmax_m": 0.24,
@@ -670,7 +655,7 @@
       "actual_anchors": {
         "vvpq": {
           "status": "FRESH",
-          "observed_at": "2026-09-20T06:00:00+00:00",
+          "observed_at": "2026-09-20T05:30:00+00:00",
           "distance_km": 27.3
         },
         "rain_gauges": [
@@ -706,18 +691,18 @@
       "lat": 10.18062,
       "lon": 104.04463,
       "reference_type": "island_watch_locality",
-      "analysis_time": "2026-09-20T06:30:35.529791+00:00",
-      "temperature_c": 29.9,
+      "analysis_time": "2026-09-20T06:02:41.207804+00:00",
+      "temperature_c": 29.2,
       "temperature": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V1_MODEL_RESIDUAL",
         "baseline_model": 27.6,
-        "anchor_observed": 31.0,
+        "anchor_observed": 30.0,
         "anchor_model_proxy": 27.6,
-        "applied_residual_c": 2.28,
-        "confidence": 0.72
+        "applied_residual_c": 1.58,
+        "confidence": 0.71
       },
-      "wind_kmh": 19.1,
+      "wind_kmh": 18.9,
       "wind_direction_deg": null,
       "wind": {
         "data_class": "ESTIMATED_NOW",
@@ -731,23 +716,23 @@
         "ensemble_context": {
           "available": true,
           "valid_time": "2026-09-20T06:00:00+00:00",
-          "gap_hours": 0.51,
+          "gap_hours": 0.04,
           "q50_kmh": 14.892105,
           "q90_kmh": 19.11783,
           "spread_kmh": 5.546646,
-          "adaptive_gain": 1.239,
-          "kalman_like_gain": 0.841,
+          "adaptive_gain": 1.235,
+          "kalman_like_gain": 0.836,
           "background_sigma_kmh": 6.13,
-          "observation_repr_sigma_kmh": 2.67,
+          "observation_repr_sigma_kmh": 2.71,
           "source_skill_multiplier": 1.0,
-          "source_skill_status": "PROVISIONAL"
+          "source_skill_status": null
         },
         "confidence": 0.68
       },
       "rain": {
-        "rain_rate_mm_h": 0.22,
+        "rain_rate_mm_h": 0.48,
         "data_class": "ESTIMATED_NOW",
-        "method": "PQ_LOCAL_NOW_V2_DISTANCE_ADAPTIVE_GAUGE_BLEND",
+        "method": "PQ_LOCAL_NOW_V1_GAUGE_IDW_MODEL_BLEND",
         "confidence": 0.51,
         "gauge_anchor_count": 3,
         "gauge_anchors": [
@@ -755,45 +740,42 @@
             "station": "Cửa Cạn",
             "distance_km": 18.9,
             "rate_mm_h": 0.0,
-            "weight": 0.49,
+            "weight": 0.509,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           },
           {
             "station": "Bãi Thơm",
             "distance_km": 25.7,
             "rate_mm_h": 0.0,
-            "weight": 0.384,
+            "weight": 0.399,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           },
           {
             "station": "An Thới",
             "distance_km": 18.3,
             "rate_mm_h": 0.0,
-            "weight": 0.501,
+            "weight": 0.52,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           }
         ],
         "model_rain_3h_mm": 5.54,
-        "model_share": 0.091,
-        "gauge_share": 0.908,
-        "nearest_gauge_km": 18.3,
         "convective_score": 80.0,
         "ensemble_context": {
           "valid_time": "2026-09-20T06:00:00+00:00",
-          "gap_hours": 0.51,
+          "gap_hours": 0.04,
           "q50_mm": 1.5,
           "q90_mm": 2.6,
           "spread_mm": 1.61,
           "probability_5": 0.0323,
           "role": "UNCERTAINTY_CONTEXT_NOT_DIRECT_RAIN_OBSERVATION"
         },
-        "note": "Fresh nearby VRain dominates current-rain analysis. Model share increases only with gauge distance; ensemble remains uncertainty context and never overrides ACTUAL."
+        "note": "Observed rain anchors dominate the estimate. Ensemble informs uncertainty/hazard context only; it does not override VRain."
       },
       "wave_hs_m": 0.24,
       "wave_hmax_m": 0.45,
@@ -808,7 +790,7 @@
       "actual_anchors": {
         "vvpq": {
           "status": "FRESH",
-          "observed_at": "2026-09-20T06:00:00+00:00",
+          "observed_at": "2026-09-20T05:30:00+00:00",
           "distance_km": 5.6
         },
         "rain_gauges": [
@@ -844,18 +826,18 @@
       "lat": 10.0572576,
       "lon": 104.0363948,
       "reference_type": "island_watch_beach",
-      "analysis_time": "2026-09-20T06:30:35.529791+00:00",
-      "temperature_c": 29.4,
+      "analysis_time": "2026-09-20T06:02:41.207804+00:00",
+      "temperature_c": 28.8,
       "temperature": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V1_MODEL_RESIDUAL",
         "baseline_model": 27.5,
-        "anchor_observed": 31.0,
+        "anchor_observed": 30.0,
         "anchor_model_proxy": 27.6,
-        "applied_residual_c": 1.92,
+        "applied_residual_c": 1.33,
         "confidence": 0.66
       },
-      "wind_kmh": 16.6,
+      "wind_kmh": 16.4,
       "wind_direction_deg": null,
       "wind": {
         "data_class": "ESTIMATED_NOW",
@@ -869,69 +851,66 @@
         "ensemble_context": {
           "available": true,
           "valid_time": "2026-09-20T06:00:00+00:00",
-          "gap_hours": 0.51,
+          "gap_hours": 0.04,
           "q50_kmh": 8.637421,
           "q90_kmh": 11.148248,
           "spread_kmh": 3.568032,
-          "adaptive_gain": 0.911,
-          "kalman_like_gain": 0.373,
+          "adaptive_gain": 0.907,
+          "kalman_like_gain": 0.367,
           "background_sigma_kmh": 2.65,
-          "observation_repr_sigma_kmh": 3.43,
+          "observation_repr_sigma_kmh": 3.48,
           "source_skill_multiplier": 1.0,
-          "source_skill_status": "PROVISIONAL"
+          "source_skill_status": null
         },
         "confidence": 0.46
       },
       "rain": {
-        "rain_rate_mm_h": 0.01,
+        "rain_rate_mm_h": 0.05,
         "data_class": "ESTIMATED_NOW",
-        "method": "PQ_LOCAL_NOW_V2_DISTANCE_ADAPTIVE_GAUGE_BLEND",
-        "confidence": 0.55,
+        "method": "PQ_LOCAL_NOW_V1_GAUGE_IDW_MODEL_BLEND",
+        "confidence": 0.56,
         "gauge_anchor_count": 3,
         "gauge_anchors": [
           {
             "station": "Cửa Cạn",
             "distance_km": 29.4,
             "rate_mm_h": 0.0,
-            "weight": 0.337,
+            "weight": 0.35,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           },
           {
             "station": "Bãi Thơm",
             "distance_km": 39.4,
             "rate_mm_h": 0.0,
-            "weight": 0.236,
+            "weight": 0.245,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           },
           {
             "station": "An Thới",
             "distance_km": 4.9,
             "rate_mm_h": 0.0,
-            "weight": 0.808,
+            "weight": 0.839,
             "evidence": "FRESH_ZERO_ACCUMULATION",
             "accumulation_mm": 0.0,
-            "source_quality_factor": 0.963
+            "source_quality_factor": 1.0
           }
         ],
         "model_rain_3h_mm": 0.53,
-        "model_share": 0.025,
-        "gauge_share": 0.976,
-        "nearest_gauge_km": 4.9,
         "convective_score": 90.0,
         "ensemble_context": {
           "valid_time": "2026-09-20T06:00:00+00:00",
-          "gap_hours": 0.51,
+          "gap_hours": 0.04,
           "q50_mm": 1.5,
           "q90_mm": 2.6,
           "spread_mm": 1.61,
           "probability_5": 0.0323,
           "role": "UNCERTAINTY_CONTEXT_NOT_DIRECT_RAIN_OBSERVATION"
         },
-        "note": "Fresh nearby VRain dominates current-rain analysis. Model share increases only with gauge distance; ensemble remains uncertainty context and never overrides ACTUAL."
+        "note": "Observed rain anchors dominate the estimate. Ensemble informs uncertainty/hazard context only; it does not override VRain."
       },
       "wave_hs_m": 0.24,
       "wave_hmax_m": 0.41,
@@ -946,7 +925,7 @@
       "actual_anchors": {
         "vvpq": {
           "status": "FRESH",
-          "observed_at": "2026-09-20T06:00:00+00:00",
+          "observed_at": "2026-09-20T05:30:00+00:00",
           "distance_km": 13.2
         },
         "rain_gauges": [
@@ -983,7 +962,7 @@
     "vrain": "FRESH",
     "himawari": "POINT_NUMERIC_READY",
     "ensemble": "PARTIAL_ENSEMBLE",
-    "source_skill": "weather-source-skill-v1",
+    "source_skill": "UNAVAILABLE",
     "duong_dong_60018": "FEED_EMPTY",
     "an_thoi_408": "FEED_UNRESOLVED"
   }
