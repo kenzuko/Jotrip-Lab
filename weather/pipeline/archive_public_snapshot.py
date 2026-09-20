@@ -28,14 +28,21 @@ def _row(bundle: dict) -> dict:
     for point_id,p in (ln.get("points") or {}).items():
         wind=p.get("wind") or {}
         rain=p.get("rain") or {}
+        ens=(wind.get("ensemble_context") or {})
         points[point_id]={
             "temperature_c":p.get("temperature_c"),
             "wind_kmh":p.get("wind_kmh"),
             "wind_method":wind.get("method"),
             "wind_confidence":wind.get("confidence"),
+            "wind_ensemble_q50_kmh":ens.get("q50_kmh"),
+            "wind_ensemble_q90_kmh":ens.get("q90_kmh"),
+            "wind_adaptive_gain":ens.get("adaptive_gain"),
             "rain_rate_mm_h":rain.get("rain_rate_mm_h"),
             "rain_method":rain.get("method"),
             "rain_confidence":rain.get("confidence"),
+            "rain_model_share":rain.get("model_share"),
+            "rain_gauge_share":rain.get("gauge_share"),
+            "nearest_gauge_km":rain.get("nearest_gauge_km"),
             "wave_hs_m":p.get("wave_hs_m"),
             "convective_score":rain.get("convective_score"),
             "data_class":"ESTIMATED_NOW",
@@ -52,7 +59,12 @@ def _row(bundle: dict) -> dict:
             "vvpq_wind_kmh":v.get("wind_speed_kmh"),
             "vrain":{k:{
                 "observed_at":s.get("observed_at"),
+                "qc":s.get("qc"),
+                "increment_qc":s.get("increment_qc"),
                 "increment_mm":s.get("increment_mm"),
+                "increment_window_minutes":s.get("increment_window_minutes"),
+                "rain_intensity_mm_h":s.get("rain_intensity_mm_h"),
+                "accumulation_mm":s.get("accumulation_mm"),
                 "rain_observed":s.get("rain_observed"),
             } for k,s in gauges.items()},
         },
