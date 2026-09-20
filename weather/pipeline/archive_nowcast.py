@@ -126,6 +126,8 @@ def _compact_point(point: dict[str, Any]) -> dict[str, Any]:
         "cooling_c_per_20m_proxy": _num(point.get("cooling_c_per_20m_proxy")),
         "cloud_motion": {
             "status": motion.get("status"),
+            "cloud_center_lat": _num(motion.get("cloud_center_lat")),
+            "cloud_center_lon": _num(motion.get("cloud_center_lon")),
             "source_sector": motion.get("source_sector"),
             "nearest_corridor": motion.get("nearest_corridor"),
             "motion_heading_deg": _num(motion.get("motion_heading_deg")),
