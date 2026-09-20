@@ -33,6 +33,7 @@ env:
   CALIBRATION_ROOT: data/weather-calibration
   ANALYTICS_ROOT: data/weather-analytics
   ENSEMBLE_ROOT: data/weather-ensemble
+  CURRENT_ROOT: data/weather-current
 
 jobs:
   ground-truth:
@@ -52,7 +53,7 @@ jobs:
         shell: bash
         run: |
           git fetch origin "$DATA_BRANCH" --depth=1
-          for path in "$DATA_ROOT" "$NOWCAST_ROOT" "$FORECAST_ARCHIVE_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$ENSEMBLE_ROOT"; do
+          for path in "$DATA_ROOT" "$NOWCAST_ROOT" "$FORECAST_ARCHIVE_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$ENSEMBLE_ROOT" "$CURRENT_ROOT"; do
             git checkout "origin/$DATA_BRANCH" -- "$path" 2>/dev/null || true
           done
 
@@ -104,6 +105,32 @@ jobs:
               assert p['temperature']['data_class'] in {'ESTIMATED_NOW','MODEL_ONLY'}
               assert p['wind']['data_class'] in {'ESTIMATED_NOW','MODEL_ONLY'}
               assert p['rain']['data_class']=='ESTIMATED_NOW'
+          PY
+
+      - name: Build compact current bundle
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          gt=json.load(open('/tmp/groundtruth.json'))
+          ln=json.load(open('/tmp/local-now.json'))
+          compact=Path('data/weather-nowcast/compact-latest.json')
+          nowcast={}
+          if compact.exists():
+              try: nowcast=json.loads(compact.read_text(encoding='utf-8'))
+              except Exception: nowcast={}
+          bundle={
+              'schema_version':'weather-current-v1',
+              'generated_at':ln.get('generated_at') or gt.get('generated_at'),
+              'groundtruth':gt,
+              'local_now':ln,
+              'nowcast':nowcast,
+          }
+          Path('/tmp/weather-current.json').write_text(
+              json.dumps(bundle,ensure_ascii=False,separators=(',',':'))+'\n',
+              encoding='utf-8'
+          )
           PY
 
       - name: Build ACTUAL-only forecast verification and calibration
@@ -166,19 +193,21 @@ jobs:
           cp -a "$DATA_ROOT"/. /tmp/weather-groundtruth-export/
           cp /tmp/weather-calibration.json /tmp/weather-calibration-latest.json
           cp /tmp/weather-analytics.json /tmp/weather-analytics-latest.json
+          cp /tmp/weather-current.json /tmp/weather-current-latest.json
 
           git reset --hard HEAD
           rm -rf "$DATA_ROOT"
           git fetch origin "$DATA_BRANCH"
           git checkout -B "$DATA_BRANCH" "origin/$DATA_BRANCH"
-          mkdir -p "$DATA_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT"
+          mkdir -p "$DATA_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$CURRENT_ROOT"
           cp -a /tmp/weather-groundtruth-export/. "$DATA_ROOT"/
           cp /tmp/weather-calibration-latest.json "$CALIBRATION_ROOT/latest.json"
           cp /tmp/weather-analytics-latest.json "$ANALYTICS_ROOT/latest.json"
+          cp /tmp/weather-current-latest.json "$CURRENT_ROOT/latest.json"
 
           git config user.name "jotrip-weather-bot"
           git config user.email "jotrip-weather-bot@users.noreply.github.com"
-          git add "$DATA_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT"
+          git add "$DATA_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$CURRENT_ROOT"
           if git diff --cached --quiet; then
             echo "Ground truth state unchanged"
             exit 0
@@ -203,4 +232,5 @@ jobs:
             /tmp/local-now.json
             /tmp/weather-calibration.json
             /tmp/weather-analytics.json
+            /tmp/weather-current.json
           retention-days: 7
