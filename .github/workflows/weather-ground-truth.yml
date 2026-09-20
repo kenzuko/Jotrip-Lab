@@ -5,7 +5,9 @@ on:
     paths:
       - "weather/collectors/phuquoc_ground_truth.py"
       - "weather/processing/local_now.py"
+      - "weather/processing/calibration_pipeline.py"
       - "weather/tests/test_ground_truth_local_now.py"
+      - "weather/tests/test_calibration_pipeline.py"
       - ".github/workflows/weather-ground-truth.yml"
   workflow_dispatch:
   workflow_call:
@@ -51,8 +53,10 @@ jobs:
           git fetch origin "$DATA_BRANCH" --depth=1
           git checkout "origin/$DATA_BRANCH" -- "$DATA_ROOT" "$NOWCAST_ROOT" "$FORECAST_ARCHIVE_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" 2>/dev/null || true
 
-      - name: Test ground truth and local analysis formulas
-        run: python -m unittest weather.tests.test_ground_truth_local_now -v
+      - name: Test ground truth, local analysis and calibration formulas
+        run: |
+          python -m unittest weather.tests.test_ground_truth_local_now -v
+          python -m unittest weather.tests.test_calibration_pipeline -v
 
       - name: Collect public in-situ observations
         shell: bash
