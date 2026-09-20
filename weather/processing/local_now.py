@@ -342,6 +342,58 @@ def _gauge_rate(station: dict) -> tuple[float | None, str | None]:
     return None, None
 
 
+def _rain_imminence(model_rain_3h: float | None, nowcast_point: dict, ensemble_context: dict | None = None) -> dict:
+    """Heuristic 0-60 minute convective-rain signal.
+
+    This is deliberately NOT a rain probability and NOT an observation. It is a
+    hazard/context layer so a low grid-mean rain rate cannot look falsely calm
+    while observed satellite convection is active or rapidly developing.
+    """
+    conv = _convective_score(nowcast_point)
+    cooling = _num(nowcast_point.get("cooling_c_per_20m_proxy"))
+    model_mm = max(0.0, _num(model_rain_3h) or 0.0)
+    q90 = max(0.0, _num((ensemble_context or {}).get("rain_q90_mm")) or 0.0)
+    prob5 = _num((ensemble_context or {}).get("rain_probability_5"))
+
+    if conv is None and model_mm <= 0 and q90 <= 0:
+        return {
+            "score": None,
+            "level": "UNAVAILABLE",
+            "window_minutes": 60,
+            "method": "PQ_RAIN_IMMINENCE_V1_HEURISTIC_NOT_PROBABILITY",
+            "not_probability": True,
+        }
+
+    conv_component = 0.60 * _clamp(conv or 0.0, 0.0, 100.0)
+    model_component = 18.0 * _clamp(model_mm / 6.0, 0.0, 1.0)
+    cooling_component = 12.0 * _clamp((-(cooling or 0.0)) / 6.0, 0.0, 1.0)
+    ensemble_component = 10.0 * _clamp(q90 / 5.0, 0.0, 1.0)
+    raw = _clamp(conv_component + model_component + cooling_component + ensemble_component, 0.0, 100.0)
+
+    if raw >= 75:
+        level = "HIGH"
+    elif raw >= 55:
+        level = "ELEVATED"
+    elif raw >= 35:
+        level = "WATCH"
+    else:
+        level = "LOW"
+
+    return {
+        "score": round(raw, 1),
+        "level": level,
+        "window_minutes": 60,
+        "convective_score": conv,
+        "cooling_c_per_20m_proxy": cooling,
+        "model_rain_3h_mm": model_rain_3h,
+        "ensemble_q90_mm": q90 if q90 > 0 else None,
+        "ensemble_probability_5": prob5,
+        "method": "PQ_RAIN_IMMINENCE_V1_HEURISTIC_NOT_PROBABILITY",
+        "not_probability": True,
+        "note": "Short-range convective context only. It does not replace ACTUAL rain observations or claim a numeric rain probability.",
+    }
+
+
 def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, nowcast_point: dict, vvpq: dict, ensemble_context: dict | None = None, source_skill: dict | None = None) -> dict:
     p = POINTS[point_id]
     weighted, weight_sum, anchors = 0.0, 0.0, []
@@ -374,6 +426,7 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
     wx = str(vvpq.get("weather") or "").upper()
     airport_rain = "RA" in wx or "SH" in wx or "TS" in wx
     dist_airport = _haversine(p["lat"], p["lon"], VVPQ["lat"], VVPQ["lon"])
+    imminence = _rain_imminence(model_rain_3h, nowcast_point, ensemble_context)
 
     if weight_sum > 0:
         gauge_rate = weighted / weight_sum
@@ -386,6 +439,15 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
         nearest = min(a["distance_km"] for a in anchors)
         # Base model contribution increases with distance from a real gauge.
         base_model_share = _clamp(nearest / 50.0 * 0.25, 0.0, 0.20)
+        # A dry gauge several kilometres away is weak evidence for a convective
+        # shower at the target point. During strong convection, restore part of
+        # the local model/satellite signal instead of letting a remote zero gauge
+        # suppress the target to near-zero.
+        remote_gauge_uncertainty_share = (
+            0.35
+            * _clamp((nearest - 2.0) / 15.0, 0.0, 1.0)
+            * _clamp((score - 60.0) / 30.0, 0.0, 1.0)
+        )
         # A co-located dry gauge is ACTUAL evidence that rain is not reaching
         # the sensor yet, but it does not prove the surrounding/local field is
         # convection-free. When satellite/nowcast convection is strong, retain
@@ -395,7 +457,8 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
             _clamp((score - 65.0) / 20.0 * 0.20, 0.0, 0.20)
             if dry_near_gauge else 0.0
         )
-        model_share = max(base_model_share, convective_model_share)
+        model_share = max(base_model_share, convective_model_share, remote_gauge_uncertainty_share)
+        model_share = _clamp(model_share, 0.0, 0.40)
         gauge_share = 1.0 - model_share
         estimate = gauge_share * gauge_rate + model_share * model_signal
         spatial_support = math.exp(-nearest / 25.0)
@@ -418,6 +481,8 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
             "gauge_share": round(gauge_share, 3),
             "nearest_gauge_km": round(nearest, 1),
             "convective_score": score,
+            "imminence": imminence,
+            "remote_gauge_uncertainty_share": round(remote_gauge_uncertainty_share, 3),
             "ensemble_context": {
                 "valid_time": (ensemble_context or {}).get("valid_time"),
                 "gap_hours": (ensemble_context or {}).get("gap_hours"),
@@ -427,7 +492,7 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
                 "probability_5": (ensemble_context or {}).get("rain_probability_5"),
                 "role": "UNCERTAINTY_CONTEXT_NOT_DIRECT_RAIN_OBSERVATION",
             },
-            "note": "ACTUAL VRain remains separate from ESTIMATED_NOW. A dry nearby gauge suppresses the estimate, but strong convective evidence may retain up to 20% model signal so approaching/localized rain is not forced to zero.",
+            "note": "ACTUAL VRain remains separate from ESTIMATED_NOW. A dry co-located gauge remains strong evidence, while a remote dry gauge is down-weighted during strong convection so localized rain is not forced to near-zero.",
         }
 
     conv_factor = _clamp(0.55 + score / 95.0, 0.55, 1.60)
@@ -443,6 +508,7 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
         "gauge_anchors": [],
         "model_rain_3h_mm": model_rain_3h,
         "convective_score": score,
+        "imminence": imminence,
         "airport_weather_support": airport_rain,
         "ensemble_context": {
             "valid_time": (ensemble_context or {}).get("valid_time"),
@@ -591,6 +657,7 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | No
                 "confidence": 0.30,
                 "model_rain_3h_mm": rg_model["rain"],
                 "convective_score": rg_score,
+                "imminence": _rain_imminence(rg_model["rain"], rg_nowcast, rg_ens),
                 "ensemble_context": {
                     "valid_time": rg_ens.get("valid_time"),
                     "q50_mm": rg_ens.get("rain_q50_mm"),
