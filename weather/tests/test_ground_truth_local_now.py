@@ -198,9 +198,11 @@ class GroundTruthTests(unittest.TestCase):
         out = build(gt, dashboard, nowcast)
         rain = out["points"]["cua_can"]["rain"]
         self.assertEqual(rain["nearest_gauge_km"], 0.0)
-        self.assertEqual(rain["model_share"], 0.0)
-        self.assertEqual(rain["rain_rate_mm_h"], 0.0)
-        self.assertEqual(rain["method"], "PQ_LOCAL_NOW_V2_DISTANCE_ADAPTIVE_GAUGE_BLEND")
+        self.assertGreater(rain["model_share"], 0.0)
+        self.assertLessEqual(rain["model_share"], 0.20)
+        self.assertGreater(rain["rain_rate_mm_h"], 0.0)
+        self.assertLess(rain["rain_rate_mm_h"], 0.8)
+        self.assertEqual(rain["method"], "PQ_LOCAL_NOW_V2_GAUGE_CONVECTIVE_BLEND")
 
     def test_ensemble_spread_modulates_wind_correction_without_becoming_observation(self):
         gt = {
