@@ -295,9 +295,10 @@ jobs:
       - name: Persist isolated observation state
         shell: bash
         run: |
-          rm -rf /tmp/weather-groundtruth-export
-          mkdir -p /tmp/weather-groundtruth-export
+          rm -rf /tmp/weather-groundtruth-export /tmp/weather-published-export
+          mkdir -p /tmp/weather-groundtruth-export /tmp/weather-published-export
           cp -a "$DATA_ROOT"/. /tmp/weather-groundtruth-export/
+          if [ -d "$PUBLISHED_ROOT" ]; then cp -a "$PUBLISHED_ROOT"/. /tmp/weather-published-export/; fi
           cp /tmp/weather-calibration.json /tmp/weather-calibration-latest.json
           cp /tmp/weather-analytics.json /tmp/weather-analytics-latest.json
           cp /tmp/weather-current.json /tmp/weather-current-latest.json
@@ -309,6 +310,7 @@ jobs:
           git checkout -B "$DATA_BRANCH" "origin/$DATA_BRANCH"
           mkdir -p "$DATA_ROOT" "$CALIBRATION_ROOT" "$ANALYTICS_ROOT" "$CURRENT_ROOT" "$SOURCE_SKILL_ROOT" "$PUBLISHED_ROOT"
           cp -a /tmp/weather-groundtruth-export/. "$DATA_ROOT"/
+          cp -a /tmp/weather-published-export/. "$PUBLISHED_ROOT"/ 2>/dev/null || true
           cp /tmp/weather-calibration-latest.json "$CALIBRATION_ROOT/latest.json"
           cp /tmp/weather-analytics-latest.json "$ANALYTICS_ROOT/latest.json"
           cp /tmp/weather-current-latest.json "$CURRENT_ROOT/latest.json"
