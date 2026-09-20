@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlencode
@@ -17,6 +18,7 @@ from urllib.request import Request, urlopen
 from weather.points import POINTS
 
 API = "https://api.airvisual.com/v2/nearest_city"
+COMMUNITY_MIN_INTERVAL_SECONDS = 13.0  # stays below 5 requests/minute
 
 
 def _write(path: Path, payload: dict) -> None:
@@ -54,7 +56,9 @@ def collect(key: str) -> dict:
     points: dict[str, dict] = {}
     errors: dict[str, str] = {}
     sampled: list[str] = []
-    for point_id, (lat, lon) in POINTS.items():
+    for index, (point_id, (lat, lon)) in enumerate(POINTS.items()):
+        if index:
+            time.sleep(COMMUNITY_MIN_INTERVAL_SECONDS)
         try:
             data = _request(lat, lon, key)
             current = data.get("current") or {}
@@ -94,7 +98,7 @@ def collect(key: str) -> dict:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "points": points,
         "errors": errors,
-        "detail": f"IQAir Community API realtime city-level AQI ready for {ready}/{len(POINTS)} Weather Lab points",
+        "detail": f"IQAir Community API realtime city-level AQI ready for {ready}/{len(POINTS)} Weather Lab points; requests paced for Community API limits",
     }
 
 
