@@ -122,6 +122,46 @@ class GroundTruthTests(unittest.TestCase):
         self.assertEqual(w["wind"]["data_class"], "ESTIMATED_NOW")
         self.assertEqual(w["wind"]["method"], "PQ_LOCAL_NOW_V1_CONVECTIVE_BACKGROUND")
 
+    def test_fresh_zero_accumulation_is_a_dry_anchor(self):
+        gt = {
+            "generated_at": "2026-09-20T03:35:00+00:00",
+            "atmosphere": {"vvpq": {
+                "status": "FRESH", "qc": "PASS", "age_minutes": 5,
+                "temperature_c": 30, "wind_speed_kmh": 13, "wind_direction_deg": 250,
+                "weather": None, "observed_at": "2026-09-20T03:30:00+00:00",
+            }},
+            "rainfall": {"status": "FRESH", "stations": {
+                "an_thoi": {
+                    "station_name": "An Thới", "lat": 10.018482, "lon": 104.0149,
+                    "age_minutes": 0, "accumulation_mm": 0, "increment_mm": None,
+                    "increment_window_minutes": None, "increment_qc": "WINDOW_TOO_OLD_FOR_CURRENT_RAIN",
+                    "qc": "PASS",
+                },
+            }},
+            "station_status": {},
+        }
+        rows = [{"time_iso": "2026-09-20T10:00:00+07:00", "temperature": 27,
+                 "wind": 5.3, "gust": 13.4, "rain": 1.96, "wave": 0.26,
+                 "wave_max": 0.44, "period": 4.1, "current": 0.47}]
+        dashboard = {
+            "generated_at": "2026-09-20T10:00:00+07:00",
+            "points": {k: {"temperature": 27, "wind": 5.3, "gust": 13.4, "rain": 1.96,
+                            "wave": 0.26, "wave_max": 0.44, "period": 4.1,
+                            "current": 0.47, "hours": rows}
+                       for k in ("duong_dong", "an_thoi", "ganh_dau")}
+        }
+        nowcast = {"status": "POINT_NUMERIC_READY", "points": {
+            "an_thoi": {"convective_signal": {"score": 75}},
+            "duong_dong": {"convective_signal": {"score": 50}},
+            "ganh_dau": {"convective_signal": {"score": 50}},
+        }}
+        out = build(gt, dashboard, nowcast)
+        rain = out["points"]["an_thoi"]["rain"]
+        self.assertGreater(rain["gauge_anchor_count"], 0)
+        self.assertEqual(rain["gauge_anchors"][0]["rate_mm_h"], 0.0)
+        self.assertEqual(rain["gauge_anchors"][0]["evidence"], "FRESH_ZERO_ACCUMULATION")
+        self.assertLess(rain["rain_rate_mm_h"], 0.4)
+
 
 if __name__ == "__main__":
     unittest.main()
