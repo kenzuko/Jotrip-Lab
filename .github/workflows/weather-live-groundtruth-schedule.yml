@@ -1,0 +1,16 @@
+name: Weather Live Ground Truth Schedule
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    uses: kenzuko/Jotrip-Lab/.github/workflows/weather-ground-truth.yml@feat/weather-lab-data-engine-v1
+    with:
+      target_ref: feat/weather-lab-data-engine-v1
+    secrets: inherit
