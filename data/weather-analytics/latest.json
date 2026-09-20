@@ -1,14 +1,14 @@
 {
   "schema_version": "1.0",
   "product": "JOTRIP_WEATHER_ANALYTICS",
-  "generated_at": "2026-09-20T16:58:51.606530+00:00",
+  "generated_at": "2026-09-20T18:08:16.751299+00:00",
   "learning_status": "LEARNING",
   "minimum_samples": 30,
   "ready_groups": 0,
   "total_groups": 25,
-  "matched_cases": 2,
+  "matched_cases": 4,
   "forecast_archive_files": 1,
-  "groundtruth_archive_files": 61,
+  "groundtruth_archive_files": 62,
   "groups": [
     {
       "target": "vrain_an_thoi",
@@ -224,15 +224,15 @@
       "target": "vvpq",
       "variable": "temperature",
       "lead_bucket": "D0_24",
-      "sample_count": 1,
+      "sample_count": 2,
       "status": "LEARNING",
-      "mae": 1.877,
-      "rmse": 1.877,
-      "mean_error": 1.877,
-      "median_error": 1.877,
+      "mae": 2.177,
+      "rmse": 2.1976,
+      "mean_error": -0.3,
+      "median_error": -0.3,
       "applied_bias": 0.0,
       "applied_factor": null,
-      "shrinkage": 0.0323
+      "shrinkage": 0.0625
     },
     {
       "target": "vvpq",
@@ -294,15 +294,15 @@
       "target": "vvpq",
       "variable": "wind",
       "lead_bucket": "D0_24",
-      "sample_count": 1,
+      "sample_count": 2,
       "status": "LEARNING",
-      "mae": 7.3279,
-      "rmse": 7.3279,
-      "mean_error": 7.3279,
-      "median_error": 7.3279,
+      "mae": 14.8157,
+      "rmse": 16.6004,
+      "mean_error": -7.4878,
+      "median_error": -7.4878,
       "applied_bias": 0.0,
       "applied_factor": null,
-      "shrinkage": 0.0323
+      "shrinkage": 0.0625
     },
     {
       "target": "vvpq",
@@ -363,27 +363,27 @@
   ],
   "latest_actual": {
     "vvpq": {
-      "observed_at": "2026-09-20T14:30:00+00:00",
+      "observed_at": "2026-09-20T18:00:00+00:00",
       "temperature_c": 26.0,
-      "wind_kmh": 14.82
+      "wind_kmh": 5.56
     },
     "rain": {
       "vrain_cua_can": {
-        "observed_at": "2026-09-20T16:58:51+00:00",
+        "observed_at": "2026-09-20T18:08:16+00:00",
         "increment_mm": null,
         "window_minutes": null,
         "increment_qc": "WINDOW_TOO_OLD_FOR_CURRENT_RAIN",
         "accumulation_mm": 0.0
       },
       "vrain_bai_thom": {
-        "observed_at": "2026-09-20T16:58:51+00:00",
+        "observed_at": "2026-09-20T18:08:16+00:00",
         "increment_mm": null,
         "window_minutes": null,
         "increment_qc": "WINDOW_TOO_OLD_FOR_CURRENT_RAIN",
         "accumulation_mm": 0.2
       },
       "vrain_an_thoi": {
-        "observed_at": "2026-09-20T16:58:51+00:00",
+        "observed_at": "2026-09-20T18:08:16+00:00",
         "increment_mm": null,
         "window_minutes": null,
         "increment_qc": "WINDOW_TOO_OLD_FOR_CURRENT_RAIN",
@@ -392,6 +392,32 @@
     }
   },
   "recent_cases": [
+    {
+      "target": "vvpq",
+      "variable": "temperature",
+      "lead_bucket": "D0_24",
+      "lead_hours": 18.0,
+      "run_time": "2026-09-20T00:00:00+00:00",
+      "valid_time": "2026-09-20T18:00:00+00:00",
+      "forecast": 28.477026,
+      "observed": 26.0,
+      "observation_class": "ACTUAL",
+      "error": -2.4770259999999986,
+      "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
+    },
+    {
+      "target": "vvpq",
+      "variable": "wind",
+      "lead_bucket": "D0_24",
+      "lead_hours": 18.0,
+      "run_time": "2026-09-20T00:00:00+00:00",
+      "valid_time": "2026-09-20T18:00:00+00:00",
+      "forecast": 27.863582,
+      "observed": 5.56,
+      "observation_class": "ACTUAL",
+      "error": -22.303582000000002,
+      "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
+    },
     {
       "target": "vvpq",
       "variable": "temperature",
