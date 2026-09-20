@@ -535,6 +535,91 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | No
             },
         }
 
+    # Rạch Giá is a separate coastal reference. Do not transport
+    # Phú Quốc VVPQ/VRain corrections across ~120 km of sea. Until station
+    # 089907 has a verified machine-readable numeric feed in this pipeline,
+    # expose Rạch Giá as MODEL_ONLY + remote-sensing context.
+    rg_id = "rach_gia"
+    rg = points_model.get(rg_id, {})
+    if rg:
+        rg_row = _current_model_row(rg, dashboard_time)
+        rg_model = {
+            "temperature": _model_value(rg, rg_row, "temperature"),
+            "wind": _model_value(rg, rg_row, "wind"),
+            "gust": _model_value(rg, rg_row, "gust"),
+            "rain": _model_value(rg, rg_row, "rain"),
+            "wave": _model_value(rg, rg_row, "wave"),
+            "wave_max": _model_value(rg, rg_row, "wave_max"),
+            "period": _model_value(rg, rg_row, "period"),
+            "current": _model_value(rg, rg_row, "current"),
+        }
+        rg_nowcast = nowcast_points.get(rg_id, {})
+        rg_score = _convective_score(rg_nowcast)
+        rg_ens = _ensemble_context(ensemble or {}, rg_id, generated)
+        rain_rate = max(0.0, (rg_model["rain"] or 0.0) / 3.0)
+        output_points[rg_id] = {
+            "name": POINT_NAMES.get(rg_id, "Rạch Giá"),
+            "lat": CANONICAL_POINTS[rg_id][0],
+            "lon": CANONICAL_POINTS[rg_id][1],
+            "reference_type": POINT_METADATA[rg_id].get("reference_type"),
+            "analysis_time": generated.isoformat(),
+            "temperature_c": rg_model["temperature"],
+            "temperature": {
+                "data_class": "MODEL_ONLY",
+                "method": "DIRECT_MODEL_RACH_GIA",
+                "confidence": 0.35,
+            },
+            "wind_kmh": rg_model["wind"],
+            "wind_direction_deg": None,
+            "wind": {
+                "data_class": "MODEL_ONLY",
+                "method": "DIRECT_MODEL_RACH_GIA",
+                "baseline_model": rg_model["wind"],
+                "model_gust_kmh": rg_model["gust"],
+                "convective_score": rg_score,
+                "ensemble_context": {
+                    "valid_time": rg_ens.get("valid_time"),
+                    "q50_kmh": rg_ens.get("wind_q50_kmh"),
+                    "q90_kmh": rg_ens.get("wind_q90_kmh"),
+                    "spread_kmh": rg_ens.get("wind_spread_kmh"),
+                },
+                "confidence": 0.35,
+            },
+            "rain": {
+                "rain_rate_mm_h": round(rain_rate, 2),
+                "data_class": "MODEL_ONLY",
+                "method": "DIRECT_MODEL_RACH_GIA",
+                "confidence": 0.30,
+                "model_rain_3h_mm": rg_model["rain"],
+                "convective_score": rg_score,
+                "ensemble_context": {
+                    "valid_time": rg_ens.get("valid_time"),
+                    "q50_mm": rg_ens.get("rain_q50_mm"),
+                    "q90_mm": rg_ens.get("rain_q90_mm"),
+                    "spread_mm": rg_ens.get("rain_spread_mm"),
+                    "probability_5": rg_ens.get("rain_probability_5"),
+                    "role": "UNCERTAINTY_CONTEXT_NOT_OBSERVATION",
+                },
+                "note": "Rạch Giá currently uses direct model + Himawari context. Phú Quốc VVPQ/VRain are intentionally not transported here.",
+            },
+            "wave_hs_m": rg_model["wave"],
+            "wave_hmax_m": rg_model["wave_max"],
+            "wave_period_s": rg_model["period"],
+            "current_kmh": rg_model["current"],
+            "marine": {
+                "data_class": "MODEL_ONLY",
+                "method": "DIRECT_MARINE_MODEL_RACH_GIA",
+                "confidence": None,
+                "note": "Rạch Giá marine model reference; not in-situ observation.",
+            },
+            "actual_anchors": {
+                "rach_gia_089907": {
+                    "status": (groundtruth.get("station_status", {}).get("089907", {}) or {}).get("readiness", "UNCONNECTED"),
+                    "note": "Known station anchor; numeric live feed is not yet connected to Local Now.",
+                }
+            },
+        }
+
     return {
         "schema_version": "1.0",
         "engine": "PQ_LOCAL_NOW_V2",
@@ -556,6 +641,7 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | No
             "source_skill": (source_skill or {}).get("schema_version", "UNAVAILABLE"),
             "duong_dong_60018": groundtruth.get("station_status", {}).get("60018", {}).get("readiness"),
             "an_thoi_408": groundtruth.get("station_status", {}).get("408", {}).get("readiness"),
+            "rach_gia_089907": groundtruth.get("station_status", {}).get("089907", {}).get("readiness"),
         },
     }
 
