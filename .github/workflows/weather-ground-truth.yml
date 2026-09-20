@@ -220,7 +220,19 @@ jobs:
 
           dashboard=json.load(open('weather/dashboard-data.json'))
           model_72h={}
+          marine_refs={}
           end72=local_now_time+timedelta(hours=72)
+
+          def hav_km(lat1,lon1,lat2,lon2):
+              import math
+              r=6371.0088
+              p1,p2=math.radians(lat1),math.radians(lat2)
+              dp=math.radians(lat2-lat1)
+              dl=math.radians(lon2-lon1)
+              a=math.sin(dp/2)**2+math.cos(p1)*math.cos(p2)*math.sin(dl/2)**2
+              return 2*r*math.asin(math.sqrt(a))
+
+          direct_samples={}
           for point_id,payload in (dashboard.get('points') or {}).items():
               rows=[]
               for row in payload.get('hours') or []:
@@ -235,9 +247,49 @@ jobs:
                       'wave_hmax_m':row.get('wave_max'),
                       'period_s':row.get('period'),
                       'data_class':'MODEL_ONLY',
+                      'reference_mode':'DIRECT_MARINE_SERIES',
+                      'reference_point':point_id,
+                      'reference_distance_km':0.0,
                   })
               if rows:
                   model_72h[point_id]=rows
+                  wave_ref=((payload.get('marine_sampling') or {}).get('wave') or {})
+                  if wave_ref.get('sampled_lat') is not None and wave_ref.get('sampled_lon') is not None:
+                      direct_samples[point_id]=(float(wave_ref['sampled_lat']),float(wave_ref['sampled_lon']))
+
+          # Some locality points have a valid current marine grid sample but no
+          # hourly marine chain in dashboard-data. Reuse only the nearest marine
+          # series and label it explicitly as a reference instead of leaving the
+          # 72h chart blank or pretending it is direct at the locality.
+          for point_id,payload in (dashboard.get('points') or {}).items():
+              if point_id in model_72h or point_id=='rach_gia':
+                  continue
+              wave_ref=((payload.get('marine_sampling') or {}).get('wave') or {})
+              lat,lon=wave_ref.get('sampled_lat'),wave_ref.get('sampled_lon')
+              if lat is None or lon is None or not direct_samples:
+                  continue
+              ranked=sorted(
+                  ((hav_km(float(lat),float(lon),rlat,rlon),rid) for rid,(rlat,rlon) in direct_samples.items()),
+                  key=lambda x:x[0]
+              )
+              dist,ref_id=ranked[0]
+              if dist>25:
+                  continue
+              copied=[]
+              for row in model_72h.get(ref_id,[]):
+                  copied.append({
+                      **row,
+                      'reference_mode':'NEAREST_MARINE_SERIES',
+                      'reference_point':ref_id,
+                      'reference_distance_km':round(dist,1),
+                  })
+              if copied:
+                  model_72h[point_id]=copied
+                  marine_refs[point_id]={
+                      'reference_point':ref_id,
+                      'reference_distance_km':round(dist,1),
+                      'reference_mode':'NEAREST_MARINE_SERIES',
+                  }
 
           bundle={
               'schema_version':'weather-current-v3',
@@ -253,7 +305,8 @@ jobs:
               },
               'model_72h':{
                   'points':model_72h,
-                  'note':'Compact 72h marine series from dashboard model; MODEL_ONLY.',
+                  'references':marine_refs,
+                  'note':'Compact 72h marine series from dashboard model. Missing locality chains may use the nearest marine series and are explicitly labelled NEAREST_MARINE_SERIES. MODEL_ONLY.',
               },
           }
           Path('/tmp/weather-current.json').write_text(
