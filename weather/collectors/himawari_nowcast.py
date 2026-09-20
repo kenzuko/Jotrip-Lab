@@ -45,7 +45,7 @@ CORRIDOR_WATCH = {
     "rach_gia": {"name": "Rạch Giá", "lat": 10.00677, "lon": 105.07845},
 }
 MOTION_RADIUS_KM = 150.0
-MOTION_SCORE_MIN = 50.0
+MOTION_SCORE_MIN = 70.0
 
 
 def _write(path: Path, payload: dict) -> None:
@@ -281,9 +281,22 @@ def _cloud_motion_for_target(spatial: dict, target_lat: float, target_lon: float
             "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1",
             "eta_minutes": None,
         }
-    previous, current = frames[-2], frames[-1]
-    prev_t = _parse_iso(previous.get("sampled_time"))
+    current = frames[-1]
     cur_t = _parse_iso(current.get("sampled_time"))
+    previous = frames[-2]
+    # Prefer a 20-40 minute baseline when the archive provides enough frames.
+    # Ten-minute cloud-top fields can move less than one render-grid cell and
+    # produce a noisy heading; the longer baseline improves direction/ETA.
+    if cur_t:
+        for candidate in reversed(frames[:-1]):
+            candidate_t = _parse_iso(candidate.get("sampled_time"))
+            if not candidate_t:
+                continue
+            gap_min = (cur_t - candidate_t).total_seconds() / 60.0
+            if 20.0 <= gap_min <= 40.0:
+                previous = candidate
+                break
+    prev_t = _parse_iso(previous.get("sampled_time"))
     if not prev_t or not cur_t:
         return {"status": "INVALID_TIME", "method": "HIMAWARI_TWO_FRAME_WEIGHTED_CENTROID_V1", "eta_minutes": None}
     dt_h = (cur_t - prev_t).total_seconds() / 3600.0
