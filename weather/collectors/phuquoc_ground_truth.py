@@ -35,30 +35,6 @@ KNOWN_STATIONS = {
         "source": "AVIATION_WEATHER_CENTER_METAR",
         "readiness": "PRODUCTION_ACTUAL",
     },
-    "60018": {
-        "station_id": "DG60018/DS60018",
-        "station_name": "KT HAI VAN PHU QUOC",
-        "location_id": "duong_dong_station",
-        "source": "VN_KTTV_PUBLIC",
-        "readiness": "FEED_EMPTY",
-        "note": "Deep public probe 2026-09-18: XHR 6/24/72h returned zeros/empty and official Excel export contained zero numeric observation cells.",
-    },
-    "089907": {
-        "station_id": "089907",
-        "station_name": "KT RACH GIA",
-        "location_id": "rach_gia_station_089907",
-        "source": "VN_NATIONAL_STATION_NETWORK",
-        "readiness": "VERIFIED_STATION_NO_LIVE_FEED",
-        "note": "Official/public station identity verified. Numeric machine-readable live feed is not yet connected in this pipeline.",
-    },
-    "408": {
-        "station_id": "408",
-        "station_name": "An Thoi",
-        "location_id": "an_thoi_station_408",
-        "source": "VN_NATIONAL_STATION_NETWORK",
-        "readiness": "FEED_UNRESOLVED",
-        "note": "Station existence and variables T/U/R/P/W are documented; public machine-readable feed not found.",
-    },
 }
 
 
