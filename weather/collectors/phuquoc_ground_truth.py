@@ -43,6 +43,14 @@ KNOWN_STATIONS = {
         "readiness": "FEED_EMPTY",
         "note": "Deep public probe 2026-09-18: XHR 6/24/72h returned zeros/empty and official Excel export contained zero numeric observation cells.",
     },
+    "089907": {
+        "station_id": "089907",
+        "station_name": "KT RACH GIA",
+        "location_id": "rach_gia_station_089907",
+        "source": "VN_NATIONAL_STATION_NETWORK",
+        "readiness": "VERIFIED_STATION_NO_LIVE_FEED",
+        "note": "Official/public station identity verified. Numeric machine-readable live feed is not yet connected in this pipeline.",
+    },
     "408": {
         "station_id": "408",
         "station_name": "An Thoi",
