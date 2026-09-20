@@ -138,7 +138,7 @@ def _ensemble_context(ensemble: dict, point_id: str, analysis_time: datetime) ->
     }
 
 
-def _ensemble_gain(model_wind: float | None, context: dict, distance_km: float, age_minutes: Any) -> dict:
+def _ensemble_gain(model_wind: float | None, context: dict, distance_km: float, age_minutes: Any, skill_multiplier: float = 1.0) -> dict:
     """Adaptive uncertainty term inspired by OI/EnKF background-error weighting.
 
     The ensemble does not become another observation. It estimates how uncertain
@@ -164,7 +164,7 @@ def _ensemble_gain(model_wind: float | None, context: dict, distance_km: float, 
 
     # Preserve the already-tested distance/freshness correction. Ensemble only
     # modulates its strength rather than replacing the local analysis.
-    gain = _clamp(0.65 + 0.70 * kalman_like, 0.65, 1.25)
+    gain = _clamp((0.65 + 0.70 * kalman_like) * _clamp(skill_multiplier, 0.90, 1.10), 0.60, 1.30)
     return {
         "available": True,
         "gain": gain,
@@ -173,6 +173,7 @@ def _ensemble_gain(model_wind: float | None, context: dict, distance_km: float, 
         "observation_repr_sigma_kmh": sigma_o,
         "ensemble_sigma_kmh": ensemble_sigma,
         "model_ensemble_disagreement_kmh": disagreement,
+        "source_skill_multiplier": _clamp(skill_multiplier, 0.90, 1.10),
     }
 
 
@@ -193,7 +194,7 @@ def _convective_wind_floor(model_wind: float | None, model_gust: float | None, s
     return model_wind + 0.30 * severity * gust_gap
 
 
-def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model: dict, vvpq: dict, nowcast_point: dict | None = None, ensemble_context: dict | None = None) -> dict:
+def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model: dict, vvpq: dict, nowcast_point: dict | None = None, ensemble_context: dict | None = None, source_skill: dict | None = None) -> dict:
     p = POINTS[point_id]
     distance = _haversine(p["lat"], p["lon"], VVPQ["lat"], VVPQ["lon"])
     freshness = _freshness(vvpq.get("age_minutes"))
@@ -237,7 +238,8 @@ def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model
     anchor_dir = _num(anchor_model.get("wind_direction_deg"))
     point_dir = _num(model_point.get("wind_direction_deg"))
     wind_alpha = math.exp(-distance / WIND_DECAY_KM) * freshness * source_q
-    ens_gain = _ensemble_gain(model_wind, ensemble_context or {}, distance, vvpq.get("age_minutes"))
+    skill_multiplier = _num((((source_skill or {}).get("vvpq") or {}).get("wind") or {}).get("ensemble_gain_multiplier")) or 1.0
+    ens_gain = _ensemble_gain(model_wind, ensemble_context or {}, distance, vvpq.get("age_minutes"), skill_multiplier)
     wind_alpha *= float(ens_gain.get("gain", 1.0))
     conv_score = _convective_score(nowcast_point or {})
     conv_floor = _convective_wind_floor(model_wind, model_gust, conv_score)
@@ -296,6 +298,8 @@ def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model
                 "kalman_like_gain": round(float(ens_gain.get("kalman_like_gain", 0.0)), 3) if ens_gain.get("available") else None,
                 "background_sigma_kmh": round(float(ens_gain.get("background_sigma_kmh", 0.0)), 2) if ens_gain.get("available") else None,
                 "observation_repr_sigma_kmh": round(float(ens_gain.get("observation_repr_sigma_kmh", 0.0)), 2) if ens_gain.get("available") else None,
+                "source_skill_multiplier": round(float(ens_gain.get("source_skill_multiplier", 1.0)), 3),
+                "source_skill_status": ((((source_skill or {}).get("vvpq") or {}).get("wind") or {}).get("status")),
             },
             "confidence": round(_clamp(0.30 + 0.58 * min(1.0, wind_alpha) - 0.12 * conv_severity, 0.0, 0.90), 2),
         }
@@ -338,7 +342,7 @@ def _gauge_rate(station: dict) -> tuple[float | None, str | None]:
     return None, None
 
 
-def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, nowcast_point: dict, vvpq: dict, ensemble_context: dict | None = None) -> dict:
+def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, nowcast_point: dict, vvpq: dict, ensemble_context: dict | None = None, source_skill: dict | None = None) -> dict:
     p = POINTS[point_id]
     weighted, weight_sum, anchors = 0.0, 0.0, []
     for key, station in gauges.items():
@@ -348,7 +352,8 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
             continue
         dist = _haversine(p["lat"], p["lon"], lat, lon)
         fresh = _freshness(station.get("age_minutes"), 75.0)
-        w = math.exp(-dist / RAIN_DECAY_KM) * fresh
+        quality_factor = _num((((source_skill or {}).get("vrain") or {}).get(key) or {}).get("quality_factor")) or 1.0
+        w = math.exp(-dist / RAIN_DECAY_KM) * fresh * _clamp(quality_factor, 0.80, 1.05)
         if w <= 0:
             continue
         weighted += w * rate
@@ -360,6 +365,7 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
             "weight": round(w, 3),
             "evidence": evidence,
             "accumulation_mm": _num(station.get("accumulation_mm")),
+            "source_quality_factor": round(_clamp(quality_factor, 0.80, 1.05), 3),
         })
 
     score = _num((nowcast_point.get("convective_signal") or {}).get("score"))
@@ -433,7 +439,7 @@ def _rain_estimate(point_id: str, model_rain_3h: float | None, gauges: dict, now
     }
 
 
-def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | None = None) -> dict:
+def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | None = None, source_skill: dict | None = None) -> dict:
     generated = _parse_time(groundtruth.get("generated_at")) or datetime.now(timezone.utc)
     dashboard_time = _parse_time(dashboard.get("generated_at"))
     points_model = dashboard.get("points", {})
@@ -467,10 +473,10 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | No
         ens_context = _ensemble_context(ensemble or {}, point_id, generated)
         corrected = _vvpq_correction(
             point_id, meta, model, anchor_model, vvpq,
-            nowcast_points.get(point_id, {}), ens_context,
+            nowcast_points.get(point_id, {}), ens_context, source_skill,
         )
         rain = _rain_estimate(
-            point_id, model["rain"], gauges, nowcast_points.get(point_id, {}), vvpq, ens_context,
+            point_id, model["rain"], gauges, nowcast_points.get(point_id, {}), vvpq, ens_context, source_skill,
         )
         output_points[point_id] = {
             **meta,
@@ -529,6 +535,7 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | No
             "vrain": groundtruth.get("rainfall", {}).get("status"),
             "himawari": nowcast.get("status") if isinstance(nowcast, dict) else "UNAVAILABLE",
             "ensemble": (ensemble or {}).get("status", "UNAVAILABLE"),
+            "source_skill": (source_skill or {}).get("schema_version", "UNAVAILABLE"),
             "duong_dong_60018": groundtruth.get("station_status", {}).get("60018", {}).get("readiness"),
             "an_thoi_408": groundtruth.get("station_status", {}).get("408", {}).get("readiness"),
         },
@@ -550,6 +557,7 @@ def main() -> None:
     parser.add_argument("--dashboard", type=Path, required=True)
     parser.add_argument("--nowcast", type=Path, required=True)
     parser.add_argument("--ensemble", type=Path)
+    parser.add_argument("--source-skill", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
@@ -557,7 +565,8 @@ def main() -> None:
     dashboard = json.loads(args.dashboard.read_text(encoding="utf-8"))
     nowcast = json.loads(args.nowcast.read_text(encoding="utf-8")) if args.nowcast.exists() else {}
     ensemble = json.loads(args.ensemble.read_text(encoding="utf-8")) if args.ensemble and args.ensemble.exists() else {}
-    result = build(groundtruth, dashboard, nowcast, ensemble)
+    source_skill = json.loads(args.source_skill.read_text(encoding="utf-8")) if args.source_skill and args.source_skill.exists() else {}
+    result = build(groundtruth, dashboard, nowcast, ensemble, source_skill)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({
