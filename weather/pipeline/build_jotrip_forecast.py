@@ -57,7 +57,8 @@ def confidence_score(lead:int,completion:float|None,calibration:str)->int:
         lead_penalty=0.0
     else:
         lead_penalty=min(35.0,35.0*(lead-72)/(240-72))
-    calibration_penalty=8.0 if str(calibration).upper()=="LEARNING" else 0.0
+    cal=str(calibration).upper()
+    calibration_penalty=8.0 if cal=="LEARNING" else (4.0 if cal=="PARTIAL" else 0.0)
     return round(max(35.0,min(95.0,base-lead_penalty-calibration_penalty)))
 
 def confidence_band(score:int)->str:
@@ -142,6 +143,8 @@ def build(ensemble:dict)->dict:
         "source":"PQ_ENSEMBLE_LOCAL_V1 / NOAA GEFS",
         "ensemble_completion_ratio":completion,
         "calibration_status":cal,
+        "calibration_ready_groups":ensemble.get("calibration_ready_groups",0),
+        "calibration_total_groups":ensemble.get("calibration_total_groups",0),
         "cadence":{"d0_d3_hours":6,"d4_d10_hours":12},
         "regions":out_regions,
         "note":"D0-D3 shown every 6h; D4-D10 every 12h. confidence_score is an operational confidence index, not probability of correctness; variability_score is normalized ensemble spread, not hazard probability.",
