@@ -89,7 +89,7 @@ class GroundTruthTests(unittest.TestCase):
             k: {"convective_signal": {"score": 75}} for k in ("duong_dong", "an_thoi", "ganh_dau")
         }}
         out = build(gt, dashboard, nowcast)
-        self.assertEqual(out["engine"], "PQ_LOCAL_NOW_V1")
+        self.assertEqual(out["engine"], "PQ_LOCAL_NOW_V2")
         self.assertEqual(out["points"]["duong_dong"]["marine"]["data_class"], "MODEL_ONLY")
         self.assertEqual(out["points"]["duong_dong"]["temperature"]["data_class"], "ESTIMATED_NOW")
         self.assertEqual(out["points"]["duong_dong"]["rain"]["data_class"], "ESTIMATED_NOW")
@@ -161,6 +161,47 @@ class GroundTruthTests(unittest.TestCase):
         self.assertEqual(rain["gauge_anchors"][0]["rate_mm_h"], 0.0)
         self.assertEqual(rain["gauge_anchors"][0]["evidence"], "FRESH_ZERO_ACCUMULATION")
         self.assertLess(rain["rain_rate_mm_h"], 0.4)
+
+    def test_ensemble_spread_modulates_wind_correction_without_becoming_observation(self):
+        gt = {
+            "generated_at": "2026-09-20T04:00:00+00:00",
+            "atmosphere": {"vvpq": {
+                "status": "FRESH", "qc": "PASS", "age_minutes": 5,
+                "temperature_c": 30, "wind_speed_kmh": 12, "wind_direction_deg": 250,
+                "observed_at": "2026-09-20T04:00:00+00:00",
+            }},
+            "rainfall": {"status": "FRESH", "stations": {}},
+            "station_status": {},
+        }
+        rows = [{"time_iso": "2026-09-20T11:00:00+07:00", "temperature": 28,
+                 "wind": 5.0, "gust": 12.0, "rain": 0, "wave": 0.3,
+                 "wave_max": 0.5, "period": 4.0, "current": 0.3}]
+        dashboard = {
+            "generated_at": "2026-09-20T11:00:00+07:00",
+            "points": {k: {"temperature": 28, "wind": 5.0, "gust": 12.0, "rain": 0,
+                            "wave": 0.3, "wave_max": 0.5, "period": 4.0,
+                            "current": 0.3, "hours": rows}
+                       for k in ("duong_dong", "an_thoi", "ganh_dau")}
+        }
+        nowcast = {"status": "POINT_NUMERIC_READY", "points": {
+            k: {"convective_signal": {"score": 40}} for k in ("duong_dong", "an_thoi", "ganh_dau")
+        }}
+        ensemble = {"status": "MEMBER_MATRIX_READY", "points": {
+            "duong_dong": [{
+                "valid_time": "2026-09-20T11:00:00+07:00",
+                "variables": {"wind": {"corrected": {
+                    "q50": 7.0, "q90": 14.0, "spread": 8.0,
+                    "exceedance_probability": 0.1,
+                }, "raw": {}}},
+            }]
+        }}
+        out = build(gt, dashboard, nowcast, ensemble)
+        w = out["points"]["duong_dong"]["wind"]
+        self.assertEqual(out["engine"], "PQ_LOCAL_NOW_V2")
+        self.assertTrue(w["ensemble_context"]["available"])
+        self.assertIsNotNone(w["ensemble_context"]["background_sigma_kmh"])
+        self.assertIn("ENSEMBLE_AWARE", w["method"])
+        self.assertEqual(w["data_class"], "ESTIMATED_NOW")
 
 
 if __name__ == "__main__":
