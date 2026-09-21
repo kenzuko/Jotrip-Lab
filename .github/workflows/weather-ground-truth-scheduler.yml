@@ -1,8 +1,9 @@
 name: Weather Ground Truth 10m scheduler
 
 on:
-  schedule:
-    - cron: "2,12,22,32,42,52 * * * *"
+  # Scheduled cadence moved to weather-live-groundtruth-schedule.yml (every 10m).
+  # Keep this workflow for manual/path-triggered recovery only to avoid duplicate
+  # reusable runs cancelling each other.
   workflow_dispatch:
   push:
     paths:
