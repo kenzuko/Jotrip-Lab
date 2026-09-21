@@ -37,7 +37,7 @@ class JoTripRegionalForecastTests(unittest.TestCase):
                 "duong_dong":{
                     "score":90,
                     "cloud_motion":{
-                        "status":"APPROACHING","approaching":True,"eta_minutes":35,
+                        "status":"APPROACHING","approaching":True,"predicted_impact":True,"public_track_usable":True,"eta_minutes":35,
                         "source_sector":"Đông","motion_heading":"Tây","motion_speed_kmh":28,
                         "tracking_confidence":"MEDIUM",
                     },
@@ -68,6 +68,35 @@ class JoTripRegionalForecastTests(unittest.TestCase):
         # Satellite context must not rewrite raw ensemble distribution values.
         self.assertEqual(central["rain_mm"],2.0)
         self.assertTrue(p["nowcast_context"]["applied"])
+        self.assertTrue(central["nowcast_overlay"]["operational_impact"])
+
+    def test_moving_away_cloud_is_context_not_operational_impact(self):
+        points={"duong_dong":[self.sample_row(6,0.0)]}
+        ensemble={
+            "run_time":"2026-09-21T00:00:00+00:00",
+            "generated_at":"2026-09-21T08:40:00+00:00",
+            "horizon_hours":240,
+            "completion_ratio":1.0,
+            "calibration_status":"LEARNING",
+            "points":points,
+        }
+        nowcast={
+            "sampled_time":"2026-09-21T08:30:00+00:00",
+            "points":{"duong_dong":{
+                "score":90,
+                "cloud_motion":{
+                    "status":"MOVING_AWAY","approaching":False,
+                    "predicted_impact":False,"public_track_usable":True,
+                    "eta_minutes":None,
+                }
+            }},
+        }
+        p=build(ensemble,nowcast)
+        row=p["regions"]["central_west"]["rows"][0]
+        self.assertTrue(p["nowcast_context"]["applied"])
+        self.assertIsNotNone(row["nowcast_overlay"])
+        self.assertFalse(row["nowcast_overlay"]["operational_impact"])
+        self.assertIsNone(row["risk_driver"]["nowcast"])
 
     def test_stale_nowcast_is_not_used_as_live_context(self):
         points={"duong_dong":[self.sample_row(6,0.0)]}
