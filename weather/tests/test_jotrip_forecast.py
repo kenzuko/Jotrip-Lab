@@ -67,6 +67,27 @@ class JoTripRegionalForecastTests(unittest.TestCase):
         self.assertEqual(central["risk_driver"]["nowcast"],"Dương Đông")
         # Satellite context must not rewrite raw ensemble distribution values.
         self.assertEqual(central["rain_mm"],2.0)
+        self.assertTrue(p["nowcast_context"]["applied"])
+
+    def test_stale_nowcast_is_not_used_as_live_context(self):
+        points={"duong_dong":[self.sample_row(6,0.0)]}
+        ensemble={
+            "run_time":"2026-09-21T00:00:00+00:00",
+            "generated_at":"2026-09-21T08:40:00+00:00",
+            "horizon_hours":240,
+            "completion_ratio":1.0,
+            "calibration_status":"LEARNING",
+            "points":points,
+        }
+        nowcast={
+            "sampled_time":"2026-09-21T06:40:00+00:00",
+            "points":{"duong_dong":{"score":90,"cloud_motion":{"approaching":True,"eta_minutes":30}}},
+        }
+        p=build(ensemble,nowcast)
+        row=p["regions"]["central_west"]["rows"][0]
+        self.assertFalse(p["nowcast_context"]["applied"])
+        self.assertIsNone(row["nowcast_overlay"])
+        self.assertIsNone(row["risk_driver"]["nowcast"])
 
 if __name__=="__main__":
     unittest.main()
