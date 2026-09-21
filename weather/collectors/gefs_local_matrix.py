@@ -29,7 +29,7 @@ from typing import Any
 from weather.collectors.live_smoke import _candidate_cycles
 from weather.points import POINTS
 
-OPERATIONAL_POINT_IDS = tuple(POINTS)
+ISLAND_POINT_IDS = tuple(point_id for point_id in POINTS if point_id != "rach_gia")
 VERIFICATION_TARGETS = {
     "vvpq": (10.169, 103.995),
     "vrain_cua_can": (10.292693, 103.914799),
@@ -48,7 +48,7 @@ from weather.processing.ensemble_local import correct_distribution
 FILTER = "https://nomads.ncep.noaa.gov/cgi-bin/filter_gefs_atmos_0p50a.pl"
 LEADS = list(range(6, 241, 6))
 MEMBERS = ["c00"] + [f"p{i:02d}" for i in range(1, 31)]
-BOX = {"leftlon": 103.0, "rightlon": 105.25, "toplat": 11.0, "bottomlat": 9.0}
+BOX = {"leftlon": 103.0, "rightlon": 104.75, "toplat": 11.0, "bottomlat": 9.0}
 NATIVE_GRID_DEG = 0.5
 
 # V5 spatial field keeps the model grid instead of throwing it away after
@@ -58,7 +58,7 @@ NATIVE_GRID_DEG = 0.5
 SPATIAL_GRID_REQUESTS = tuple(
     (round(lat, 2), round(lon, 2))
     for lat in (9.0, 9.5, 10.0, 10.5, 11.0)
-    for lon in (103.0, 103.5, 104.0, 104.5, 105.0)
+    for lon in (103.0, 103.5, 104.0, 104.5)
 )
 UA = "JoTrip-WeatherLab/1.0 NOAA-GEFS-local-ensemble"
 
@@ -154,7 +154,7 @@ def _decode(path: Path, cycle: datetime, member: str) -> list[dict]:
                 valid = cycle + timedelta(hours=end_step)
                 targets = [
                     (point_id, POINTS[point_id][0], POINTS[point_id][1], "OPERATIONAL_ANCHOR")
-                    for point_id in OPERATIONAL_POINT_IDS
+                    for point_id in ISLAND_POINT_IDS
                 ] + [
                     (point_id, lat, lon, "VERIFICATION_ANCHOR")
                     for point_id, (lat, lon) in VERIFICATION_TARGETS.items()
@@ -328,7 +328,7 @@ def _verification_summaries(vectors: dict) -> dict:
 
 
 def _summaries(vectors: dict, calibration_bundle: dict | None = None) -> dict:
-    points: dict[str, list[dict]] = {point_id: [] for point_id in OPERATIONAL_POINT_IDS}
+    points: dict[str, list[dict]] = {point_id: [] for point_id in ISLAND_POINT_IDS}
     for item in sorted(vectors.values(), key=lambda x: (x["point_id"], x["lead_hours"])):
         if item["point_id"] not in points:
             continue
