@@ -106,6 +106,9 @@ def _point_nowcast(nowcast:dict|None,pid:str)->dict:
     elif score is not None and score>=25: level="WATCH"
     if approaching and eta is not None and eta<=120:
         level="HIGH" if eta<=60 else "ELEVATED"
+    predicted_impact=bool(motion.get("predicted_impact"))
+    public_track_usable=bool(motion.get("public_track_usable"))
+    operational_impact=bool(public_track_usable and predicted_impact and (approaching or eta is not None))
     return {
         "convective_score":score,
         "level":level,
@@ -115,6 +118,9 @@ def _point_nowcast(nowcast:dict|None,pid:str)->dict:
         "motion_speed_kmh":num(motion.get("motion_speed_kmh")),
         "eta_minutes":eta,
         "approaching":approaching,
+        "predicted_impact":predicted_impact,
+        "public_track_usable":public_track_usable,
+        "operational_impact":operational_impact,
         "tracking_confidence":motion.get("tracking_confidence"),
     }
 
@@ -190,7 +196,7 @@ def build(ensemble:dict,nowcast:dict|None=None)->dict:
                     "wind":wind_driver["point_name"],
                     "rain":rain_driver["point_name"],
                     "variability":vol_driver["point_name"],
-                    "nowcast":POINT_NAMES.get(now_driver[0],now_driver[0]) if near_now else None,
+                    "nowcast":POINT_NAMES.get(now_driver[0],now_driver[0]) if near_now.get("operational_impact") else None,
                 },
                 "nowcast_overlay":{
                     "applies":bool(near_now),
