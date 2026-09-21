@@ -87,7 +87,8 @@ def _nowcast_is_fresh(nowcast:dict|None,reference_iso:Any,max_age_minutes:int=75
     # Older test/compat payloads may not carry time. Keep them usable, but
     # production payloads with timestamps must pass the freshness gate.
     if sampled is None:return True
-    reference=_parse_iso(reference_iso) or datetime.now(timezone.utc)
+    references=[x for x in (_parse_iso(reference_iso),_parse_iso(nowcast.get("generated_at"))) if x is not None]
+    reference=max(references) if references else datetime.now(timezone.utc)
     age=(reference-sampled).total_seconds()/60.0
     return -15.0 <= age <= float(max_age_minutes)
 
