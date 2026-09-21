@@ -1,8 +1,9 @@
 name: Weather Nowcast 30m scheduler
 
 on:
-  schedule:
-    - cron: "7,37 * * * *"
+  # Scheduled cadence moved to weather-live-himawari-schedule.yml (every 10m).
+  # Keep this workflow for manual/path-triggered recovery only to avoid duplicate
+  # reusable runs cancelling each other.
   workflow_dispatch:
   push:
     paths:
