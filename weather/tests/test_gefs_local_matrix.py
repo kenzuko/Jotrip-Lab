@@ -1,6 +1,8 @@
 import unittest
 from datetime import datetime, timezone
 from weather.collectors.gefs_local_matrix import (
+    BOX,
+    ISLAND_POINT_IDS,
     SPATIAL_GRID_REQUESTS,
     _file_member,
     _spatial_summaries,
@@ -32,6 +34,11 @@ class GefsLocalMatrixTests(unittest.TestCase):
         self.assertGreaterEqual(len(SPATIAL_GRID_REQUESTS), 16)
         self.assertTrue(all(abs(lat * 2 - round(lat * 2)) < 1e-9 for lat, _ in SPATIAL_GRID_REQUESTS))
         self.assertTrue(all(abs(lon * 2 - round(lon * 2)) < 1e-9 for _, lon in SPATIAL_GRID_REQUESTS))
+
+    def test_public_gefs_scope_stays_on_phu_quoc(self):
+        self.assertNotIn("rach_gia", ISLAND_POINT_IDS)
+        self.assertLessEqual(BOX["rightlon"], 104.75)
+        self.assertTrue(all(lon <= 104.5 for _, lon in SPATIAL_GRID_REQUESTS))
 
     def test_spatial_summary_keeps_vector_and_probability(self):
         members = {}
