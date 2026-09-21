@@ -9,6 +9,7 @@ Public philosophy:
 """
 from __future__ import annotations
 import argparse, json, statistics
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -72,6 +73,24 @@ def variability_score(wind_spread:float|None,rain_spread:float|None)->int:
     r=max(0.0,rain_spread or 0.0)/10.0
     return round(100*min(1.0,max(w,r)))
 
+def _parse_iso(value:Any)->datetime|None:
+    if not value:return None
+    try:
+        d=datetime.fromisoformat(str(value).replace("Z","+00:00"))
+        return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
+    except Exception:
+        return None
+
+def _nowcast_is_fresh(nowcast:dict|None,reference_iso:Any,max_age_minutes:int=75)->bool:
+    if not nowcast:return False
+    sampled=_parse_iso(nowcast.get("sampled_time") or nowcast.get("generated_at"))
+    # Older test/compat payloads may not carry time. Keep them usable, but
+    # production payloads with timestamps must pass the freshness gate.
+    if sampled is None:return True
+    reference=_parse_iso(reference_iso) or datetime.now(timezone.utc)
+    age=(reference-sampled).total_seconds()/60.0
+    return -15.0 <= age <= float(max_age_minutes)
+
 def _point_nowcast(nowcast:dict|None,pid:str)->dict:
     if not nowcast:return {}
     p=(nowcast.get("points") or {}).get(pid) or {}
@@ -100,6 +119,8 @@ def _point_nowcast(nowcast:dict|None,pid:str)->dict:
     }
 
 def build(ensemble:dict,nowcast:dict|None=None)->dict:
+    nowcast_fresh=_nowcast_is_fresh(nowcast,ensemble.get("generated_at"))
+    active_nowcast=nowcast if nowcast_fresh else None
     points=ensemble.get("points") or {}
     by_point={pid:{int(r.get("lead_hours")):r for r in rows if r.get("lead_hours") is not None}
               for pid,rows in points.items() if isinstance(rows,list)}
@@ -136,7 +157,7 @@ def build(ensemble:dict,nowcast:dict|None=None)->dict:
             vol_driver=max(items,key=lambda x:max((x["wind_spread"] or 0)/10,(x["rain_spread"] or 0)/4))
             conf_score=confidence_score(lead,completion,cal)
             var_score=variability_score(vol_driver["wind_spread"],vol_driver["rain_spread"])
-            now_items=[(pid,_point_nowcast(nowcast,pid)) for pid in meta["points"]]
+            now_items=[(pid,_point_nowcast(active_nowcast,pid)) for pid in meta["points"]]
             now_items=[x for x in now_items if x[1]]
             now_driver=max(
                 now_items,
@@ -194,6 +215,12 @@ def build(ensemble:dict,nowcast:dict|None=None)->dict:
         "calibration_ready_groups":ensemble.get("calibration_ready_groups",0),
         "calibration_total_groups":ensemble.get("calibration_total_groups",0),
         "cadence":{"d0_d3_hours":6,"d4_d10_hours":12},
+        "nowcast_context":{
+            "provided":bool(nowcast),
+            "applied":bool(active_nowcast),
+            "sampled_time":(nowcast or {}).get("sampled_time"),
+            "max_age_minutes":75,
+        },
         "regions":out_regions,
         "note":"D0-D3 shown every 6h; D4-D10 every 12h. D0-12h may carry a Himawari nowcast overlay for operational context; raw ensemble q50/q90/probabilities are never rewritten. confidence_score is an operational confidence index, not probability of correctness; variability_score is normalized ensemble spread, not hazard probability.",
     }
