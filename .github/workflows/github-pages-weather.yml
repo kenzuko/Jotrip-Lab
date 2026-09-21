@@ -115,6 +115,7 @@ jobs:
           test $(wc -c < /tmp/weather-pages/data/critical.json) -lt 60000
           PYTHONPATH=source python -m weather.pipeline.build_jotrip_forecast \
             --ensemble live-data/data/weather-ensemble/latest.json \
+            --nowcast live-data/data/weather-nowcast/compact-latest.json \
             --output /tmp/weather-pages/jotrip-forecast.json
           test $(wc -c < /tmp/weather-pages/jotrip-forecast.json) -lt 120000
 
