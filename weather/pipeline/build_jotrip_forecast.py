@@ -13,10 +13,10 @@ from pathlib import Path
 from typing import Any
 
 REGIONS={
-    "north_northwest":{"name":"Bắc - Tây Bắc","points":["ganh_dau","cua_can"]},
-    "central_west":{"name":"Trung tâm - Tây","points":["duong_dong"]},
-    "east_northeast":{"name":"Đông - Đông Bắc","points":["bai_thom","ham_ninh"]},
-    "south_southeast":{"name":"Nam - Đông Nam","points":["bai_sao","an_thoi"]},
+    "north_northwest":{"name":"Gành Dầu - Cửa Cạn","points":["ganh_dau","cua_can"]},
+    "central_west":{"name":"Dương Đông","points":["duong_dong"]},
+    "east_northeast":{"name":"Bãi Thơm - Hàm Ninh","points":["bai_thom","ham_ninh"]},
+    "south_southeast":{"name":"Bãi Sao - An Thới","points":["bai_sao","an_thoi"]},
 }
 POINT_NAMES={
     "duong_dong":"Dương Đông","cua_can":"Cửa Cạn","ganh_dau":"Gành Dầu",
