@@ -100,15 +100,49 @@ def _fetch(url: str, timeout: int = 25) -> str:
     return response.text
 
 
-def _category_state(category: str, evidence: list[dict[str, Any]]) -> dict[str, Any]:
+def _load_manual_confirmations(target_date: str, manual_dir: str | Path | None) -> tuple[list[dict[str, Any]], dict[str, str]]:
+    evidence: list[dict[str, Any]] = []
+    states: dict[str, str] = {}
+    if not manual_dir:
+        return evidence, states
+
+    root = Path(manual_dir)
+    if not root.exists():
+        return evidence, states
+
+    for path in sorted(root.glob("*.json")):
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if record.get("date") != target_date:
+            continue
+
+        category = str(record.get("category") or "").strip()
+        state = str(record.get("state") or "").strip().upper()
+        row = record.get("evidence")
+        if category and state in {"RUNNING", "SUSPENDED"}:
+            states[category] = state
+        if isinstance(row, dict):
+            item = dict(row)
+            if category:
+                item.setdefault("category", category)
+            evidence.append(item)
+
+    return evidence, states
+
+
+def _category_state(category: str, evidence: list[dict[str, Any]], manual_state: str | None = None) -> dict[str, Any]:
     rows = [item for item in evidence if item.get("category") == category]
     if rows:
         source_tiers = sorted(set(item.get("source_tier", "UNKNOWN") for item in rows))
+        state = manual_state if manual_state in {"RUNNING", "SUSPENDED"} else "DIRECT_CONFIRMED"
+        confidence_cap = 90 if manual_state else 100
         return {
-            "state": "DIRECT_CONFIRMED",
+            "state": state,
             "evidence_count": len(rows),
             "source_tiers": source_tiers,
-            "confidence_cap": 100,
+            "confidence_cap": confidence_cap,
             "evidence": rows,
         }
     if category == "cano":
@@ -116,7 +150,7 @@ def _category_state(category: str, evidence: list[dict[str, Any]]) -> dict[str, 
     return {"state": "UNKNOWN", "evidence_count": 0, "source_tiers": [], "confidence_cap": 59, "evidence": []}
 
 
-def collect(target_date: str | None = None, output_dir: str | Path = "out/marine_ops") -> dict[str, Any]:
+def collect(target_date: str | None = None, output_dir: str | Path = "out/marine_ops", manual_dir: str | Path | None = None) -> dict[str, Any]:
     now = datetime.now(VN)
     target = target_date or now.strftime("%d/%m/%Y")
     errors: list[dict[str, str]] = []
@@ -137,15 +171,18 @@ def collect(target_date: str | None = None, output_dir: str | Path = "out/marine
     except Exception as exc:
         errors.append({"source": "THANH_THOI_OPERATOR", "error": f"{type(exc).__name__}: {exc}"})
 
+    manual_evidence, manual_states = _load_manual_confirmations(target, manual_dir)
+    evidence.extend(manual_evidence)
+
     latest = {
         "schema_version": "marine-ops-1.0",
         "source_date": target,
         "collected_at_vn": iso_vn(now),
         "market_condition_not_data_system_condition": True,
         "categories": {
-            "fast_boat": _category_state("fast_boat", evidence),
-            "ferry": _category_state("ferry", evidence),
-            "cano": _category_state("cano", evidence),
+            "fast_boat": _category_state("fast_boat", evidence, manual_states.get("fast_boat")),
+            "ferry": _category_state("ferry", evidence, manual_states.get("ferry")),
+            "cano": _category_state("cano", evidence, manual_states.get("cano")),
         },
         "errors": errors,
         "rules": {
@@ -193,8 +230,9 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--date", default=None, help="DD/MM/YYYY; defaults to current Asia/Ho_Chi_Minh date")
     parser.add_argument("--output", default="out/marine_ops")
+    parser.add_argument("--manual-dir", default=None, help="Directory containing same-day manual confirmation JSON files")
     args = parser.parse_args()
-    result = collect(args.date, args.output)
+    result = collect(args.date, args.output, args.manual_dir)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
 
