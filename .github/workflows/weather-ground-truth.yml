@@ -362,14 +362,40 @@ jobs:
           root.mkdir(parents=True,exist_ok=True)
           (root/'latest.json').write_text(json.dumps(gt,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           (root/'local-now.json').write_text(json.dumps(ln,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          vvpq=(gt.get('atmosphere') or {}).get('vvpq') or {}
+          rain_stations=(gt.get('rainfall') or {}).get('stations') or {}
+          training_usability={
+              'vvpq':{
+                  'usable_for_training':vvpq.get('data_class')=='ACTUAL' and vvpq.get('qc')=='PASS',
+                  'observed_at':vvpq.get('observed_at'),
+                  'qc':vvpq.get('qc'),
+              },
+              'rain':{
+                  k:{
+                      'actual':v.get('data_class')=='ACTUAL',
+                      'qc':v.get('qc'),
+                      'increment_qc':v.get('increment_qc'),
+                      'usable_for_window_training':(
+                          v.get('data_class')=='ACTUAL'
+                          and v.get('qc')=='PASS'
+                          and (
+                              v.get('increment_qc')=='PASS'
+                              or v.get('accumulation_mm') is not None
+                          )
+                      ),
+                  }
+                  for k,v in rain_stations.items()
+              },
+          }
           health={
               'module':'JoTrip Weather Ground Truth',
               'state':gt['status'],
               'generated_at':gt['generated_at'],
-              'vvpq':gt.get('atmosphere',{}).get('vvpq',{}).get('status'),
+              'vvpq':vvpq.get('status'),
               'vrain':gt.get('rainfall',{}).get('status'),
-              'rain_stations':list(gt.get('rainfall',{}).get('stations',{})),
-              'increment_ready':[k for k,v in gt.get('rainfall',{}).get('stations',{}).items() if v.get('increment_qc')=='PASS'],
+              'rain_stations':list(rain_stations),
+              'increment_ready':[k for k,v in rain_stations.items() if v.get('increment_qc')=='PASS'],
+              'training_usability':training_usability,
               'local_engine':ln['engine'],
               'actual_policy':gt['actual_policy'],
           }
