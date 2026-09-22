@@ -1,7 +1,7 @@
 {
   "module": "JoTrip Weather Ground Truth",
   "state": "READY",
-  "generated_at": "2026-09-22T09:56:17.979691+00:00",
+  "generated_at": "2026-09-22T09:56:36.493331+00:00",
   "vvpq": "FRESH",
   "vrain": "FRESH",
   "rain_stations": [
@@ -10,6 +10,33 @@
     "bai_thom"
   ],
   "increment_ready": [],
+  "training_usability": {
+    "vvpq": {
+      "usable_for_training": true,
+      "observed_at": "2026-09-22T09:30:00+00:00",
+      "qc": "PASS"
+    },
+    "rain": {
+      "cua_can": {
+        "actual": true,
+        "qc": "PASS",
+        "increment_qc": "WINDOW_TOO_SHORT",
+        "usable_for_window_training": true
+      },
+      "an_thoi": {
+        "actual": true,
+        "qc": "PASS",
+        "increment_qc": "WINDOW_TOO_SHORT",
+        "usable_for_window_training": true
+      },
+      "bai_thom": {
+        "actual": true,
+        "qc": "PASS",
+        "increment_qc": "WINDOW_TOO_SHORT",
+        "usable_for_window_training": true
+      }
+    }
+  },
   "local_engine": "PQ_LOCAL_NOW_V2",
   "actual_policy": "Only machine-readable numeric observations with timestamps are ACTUAL. Remote sensing and models are separate classes."
 }
