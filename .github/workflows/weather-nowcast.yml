@@ -23,7 +23,8 @@ on:
 
 concurrency:
   group: weather-nowcast-${{ inputs.target_ref || github.ref_name }}
-  cancel-in-progress: true
+  # NOAA download may exceed 10 minutes: never abort an active ingestion.
+  cancel-in-progress: false
 
 permissions:
   contents: write
