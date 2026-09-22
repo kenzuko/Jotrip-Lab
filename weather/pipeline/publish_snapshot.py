@@ -110,7 +110,7 @@ def _marine_details(copernicus: dict) -> dict[str, Any]:
     current_vectors = copernicus.get("current", {}).get("derived_vectors", {})
     current_variables = copernicus.get("current", {}).get("variables", {})
 
-    for point_id in sorted(REQUIRED_POINTS):
+    for point_id in sorted(POINT_METADATA):
         wave_hs = wave_variables.get("VHM0", {}).get("points", {}).get(point_id, {})
         wave_dir = wave_variables.get("VMDR", {}).get("points", {}).get(point_id, {})
         wave_mean = wave_variables.get("VTM10", {}).get("points", {}).get(point_id, {})
@@ -180,7 +180,8 @@ def build_canonical_snapshot(dashboard: dict, ecmwf: dict, gefs: dict, icon: dic
                              previous_snapshot: dict | None = None,
                              current_bundle: dict | None = None,
                              nowcast: dict | None = None,
-                             local_ensemble: dict | None = None) -> dict[str, Any]:
+                             local_ensemble: dict | None = None,
+                             tide: dict | None = None) -> dict[str, Any]:
     cutoff = _dt(dashboard["generated_at"])
     generated = datetime.now(timezone.utc)
     points = dashboard.get("points", {})
@@ -200,7 +201,7 @@ def build_canonical_snapshot(dashboard: dict, ecmwf: dict, gefs: dict, icon: dic
             "lon": float(POINT_METADATA[point_id]["lon"]),
             "reference_type": POINT_METADATA[point_id].get("reference_type"),
         }
-        for point_id in sorted(REQUIRED_POINTS)
+        for point_id in sorted(POINT_METADATA)
     }
     drift = compare_point_snapshots(
         previous_snapshot,
@@ -214,27 +215,42 @@ def build_canonical_snapshot(dashboard: dict, ecmwf: dict, gefs: dict, icon: dic
         current_bundle=current_bundle,
         nowcast=nowcast,
         local_ensemble=local_ensemble,
+        tide=tide,
         point_authority=point_authority,
         cutoff_time=cutoff.isoformat(),
     )
     ensemble["gefs_local_matrix"] = evidence["ensemble_local"]
 
     point_evidence: dict[str, Any] = {}
-    for point_id, context in evidence["local_now"].get("points", {}).items():
-        if context.get("status") != "AVAILABLE":
-            continue
-        imminence = ((context.get("rain") or {}).get("imminence") or {})
-        convective_score = imminence.get("convective_score")
-        if convective_score is not None:
-            point_evidence[point_id] = {
-                "convective_signal": {
-                    "score": convective_score,
-                    "level": imminence.get("level"),
-                    "method": imminence.get("method"),
-                    "data_class": "ESTIMATED_NOW",
-                },
-                "local_truth_verified": False,
+    for point_id in sorted(point_authority):
+        entry: dict[str, Any] = {"local_truth_verified": False}
+        satellite = (evidence["nowcast"].get("points") or {}).get(point_id) or {}
+        if satellite:
+            entry["convective_signal"] = {
+                "score": satellite.get("score"),
+                "level": satellite.get("level"),
+                "cold_cloud_top_temp_c": satellite.get("cold_cloud_top_temp_c"),
+                "high_cloud_top_height_m": satellite.get("high_cloud_top_height_m"),
+                "cooling_c_per_20m_proxy": satellite.get("cooling_c_per_20m_proxy"),
+                "cloud_motion": satellite.get("cloud_motion"),
+                "data_class": "OBSERVED_SATELLITE",
+                "source": evidence["nowcast"].get("source"),
+                "sampled_time": evidence["nowcast"].get("sampled_time"),
             }
+        else:
+            context = (evidence["local_now"].get("points") or {}).get(point_id) or {}
+            if context.get("status") == "AVAILABLE":
+                imminence = ((context.get("rain") or {}).get("imminence") or {})
+                convective_score = imminence.get("convective_score")
+                if convective_score is not None:
+                    entry["convective_signal"] = {
+                        "score": convective_score,
+                        "level": imminence.get("level"),
+                        "method": imminence.get("method"),
+                        "data_class": "ESTIMATED_NOW",
+                    }
+        if len(entry) > 1:
+            point_evidence[point_id] = entry
 
     observations: dict[str, Any] = evidence["actual"]
     official_status: dict[str, Any] = {}
@@ -244,6 +260,7 @@ def build_canonical_snapshot(dashboard: dict, ecmwf: dict, gefs: dict, icon: dic
         cutoff_time=cutoff.isoformat(),
         observations=point_evidence,
         official_status=official_status,
+        tide=evidence["tide"],
     )
     analysis_status = {
         "ensemble_data": (
@@ -277,6 +294,7 @@ def build_canonical_snapshot(dashboard: dict, ecmwf: dict, gefs: dict, icon: dic
         "observations": observations,
         "reality_context": evidence["local_now"],
         "nowcast": evidence["nowcast"],
+        "tide": evidence["tide"],
         "official_status": official_status,
         "drift": drift,
         "product_analysis": product_analysis,
@@ -371,6 +389,7 @@ def main() -> None:
     parser.add_argument("--current-bundle", type=Path)
     parser.add_argument("--nowcast", type=Path)
     parser.add_argument("--local-ensemble", type=Path)
+    parser.add_argument("--tide", type=Path)
     parser.add_argument("--root", type=Path, default=Path("weather/snapshots"))
     args = parser.parse_args()
 
@@ -392,6 +411,7 @@ def main() -> None:
         current_bundle=optional(args.current_bundle),
         nowcast=optional(args.nowcast),
         local_ensemble=optional(args.local_ensemble),
+        tide=optional(args.tide),
     )
     validate_snapshot(snapshot, dashboard)
     archive, latest, pointer = publish(snapshot, args.root)
