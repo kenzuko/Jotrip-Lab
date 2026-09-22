@@ -1,9 +1,9 @@
-const VERSION="weather-intelligence-2026.09.20.01";
+const VERSION="weather-intelligence-2026.09.22.03";
 const CACHE=`${VERSION}-static`;
 const STATIC=[
   "/Jotrip-Lab/weather/",
-  "/Jotrip-Lab/weather/weather-v2.css?v=20260918-17",
-  "/Jotrip-Lab/weather/weather-v2.js?v=20260920-01",
+  "/Jotrip-Lab/weather/weather-v2.css?v=20260922-03",
+  "/Jotrip-Lab/weather/weather-v2.js?v=20260922-03",
   "/Jotrip-Lab/weather/weather-brand.svg",
   "/Jotrip-Lab/weather/weather-app-icon.svg",
   "/Jotrip-Lab/weather/weather-manifest.webmanifest"
