@@ -424,6 +424,8 @@ def _axis(start: float, end: float, step: float) -> list[float]:
     while value <= end + 1e-9:
         values.append(round(value, 4))
         value += step
+    if not values or abs(values[-1] - end) > 1e-6:
+        values.append(round(end, 4))
     return values
 
 

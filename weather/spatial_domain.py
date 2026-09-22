@@ -48,9 +48,12 @@ COPERNICUS_BBOX = (
 def axis(start: float, end: float, step: float) -> tuple[float, ...]:
     values = []
     value = float(start)
-    while value <= float(end) + 1e-9:
+    end = float(end)
+    while value <= end + 1e-9:
         values.append(round(value, 4))
         value += float(step)
+    if not values or abs(values[-1] - end) > 1e-6:
+        values.append(round(end, 4))
     return tuple(values)
 
 
