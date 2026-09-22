@@ -1,27 +1,27 @@
 {
-  "schema_version": "1.3",
+  "schema_version": "1.4",
   "coordinate_reference": "WGS84",
   "points": {
     "duong_dong": {
       "name": "Dương Đông",
       "lat": 10.2172,
       "lon": 103.9593,
-      "reference_type": "locality_center",
-      "note": "Điểm tham chiếu khu vực cho khí quyển, AQI và đối lưu; dữ liệu biển phải dùng ô lưới biển hợp lệ gần nhất."
+      "reference_type": "production_point",
+      "note": "Điểm production bắt buộc theo MASTER V5.6 cho Dương Đông. Dữ liệu biển phải dùng ô lưới biển hợp lệ gần nhất và lưu requested_coordinate, sampled_coordinate, displacement và QC."
     },
     "an_thoi": {
-      "name": "Biển An Thới - Mây Rút Ngoài",
-      "lat": 9.905,
-      "lon": 104.005,
-      "reference_type": "marine_operations_reference",
-      "note": "Điểm tham chiếu vận hành trên mặt biển của cụm đảo An Thới, cách Hòn Mây Rút Ngoài khoảng 1,8 km về phía đông nam. Dùng để đại diện tốt hơn cho khu vực tour đảo và điều kiện ngoài biển; không phải tọa độ hàng hải để dẫn đường. Dữ liệu sóng, dòng chảy và thủy triều vẫn phải dùng ô lưới biển hợp lệ gần nhất của nguồn mô hình."
+      "name": "An Thới",
+      "lat": 10.0191,
+      "lon": 104.015,
+      "reference_type": "production_point",
+      "note": "Điểm production bắt buộc theo MASTER V5.6. Dữ liệu khí quyển lấy theo native grid gần nhất; dữ liệu biển phải lưu riêng requested_coordinate và sampled_coordinate, chỉ dùng ô lưới biển hợp lệ trong displacement limit cấu hình. Không được âm thầm thay điểm này bằng Mây Rút hoặc điểm tour đảo khác."
     },
     "ganh_dau": {
       "name": "Gành Dầu",
-      "lat": 10.37077,
-      "lon": 103.84472,
-      "reference_type": "locality_center",
-      "note": "Điểm tham chiếu khu vực Gành Dầu; dữ liệu biển phải dùng ô lưới biển hợp lệ gần nhất."
+      "lat": 10.3759,
+      "lon": 103.9,
+      "reference_type": "production_point",
+      "note": "Điểm production bắt buộc theo MASTER V5.6. Dữ liệu biển phải dùng ô lưới biển hợp lệ gần nhất và lưu displacement/QC; không dùng một điểm bờ hoặc điểm ngoài khơi khác để thay semantic location."
     },
     "rach_gia": {
       "name": "Rạch Giá",

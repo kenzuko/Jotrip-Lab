@@ -398,27 +398,39 @@ jobs:
             --icon /tmp/weather-artifacts/icon/icon-point.json \
             --copernicus /tmp/weather-artifacts/copernicus/copernicus-live.json \
             --root weather/snapshots
+      - name: Build stable production manifest
+        run: |
+          python -m weather.pipeline.production_contract \
+            --snapshot weather/snapshots/latest.json \
+            --pointer weather/snapshots/latest-pointer.json \
+            --output weather/production-manifest.json
       - name: Enforce canonical snapshot preflight
         run: |
+          python -m weather.pipeline.preflight_snapshot \
+            --snapshot weather/snapshots/latest.json \
+            --max-age-minutes 15 \
+            --output /tmp/weather-canonical-preflight.json
           python - <<'PY'
           import json
           from weather.pipeline.publish_snapshot import validate_snapshot
-          from weather.processing.snapshot import verify_snapshot
           from weather.points import POINTS
           p=json.load(open('weather/snapshots/latest.json', encoding='utf-8'))
-          assert verify_snapshot(p), 'payload hash mismatch'
           validate_snapshot(p)
           assert p['schema_version'] == '1.0'
           assert p['data_mode'] in {'A','B','C'}
           assert set(POINTS).issubset(p['points'])
+          assert set(p.get('point_authority', {})) == {'duong_dong','an_thoi','ganh_dau'}
           assert p['ensemble']['p_operational_window']['status'] == 'NOT_COMPUTABLE'
+          manifest=json.load(open('weather/production-manifest.json', encoding='utf-8'))
+          assert manifest['snapshot']['snapshot_id'] == p['snapshot_id']
+          assert manifest['snapshot']['payload_hash'] == p['payload_hash']
           PY
       - name: Commit canonical LAB snapshot
         shell: bash
         run: |
           git config user.name "jotrip-weather-bot"
           git config user.email "jotrip-weather-bot@users.noreply.github.com"
-          git add weather/snapshots
+          git add weather/snapshots weather/production-manifest.json
           if git diff --cached --quiet; then
             echo "Canonical snapshot unchanged"
             exit 0
