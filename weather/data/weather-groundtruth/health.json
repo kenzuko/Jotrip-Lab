@@ -1,15 +1,45 @@
 {
   "module": "JoTrip Weather Ground Truth",
   "state": "READY",
-  "generated_at": "2026-09-22T01:04:03.061049+00:00",
+  "generated_at": "2026-09-22T09:57:51.316871+00:00",
   "vvpq": "FRESH",
   "vrain": "FRESH",
   "rain_stations": [
-    "bai_thom",
     "cua_can",
-    "an_thoi"
+    "an_thoi",
+    "bai_thom"
   ],
   "increment_ready": [],
+  "training_usability": {
+    "vvpq": {
+      "usable_for_training": true,
+      "observed_at": "2026-09-22T09:30:00+00:00",
+      "qc": "PASS"
+    },
+    "rain": {
+      "cua_can": {
+        "actual": true,
+        "qc": "PASS",
+        "increment_qc": "WINDOW_TOO_SHORT",
+        "usable_for_short_increment_training": false,
+        "cumulative_counter_available": true
+      },
+      "an_thoi": {
+        "actual": true,
+        "qc": "PASS",
+        "increment_qc": "WINDOW_TOO_SHORT",
+        "usable_for_short_increment_training": false,
+        "cumulative_counter_available": true
+      },
+      "bai_thom": {
+        "actual": true,
+        "qc": "PASS",
+        "increment_qc": "WINDOW_TOO_SHORT",
+        "usable_for_short_increment_training": false,
+        "cumulative_counter_available": true
+      }
+    }
+  },
   "local_engine": "PQ_LOCAL_NOW_V2",
   "actual_policy": "Only machine-readable numeric observations with timestamps are ACTUAL. Remote sensing and models are separate classes."
 }
