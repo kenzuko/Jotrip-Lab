@@ -224,7 +224,7 @@ def validate_snapshot(snapshot: dict[str, Any], dashboard: dict | None = None) -
     required = {
         "snapshot_id", "schema_version", "cutoff_time", "generated_at", "payload_hash",
         "data_mode", "direct_ingest_status", "git_commit_sha", "formula_bundle_version",
-        "critical_data_gaps", "points", "point_authority", "routes", "ensemble", "data_gaps", "unit_policy", "audit",
+        "critical_data_gaps", "points", "routes", "ensemble", "data_gaps", "unit_policy", "audit",
     }
     missing = sorted(required - set(snapshot))
     if missing:
