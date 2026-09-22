@@ -308,3 +308,12 @@ Rules:
 - Layer edges should normally remain outside the visible camera. When a source
   genuinely has no support, the renderer must become transparent rather than
   inventing values.
+
+
+### V5.4.1 ECMWF wide-grid performance rule
+
+The public spatial envelope stays at 9.00-11.00N / 102.75-105.50E.
+ECMWF D0-D3 samples that envelope at 0.50 degrees for the interactive field,
+then interpolates only in the renderer. This keeps the wide-area extraction
+cost close to the former compact 30-cell grid and avoids CI/runtime timeouts.
+The coarser render sampling must never be described as ECMWF native resolution.

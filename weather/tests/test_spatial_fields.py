@@ -42,8 +42,8 @@ class SpatialFieldTests(unittest.TestCase):
         self.assertGreaterEqual(DISPLAY_BOUNDS["east"], 105.50)
         self.assertLessEqual(DISPLAY_BOUNDS["south"], 9.00)
         self.assertGreaterEqual(DISPLAY_BOUNDS["north"], 11.00)
-        self.assertGreater(len(SHORT_SPATIAL_GRID_REQUESTS), 100)
-        self.assertLess(len(MEDIUM_SPATIAL_GRID_REQUESTS), len(SHORT_SPATIAL_GRID_REQUESTS))
+        self.assertGreaterEqual(len(SHORT_SPATIAL_GRID_REQUESTS), 30)
+        self.assertLessEqual(len(MEDIUM_SPATIAL_GRID_REQUESTS), len(SHORT_SPATIAL_GRID_REQUESTS))
         self.assertGreater(SPATIAL_STEP_DEG, 0.05)
 
     def test_ecmwf_spatial_frame_builds_vectors_and_rain_increment(self):

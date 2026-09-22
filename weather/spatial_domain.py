@@ -19,7 +19,11 @@ DISPLAY_BOUNDS = {
 HIMAWARI_RENDER_STEP_DEG = 0.075
 
 # D0-D3 is the interactive map horizon and gets the full Gulf envelope.
-ECMWF_RENDER_STEP_DEG = 0.25
+# Use a coarser display-sampling lattice over the wide envelope. The field is
+# still direct ECMWF data and interpolation remains render-only. This keeps the
+# wide D0-D3 ingest close to the previous 30-cell cost instead of multiplying
+# nearest-neighbour extraction by ~4x.
+ECMWF_RENDER_STEP_DEG = 0.50
 ECMWF_SHORT_BOUNDS = dict(DISPLAY_BOUNDS)
 
 # D4-D10 remains a trend product. Keep a compact core grid to avoid multiplying
