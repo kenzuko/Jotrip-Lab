@@ -6,6 +6,10 @@ on:
       - ".github/workflows/weather-gefs-local-scheduler.yml"
   schedule:
     - cron: "40 2,8,14,20 * * *"
+  workflow_run:
+    workflows:
+      - "Weather Lab 30m scheduler"
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -16,31 +20,77 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  inspect:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      needs_refresh: ${{ steps.cycle.outputs.needs_refresh }}
+      dashboard_cycle: ${{ steps.cycle.outputs.dashboard_cycle }}
+      ensemble_cycle: ${{ steps.cycle.outputs.ensemble_cycle }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Read production cycle authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin feat/weather-lab-data-engine-v1 data-weather --depth=1
+          git show origin/feat/weather-lab-data-engine-v1:weather/dashboard-data.json > /tmp/dashboard.json
+          git show origin/data-weather:data/weather-ensemble/latest.json > /tmp/ensemble.json 2>/dev/null || printf '{}\n' > /tmp/ensemble.json
+
+      - name: Decide whether full GEFS matrix is stale
+        id: cycle
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+          from datetime import datetime, timezone
+
+          dashboard=json.load(open('/tmp/dashboard.json'))
+          ensemble=json.load(open('/tmp/ensemble.json'))
+
+          direct=(dashboard.get('source_cycles') or {}).get('GEFS')
+          matrix=ensemble.get('run_time')
+
+          def parse(v):
+              if not v:
+                  return None
+              try:
+                  d=datetime.fromisoformat(str(v).replace('Z','+00:00'))
+                  return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
+              except Exception:
+                  return None
+
+          direct_dt=parse(direct)
+          matrix_dt=parse(matrix)
+          forced=os.getenv('GITHUB_EVENT_NAME')=='workflow_dispatch'
+          stale=bool(direct_dt and (matrix_dt is None or direct_dt > matrix_dt))
+          needs=forced or stale
+
+          print('dashboard_cycle='+str(direct or ''))
+          print('ensemble_cycle='+str(matrix or ''))
+          print('needs_refresh='+('true' if needs else 'false'))
+          PY
+
+      - name: Report cycle decision
+        run: |
+          echo "Dashboard GEFS: ${{ steps.cycle.outputs.dashboard_cycle }}"
+          echo "Matrix GEFS:    ${{ steps.cycle.outputs.ensemble_cycle }}"
+          echo "Refresh:        ${{ steps.cycle.outputs.needs_refresh }}"
+
   ensemble:
+    needs: inspect
+    if: needs.inspect.outputs.needs_refresh == 'true'
     uses: kenzuko/Jotrip-Lab/.github/workflows/weather-gefs-local-matrix.yml@feat/weather-lab-data-engine-v1
     with:
       target_ref: feat/weather-lab-data-engine-v1
       smoke: false
     secrets: inherit
-# full matrix trigger
-# 03:40 / 09:40 / 15:40 / 21:40 UTC+7 - leaves margin before 06:00/18:00 MASTER reports
 
-# island-watch refresh
-
-# trigger-10d-full-gefs
-
-# trigger-local-exposure-v1
-
-# prod5-gefs-exposure-retry
-
-# weather-v5-spatial-production-trigger
-
-# trigger-calibration-analytics-v1
-
-# trigger-calibration-analytics-v2
-
-# trigger-full-horizon-cycle-v1
-
-# restore-island-only-gefs-after-rg-feed-lock
-
+# Full matrix fallback clock: 09:40 / 15:40 / 21:40 / 03:40 UTC+7.
+# The workflow_run watchdog is authoritative: a new direct GEFS cycle triggers
+# the matrix even when GitHub delays or misses one scheduled cron tick.
 # manual-cycle-resync-20260922-1720
