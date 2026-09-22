@@ -10,6 +10,9 @@ on:
       - "Weather GEFS Local scheduler"
       - "Tourism Marine Operations"
     types: [completed]
+  push:
+    paths:
+      - ".github/workflows/weather-live-freshness-watchdog.yml"
   workflow_dispatch:
 
 concurrency:
