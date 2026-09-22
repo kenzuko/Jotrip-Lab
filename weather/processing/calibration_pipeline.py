@@ -36,6 +36,9 @@ LEAD_BUCKETS = (
     ("D6_10", 121, 240),
 )
 RAIN_COVERAGE_MIN = 0.70
+RAIN_EVENT_THRESHOLD_MM = 0.10
+RAIN_MIN_WET_SAMPLES = 10
+RAIN_BOUNDARY_TOLERANCE_MINUTES = 45
 VVPQ_TOLERANCE_MINUTES = 45
 EXPECTED_TARGET_VARIABLES = {
     "vvpq": ("temperature", "wind"),
@@ -159,6 +162,7 @@ def build_actual_index(payloads: list[dict]) -> dict:
                 "window_minutes": _num(s.get("increment_window_minutes")),
                 "increment_qc": s.get("increment_qc"),
                 "accumulation_mm": _num(s.get("accumulation_mm")),
+                "period_start": _dt(s.get("period_start")),
             }
 
     vvpq_rows = sorted(vvpq.values(), key=lambda x: x["time"])
@@ -183,8 +187,19 @@ def _nearest_vvpq(rows: list[dict], valid: datetime) -> dict | None:
 
 
 def _rain_actual(rows: list[dict], start: datetime, end: datetime) -> tuple[float | None, float]:
+    """Return ACTUAL rain accumulation and temporal coverage for a forecast window.
+
+    Preferred path sums short, QC-passed gauge increments. If collector cadence has
+    gaps, fall back to differencing the gauge's cumulative counter at the window
+    boundaries. The fallback is only accepted when both boundary observations are
+    close enough, belong to the same accumulation period, and the counter did not
+    reset. This keeps sparse GitHub scheduling from discarding otherwise valid
+    physical gauge evidence without inventing rainfall between observations.
+    """
     if end <= start:
         return None, 0.0
+
+    expected = (end - start).total_seconds() / 60.0
     total = 0.0
     coverage_minutes = 0.0
     used = 0
@@ -200,11 +215,43 @@ def _rain_actual(rows: list[dict], start: datetime, end: datetime) -> tuple[floa
         total += max(0.0, inc)
         coverage_minutes += window
         used += 1
-    expected = (end - start).total_seconds() / 60.0
+
     coverage = min(1.0, coverage_minutes / expected) if expected > 0 else 0.0
-    if used == 0 or coverage < RAIN_COVERAGE_MIN:
+    if used > 0 and coverage >= RAIN_COVERAGE_MIN:
+        return total, coverage
+
+    # Cadence-gap fallback: derive an accumulation from the station's cumulative
+    # counter. Do not bridge a source reset or an accumulation-period boundary.
+    cumulative = [
+        r for r in rows
+        if _num(r.get("accumulation_mm")) is not None
+        and isinstance(r.get("end"), datetime)
+        and isinstance(r.get("period_start"), datetime)
+    ]
+    if not cumulative:
         return None, coverage
-    return total, coverage
+
+    def nearest_boundary(target: datetime) -> tuple[dict | None, float]:
+        best = min(cumulative, key=lambda r: abs((r["end"] - target).total_seconds()))
+        delta_min = abs((best["end"] - target).total_seconds()) / 60.0
+        return (best, delta_min) if delta_min <= RAIN_BOUNDARY_TOLERANCE_MINUTES else (None, delta_min)
+
+    left, left_gap = nearest_boundary(start)
+    right, right_gap = nearest_boundary(end)
+    if not left or not right or right["end"] <= left["end"]:
+        return None, coverage
+    if left.get("period_start") != right.get("period_start"):
+        return None, coverage
+
+    a0 = _num(left.get("accumulation_mm"))
+    a1 = _num(right.get("accumulation_mm"))
+    if a0 is None or a1 is None or a1 < a0 - 0.05:
+        return None, coverage
+
+    boundary_coverage = max(0.0, min(1.0, 1.0 - (left_gap + right_gap) / expected)) if expected > 0 else 0.0
+    if boundary_coverage < RAIN_COVERAGE_MIN:
+        return None, max(coverage, boundary_coverage)
+    return max(0.0, a1 - a0), boundary_coverage
 
 
 def _forecast_files(root: Path) -> list[Path]:
@@ -285,6 +332,54 @@ def build_cases(forecast_root: Path, actual_index: dict) -> list[dict]:
     return cases
 
 
+def _rain_event_metrics(cases: list[dict], threshold_mm: float = RAIN_EVENT_THRESHOLD_MM) -> dict:
+    """Contingency-table verification for measurable-rain occurrence.
+
+    This is deliberately separate from amount calibration: a forecast must learn
+    whether rain happened, not look good merely because most verification windows
+    were dry.
+    """
+    hit = miss = false_alarm = correct_dry = 0
+    actual_wet = forecast_wet = 0
+    for c in cases:
+        if str(c.get("observation_class", "")).upper() != "ACTUAL":
+            continue
+        obs = _num(c.get("observed"))
+        fcst = _num(c.get("forecast"))
+        if obs is None or fcst is None or obs < 0 or fcst < 0:
+            continue
+        o_wet = obs >= threshold_mm
+        f_wet = fcst >= threshold_mm
+        actual_wet += int(o_wet)
+        forecast_wet += int(f_wet)
+        if o_wet and f_wet:
+            hit += 1
+        elif o_wet:
+            miss += 1
+        elif f_wet:
+            false_alarm += 1
+        else:
+            correct_dry += 1
+
+    total = hit + miss + false_alarm + correct_dry
+    pod = hit / (hit + miss) if hit + miss else None
+    far = false_alarm / (hit + false_alarm) if hit + false_alarm else None
+    csi = hit / (hit + miss + false_alarm) if hit + miss + false_alarm else None
+    return {
+        "threshold_mm": threshold_mm,
+        "sample_count": total,
+        "actual_wet_cases": actual_wet,
+        "forecast_wet_cases": forecast_wet,
+        "hit": hit,
+        "miss": miss,
+        "false_alarm": false_alarm,
+        "correct_dry": correct_dry,
+        "probability_of_detection": round(pod, 4) if pod is not None else None,
+        "false_alarm_ratio": round(far, 4) if far is not None else None,
+        "critical_success_index": round(csi, 4) if csi is not None else None,
+    }
+
+
 def _metrics(cases: list[dict]) -> dict:
     errors = [_num(c.get("error")) for c in cases]
     errors = [x for x in errors if x is not None]
@@ -322,6 +417,19 @@ def build_calibration(cases: list[dict], min_samples: int = DEFAULT_MIN_SAMPLES)
     for (target, variable, bucket), rows in sorted(grouped.items()):
         if variable == "rain":
             cal = learn_rain_factor(rows, min_samples=min_samples)
+            events = _rain_event_metrics(rows)
+            cal["event_verification"] = events
+            # Thirty mostly-dry windows are not enough evidence to learn rainfall
+            # amount. Require a minimum number of physically observed wet cases
+            # before a rain factor can affect production.
+            if cal.get("status") == "READY" and events["actual_wet_cases"] < RAIN_MIN_WET_SAMPLES:
+                cal["status"] = "LEARNING"
+                cal["applied_factor"] = 1.0
+                cal["readiness_reason"] = "INSUFFICIENT_ACTUAL_WET_CASES"
+            elif cal.get("status") == "READY":
+                cal["readiness_reason"] = "MATCHED_AND_WET_SAMPLE_THRESHOLDS_MET"
+            else:
+                cal["readiness_reason"] = "INSUFFICIENT_MATCHED_CASES"
         else:
             cal = learn_additive_bias(rows, min_samples=min_samples)
         total += 1
@@ -344,6 +452,9 @@ def build_calibration(cases: list[dict], min_samples: int = DEFAULT_MIN_SAMPLES)
             "allowed_observation_class": "ACTUAL",
             "estimated_now_allowed": False,
             "rain_min_temporal_coverage": RAIN_COVERAGE_MIN,
+            "rain_event_threshold_mm": RAIN_EVENT_THRESHOLD_MM,
+            "rain_min_actual_wet_samples": RAIN_MIN_WET_SAMPLES,
+            "rain_boundary_tolerance_minutes": RAIN_BOUNDARY_TOLERANCE_MINUTES,
             "vvpq_match_tolerance_minutes": VVPQ_TOLERANCE_MINUTES,
         },
     }
@@ -380,7 +491,7 @@ def build_analytics(cases: list[dict], calibration: dict, actual_index: dict, fo
         for variable, buckets in variables.items():
             for bucket, cal in buckets.items():
                 m = cal.get("metrics") or {}
-                groups.append({
+                group = {
                     "target": target,
                     "variable": variable,
                     "lead_bucket": bucket,
@@ -393,7 +504,11 @@ def build_analytics(cases: list[dict], calibration: dict, actual_index: dict, fo
                     "applied_bias": cal.get("applied_bias"),
                     "applied_factor": cal.get("applied_factor"),
                     "shrinkage": cal.get("shrinkage"),
-                })
+                    "readiness_reason": cal.get("readiness_reason"),
+                }
+                if variable == "rain":
+                    group["event_verification"] = cal.get("event_verification")
+                groups.append(group)
 
     recent = sorted(cases, key=lambda c: c.get("valid_time") or "", reverse=True)[:120]
     return {
