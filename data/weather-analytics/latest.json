@@ -1,42 +1,70 @@
 {
   "schema_version": "1.0",
   "product": "JOTRIP_WEATHER_ANALYTICS",
-  "generated_at": "2026-09-22T08:33:06.163564+00:00",
+  "generated_at": "2026-09-22T09:55:35.552904+00:00",
   "learning_status": "LEARNING",
   "minimum_samples": 30,
   "ready_groups": 0,
   "total_groups": 25,
-  "matched_cases": 38,
+  "matched_cases": 53,
   "forecast_archive_files": 5,
-  "groundtruth_archive_files": 82,
+  "groundtruth_archive_files": 83,
   "groups": [
     {
       "target": "vrain_an_thoi",
       "variable": "rain",
       "lead_bucket": "D0_24",
-      "sample_count": 0,
+      "sample_count": 4,
       "status": "LEARNING",
-      "mae": null,
-      "rmse": null,
-      "mean_error": null,
-      "median_error": null,
+      "mae": 4.8875,
+      "rmse": 5.5354,
+      "mean_error": -2.8875,
+      "median_error": -3.425,
       "applied_bias": null,
       "applied_factor": 1.0,
-      "shrinkage": 0.0
+      "shrinkage": 0.1176,
+      "readiness_reason": "INSUFFICIENT_MATCHED_CASES",
+      "event_verification": {
+        "threshold_mm": 0.1,
+        "sample_count": 4,
+        "actual_wet_cases": 1,
+        "forecast_wet_cases": 4,
+        "hit": 1,
+        "miss": 0,
+        "false_alarm": 3,
+        "correct_dry": 0,
+        "probability_of_detection": 1.0,
+        "false_alarm_ratio": 0.75,
+        "critical_success_index": 0.25
+      }
     },
     {
       "target": "vrain_an_thoi",
       "variable": "rain",
       "lead_bucket": "D1_48",
-      "sample_count": 0,
+      "sample_count": 1,
       "status": "LEARNING",
-      "mae": null,
-      "rmse": null,
-      "mean_error": null,
-      "median_error": null,
+      "mae": 10.1,
+      "rmse": 10.1,
+      "mean_error": -10.1,
+      "median_error": -10.1,
       "applied_bias": null,
       "applied_factor": 1.0,
-      "shrinkage": 0.0
+      "shrinkage": 0.0323,
+      "readiness_reason": "INSUFFICIENT_MATCHED_CASES",
+      "event_verification": {
+        "threshold_mm": 0.1,
+        "sample_count": 1,
+        "actual_wet_cases": 0,
+        "forecast_wet_cases": 1,
+        "hit": 0,
+        "miss": 0,
+        "false_alarm": 1,
+        "correct_dry": 0,
+        "probability_of_detection": null,
+        "false_alarm_ratio": 1.0,
+        "critical_success_index": 0.0
+      }
     },
     {
       "target": "vrain_an_thoi",
@@ -50,7 +78,21 @@
       "median_error": null,
       "applied_bias": null,
       "applied_factor": 1.0,
-      "shrinkage": 0.0
+      "shrinkage": 0.0,
+      "readiness_reason": "INSUFFICIENT_MATCHED_CASES",
+      "event_verification": {
+        "threshold_mm": 0.1,
+        "sample_count": 0,
+        "actual_wet_cases": 0,
+        "forecast_wet_cases": 0,
+        "hit": 0,
+        "miss": 0,
+        "false_alarm": 0,
+        "correct_dry": 0,
+        "probability_of_detection": null,
+        "false_alarm_ratio": null,
+        "critical_success_index": null
+      }
     },
     {
       "target": "vrain_an_thoi",
@@ -64,7 +106,21 @@
       "median_error": null,
       "applied_bias": null,
       "applied_factor": 1.0,
-      "shrinkage": 0.0
+      "shrinkage": 0.0,
+      "readiness_reason": "INSUFFICIENT_MATCHED_CASES",
+      "event_verification": {
+        "threshold_mm": 0.1,
+        "sample_count": 0,
+        "actual_wet_cases": 0,
+        "forecast_wet_cases": 0,
+        "hit": 0,
+        "miss": 0,
+        "false_alarm": 0,
+        "correct_dry": 0,
+        "probability_of_detection": null,
+        "false_alarm_ratio": null,
+        "critical_success_index": null
+      }
     },
     {
       "target": "vrain_an_thoi",
@@ -78,35 +134,77 @@
       "median_error": null,
       "applied_bias": null,
       "applied_factor": 1.0,
-      "shrinkage": 0.0
+      "shrinkage": 0.0,
+      "readiness_reason": "INSUFFICIENT_MATCHED_CASES",
+      "event_verification": {
+        "threshold_mm": 0.1,
+        "sample_count": 0,
+        "actual_wet_cases": 0,
+        "forecast_wet_cases": 0,
+        "hit": 0,
+        "miss": 0,
+        "false_alarm": 0,
+        "correct_dry": 0,
+        "probability_of_detection": null,
+        "false_alarm_ratio": null,
+        "critical_success_index": null
+      }
     },
     {
       "target": "vrain_bai_thom",
       "variable": "rain",
       "lead_bucket": "D0_24",
-      "sample_count": 0,
+      "sample_count": 4,
       "status": "LEARNING",
-      "mae": null,
-      "rmse": null,
-      "mean_error": null,
-      "median_error": null,
+      "mae": 3.275,
+      "rmse": 4.0333,
+      "mean_error": 0.325,
+      "median_error": -1.5,
       "applied_bias": null,
       "applied_factor": 1.0,
-      "shrinkage": 0.0
+      "shrinkage": 0.1176,
+      "readiness_reason": "INSUFFICIENT_MATCHED_CASES",
+      "event_verification": {
+        "threshold_mm": 0.1,
+        "sample_count": 4,
+        "actual_wet_cases": 1,
+        "forecast_wet_cases": 4,
+        "hit": 1,
+        "miss": 0,
+        "false_alarm": 3,
+        "correct_dry": 0,
+        "probability_of_detection": 1.0,
+        "false_alarm_ratio": 0.75,
+        "critical_success_index": 0.25
+      }
     },
     {
       "target": "vrain_bai_thom",
       "variable": "rain",
       "lead_bucket": "D1_48",
-      "sample_count": 0,
+      "sample_count": 1,
       "status": "LEARNING",
-      "mae": null,
-      "rmse": null,
-      "mean_error": null,
-      "median_error": null,
+      "mae": 7.6,
+      "rmse": 7.6,
+      "mean_error": -7.6,
+      "median_error": -7.6,
       "applied_bias": null,
       "applied_factor": 1.0,
-      "shrinkage": 0.0
+      "shrinkage": 0.0323,
+      "readiness_reason": "INSUFFICIENT_MATCHED_CASES",
+      "event_verification": {
+        "threshold_mm": 0.1,
+        "sample_count": 1,
+        "actual_wet_cases": 0,
+        "forecast_wet_cases": 1,
+        "hit": 0,
+        "miss": 0,
+        "false_alarm": 1,
+        "correct_dry": 0,
+        "probability_of_detection": null,
+        "false_alarm_ratio": 1.0,
+        "critical_success_index": 0.0
+      }
     },
     {
       "target": "vrain_bai_thom",
@@ -120,7 +218,21 @@
       "median_error": null,
       "applied_bias": null,
       "applied_factor": 1.0,
-      "shrinkage": 0.0
+      "shrinkage": 0.0,
+      "readiness_reason": "INSUFFICIENT_MATCHED_CASES",
+      "event_verification": {
+        "threshold_mm": 0.1,
+        "sample_count": 0,
+        "actual_wet_cases": 0,
+        "forecast_wet_cases": 0,
+        "hit": 0,
+        "miss": 0,
+        "false_alarm": 0,
+        "correct_dry": 0,
+        "probability_of_detection": null,
+        "false_alarm_ratio": null,
+        "critical_success_index": null
+      }
     },
     {
       "target": "vrain_bai_thom",
@@ -134,7 +246,21 @@
       "median_error": null,
       "applied_bias": null,
       "applied_factor": 1.0,
-      "shrinkage": 0.0
+      "shrinkage": 0.0,
+      "readiness_reason": "INSUFFICIENT_MATCHED_CASES",
+      "event_verification": {
+        "threshold_mm": 0.1,
+        "sample_count": 0,
+        "actual_wet_cases": 0,
+        "forecast_wet_cases": 0,
+        "hit": 0,
+        "miss": 0,
+        "false_alarm": 0,
+        "correct_dry": 0,
+        "probability_of_detection": null,
+        "false_alarm_ratio": null,
+        "critical_success_index": null
+      }
     },
     {
       "target": "vrain_bai_thom",
@@ -148,35 +274,77 @@
       "median_error": null,
       "applied_bias": null,
       "applied_factor": 1.0,
-      "shrinkage": 0.0
+      "shrinkage": 0.0,
+      "readiness_reason": "INSUFFICIENT_MATCHED_CASES",
+      "event_verification": {
+        "threshold_mm": 0.1,
+        "sample_count": 0,
+        "actual_wet_cases": 0,
+        "forecast_wet_cases": 0,
+        "hit": 0,
+        "miss": 0,
+        "false_alarm": 0,
+        "correct_dry": 0,
+        "probability_of_detection": null,
+        "false_alarm_ratio": null,
+        "critical_success_index": null
+      }
     },
     {
       "target": "vrain_cua_can",
       "variable": "rain",
       "lead_bucket": "D0_24",
-      "sample_count": 0,
+      "sample_count": 4,
       "status": "LEARNING",
-      "mae": null,
-      "rmse": null,
-      "mean_error": null,
-      "median_error": null,
+      "mae": 5.975,
+      "rmse": 9.5345,
+      "mean_error": 3.425,
+      "median_error": -1.2,
       "applied_bias": null,
       "applied_factor": 1.0,
-      "shrinkage": 0.0
+      "shrinkage": 0.1176,
+      "readiness_reason": "INSUFFICIENT_MATCHED_CASES",
+      "event_verification": {
+        "threshold_mm": 0.1,
+        "sample_count": 4,
+        "actual_wet_cases": 3,
+        "forecast_wet_cases": 4,
+        "hit": 3,
+        "miss": 0,
+        "false_alarm": 1,
+        "correct_dry": 0,
+        "probability_of_detection": 1.0,
+        "false_alarm_ratio": 0.25,
+        "critical_success_index": 0.75
+      }
     },
     {
       "target": "vrain_cua_can",
       "variable": "rain",
       "lead_bucket": "D1_48",
-      "sample_count": 0,
+      "sample_count": 1,
       "status": "LEARNING",
-      "mae": null,
-      "rmse": null,
-      "mean_error": null,
-      "median_error": null,
+      "mae": 7.0,
+      "rmse": 7.0,
+      "mean_error": -7.0,
+      "median_error": -7.0,
       "applied_bias": null,
       "applied_factor": 1.0,
-      "shrinkage": 0.0
+      "shrinkage": 0.0323,
+      "readiness_reason": "INSUFFICIENT_MATCHED_CASES",
+      "event_verification": {
+        "threshold_mm": 0.1,
+        "sample_count": 1,
+        "actual_wet_cases": 1,
+        "forecast_wet_cases": 1,
+        "hit": 1,
+        "miss": 0,
+        "false_alarm": 0,
+        "correct_dry": 0,
+        "probability_of_detection": 1.0,
+        "false_alarm_ratio": 0.0,
+        "critical_success_index": 1.0
+      }
     },
     {
       "target": "vrain_cua_can",
@@ -190,7 +358,21 @@
       "median_error": null,
       "applied_bias": null,
       "applied_factor": 1.0,
-      "shrinkage": 0.0
+      "shrinkage": 0.0,
+      "readiness_reason": "INSUFFICIENT_MATCHED_CASES",
+      "event_verification": {
+        "threshold_mm": 0.1,
+        "sample_count": 0,
+        "actual_wet_cases": 0,
+        "forecast_wet_cases": 0,
+        "hit": 0,
+        "miss": 0,
+        "false_alarm": 0,
+        "correct_dry": 0,
+        "probability_of_detection": null,
+        "false_alarm_ratio": null,
+        "critical_success_index": null
+      }
     },
     {
       "target": "vrain_cua_can",
@@ -204,7 +386,21 @@
       "median_error": null,
       "applied_bias": null,
       "applied_factor": 1.0,
-      "shrinkage": 0.0
+      "shrinkage": 0.0,
+      "readiness_reason": "INSUFFICIENT_MATCHED_CASES",
+      "event_verification": {
+        "threshold_mm": 0.1,
+        "sample_count": 0,
+        "actual_wet_cases": 0,
+        "forecast_wet_cases": 0,
+        "hit": 0,
+        "miss": 0,
+        "false_alarm": 0,
+        "correct_dry": 0,
+        "probability_of_detection": null,
+        "false_alarm_ratio": null,
+        "critical_success_index": null
+      }
     },
     {
       "target": "vrain_cua_can",
@@ -218,7 +414,21 @@
       "median_error": null,
       "applied_bias": null,
       "applied_factor": 1.0,
-      "shrinkage": 0.0
+      "shrinkage": 0.0,
+      "readiness_reason": "INSUFFICIENT_MATCHED_CASES",
+      "event_verification": {
+        "threshold_mm": 0.1,
+        "sample_count": 0,
+        "actual_wet_cases": 0,
+        "forecast_wet_cases": 0,
+        "hit": 0,
+        "miss": 0,
+        "false_alarm": 0,
+        "correct_dry": 0,
+        "probability_of_detection": null,
+        "false_alarm_ratio": null,
+        "critical_success_index": null
+      }
     },
     {
       "target": "vvpq",
@@ -232,7 +442,8 @@
       "median_error": -1.4461,
       "applied_bias": 0.0,
       "applied_factor": null,
-      "shrinkage": 0.3182
+      "shrinkage": 0.3182,
+      "readiness_reason": null
     },
     {
       "target": "vvpq",
@@ -246,7 +457,8 @@
       "median_error": -0.6459,
       "applied_bias": 0.0,
       "applied_factor": null,
-      "shrinkage": 0.1176
+      "shrinkage": 0.1176,
+      "readiness_reason": null
     },
     {
       "target": "vvpq",
@@ -260,7 +472,8 @@
       "median_error": 0.0422,
       "applied_bias": 0.0,
       "applied_factor": null,
-      "shrinkage": 0.0323
+      "shrinkage": 0.0323,
+      "readiness_reason": null
     },
     {
       "target": "vvpq",
@@ -274,7 +487,8 @@
       "median_error": null,
       "applied_bias": 0.0,
       "applied_factor": null,
-      "shrinkage": 0.0
+      "shrinkage": 0.0,
+      "readiness_reason": null
     },
     {
       "target": "vvpq",
@@ -288,7 +502,8 @@
       "median_error": null,
       "applied_bias": 0.0,
       "applied_factor": null,
-      "shrinkage": 0.0
+      "shrinkage": 0.0,
+      "readiness_reason": null
     },
     {
       "target": "vvpq",
@@ -302,7 +517,8 @@
       "median_error": -16.4423,
       "applied_bias": 0.0,
       "applied_factor": null,
-      "shrinkage": 0.3182
+      "shrinkage": 0.3182,
+      "readiness_reason": null
     },
     {
       "target": "vvpq",
@@ -316,7 +532,8 @@
       "median_error": -17.5654,
       "applied_bias": 0.0,
       "applied_factor": null,
-      "shrinkage": 0.1176
+      "shrinkage": 0.1176,
+      "readiness_reason": null
     },
     {
       "target": "vvpq",
@@ -330,7 +547,8 @@
       "median_error": -15.9251,
       "applied_bias": 0.0,
       "applied_factor": null,
-      "shrinkage": 0.0323
+      "shrinkage": 0.0323,
+      "readiness_reason": null
     },
     {
       "target": "vvpq",
@@ -344,7 +562,8 @@
       "median_error": null,
       "applied_bias": 0.0,
       "applied_factor": null,
-      "shrinkage": 0.0
+      "shrinkage": 0.0,
+      "readiness_reason": null
     },
     {
       "target": "vvpq",
@@ -358,36 +577,37 @@
       "median_error": null,
       "applied_bias": 0.0,
       "applied_factor": null,
-      "shrinkage": 0.0
+      "shrinkage": 0.0,
+      "readiness_reason": null
     }
   ],
   "latest_actual": {
     "vvpq": {
-      "observed_at": "2026-09-22T08:00:00+00:00",
-      "temperature_c": 26.0,
-      "wind_kmh": 24.08
+      "observed_at": "2026-09-22T09:30:00+00:00",
+      "temperature_c": 25.0,
+      "wind_kmh": 20.37
     },
     "rain": {
       "vrain_cua_can": {
-        "observed_at": "2026-09-22T08:33:05+00:00",
+        "observed_at": "2026-09-22T09:55:34+00:00",
         "increment_mm": null,
         "window_minutes": null,
         "increment_qc": "WINDOW_TOO_OLD_FOR_CURRENT_RAIN",
-        "accumulation_mm": 31.2
+        "accumulation_mm": 104.2
       },
       "vrain_bai_thom": {
-        "observed_at": "2026-09-22T08:33:05+00:00",
+        "observed_at": "2026-09-22T09:55:34+00:00",
         "increment_mm": null,
         "window_minutes": null,
         "increment_qc": "WINDOW_TOO_OLD_FOR_CURRENT_RAIN",
-        "accumulation_mm": 31.199999999999996
+        "accumulation_mm": 34.39999999999999
       },
       "vrain_an_thoi": {
-        "observed_at": "2026-09-22T08:33:05+00:00",
+        "observed_at": "2026-09-22T09:55:34+00:00",
         "increment_mm": null,
         "window_minutes": null,
         "increment_qc": "WINDOW_TOO_OLD_FOR_CURRENT_RAIN",
-        "accumulation_mm": 54.8
+        "accumulation_mm": 57.2
       }
     }
   },
@@ -783,6 +1003,51 @@
       "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
     },
     {
+      "target": "vrain_cua_can",
+      "variable": "rain",
+      "lead_bucket": "D1_48",
+      "lead_hours": 30.0,
+      "run_time": "2026-09-20T00:00:00+00:00",
+      "valid_time": "2026-09-21T06:00:00+00:00",
+      "forecast": 7.6,
+      "observed": 0.6000000000000001,
+      "observation_class": "ACTUAL",
+      "error": -7.0,
+      "coverage": 0.829,
+      "window_start": "2026-09-21T00:00:00+00:00",
+      "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
+    },
+    {
+      "target": "vrain_bai_thom",
+      "variable": "rain",
+      "lead_bucket": "D1_48",
+      "lead_hours": 30.0,
+      "run_time": "2026-09-20T00:00:00+00:00",
+      "valid_time": "2026-09-21T06:00:00+00:00",
+      "forecast": 7.6,
+      "observed": 0.0,
+      "observation_class": "ACTUAL",
+      "error": -7.6,
+      "coverage": 0.829,
+      "window_start": "2026-09-21T00:00:00+00:00",
+      "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
+    },
+    {
+      "target": "vrain_an_thoi",
+      "variable": "rain",
+      "lead_bucket": "D1_48",
+      "lead_hours": 30.0,
+      "run_time": "2026-09-20T00:00:00+00:00",
+      "valid_time": "2026-09-21T06:00:00+00:00",
+      "forecast": 10.1,
+      "observed": 0.0,
+      "observation_class": "ACTUAL",
+      "error": -10.1,
+      "coverage": 0.829,
+      "window_start": "2026-09-21T00:00:00+00:00",
+      "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
+    },
+    {
       "target": "vvpq",
       "variable": "temperature",
       "lead_bucket": "D0_24",
@@ -806,6 +1071,51 @@
       "observed": 20.37,
       "observation_class": "ACTUAL",
       "error": 12.258736,
+      "source_file": "data/weather-forecast-archive/2026/09/21/20260921T000000Z.json"
+    },
+    {
+      "target": "vrain_cua_can",
+      "variable": "rain",
+      "lead_bucket": "D0_24",
+      "lead_hours": 6.0,
+      "run_time": "2026-09-21T00:00:00+00:00",
+      "valid_time": "2026-09-21T06:00:00+00:00",
+      "forecast": 1.9,
+      "observed": 0.6000000000000001,
+      "observation_class": "ACTUAL",
+      "error": -1.2999999999999998,
+      "coverage": 0.829,
+      "window_start": "2026-09-21T00:00:00+00:00",
+      "source_file": "data/weather-forecast-archive/2026/09/21/20260921T000000Z.json"
+    },
+    {
+      "target": "vrain_bai_thom",
+      "variable": "rain",
+      "lead_bucket": "D0_24",
+      "lead_hours": 6.0,
+      "run_time": "2026-09-21T00:00:00+00:00",
+      "valid_time": "2026-09-21T06:00:00+00:00",
+      "forecast": 1.9,
+      "observed": 0.0,
+      "observation_class": "ACTUAL",
+      "error": -1.9,
+      "coverage": 0.829,
+      "window_start": "2026-09-21T00:00:00+00:00",
+      "source_file": "data/weather-forecast-archive/2026/09/21/20260921T000000Z.json"
+    },
+    {
+      "target": "vrain_an_thoi",
+      "variable": "rain",
+      "lead_bucket": "D0_24",
+      "lead_hours": 6.0,
+      "run_time": "2026-09-21T00:00:00+00:00",
+      "valid_time": "2026-09-21T06:00:00+00:00",
+      "forecast": 5.35,
+      "observed": 0.0,
+      "observation_class": "ACTUAL",
+      "error": -5.35,
+      "coverage": 0.829,
+      "window_start": "2026-09-21T00:00:00+00:00",
       "source_file": "data/weather-forecast-archive/2026/09/21/20260921T000000Z.json"
     },
     {
@@ -835,6 +1145,51 @@
       "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
     },
     {
+      "target": "vrain_cua_can",
+      "variable": "rain",
+      "lead_bucket": "D0_24",
+      "lead_hours": 24.0,
+      "run_time": "2026-09-20T00:00:00+00:00",
+      "valid_time": "2026-09-21T00:00:00+00:00",
+      "forecast": 2.9,
+      "observed": 0.2,
+      "observation_class": "ACTUAL",
+      "error": -2.6999999999999997,
+      "coverage": 0.8937,
+      "window_start": "2026-09-20T18:00:00+00:00",
+      "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
+    },
+    {
+      "target": "vrain_bai_thom",
+      "variable": "rain",
+      "lead_bucket": "D0_24",
+      "lead_hours": 24.0,
+      "run_time": "2026-09-20T00:00:00+00:00",
+      "valid_time": "2026-09-21T00:00:00+00:00",
+      "forecast": 2.9,
+      "observed": 0.0,
+      "observation_class": "ACTUAL",
+      "error": -2.9,
+      "coverage": 0.8937,
+      "window_start": "2026-09-20T18:00:00+00:00",
+      "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
+    },
+    {
+      "target": "vrain_an_thoi",
+      "variable": "rain",
+      "lead_bucket": "D0_24",
+      "lead_hours": 24.0,
+      "run_time": "2026-09-20T00:00:00+00:00",
+      "valid_time": "2026-09-21T00:00:00+00:00",
+      "forecast": 8.7,
+      "observed": 0.0,
+      "observation_class": "ACTUAL",
+      "error": -8.7,
+      "coverage": 0.8937,
+      "window_start": "2026-09-20T18:00:00+00:00",
+      "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
+    },
+    {
       "target": "vvpq",
       "variable": "temperature",
       "lead_bucket": "D0_24",
@@ -861,6 +1216,51 @@
       "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
     },
     {
+      "target": "vrain_cua_can",
+      "variable": "rain",
+      "lead_bucket": "D0_24",
+      "lead_hours": 12.0,
+      "run_time": "2026-09-20T00:00:00+00:00",
+      "valid_time": "2026-09-20T12:00:00+00:00",
+      "forecast": 1.6,
+      "observed": 20.4,
+      "observation_class": "ACTUAL",
+      "error": 18.799999999999997,
+      "coverage": 0.9539,
+      "window_start": "2026-09-20T06:00:00+00:00",
+      "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
+    },
+    {
+      "target": "vrain_bai_thom",
+      "variable": "rain",
+      "lead_bucket": "D0_24",
+      "lead_hours": 12.0,
+      "run_time": "2026-09-20T00:00:00+00:00",
+      "valid_time": "2026-09-20T12:00:00+00:00",
+      "forecast": 1.6,
+      "observed": 8.8,
+      "observation_class": "ACTUAL",
+      "error": 7.200000000000001,
+      "coverage": 0.9539,
+      "window_start": "2026-09-20T06:00:00+00:00",
+      "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
+    },
+    {
+      "target": "vrain_an_thoi",
+      "variable": "rain",
+      "lead_bucket": "D0_24",
+      "lead_hours": 12.0,
+      "run_time": "2026-09-20T00:00:00+00:00",
+      "valid_time": "2026-09-20T12:00:00+00:00",
+      "forecast": 1.2,
+      "observed": 5.2,
+      "observation_class": "ACTUAL",
+      "error": 4.0,
+      "coverage": 0.9539,
+      "window_start": "2026-09-20T06:00:00+00:00",
+      "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
+    },
+    {
       "target": "vvpq",
       "variable": "temperature",
       "lead_bucket": "D0_24",
@@ -884,6 +1284,51 @@
       "observed": 22.22,
       "observation_class": "ACTUAL",
       "error": 7.327894999999998,
+      "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
+    },
+    {
+      "target": "vrain_cua_can",
+      "variable": "rain",
+      "lead_bucket": "D0_24",
+      "lead_hours": 6.0,
+      "run_time": "2026-09-20T00:00:00+00:00",
+      "valid_time": "2026-09-20T06:00:00+00:00",
+      "forecast": 1.1,
+      "observed": 0.0,
+      "observation_class": "ACTUAL",
+      "error": -1.1,
+      "coverage": 0.8782,
+      "window_start": "2026-09-20T00:00:00+00:00",
+      "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
+    },
+    {
+      "target": "vrain_bai_thom",
+      "variable": "rain",
+      "lead_bucket": "D0_24",
+      "lead_hours": 6.0,
+      "run_time": "2026-09-20T00:00:00+00:00",
+      "valid_time": "2026-09-20T06:00:00+00:00",
+      "forecast": 1.1,
+      "observed": 0.0,
+      "observation_class": "ACTUAL",
+      "error": -1.1,
+      "coverage": 0.8782,
+      "window_start": "2026-09-20T00:00:00+00:00",
+      "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
+    },
+    {
+      "target": "vrain_an_thoi",
+      "variable": "rain",
+      "lead_bucket": "D0_24",
+      "lead_hours": 6.0,
+      "run_time": "2026-09-20T00:00:00+00:00",
+      "valid_time": "2026-09-20T06:00:00+00:00",
+      "forecast": 1.5,
+      "observed": 0.0,
+      "observation_class": "ACTUAL",
+      "error": -1.5,
+      "coverage": 0.8782,
+      "window_start": "2026-09-20T00:00:00+00:00",
       "source_file": "data/weather-forecast-archive/2026/09/20/20260920T000000Z.json"
     }
   ],
