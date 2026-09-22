@@ -22,7 +22,7 @@ class ProductionContractTests(unittest.TestCase):
             "formula_bundle_version": "weather-lab-0.2.0",
             "critical_data_gaps": [],
             "points": {
-                "an_thoi": {"hours": [
+                "an_thoi": {"reference_point": {"lat": 10.0191, "lon": 104.015, "type": "AREA_REFERENCE"}, "hours": [
                     {"time_iso": "2026-09-22T07:00:00+07:00", "wind": wind, "gust": 20, "wave": .5, "rain": 1},
                     {"time_iso": "2026-09-22T10:00:00+07:00", "wind": wind + 5, "gust": 25, "wave": .6, "rain": 2},
                 ]}
@@ -62,6 +62,18 @@ class ProductionContractTests(unittest.TestCase):
         self.assertEqual(wind["mean_delta"], 5.0)
         self.assertEqual(wind["peak_amplitude_drift"], 5.0)
         self.assertEqual(result["trend_classification"]["status"], "NOT_COMPUTABLE")
+
+    def test_point_drift_rejects_authority_change(self):
+        previous = self._snapshot("OLD", 10.0)
+        current = self._snapshot("NEW", 15.0)
+        previous["points"]["an_thoi"]["reference_point"] = {"lat": 9.905, "lon": 104.005, "type": "AREA_REFERENCE"}
+        previous = seal_snapshot({k: v for k, v in previous.items() if k != "payload_hash"})
+        result = compare_point_snapshots(previous, current["points"], cutoff_time=current["cutoff_time"])
+        self.assertEqual(result["status"], "NOT_COMPUTABLE")
+        self.assertEqual(
+            result["points"]["an_thoi"]["reason"],
+            "POINT_AUTHORITY_CHANGED_OR_UNAVAILABLE",
+        )
 
 
 if __name__ == "__main__":
