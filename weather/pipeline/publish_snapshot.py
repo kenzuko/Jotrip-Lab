@@ -14,7 +14,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from weather.processing.point_drift import compare_point_snapshots
 from weather.processing.snapshot import seal_snapshot, verify_snapshot
+from weather.points import POINT_METADATA
 
 SCHEMA_VERSION = "1.0"
 FORMULA_BUNDLE_VERSION = "weather-lab-0.2.0"
@@ -128,7 +130,8 @@ def _ensemble_payload(gefs: dict) -> dict[str, Any]:
     }
 
 
-def build_canonical_snapshot(dashboard: dict, ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict[str, Any]:
+def build_canonical_snapshot(dashboard: dict, ecmwf: dict, gefs: dict, icon: dict, copernicus: dict,
+                             previous_snapshot: dict | None = None) -> dict[str, Any]:
     cutoff = _dt(dashboard["generated_at"])
     generated = datetime.now(timezone.utc)
     points = dashboard.get("points", {})
@@ -141,6 +144,35 @@ def build_canonical_snapshot(dashboard: dict, ecmwf: dict, gefs: dict, icon: dic
         raise ValueError(f"invalid data_mode: {dashboard.get('data_mode')}")
 
     git_sha = _git_sha()
+    point_authority = {
+        point_id: {
+            "name": POINT_METADATA[point_id].get("name"),
+            "lat": float(POINT_METADATA[point_id]["lat"]),
+            "lon": float(POINT_METADATA[point_id]["lon"]),
+            "reference_type": POINT_METADATA[point_id].get("reference_type"),
+        }
+        for point_id in sorted(REQUIRED_POINTS)
+    }
+    drift = compare_point_snapshots(
+        previous_snapshot,
+        points,
+        cutoff_time=cutoff.isoformat(),
+        horizon_hours=72,
+    )
+    ensemble = _ensemble_payload(gefs)
+    analysis_status = {
+        "ensemble_data": (
+            "AVAILABLE"
+            if ensemble["gefs_atmosphere_member_gate"].get("readiness") == "MEMBER_COMPLETE"
+            and ensemble["gefs_wave_member_gate"].get("readiness") == "MEMBER_COMPLETE"
+            else "PARTIAL"
+        ),
+        "ensemble_full_window_analysis": ensemble["p_operational_window"]["status"],
+        "drift": drift.get("status", "NOT_COMPUTABLE"),
+        "operational_window": "IMPLEMENTED_NOT_CANONICALIZED",
+        "reality_layer": "NOT_YET_INGESTED",
+        "product_completeness": "NOT_COMPUTABLE",
+    }
     payload: dict[str, Any] = {
         "snapshot_id": "PQWX_CANONICAL_" + cutoff.strftime("%Y%m%d_%H%M%S%z") + "_V1",
         "schema_version": SCHEMA_VERSION,
@@ -152,11 +184,13 @@ def build_canonical_snapshot(dashboard: dict, ecmwf: dict, gefs: dict, icon: dic
         "formula_bundle_version": FORMULA_BUNDLE_VERSION,
         "critical_data_gaps": [],
         "points": points,
+        "point_authority": point_authority,
         "routes": {},
-        "ensemble": _ensemble_payload(gefs),
+        "ensemble": ensemble,
         "observations": {},
         "official_status": {},
-        "drift": {},
+        "drift": drift,
+        "analysis_status": analysis_status,
         "data_gaps": dashboard.get("gaps", []),
         "unit_policy": {
             "operational_speed": "km/h",
@@ -190,7 +224,7 @@ def validate_snapshot(snapshot: dict[str, Any], dashboard: dict | None = None) -
     required = {
         "snapshot_id", "schema_version", "cutoff_time", "generated_at", "payload_hash",
         "data_mode", "direct_ingest_status", "git_commit_sha", "formula_bundle_version",
-        "critical_data_gaps", "points", "routes", "ensemble", "data_gaps", "unit_policy", "audit",
+        "critical_data_gaps", "points", "point_authority", "routes", "ensemble", "data_gaps", "unit_policy", "audit",
     }
     missing = sorted(required - set(snapshot))
     if missing:
@@ -248,12 +282,17 @@ def main() -> None:
     args = parser.parse_args()
 
     dashboard = _load(args.dashboard)
+    previous_snapshot = None
+    previous_path = args.root / "latest.json"
+    if previous_path.exists():
+        previous_snapshot = _load(previous_path)
     snapshot = build_canonical_snapshot(
         dashboard,
         _load(args.ecmwf),
         _load(args.gefs),
         _load(args.icon),
         _load(args.copernicus),
+        previous_snapshot=previous_snapshot,
     )
     validate_snapshot(snapshot, dashboard)
     archive, latest, pointer = publish(snapshot, args.root)
