@@ -655,8 +655,9 @@ function renderQuickAlert(){
   if(!root||!title||!text||!time)return;
 
   const nowSignals=islandIds().map(id=>{
-    const p=critical?.points?.[id]||{};
-    return {name:p.name||id,score:num(p.nowcast?.convective_score??p.local?.convection_score)||0};
+    const p=critical?.points?.[id]||{},live=fullNowcast?.points?.[id]||{};
+    const score=num(live.score??live.convective_signal?.score??p.nowcast?.convective_score??p.local?.convection_score)||0;
+    return {name:p.name||id,score};
   }).sort((a,b)=>b.score-a.score);
   const strongestNow=nowSignals[0];
 
@@ -701,6 +702,7 @@ function renderQuickAlert(){
   }
 
   root.className="quick-alert "+cls;
+  const icon=$("quickAlertIcon");if(icon)icon.innerHTML=weatherGlyph(cls==="alert"?"rain":cls==="watch"?"cloud":"sun");
   title.textContent=headline;
   text.textContent=detail;
   time.textContent=when;
