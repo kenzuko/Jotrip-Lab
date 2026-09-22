@@ -5,7 +5,7 @@ on:
     paths:
       - ".github/workflows/weather-gefs-local-scheduler.yml"
   schedule:
-    - cron: "40 4,10,16,22 * * *"
+    - cron: "40 2,8,14,20 * * *"
   workflow_dispatch:
 
 permissions:
@@ -23,6 +23,7 @@ jobs:
       smoke: false
     secrets: inherit
 # full matrix trigger
+# 03:40 / 09:40 / 15:40 / 21:40 UTC+7 - leaves margin before 06:00/18:00 MASTER reports
 
 # island-watch refresh
 
