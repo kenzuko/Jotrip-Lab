@@ -42,7 +42,7 @@ class QualityTests(unittest.TestCase):
 
     def test_weighted_completeness_and_critical_gap(self):
         products = json.loads((ROOT / "config/products.json").read_text(encoding="utf-8"))
-        availability = {"restriction": 1, "hs": 1, "gust": 1, "convection": 1, "visibility": 0, "wave_direction": .75, "wave_period": .5, "local_truth": .9}
+        availability = {"restriction": 1, "wind": 1, "hs": 1, "gust": 1, "convection": 1, "visibility": 0, "wave_direction": .75, "wave_period": .5, "local_truth": .9}
         score = completeness(products["cano_south"], availability)
         self.assertGreater(score, 75)
         self.assertIn("visibility", critical_gaps(products["cano_south"], availability))

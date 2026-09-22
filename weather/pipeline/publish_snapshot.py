@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from weather.processing.point_drift import compare_point_snapshots
+from weather.processing.product_analysis import build_product_analysis
 from weather.processing.snapshot import seal_snapshot, verify_snapshot
 from weather.points import POINT_METADATA
 
@@ -102,6 +103,50 @@ def _direct_status(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dic
     }
 
 
+def _marine_details(copernicus: dict) -> dict[str, Any]:
+    details: dict[str, Any] = {}
+    wave_variables = copernicus.get("wave", {}).get("variables", {})
+    current_vectors = copernicus.get("current", {}).get("derived_vectors", {})
+    current_variables = copernicus.get("current", {}).get("variables", {})
+
+    for point_id in sorted(REQUIRED_POINTS):
+        wave_hs = wave_variables.get("VHM0", {}).get("points", {}).get(point_id, {})
+        wave_dir = wave_variables.get("VMDR", {}).get("points", {}).get(point_id, {})
+        wave_mean = wave_variables.get("VTM10", {}).get("points", {}).get(point_id, {})
+        wave_peak = wave_variables.get("VTPK", {}).get("points", {}).get(point_id, {})
+        vector = current_vectors.get(point_id, {})
+        u = current_variables.get("uo", {}).get("points", {}).get(point_id, {})
+        v = current_variables.get("vo", {}).get("points", {}).get(point_id, {})
+
+        wave = {
+            "source": "COPERNICUS_MARINE",
+            "hs_m": wave_hs.get("value") if wave_hs.get("status") == "PASS" else None,
+            "direction_deg": wave_dir.get("value") if wave_dir.get("status") == "PASS" else None,
+            "mean_period_s": wave_mean.get("value") if wave_mean.get("status") == "PASS" else None,
+            "peak_period_s": wave_peak.get("value") if wave_peak.get("status") == "PASS" else None,
+            "sampled_lat": wave_hs.get("sampled_lat"),
+            "sampled_lon": wave_hs.get("sampled_lon"),
+            "distance_km": wave_hs.get("distance_km"),
+            "sampled_time": wave_hs.get("sampled_time"),
+            "qc": "PASS" if wave_hs.get("status") == "PASS" else "PARTIAL",
+        }
+        current = {
+            "source": "COPERNICUS_MARINE",
+            "u_ms": u.get("value") if u.get("status") == "PASS" else None,
+            "v_ms": v.get("value") if v.get("status") == "PASS" else None,
+            "speed_kmh": vector.get("speed_kmh"),
+            "direction_toward_deg": vector.get("direction_toward_deg"),
+            "depth_selection": vector.get("depth_selection"),
+            "sampled_lat": vector.get("sampled_lat"),
+            "sampled_lon": vector.get("sampled_lon"),
+            "distance_km": vector.get("distance_km"),
+            "sampled_time": vector.get("sampled_time"),
+            "qc": "PASS" if vector.get("speed_kmh") is not None else "PARTIAL",
+        }
+        details[point_id] = {"wave": wave, "current": current}
+    return details
+
+
 def _ensemble_payload(gefs: dict) -> dict[str, Any]:
     atmosphere = gefs.get("atmosphere", {})
     wave = gefs.get("wave", {})
@@ -160,6 +205,16 @@ def build_canonical_snapshot(dashboard: dict, ecmwf: dict, gefs: dict, icon: dic
         horizon_hours=72,
     )
     ensemble = _ensemble_payload(gefs)
+    marine_details = _marine_details(copernicus)
+    observations: dict[str, Any] = {}
+    official_status: dict[str, Any] = {}
+    product_analysis = build_product_analysis(
+        points,
+        marine_details,
+        cutoff_time=cutoff.isoformat(),
+        observations=observations,
+        official_status=official_status,
+    )
     analysis_status = {
         "ensemble_data": (
             "AVAILABLE"
@@ -169,9 +224,9 @@ def build_canonical_snapshot(dashboard: dict, ecmwf: dict, gefs: dict, icon: dic
         ),
         "ensemble_full_window_analysis": ensemble["p_operational_window"]["status"],
         "drift": drift.get("status", "NOT_COMPUTABLE"),
-        "operational_window": "IMPLEMENTED_NOT_CANONICALIZED",
+        "operational_window": "PARTIAL_BACKGROUND_ONLY",
         "reality_layer": "NOT_YET_INGESTED",
-        "product_completeness": "NOT_COMPUTABLE",
+        "product_completeness": "AVAILABLE",
     }
     payload: dict[str, Any] = {
         "snapshot_id": "PQWX_CANONICAL_" + cutoff.strftime("%Y%m%d_%H%M%S%z") + "_V1",
@@ -185,11 +240,13 @@ def build_canonical_snapshot(dashboard: dict, ecmwf: dict, gefs: dict, icon: dic
         "critical_data_gaps": [],
         "points": points,
         "point_authority": point_authority,
+        "marine_details": marine_details,
         "routes": {},
         "ensemble": ensemble,
-        "observations": {},
-        "official_status": {},
+        "observations": observations,
+        "official_status": official_status,
         "drift": drift,
+        "product_analysis": product_analysis,
         "analysis_status": analysis_status,
         "data_gaps": dashboard.get("gaps", []),
         "unit_policy": {

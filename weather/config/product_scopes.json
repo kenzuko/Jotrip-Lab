@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "products": {
+    "cano_south": {
+      "base_product": "cano_south",
+      "point_id": "an_thoi",
+      "window_hours": null,
+      "analysis_role": "SOUTH_ISLAND_BACKGROUND"
+    },
+    "fishing_hon_dam_morning": {
+      "base_product": "fishing_hon_dam",
+      "point_id": "an_thoi",
+      "window_hours": [5, 14],
+      "analysis_role": "FISHING_0500_1400"
+    },
+    "fishing_hon_dam_afternoon": {
+      "base_product": "fishing_hon_dam",
+      "point_id": "an_thoi",
+      "window_hours": [14, 21],
+      "analysis_role": "FISHING_1400_2100"
+    },
+    "fast_ferry": {
+      "base_product": "fast_ferry",
+      "point_id": null,
+      "window_hours": null,
+      "analysis_role": "ROUTE_OR_REGIONAL_REQUIRED"
+    },
+    "vehicle_ferry": {
+      "base_product": "vehicle_ferry",
+      "point_id": null,
+      "window_hours": null,
+      "analysis_role": "ROUTE_OR_REGIONAL_REQUIRED"
+    },
+    "land_tour": {
+      "base_product": "land_tour",
+      "point_id": null,
+      "window_hours": null,
+      "analysis_role": "MULTI_POINT_LAND"
+    }
+  }
+}
