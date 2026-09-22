@@ -873,3 +873,45 @@ footer{font-size:9.5px}
 
 .quick-alert-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.35;stroke-linecap:round;stroke-linejoin:round}
 .quick-alert.neutral .quick-alert-icon{color:#5c879d}.quick-alert.watch .quick-alert-icon{color:#b78916}.quick-alert.alert .quick-alert-icon{color:#c6533d}
+
+
+/* V2.11 public decision flow: now -> today -> 10 days -> radar -> deep */
+.today-timeline-panel{margin-top:12px;overflow:hidden}
+.today-head{align-items:flex-end}.today-place{font-size:8px;font-weight:800;color:#6e8795;background:#eef6fa;border-radius:999px;padding:6px 9px}
+.today-summary{margin:0 0 12px;font-size:12px;line-height:1.5;color:#486a7d;font-weight:650}
+.today-timeline{display:flex;gap:9px;overflow-x:auto;padding:2px 1px 8px;scroll-snap-type:x proximity;scrollbar-width:none}
+.today-timeline::-webkit-scrollbar{display:none}
+.today-slot{flex:0 0 134px;scroll-snap-align:start;border:1px solid #dfe9ee;border-radius:18px;background:#fff;padding:12px;box-shadow:0 6px 18px rgba(34,67,90,.045)}
+.today-slot time{display:block;font-size:10px;font-weight:850;color:#4e7184}
+.today-icon{width:48px;height:48px;display:grid;place-items:center;margin:10px 0 6px;border-radius:15px;background:#eef8fd;color:#218abc}
+.today-icon svg{width:31px;height:31px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+.today-slot>strong{display:block;font-size:22px;letter-spacing:-.04em;color:#173f57}.today-slot>b{display:block;margin:3px 0 8px;font-size:9px;color:#315b71}
+.today-slot>span{display:block;margin-top:3px;font-size:7.5px;line-height:1.35;color:#718894}
+.today-slot.good{border-color:#cfe6d8}.today-slot.good .today-icon{background:#eaf8ef;color:#2b8653}
+.today-slot.watch{border-color:#ead9a0;background:#fffdf7}.today-slot.watch .today-icon{background:#fff3c9;color:#a67608}
+.today-slot.avoid{border-color:#e9bcb4;background:#fff9f7}.today-slot.avoid .today-icon{background:#ffe8e2;color:#c15340}
+.today-legend{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:3px}.today-legend>span{font-size:7px;font-weight:800;border-radius:999px;padding:5px 7px}.today-legend .good{background:#eaf8ef;color:#28744a}.today-legend .watch{background:#fff4cf;color:#89680a}.today-legend .avoid{background:#ffebe7;color:#a74333}.today-legend small{margin-left:auto;font-size:7px;color:#83939c}
+.today-empty{width:100%;padding:18px;border:1px dashed #d7e4ea;border-radius:16px;background:#f8fbfc}.today-empty b,.today-empty span{display:block}.today-empty b{font-size:11px;color:#31576b}.today-empty span{margin-top:4px;font-size:8px;color:#7d909b}
+.quick-alert-radar{align-self:center;white-space:nowrap;text-decoration:none;font-size:9px;font-weight:850;color:#9a4333;background:#fff;border:1px solid rgba(170,78,59,.22);border-radius:999px;padding:7px 10px}
+.quick-alert-radar[hidden]{display:none!important}
+.deep-weather-disclosure{margin-top:16px;border:1px solid var(--line);border-radius:22px;background:#fff;box-shadow:var(--shadow);overflow:hidden}
+.deep-weather-disclosure>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 20px}
+.deep-weather-disclosure>summary::-webkit-details-marker{display:none}.deep-weather-disclosure>summary div{min-width:0}.deep-weather-disclosure>summary b{display:block;margin-top:4px;font-size:15px;color:#244d64}.deep-weather-disclosure>summary small{font-size:8px;color:#7d909b}
+.deep-weather-disclosure>summary:after{content:"＋";font-size:19px;color:#7390a0}.deep-weather-disclosure[open]>summary:after{content:"−"}
+.deep-weather-body{padding:0 18px 18px;border-top:1px solid #e7eef2}
+.jotrip-forecast-panel{margin-top:12px}
+.forecast-day-ribbon{display:flex!important;gap:9px!important;padding:2px 1px 9px!important}
+.forecast-day{flex:0 0 150px!important;min-width:150px!important;border-radius:18px!important;padding:12px!important}
+.forecast-day header{align-items:flex-start!important}.forecast-day header>div{display:block}.forecast-day header b{font-size:10px!important}.forecast-day header span{display:block;margin-top:2px;font-size:7px!important}.forecast-day header em{font-style:normal;font-size:6.5px;font-weight:850;color:#738995;background:#eef4f7;border-radius:999px;padding:4px 6px}
+.forecast-day-visual{width:50px;height:50px!important;display:grid!important;place-items:center!important;margin:10px 0 6px!important;border-radius:15px;background:#edf7fc;color:#218abc}
+.forecast-day-visual svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+.forecast-day>strong{font-size:22px!important;margin:4px 0 6px!important}.forecast-day>p{min-height:42px;margin:0;font-size:8px;line-height:1.4;color:#5d7786}
+.forecast-day-facts{display:block!important;margin-top:8px!important}.forecast-day-facts span{display:block!important;margin-top:3px;font-size:7px!important;color:#617b89!important;font-weight:700}
+.forecast-day>small{display:block!important;margin-top:8px!important;border-radius:0!important;padding:0!important;background:none!important;line-height:1.35;color:#87969e!important}
+.command-center{scroll-margin-top:70px}
+@media(max-width:720px){
+  .quick-alert{grid-template-columns:auto minmax(0,1fr)!important}.quick-alert time{grid-column:2}.quick-alert-radar{grid-column:2;width:max-content}
+  .today-slot{flex-basis:126px}.today-legend small{width:100%;margin-left:0}
+  .deep-weather-disclosure>summary{align-items:flex-start;padding:16px}.deep-weather-disclosure>summary small{max-width:120px;text-align:right}.deep-weather-body{padding:0 12px 14px}
+  .forecast-day{flex-basis:142px!important;min-width:142px!important}
+}
