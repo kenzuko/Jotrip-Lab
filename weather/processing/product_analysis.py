@@ -76,6 +76,11 @@ def _rows(point: dict[str, Any], thresholds: dict[str, Any], cutoff_time: str,
             end = datetime.fromisoformat(source[index + 1]["time_iso"].replace("Z", "+00:00"))
         else:
             end = start + timedelta(hours=3)
+        if window_hours is not None:
+            window_end = start.replace(hour=window_hours[1], minute=0, second=0, microsecond=0)
+            if window_hours[1] == 24:
+                window_end = start.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+            end = min(end, window_end)
         mapped = {"start_time": start.isoformat(), "end_time": end.isoformat()}
         for threshold_name in thresholds:
             field = FIELD_MAP.get(threshold_name)
