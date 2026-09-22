@@ -74,7 +74,7 @@ def compact_rows(point:dict, generated:datetime|None)->list[dict]:
             item["wave"]=wave
         rows.append(item)
     rows.sort(key=lambda x:x["t"] or "")
-    return rows[:9]
+    return rows[:5]
 
 def compact_outlook(point:dict)->list[dict]:
     out=[]
