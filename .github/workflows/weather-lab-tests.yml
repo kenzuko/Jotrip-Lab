@@ -389,6 +389,13 @@ jobs:
           git commit -m "chore(weather): publish live D10 dashboard snapshot [skip ci]"
           git pull --rebase origin "${{ inputs.target_ref || github.ref_name }}"
           git push origin "HEAD:${{ inputs.target_ref || github.ref_name }}"
+      - name: Restore Weather V2 evidence from data branch
+        shell: bash
+        run: |
+          git fetch origin data-weather --depth=1
+          git show origin/data-weather:data/weather-current/latest.json > /tmp/weather-current.json 2>/dev/null || printf '{}\n' > /tmp/weather-current.json
+          git show origin/data-weather:data/weather-nowcast/compact-latest.json > /tmp/weather-nowcast.json 2>/dev/null || printf '{}\n' > /tmp/weather-nowcast.json
+          git show origin/data-weather:data/weather-ensemble/latest.json > /tmp/weather-ensemble-local.json 2>/dev/null || printf '{}\n' > /tmp/weather-ensemble-local.json
       - name: Build canonical LAB_SNAPSHOT_V1 after dashboard publish
         run: |
           python -m weather.pipeline.publish_snapshot \
@@ -397,6 +404,9 @@ jobs:
             --gefs /tmp/weather-artifacts/gefs/noaa-members.json \
             --icon /tmp/weather-artifacts/icon/icon-point.json \
             --copernicus /tmp/weather-artifacts/copernicus/copernicus-live.json \
+            --current-bundle /tmp/weather-current.json \
+            --nowcast /tmp/weather-nowcast.json \
+            --local-ensemble /tmp/weather-ensemble-local.json \
             --root weather/snapshots
       - name: Build stable production manifest
         run: |
@@ -421,6 +431,20 @@ jobs:
           assert set(POINTS).issubset(p['points'])
           assert set(p.get('point_authority', {})) == {'duong_dong','an_thoi','ganh_dau'}
           assert p['ensemble']['p_operational_window']['status'] == 'NOT_COMPUTABLE'
+          local=p['ensemble'].get('gefs_local_matrix') or {}
+          if local.get('status') not in {None,'UNAVAILABLE'}:
+              assert local.get('source') == 'NOAA_NOMADS_GEFS_GRIB_FILTER'
+              assert local.get('coherence_gate_75pct') in {'PASS','FAIL'}
+          actual=p.get('observations') or {}
+          if actual.get('status') == 'READY' and actual.get('vvpq'):
+              assert actual['vvpq'].get('data_class') == 'ACTUAL'
+          reality=p.get('reality_context') or {}
+          if reality.get('data_class'):
+              assert reality['data_class'] == 'ESTIMATED_NOW'
+          nowcast=p.get('nowcast') or {}
+          if nowcast.get('status') == 'POINT_NUMERIC_READY':
+              assert nowcast.get('data_class') == 'OBSERVED_SATELLITE'
+              assert (nowcast.get('lightning_observed') or {}).get('status') == 'NOT_CONNECTED'
           manifest=json.load(open('weather/production-manifest.json', encoding='utf-8'))
           assert manifest['snapshot']['snapshot_id'] == p['snapshot_id']
           assert manifest['snapshot']['payload_hash'] == p['payload_hash']
