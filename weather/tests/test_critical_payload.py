@@ -53,6 +53,7 @@ class CriticalPayloadTests(unittest.TestCase):
         self.assertEqual(p["points"]["duong_dong"]["tide"]["trend"],"RISING")
         self.assertEqual(p["points"]["duong_dong"]["nowcast"]["convective_score"],75.0)
         self.assertEqual(p["points"]["duong_dong"]["ensemble"]["rows"][0]["wind"]["q90"],20.0)
+        self.assertEqual(p["points"]["duong_dong"]["today"][0]["t"],"2026-09-18T03:00:00+00:00")
         self.assertNotIn("next24h",p["points"]["duong_dong"])
         self.assertNotIn("outlook",p["points"]["duong_dong"])
         self.assertEqual(p["public_forecast"],"JOTRIP_ENSEMBLE_LOCAL")

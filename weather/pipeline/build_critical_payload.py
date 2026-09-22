@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -49,26 +49,32 @@ def num(v: Any):
         return None
 
 def compact_rows(point:dict, generated:datetime|None)->list[dict]:
+    """Compact real 3-hour model slots remaining in the Phu Quoc local day."""
     rows=[]
     raw=point.get("hours",[]) if isinstance(point.get("hours"),list) else []
+    local_tz=timezone(timedelta(hours=7))
+    now=(generated or datetime.now(timezone.utc)).astimezone(local_tz)
+    earliest=now-timedelta(hours=2)
     for r in raw:
         t=iso(r.get("time_iso"))
         if not t:
             continue
-        if generated and not (generated.timestamp()-3*3600 <= t.timestamp() <= generated.timestamp()+24*3600):
+        local_t=t.astimezone(local_tz)
+        if local_t.date()!=now.date() or local_t<earliest:
             continue
-        rows.append({
+        item={
             "t":r.get("time_iso"),
             "temp":num(r.get("temperature")),
             "wind":num(r.get("wind")),
             "gust":num(r.get("gust")),
             "rain":num(r.get("rain")),
-            "wave":num(r.get("wave")),
-            "hmax":num(r.get("wave_max")),
-            "period":num(r.get("period")),
-        })
+        }
+        wave=num(r.get("wave"))
+        if wave is not None:
+            item["wave"]=wave
+        rows.append(item)
     rows.sort(key=lambda x:x["t"] or "")
-    return rows[:10]
+    return rows[:9]
 
 def compact_outlook(point:dict)->list[dict]:
     out=[]
@@ -202,6 +208,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
                 "rain_class":(lp.get("rain") or {}).get("data_class"),
                 "marine_class":(lp.get("marine") or {}).get("data_class"),
             },
+            "today":compact_rows(dp,generated),
             "model":{
                 "temperature_c":num(dp.get("temperature")),
                 "wind_kmh":num(dp.get("wind")),

@@ -32,6 +32,13 @@ let fullTide=null;
 let fullNowcast=null;
 let regionalForecast=null;
 let currentRegion="central_west";
+const POINT_REGION={
+  duong_dong:"central_west",
+  cua_can:"north_northwest",ganh_dau:"north_northwest",
+  bai_thom:"east_northeast",ham_ninh:"east_northeast",
+  bai_sao:"south_southeast",an_thoi:"south_southeast"
+};
+function regionForPoint(id){return POINT_REGION[id]||null}
 let mapStarted=false;
 let mapLayer="radar";
 let liveRefreshBusy=false;
@@ -348,6 +355,8 @@ function renderHero(){
 
 function weatherGlyph(kind){
   const common='viewBox="0 0 48 48" aria-hidden="true" focusable="false"';
+  if(kind==="storm")return '<svg '+common+'><path d="M14 30h21a8 8 0 0 0 0-16 12 12 0 0 0-22-2A7 7 0 0 0 14 30Z"/><path d="M25 31l-4 7h5l-3 6"/></svg>';
+  if(kind==="moon")return '<svg '+common+'><path d="M33 34A15 15 0 0 1 18 9a16 16 0 1 0 15 25Z"/></svg>';
   if(kind==="sun")return '<svg '+common+'><circle cx="24" cy="24" r="8"/><path d="M24 5v6M24 37v6M5 24h6M37 24h6M10.6 10.6l4.3 4.3M33.1 33.1l4.3 4.3M37.4 10.6l-4.3 4.3M14.9 33.1l-4.3 4.3"/></svg>';
   if(kind==="rain")return '<svg '+common+'><path d="M15 31h19a8 8 0 0 0 1-15.9A12 12 0 0 0 12 18.5 6.5 6.5 0 0 0 15 31Z"/><path d="M17 36l-2 5M25 36l-2 5M33 36l-2 5"/></svg>';
   if(kind==="wind")return '<svg '+common+'><path d="M7 17h23c5 0 5-7 0-7-3 0-4 2-4 4M7 24h31c5 0 5 7 0 7-3 0-4-2-4-4M7 31h17"/></svg>';
@@ -361,6 +370,60 @@ function setDecisionTile(prefix,kind,title,text,tone){
   if(head)head.textContent=title;
   if(copy)copy.textContent=text;
 }
+function phuQuocClock(iso){
+  const d=new Date(iso);
+  return Number.isFinite(d.getTime())?d.toLocaleTimeString("vi-VN",{timeZone:"Asia/Ho_Chi_Minh",hour:"2-digit",minute:"2-digit",hour12:false}):"-";
+}
+function todaySlotState(row){
+  const rain=num(row?.rain)||0,wind=num(row?.wind)||0,gust=num(row?.gust)||0;
+  if(rain>=10||gust>=39||wind>=32)return {cls:"avoid",label:"Nên né khung này"};
+  if(rain>=3||gust>=30||wind>=24)return {cls:"watch",label:"Cần để ý"};
+  return {cls:"good",label:"Khá thuận lợi"};
+}
+function todaySlotKind(row){
+  const rain=num(row?.rain)||0,gust=num(row?.gust)||0;
+  const d=new Date(row?.t||"");
+  const hour=Number.isFinite(d.getTime())?Number(d.toLocaleString("en-US",{timeZone:"Asia/Ho_Chi_Minh",hour:"numeric",hour12:false})):12;
+  if(rain>=8||gust>=39)return "storm";
+  if(rain>=1)return "rain";
+  if(rain>=0.2)return "cloud";
+  if(hour>=18||hour<6)return "moon";
+  return "sun";
+}
+function renderTodayTimeline(){
+  const root=$("todayTimeline"),summary=$("todayTimelineSummary"),place=$("todayTimelinePlace");
+  if(!root||!summary)return;
+  const p=point(),rows=(p.today||[]).filter(r=>r&&r.t);
+  if(place)place.textContent=(p.name||"Điểm đang chọn")+" · mốc 3 giờ";
+  if(!rows.length){
+    root.innerHTML='<div class="today-empty"><b>Chưa còn mốc dự báo nào trong hôm nay</b><span>Xem phần 10 ngày bên dưới cho ngày mai và các ngày tiếp theo.</span></div>';
+    summary.textContent="Hôm nay đã gần hết hoặc chu kỳ hiện tại chưa có thêm mốc phù hợp.";
+    return;
+  }
+  let worst=null,good=0;
+  root.innerHTML=rows.map(r=>{
+    const state=todaySlotState(r),kind=todaySlotKind(r);
+    if(state.cls==="good")good++;
+    if(!worst||({good:0,watch:1,avoid:2}[state.cls]>{good:0,watch:1,avoid:2}[worst.state.cls]))worst={r,state};
+    const rain=num(r.rain),wind=num(r.wind),gust=num(r.gust);
+    return '<article class="today-slot '+state.cls+'">'+
+      '<time>'+esc(phuQuocClock(r.t))+'</time>'+
+      '<div class="today-icon">'+weatherGlyph(kind)+'</div>'+
+      '<strong>'+(num(r.temp)===null?'-':fmt(r.temp,0)+'°')+'</strong>'+
+      '<b>'+state.label+'</b>'+
+      '<span>'+(rain===null?'Mưa -':'Mưa '+fmt(rain,1)+' mm / 3h')+'</span>'+
+      '<span>'+(wind===null?'Gió -':'Gió '+fmt(wind,0)+' km/h')+(gust!==null?' · giật '+fmt(gust,0):'')+'</span>'+
+    '</article>';
+  }).join("");
+  if(worst?.state.cls==="avoid"){
+    summary.textContent="Có khung giờ nên né: khoảng "+phuQuocClock(worst.r.t)+". Nếu có kế hoạch ngoài trời, nên chọn mốc thuận lợi hơn ở timeline.";
+  }else if(worst?.state.cls==="watch"){
+    summary.textContent=(good?"Vẫn còn "+good+" mốc khá thuận lợi. ":"")+"Có thời điểm mưa hoặc gió tăng - xem các ô màu vàng trước khi sắp lịch.";
+  }else{
+    summary.textContent="Các mốc còn lại hôm nay nhìn chung khá thuận lợi cho hoạt động ngoài trời.";
+  }
+}
+
 function renderDecisionGlance(){
   const p=point(),l=p.local||{},m=p.marine||{},n=effectiveNowcast();
   const temp=num(l.temperature_c??m.temperature_c);
@@ -626,26 +689,28 @@ function renderForecastDayRibbon(rows){
     groups.get(day.key).rows.push(r);
   });
   const days=[...groups.values()].slice(0,10);
-  root.innerHTML=days.map(({day,rows})=>{
+  root.innerHTML=days.map(({day,rows},index)=>{
     const temps=rows.map(r=>num(r.temperature_c)).filter(v=>v!==null);
     const winds=rows.map(r=>num(r.wind_kmh)).filter(v=>v!==null);
-    const windQ10s=rows.map(r=>num(r.wind_q10_kmh)).filter(v=>v!==null);
-    const windQ90s=rows.map(r=>num(r.wind_q90_kmh)).filter(v=>v!==null);
     const rainProb=Math.max(0,...rows.map(r=>num(r.rain_prob_5)).filter(v=>v!==null));
     const windProb=Math.max(0,...rows.map(r=>num(r.wind_prob_30)).filter(v=>v!==null));
+    const windMax=winds.length?Math.max(...winds):null;
     const state=forecastCardState(windProb,rainProb);
-    const windP50=winds.length?Math.max(...winds):null;
-    const windLow=windQ10s.length?Math.min(...windQ10s):null;
-    const windHigh=windQ90s.length?Math.max(...windQ90s):null;
-    const bft=beaufort(windP50||0);
-    const conf=worstConfidence(rows.map(r=>r.confidence_band).filter(Boolean));
-    const confScore=Math.min(...rows.map(rowConfidence));
+    let kind="sun",rainText="Ít tín hiệu mưa",summary="Khá ổn để lên kế hoạch.";
+    if(rainProb>=.65){kind="rain";rainText="Dễ có mưa";summary="Nên chừa phương án linh hoạt vì có tín hiệu mưa đáng kể."}
+    else if(rainProb>=.40){kind="rain";rainText="Có mưa từng lúc";summary="Có thể có mưa trong ngày, nên xem lại gần giờ đi."}
+    else if(rainProb>=.20){kind="cloud";rainText="Có thể có mưa";summary="Nhìn chung vẫn có khoảng thời gian thuận lợi."}
+    if(windProb>=.35&&rainProb<.40){kind="wind";summary="Gió có thể tăng - hoạt động biển nên kiểm tra lại gần ngày."}
+    if(windProb>=.35&&rainProb>=.40){kind="storm";summary="Mưa và gió cùng có tín hiệu tăng - lịch ngoài trời nên linh hoạt."}
+    const windText=windMax===null?"Gió chưa rõ":windMax>=30?"Gió mạnh":windMax>=22?"Gió tăng":windMax>=14?"Có gió":"Gió nhẹ";
+    const trend=index>=4;
     return '<article class="forecast-day '+state.cls+'">'+
-      '<header><b>'+esc(day.label)+'</b><span>'+esc(day.date)+'</span></header>'+
+      '<header><div><b>'+esc(day.label)+'</b><span>'+esc(day.date)+'</span></div><em>'+(trend?'Xu hướng':'Chi tiết hơn')+'</em></header>'+
+      '<div class="forecast-day-visual">'+weatherGlyph(kind)+'</div>'+
       '<strong>'+(temps.length?fmt(Math.min(...temps),0)+'-'+fmt(Math.max(...temps),0)+'°':'-')+'</strong>'+
-      '<div><span>Xác suất mưa ≥5 mm</span><b>'+pct(rainProb)+'</b></div>'+
-      '<div><span>Gió ensemble</span><b>'+(windP50===null?'-':fmt(windP50,0)+' km/h')+' · Bft '+bft.force+'</b></div>'+
-      '<small>'+(windLow!==null&&windHigh!==null?'P10-P90 '+fmt(windLow,0)+'-'+fmt(windHigh,0)+' km/h · ':'')+'Xác suất gió ≥30 km/h '+pct(windProb)+' · Tin cậy '+confScore+'/100 · '+esc(conf)+'</small>'+
+      '<p>'+esc(summary)+'</p>'+
+      '<div class="forecast-day-facts"><span>'+esc(rainText)+'</span><span>'+esc(windText)+(windMax===null?'':' · '+fmt(windMax,0)+' km/h')+'</span></div>'+
+      (trend?'<small>Xem lại gần ngày đi để quyết định chính xác hơn.</small>':'<small>3 ngày đầu có nhiều mốc thời gian hơn.</small>')+
     '</article>';
   }).join("")||'<span class="inline-loader">Chưa đủ dữ liệu để tóm tắt 10 ngày.</span>';
 }
@@ -703,6 +768,7 @@ function renderQuickAlert(){
 
   root.className="quick-alert "+cls;
   const icon=$("quickAlertIcon");if(icon)icon.innerHTML=weatherGlyph(cls==="alert"?"rain":cls==="watch"?"cloud":"sun");
+  const radar=$("quickAlertRadar");if(radar)radar.hidden=cls==="neutral";
   title.textContent=headline;
   text.textContent=detail;
   time.textContent=when;
@@ -767,10 +833,10 @@ function renderJoTripForecast(){
 
   const horizon=regionalForecast.horizon_hours||0;
   $("jotripForecastSummary").textContent=(horizon>=240
-    ? "D0-D3 mỗi 6 giờ; D4-D10 mỗi 12 giờ. "
-    : "Nguồn hiện tại mới đủ "+Math.round(horizon/24)+" ngày. ")+
-    (watch?watch+" mốc trong vùng có rủi ro hoặc mức chênh giữa các kịch bản đáng theo dõi. ":"")+
-    "Mỗi vùng được tổng hợp từ các điểm đại diện tại Phú Quốc, không lấy riêng Dương Đông làm chuẩn cho cả đảo.";
+    ? "Ba ngày đầu dùng nhiều mốc hơn để bạn chọn thời gian. Từ ngày 4 đến ngày 10 chỉ nên xem như xu hướng. "
+    : "Dữ liệu hiện có khoảng "+Math.round(horizon/24)+" ngày. ")+
+    (watch?"Có một số thời điểm mưa hoặc gió cần để ý - xem từng ngày bên dưới. ":"")+
+    "Chọn khu vực bạn sẽ ở để xem đúng phần đảo, thay vì lấy Dương Đông làm chuẩn cho toàn Phú Quốc.";
 
   $("ensembleMeta").textContent="Dự báo JoTrip theo vùng · dữ liệu đầy đủ "+
     (num(regionalForecast.ensemble_completion_ratio)===null?"-":Math.round(regionalForecast.ensemble_completion_ratio*100)+"%")+
@@ -814,8 +880,11 @@ function renderHealth(){
 
 function renderAll(){
   if(!critical)return;
-  renderPointTabs();renderStatus();renderHero();renderCurrent();renderDecisionGlance();renderActual();renderFeedbackPoint();renderAQI();renderTide();renderMapConvective();renderQuickAlert();
+  renderPointTabs();renderStatus();renderHero();renderDecisionGlance();renderTodayTimeline();renderMapConvective();renderQuickAlert();
   renderJoTripForecast();
+  if($("deepWeatherDetails")?.open){
+    renderCurrent();renderActual();renderFeedbackPoint();renderAQI();renderTide();
+  }
   if($("dataHealthDetails")?.open)renderHealth();
 }
 
@@ -829,7 +898,11 @@ async function loadTide(){
   }
 }
 async function loadNowcast(){
-  try{fullNowcast=await getFirst(NOWCAST);renderMapConvective();renderCurrent();renderDecisionGlance();renderStatus();renderQuickAlert()}catch(e){console.warn("[Weather V2] nowcast",e)}
+  try{
+    fullNowcast=await getFirst(NOWCAST);
+    renderMapConvective();renderDecisionGlance();renderStatus();renderQuickAlert();
+    if($("deepWeatherDetails")?.open)renderCurrent();
+  }catch(e){console.warn("[Weather V2] nowcast",e)}
 }
 async function loadRegionalForecast(){
   try{
@@ -1023,7 +1096,9 @@ function shareWeather(){
 function events(){
   $("pointTabs")?.addEventListener("click",e=>{
     const b=e.target.closest("[data-point]");if(!b)return;
-    current=b.dataset.point;renderAll();
+    current=b.dataset.point;
+    const linkedRegion=regionForPoint(current);if(linkedRegion)currentRegion=linkedRegion;
+    renderAll();
   });
   document.querySelectorAll("[data-map]").forEach(b=>b.addEventListener("click",()=>{startMap();setMap(b.dataset.map)}));
   $("forecastRegionTabs")?.addEventListener("click",e=>{
@@ -1037,6 +1112,7 @@ function events(){
     feedback(b.dataset.feedback,b);
   });
   $("forecastTechnical")?.addEventListener("toggle",e=>{if(e.currentTarget.open)renderJoTripForecast()});
+  $("deepWeatherDetails")?.addEventListener("toggle",e=>{if(e.currentTarget.open)loadDeepData()});
   $("dataHealthDetails")?.addEventListener("toggle",e=>{if(e.currentTarget.open)renderHealth()});
   $("shareWeather")?.addEventListener("click",shareWeather);
 }
@@ -1063,9 +1139,15 @@ async function refreshLive(){
     liveRefreshBusy=false;
   }
 }
+async function loadDeepData(){
+  renderCurrent();renderActual();renderFeedbackPoint();renderAQI();renderTide();
+  await Promise.allSettled([loadTide(),loadAQI()]);
+}
 async function refreshSlow(){
   lastSlowRefreshAt=Date.now();
-  await Promise.allSettled([loadTide(),loadAQI(),loadRegionalForecast()]);
+  const jobs=[loadRegionalForecast()];
+  if($("deepWeatherDetails")?.open)jobs.push(loadTide(),loadAQI());
+  await Promise.allSettled(jobs);
 }
 
 async function boot(){
@@ -1074,12 +1156,14 @@ async function boot(){
   try{
     critical=await getJSON(CRITICAL);
     current=critical.default_point||"duong_dong";
+    currentRegion=regionForPoint(current)||currentRegion;
     lastLiveRefreshAt=Date.now();
+    lastSlowRefreshAt=Date.now();
     renderAll();
     installMapObserver();
-    defer(loadNowcast,180);
-    defer(refreshSlow,650);
-    setInterval(()=>{renderStatus();renderHero();renderDecisionGlance()},60000);
+    defer(loadNowcast,160);
+    defer(loadRegionalForecast,260);
+    setInterval(()=>{renderStatus();renderHero();renderDecisionGlance();renderTodayTimeline()},60000);
     setInterval(refreshLive,LIVE_REFRESH_MS);
     setInterval(refreshSlow,SLOW_REFRESH_MS);
     document.addEventListener("visibilitychange",()=>{
