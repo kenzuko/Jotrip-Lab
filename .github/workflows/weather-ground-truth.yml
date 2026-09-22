@@ -375,13 +375,15 @@ jobs:
                       'actual':v.get('data_class')=='ACTUAL',
                       'qc':v.get('qc'),
                       'increment_qc':v.get('increment_qc'),
-                      'usable_for_window_training':(
+                      'usable_for_short_increment_training':(
                           v.get('data_class')=='ACTUAL'
                           and v.get('qc')=='PASS'
-                          and (
-                              v.get('increment_qc')=='PASS'
-                              or v.get('accumulation_mm') is not None
-                          )
+                          and v.get('increment_qc')=='PASS'
+                      ),
+                      'cumulative_counter_available':(
+                          v.get('data_class')=='ACTUAL'
+                          and v.get('qc')=='PASS'
+                          and v.get('accumulation_mm') is not None
                       ),
                   }
                   for k,v in rain_stations.items()
