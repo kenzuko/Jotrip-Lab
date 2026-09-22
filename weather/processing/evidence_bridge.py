@@ -99,6 +99,25 @@ def _compact_nowcast(nowcast: dict[str, Any], point_authority: dict[str, Any]) -
     }
 
 
+def _compact_tide(tide: dict[str, Any], point_authority: dict[str, Any]) -> dict[str, Any]:
+    points = tide.get("points") or {}
+    return {
+        "status": tide.get("status", "UNAVAILABLE"),
+        "source": tide.get("source"),
+        "dataset": tide.get("dataset"),
+        "variable": tide.get("variable"),
+        "generated_at": tide.get("generated_at"),
+        "forecast_hours": tide.get("forecast_hours"),
+        "height_reference": tide.get("height_reference"),
+        "method": tide.get("method"),
+        "points": {
+            point_id: points[point_id]
+            for point_id in sorted(point_authority)
+            if point_id in points
+        },
+    }
+
+
 def _distribution(dist: dict[str, Any]) -> dict[str, Any]:
     keep = (
         "q25", "q50", "q75", "q90", "q95", "spread",
@@ -166,14 +185,17 @@ def _compact_local_ensemble(local_ensemble: dict[str, Any], cutoff_time: str,
 def build_evidence_bridge(*, current_bundle: dict[str, Any] | None,
                           nowcast: dict[str, Any] | None,
                           local_ensemble: dict[str, Any] | None,
+                          tide: dict[str, Any] | None,
                           point_authority: dict[str, Any],
                           cutoff_time: str) -> dict[str, Any]:
     current_bundle = current_bundle or {}
     nowcast = nowcast or {}
     local_ensemble = local_ensemble or {}
+    tide = tide or {}
     return {
         "actual": _compact_actual(current_bundle),
         "local_now": _compact_local_now(current_bundle, point_authority),
         "nowcast": _compact_nowcast(nowcast, point_authority),
+        "tide": _compact_tide(tide, point_authority),
         "ensemble_local": _compact_local_ensemble(local_ensemble, cutoff_time, point_authority),
     }
