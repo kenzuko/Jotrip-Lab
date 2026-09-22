@@ -1,0 +1,106 @@
+name: Weather Live Freshness Watchdog
+
+on:
+  schedule:
+    - cron: "1,16,31,46 * * * *"
+  workflow_run:
+    workflows:
+      - "Weather Air Quality scheduler"
+      - "Weather Environment 3h scheduler"
+      - "Weather GEFS Local scheduler"
+      - "Tourism Marine Operations"
+    types: [completed]
+  workflow_dispatch:
+
+concurrency:
+  group: weather-live-freshness-watchdog
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      local_stale: ${{ steps.age.outputs.local_stale }}
+      nowcast_stale: ${{ steps.age.outputs.nowcast_stale }}
+      local_age_min: ${{ steps.age.outputs.local_age_min }}
+      nowcast_age_min: ${{ steps.age.outputs.nowcast_age_min }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Read latest live timestamps from data branch
+        shell: bash
+        run: |
+          git fetch origin data-weather --depth=1
+          git show origin/data-weather:data/weather-groundtruth/local-now.json > /tmp/local-now.json || printf '{}\n' > /tmp/local-now.json
+          git show origin/data-weather:data/weather-nowcast/compact-latest.json > /tmp/nowcast.json || printf '{}\n' > /tmp/nowcast.json
+
+      - name: Check freshness gates
+        id: age
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from datetime import datetime, timezone
+
+          def parse(v):
+              if not v:
+                  return None
+              try:
+                  return datetime.fromisoformat(str(v).replace("Z","+00:00"))
+              except Exception:
+                  return None
+
+          def age_minutes(v):
+              t=parse(v)
+              if t is None:
+                  return 9999.0
+              if t.tzinfo is None:
+                  t=t.replace(tzinfo=timezone.utc)
+              return max(0.0,(datetime.now(timezone.utc)-t.astimezone(timezone.utc)).total_seconds()/60)
+
+          try:
+              local=json.load(open("/tmp/local-now.json"))
+          except Exception:
+              local={}
+          try:
+              nowcast=json.load(open("/tmp/nowcast.json"))
+          except Exception:
+              nowcast={}
+
+          local_age=age_minutes(local.get("generated_at"))
+          now_age=age_minutes(nowcast.get("sampled_time") or nowcast.get("generated_at"))
+
+          print(f"local_age_min={local_age:.1f}")
+          print(f"nowcast_age_min={now_age:.1f}")
+          print("local_stale="+("true" if local_age>25 else "false"))
+          print("nowcast_stale="+("true" if now_age>35 else "false"))
+          PY
+
+      - name: Report watchdog decision
+        run: |
+          echo "Local Now age: ${{ steps.age.outputs.local_age_min }} min"
+          echo "Himawari age: ${{ steps.age.outputs.nowcast_age_min }} min"
+          echo "Recover Local Now: ${{ steps.age.outputs.local_stale }}"
+          echo "Recover Himawari: ${{ steps.age.outputs.nowcast_stale }}"
+
+  recover-groundtruth:
+    needs: inspect
+    if: needs.inspect.outputs.local_stale == 'true'
+    uses: kenzuko/Jotrip-Lab/.github/workflows/weather-ground-truth.yml@feat/weather-lab-data-engine-v1
+    with:
+      target_ref: feat/weather-lab-data-engine-v1
+    secrets: inherit
+
+  recover-nowcast:
+    needs: inspect
+    if: needs.inspect.outputs.nowcast_stale == 'true'
+    uses: kenzuko/Jotrip-Lab/.github/workflows/weather-nowcast.yml@feat/weather-lab-data-engine-v1
+    with:
+      target_ref: feat/weather-lab-data-engine-v1
+    secrets: inherit
