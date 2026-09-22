@@ -11,8 +11,6 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Any
 
-REQUIRED_POINTS = ("duong_dong", "an_thoi", "ganh_dau")
-
 
 def _same_authority(point: dict[str, Any], authority: dict[str, Any]) -> bool:
     try:
@@ -46,7 +44,7 @@ def _compact_actual(current_bundle: dict[str, Any]) -> dict[str, Any]:
 def _compact_local_now(current_bundle: dict[str, Any], point_authority: dict[str, Any]) -> dict[str, Any]:
     local = current_bundle.get("local_now") or {}
     points: dict[str, Any] = {}
-    for point_id in REQUIRED_POINTS:
+    for point_id in sorted(point_authority):
         point = (local.get("points") or {}).get(point_id)
         authority = point_authority.get(point_id) or {}
         if not isinstance(point, dict):
@@ -85,7 +83,7 @@ def _compact_local_now(current_bundle: dict[str, Any], point_authority: dict[str
     }
 
 
-def _compact_nowcast(nowcast: dict[str, Any]) -> dict[str, Any]:
+def _compact_nowcast(nowcast: dict[str, Any], point_authority: dict[str, Any]) -> dict[str, Any]:
     return {
         "status": nowcast.get("status", "UNAVAILABLE"),
         "source": nowcast.get("source"),
@@ -95,7 +93,7 @@ def _compact_nowcast(nowcast: dict[str, Any]) -> dict[str, Any]:
         "lightning_observed": nowcast.get("lightning_observed"),
         "points": {
             point_id: (nowcast.get("points") or {}).get(point_id)
-            for point_id in REQUIRED_POINTS
+            for point_id in sorted(point_authority)
             if point_id in (nowcast.get("points") or {})
         },
     }
@@ -110,11 +108,12 @@ def _distribution(dist: dict[str, Any]) -> dict[str, Any]:
     return {key: dist.get(key) for key in keep if key in dist}
 
 
-def _compact_local_ensemble(local_ensemble: dict[str, Any], cutoff_time: str) -> dict[str, Any]:
+def _compact_local_ensemble(local_ensemble: dict[str, Any], cutoff_time: str,
+                            point_authority: dict[str, Any]) -> dict[str, Any]:
     cutoff = datetime.fromisoformat(cutoff_time.replace("Z", "+00:00"))
     end = cutoff + timedelta(hours=72)
     points: dict[str, Any] = {}
-    for point_id in REQUIRED_POINTS:
+    for point_id in sorted(point_authority):
         rows = []
         for row in (local_ensemble.get("points") or {}).get(point_id, []):
             valid = row.get("valid_time")
@@ -175,6 +174,6 @@ def build_evidence_bridge(*, current_bundle: dict[str, Any] | None,
     return {
         "actual": _compact_actual(current_bundle),
         "local_now": _compact_local_now(current_bundle, point_authority),
-        "nowcast": _compact_nowcast(nowcast),
-        "ensemble_local": _compact_local_ensemble(local_ensemble, cutoff_time),
+        "nowcast": _compact_nowcast(nowcast, point_authority),
+        "ensemble_local": _compact_local_ensemble(local_ensemble, cutoff_time, point_authority),
     }
