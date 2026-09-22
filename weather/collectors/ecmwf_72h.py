@@ -17,24 +17,32 @@ from pathlib import Path
 from weather.collectors.live_smoke import _utcnow
 from weather.points import POINTS
 from weather.processing.units import add_speed_display
+from weather.spatial_domain import (
+    ECMWF_MEDIUM_BOUNDS,
+    ECMWF_RENDER_STEP_DEG,
+    ECMWF_SHORT_BOUNDS,
+    grid_requests,
+)
 
 SHORT_STEPS = list(range(0, 73, 3))
 MEDIUM_STEPS = list(range(0, 145, 3)) + list(range(150, 241, 6))
 STEPS = SHORT_STEPS  # backward compatibility for existing callers
 
-# V5 spatial renderer sampling grid around Phu Quoc. Values are sampled from
-# the direct ECMWF Open Data fields already downloaded by this collector.
-# Smooth rendering is a display operation and must not be described as model
-# resolution finer than the underlying source.
-SPATIAL_GRID_DEG = 0.25
-SPATIAL_GRID_REQUESTS = tuple(
-    (round(lat, 2), round(lon, 2))
-    for lat in (9.50, 9.75, 10.00, 10.25, 10.50, 10.75)
-    for lon in (103.50, 103.75, 104.00, 104.25, 104.50)
-)
+# The interactive D0-D3 map uses a wide Gulf envelope so the visible viewport
+# never reaches an artificial data edge. D4-D10 keeps the compact core grid
+# because it is a trend product, not the live spatial map.
+SPATIAL_GRID_DEG = ECMWF_RENDER_STEP_DEG
+SHORT_SPATIAL_GRID_REQUESTS = grid_requests(ECMWF_SHORT_BOUNDS, SPATIAL_GRID_DEG)
+MEDIUM_SPATIAL_GRID_REQUESTS = grid_requests(ECMWF_MEDIUM_BOUNDS, SPATIAL_GRID_DEG)
 
 
-def _decode_all(path: Path, run_time: datetime, source: str, stream: str) -> list[dict]:
+def _decode_all(
+    path: Path,
+    run_time: datetime,
+    source: str,
+    stream: str,
+    spatial_grid_requests: tuple[tuple[float, float], ...],
+) -> list[dict]:
     from eccodes import codes_get, codes_grib_find_nearest, codes_grib_new_from_file, codes_release
 
     records = []
@@ -50,7 +58,7 @@ def _decode_all(path: Path, run_time: datetime, source: str, stream: str) -> lis
                     for point_id, (lat, lon) in POINTS.items()
                 ] + [
                     (f"grid_{lat:.2f}_{lon:.2f}", lat, lon, "SPATIAL_GRID")
-                    for lat, lon in SPATIAL_GRID_REQUESTS
+                    for lat, lon in spatial_grid_requests
                 ]
                 for point_id, lat, lon, sample_kind in targets:
                     nearest = codes_grib_find_nearest(gid, lat, lon)[0]
@@ -92,7 +100,14 @@ def _latest_full_cycle(client) -> datetime:
     return latest.astimezone(timezone.utc)
 
 
-def _collect_gust(client, work: Path, run_time: datetime, steps: list[int], prefix: str) -> tuple[list[dict], str | None, str | None]:
+def _collect_gust(
+    client,
+    work: Path,
+    run_time: datetime,
+    steps: list[int],
+    prefix: str,
+    spatial_grid_requests: tuple[tuple[float, float], ...],
+) -> tuple[list[dict], str | None, str | None]:
     """Fetch gust independently so an outage cannot break base wind/rain ingest."""
     errors = []
     gust_steps = [step for step in steps if step > 0]
@@ -107,7 +122,9 @@ def _collect_gust(client, work: Path, run_time: datetime, steps: list[int], pref
                 target=str(target),
                 **_cycle_kwargs(run_time),
             )
-            records = _decode_all(target, run_time, "ECMWF_IFS_DIRECT", "oper")
+            records = _decode_all(
+                target, run_time, "ECMWF_IFS_DIRECT", "oper", spatial_grid_requests
+            )
             if records:
                 return records, parameter, None
         except Exception as exc:
@@ -123,7 +140,14 @@ def _collect_wave_max(client, work: Path, run_time: datetime, steps: list[int], 
     )
 
 
-def _collect_cycle(client, work: Path, steps: list[int], prefix: str, run_time: datetime | None = None) -> dict:
+def _collect_cycle(
+    client,
+    work: Path,
+    steps: list[int],
+    prefix: str,
+    run_time: datetime | None = None,
+    spatial_grid_requests: tuple[tuple[float, float], ...] = SHORT_SPATIAL_GRID_REQUESTS,
+) -> dict:
     atmosphere = work / f"{prefix}-atmos.grib2"
     atmos_result = client.retrieve(
         type="fc",
@@ -138,8 +162,12 @@ def _collect_cycle(client, work: Path, steps: list[int], prefix: str, run_time: 
         actual_run = actual_run.replace(tzinfo=timezone.utc)
     actual_run = actual_run.astimezone(timezone.utc)
 
-    records = _decode_all(atmosphere, actual_run, "ECMWF_IFS_DIRECT", "oper")
-    gust_records, gust_parameter, gust_error = _collect_gust(client, work, actual_run, steps, prefix)
+    records = _decode_all(
+        atmosphere, actual_run, "ECMWF_IFS_DIRECT", "oper", spatial_grid_requests
+    )
+    gust_records, gust_parameter, gust_error = _collect_gust(
+        client, work, actual_run, steps, prefix, spatial_grid_requests
+    )
     records.extend(gust_records)
 
     wave_error = None
@@ -153,7 +181,9 @@ def _collect_cycle(client, work: Path, steps: list[int], prefix: str, run_time: 
             target=str(wave),
             **_cycle_kwargs(actual_run),
         )
-        records.extend(_decode_all(wave, actual_run, "ECMWF_WAVE_DIRECT", "wave"))
+        records.extend(
+            _decode_all(wave, actual_run, "ECMWF_WAVE_DIRECT", "wave", spatial_grid_requests)
+        )
     except Exception as exc:
         wave_error = f"{type(exc).__name__}: {exc}"
 
@@ -335,6 +365,8 @@ def _merge_spatial(short_records: list[dict], medium_records: list[dict], short_
         "status": "READY" if frames else "UNAVAILABLE",
         "product": "ECMWF_IFS_DIRECT_SPATIAL",
         "requested_grid_deg": SPATIAL_GRID_DEG,
+        "short_bounds": ECMWF_SHORT_BOUNDS,
+        "medium_bounds": ECMWF_MEDIUM_BOUNDS,
         "display_interpolation": "RENDER_ONLY",
         "short_run_time": short_run.isoformat(),
         "medium_run_time": medium_run.isoformat(),
@@ -345,7 +377,7 @@ def _merge_spatial(short_records: list[dict], medium_records: list[dict], short_
             "temperature_c", "u10_ms", "v10_ms", "wind_kmh", "wind_direction_deg",
             "gust_kmh", "rain_mm", "wave_hs_m", "wave_direction_deg", "wave_period_s"
         ],
-        "note": "Direct ECMWF Open Data sampled on a 0.25° renderer grid. D0-D3 uses freshest oper cycle; D4-D10 uses the latest 00/12 cycle with step 240. Interpolation is display-only.",
+        "note": "Direct ECMWF Open Data sampled on a 0.25° renderer grid. D0-D3 uses the wide Gulf display envelope; D4-D10 keeps a compact Phu Quoc core grid. Interpolation is display-only.",
     }
 
 
@@ -360,9 +392,22 @@ def collect(output: Path | None = None) -> dict:
                 work = Path(temp)
                 client = Client(source=source, maximum_retries=2, retry_after=2)
 
-                short = _collect_cycle(client, work, SHORT_STEPS, "short")
+                short = _collect_cycle(
+                    client,
+                    work,
+                    SHORT_STEPS,
+                    "short",
+                    spatial_grid_requests=SHORT_SPATIAL_GRID_REQUESTS,
+                )
                 full_cycle = _latest_full_cycle(client)
-                medium = _collect_cycle(client, work, MEDIUM_STEPS, "medium", run_time=full_cycle)
+                medium = _collect_cycle(
+                    client,
+                    work,
+                    MEDIUM_STEPS,
+                    "medium",
+                    run_time=full_cycle,
+                    spatial_grid_requests=MEDIUM_SPATIAL_GRID_REQUESTS,
+                )
 
                 short_all = short["records"]
                 medium_all = medium["records"]

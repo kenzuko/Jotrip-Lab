@@ -284,3 +284,27 @@ A V5 build is spatial-ready only when:
 - ICON step-000 U/V spatial wind is a model cross-check only.
 - Model disagreement overlay is available only at Wind near-now and only when both ECMWF and ICON spatial fields are valid.
 - MapLibre/WebGL is the next renderer generation after V5.3 stability, not an in-place live migration.
+
+
+## 13. V5.4 wide spatial envelope
+
+The live map must never show a weather layer ending as an obvious rectangle
+inside the normal Phu Quoc viewport.
+
+Shared processing/display envelope:
+- south: 9.00°N
+- north: 11.00°N
+- west: 102.75°E
+- east: 105.50°E
+
+Rules:
+- The camera remains Phu Quoc-first. A wider data domain does not mean the map
+  should zoom out by default.
+- Himawari uses a 0.075° render sampling grid across the wide envelope. This is
+  display sampling only and does not change the native satellite resolution.
+- ECMWF D0-D3 uses the full wide envelope at 0.25° for the interactive map.
+- ECMWF D4-D10 keeps the compact core grid because it is a trend product.
+- Copernicus Marine near-now wave/current uses the same wide envelope.
+- Layer edges should normally remain outside the visible camera. When a source
+  genuinely has no support, the renderer must become transparent rather than
+  inventing values.

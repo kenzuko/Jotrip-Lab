@@ -1,7 +1,15 @@
 import unittest
 from datetime import datetime, timezone
 
-from weather.collectors.ecmwf_72h import _merge_spatial, _spatial_frames
+from weather.collectors.ecmwf_72h import (
+    MEDIUM_SPATIAL_GRID_REQUESTS,
+    SHORT_SPATIAL_GRID_REQUESTS,
+    _merge_spatial,
+    _spatial_frames,
+)
+from weather.collectors.copernicus_live import BBOX
+from weather.collectors.himawari_nowcast import SPATIAL_BOUNDS, SPATIAL_STEP_DEG
+from weather.spatial_domain import DISPLAY_BOUNDS
 
 
 def rec(cell, valid, lead, variable, value, unit="m s**-1"):
@@ -22,6 +30,22 @@ def rec(cell, valid, lead, variable, value, unit="m s**-1"):
 
 
 class SpatialFieldTests(unittest.TestCase):
+    def test_shared_display_domain_extends_well_beyond_phu_quoc_viewport(self):
+        self.assertEqual(SPATIAL_BOUNDS, DISPLAY_BOUNDS)
+        self.assertEqual(BBOX, (
+            DISPLAY_BOUNDS["south"],
+            DISPLAY_BOUNDS["west"],
+            DISPLAY_BOUNDS["north"],
+            DISPLAY_BOUNDS["east"],
+        ))
+        self.assertLessEqual(DISPLAY_BOUNDS["west"], 102.75)
+        self.assertGreaterEqual(DISPLAY_BOUNDS["east"], 105.50)
+        self.assertLessEqual(DISPLAY_BOUNDS["south"], 9.00)
+        self.assertGreaterEqual(DISPLAY_BOUNDS["north"], 11.00)
+        self.assertGreater(len(SHORT_SPATIAL_GRID_REQUESTS), 100)
+        self.assertLess(len(MEDIUM_SPATIAL_GRID_REQUESTS), len(SHORT_SPATIAL_GRID_REQUESTS))
+        self.assertGreater(SPATIAL_STEP_DEG, 0.05)
+
     def test_ecmwf_spatial_frame_builds_vectors_and_rain_increment(self):
         records = []
         for lead, valid, tp in (

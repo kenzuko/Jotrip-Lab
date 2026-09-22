@@ -17,6 +17,7 @@ from pathlib import Path
 
 from weather.points import POINTS
 from weather.processing.convective_proxy import convective_signal
+from weather.spatial_domain import DISPLAY_BOUNDS, HIMAWARI_RENDER_STEP_DEG
 
 BUCKET = "noaa-himawari9"
 PREFIX_ROOT = "AHI-L2-FLDK-Clouds"
@@ -25,18 +26,12 @@ PREFIX_ROOT = "AHI-L2-FLDK-Clouds"
 # coarser away from nadir, so the label is intentionally approximate.
 RADIUS_PIXELS = 20
 
-# V5 spatial nowcast domain. This is a renderer sampling grid, not a claim that
-# the satellite native resolution is 0.05°. The source remains Himawari AHI L2
-# (~2 km at nadir, coarser away from nadir).
-SPATIAL_BOUNDS = {
-    "south": 9.70,
-    "north": 10.55,
-    "west": 103.65,
-    # Include the Gulf corridor through Rach Gia so short-range convective
-    # evolution is visible on both ends of the Phu Quoc transport axis.
-    "east": 105.40,
-}
-SPATIAL_STEP_DEG = 0.05
+# Wide display envelope shared with forecast and marine fields. This is a
+# render sampling grid, not the native Himawari resolution. Keeping the source
+# domain larger than the viewport prevents an artificial rectangular field edge
+# from appearing around Phu Quoc.
+SPATIAL_BOUNDS = dict(DISPLAY_BOUNDS)
+SPATIAL_STEP_DEG = HIMAWARI_RENDER_STEP_DEG
 
 # Coastal corridor anchors are used only to describe where observed cloud fields
 # are located. They do not become atmospheric ACTUAL stations or model points.

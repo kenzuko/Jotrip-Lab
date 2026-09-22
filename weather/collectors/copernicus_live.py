@@ -11,10 +11,11 @@ from pathlib import Path
 from weather.collectors.copernicus import configuration_status, subset
 from weather.points import POINTS
 from weather.processing.marine import current_from_uv
+from weather.spatial_domain import COPERNICUS_BBOX
 
 WAVE_DATASET = "cmems_mod_glo_wav_anfc_0.083deg_PT3H-i"
 CURRENT_DATASET = "cmems_mod_glo_phy-cur_anfc_0.083deg_PT6H-i"
-BBOX = (9.70, 103.55, 10.55, 105.30)
+BBOX = COPERNICUS_BBOX
 REGIONAL_RADIUS_KM = 15.0
 
 
