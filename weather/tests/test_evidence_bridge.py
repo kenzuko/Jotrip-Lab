@@ -9,6 +9,7 @@ AUTH = {
     "duong_dong": {"lat": 10.2172, "lon": 103.9593},
     "an_thoi": {"lat": 10.0191, "lon": 104.015},
     "ganh_dau": {"lat": 10.3759, "lon": 103.9},
+    "rach_gia": {"lat": 10.00677, "lon": 105.07845},
 }
 
 
@@ -32,7 +33,7 @@ class EvidenceBridgeTests(unittest.TestCase):
             },
         }
         out = build_evidence_bridge(
-            current_bundle=current, nowcast={}, local_ensemble={},
+            current_bundle=current, nowcast={}, local_ensemble={}, tide={},
             point_authority=AUTH, cutoff_time="2026-09-22T06:00:00+07:00",
         )
         self.assertEqual(out["actual"]["vvpq"]["data_class"], "ACTUAL")
@@ -44,7 +45,7 @@ class EvidenceBridgeTests(unittest.TestCase):
             "an_thoi": {"lat": 9.905, "lon": 104.005, "wind_kmh": 30}
         }}}
         out = build_evidence_bridge(
-            current_bundle=current, nowcast={}, local_ensemble={},
+            current_bundle=current, nowcast={}, local_ensemble={}, tide={},
             point_authority=AUTH, cutoff_time="2026-09-22T06:00:00+07:00",
         )
         self.assertEqual(out["local_now"]["points"]["an_thoi"]["status"], "NOT_COMPARABLE")
@@ -58,10 +59,33 @@ class EvidenceBridgeTests(unittest.TestCase):
             "points": {"an_thoi": []},
         }
         out = build_evidence_bridge(
-            current_bundle={}, nowcast={}, local_ensemble=ensemble,
+            current_bundle={}, nowcast={}, local_ensemble=ensemble, tide={},
             point_authority=AUTH, cutoff_time="2026-09-22T06:00:00+07:00",
         )
         self.assertEqual(out["ensemble_local"]["coherence_gate_75pct"], "FAIL")
+
+    def test_nowcast_and_tide_keep_rach_gia_comparison(self):
+        nowcast = {
+            "status": "POINT_NUMERIC_READY",
+            "points": {
+                "rach_gia": {"score": 50, "level": "ELEVATED"},
+                "an_thoi": {"score": 75, "level": "HIGH"},
+            },
+        }
+        tide = {
+            "status": "POINT_NUMERIC_READY",
+            "points": {
+                "an_thoi": {"status": "POINT_NUMERIC_READY", "current_height_m": 0.18},
+                "rach_gia": {"status": "POINT_NUMERIC_READY", "current_height_m": 0.12},
+            },
+        }
+        out = build_evidence_bridge(
+            current_bundle={}, nowcast=nowcast, local_ensemble={}, tide=tide,
+            point_authority=AUTH, cutoff_time="2026-09-22T06:00:00+07:00",
+        )
+        self.assertIn("rach_gia", out["nowcast"]["points"])
+        self.assertIn("rach_gia", out["tide"]["points"])
+        self.assertEqual(out["nowcast"]["points"]["rach_gia"]["level"], "ELEVATED")
 
 
 if __name__ == "__main__":

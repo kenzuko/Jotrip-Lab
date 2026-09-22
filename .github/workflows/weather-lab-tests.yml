@@ -407,6 +407,7 @@ jobs:
             --current-bundle /tmp/weather-current.json \
             --nowcast /tmp/weather-nowcast.json \
             --local-ensemble /tmp/weather-ensemble-local.json \
+            --tide weather/tide.json \
             --root weather/snapshots
       - name: Build stable production manifest
         run: |
@@ -429,7 +430,10 @@ jobs:
           assert p['schema_version'] == '1.0'
           assert p['data_mode'] in {'A','B','C'}
           assert set(POINTS).issubset(p['points'])
-          assert set(p.get('point_authority', {})) == {'duong_dong','an_thoi','ganh_dau'}
+          assert set(p.get('point_authority', {})) == set(POINTS)
+          assert 'rach_gia' in p['point_authority']
+          assert 'rach_gia' in p.get('marine_details', {})
+          assert 'rach_gia' in (p.get('nowcast', {}).get('points') or {})
           assert p['ensemble']['p_operational_window']['status'] == 'NOT_COMPUTABLE'
           local=p['ensemble'].get('gefs_local_matrix') or {}
           if local.get('status') not in {None,'UNAVAILABLE'}:
@@ -445,6 +449,11 @@ jobs:
           if nowcast.get('status') == 'POINT_NUMERIC_READY':
               assert nowcast.get('data_class') == 'OBSERVED_SATELLITE'
               assert (nowcast.get('lightning_observed') or {}).get('status') == 'NOT_CONNECTED'
+              assert (p.get('product_analysis', {}).get('products', {}).get('cano_south', {}).get('availability', {}).get('convection') == 1)
+          tide=p.get('tide') or {}
+          if tide.get('status') == 'POINT_NUMERIC_READY':
+              fishing=p.get('product_analysis', {}).get('products', {}).get('fishing_hon_dam_morning', {})
+              assert fishing.get('availability', {}).get('tide') == 1
           manifest=json.load(open('weather/production-manifest.json', encoding='utf-8'))
           assert manifest['snapshot']['snapshot_id'] == p['snapshot_id']
           assert manifest['snapshot']['payload_hash'] == p['payload_hash']

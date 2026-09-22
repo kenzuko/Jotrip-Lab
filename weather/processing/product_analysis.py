@@ -35,10 +35,12 @@ def _has_hourly(point: dict[str, Any], field: str) -> bool:
 
 
 def _availability(point: dict[str, Any], marine: dict[str, Any] | None,
-                  observations: dict[str, Any] | None, official: dict[str, Any] | None) -> dict[str, float]:
+                  observations: dict[str, Any] | None, official: dict[str, Any] | None,
+                  tide: dict[str, Any] | None) -> dict[str, float]:
     observations = observations or {}
     official = official or {}
     marine = marine or {}
+    tide = tide or {}
     return {
         "wind": float(_has_hourly(point, "wind")),
         "gust": float(_has_hourly(point, "gust")),
@@ -53,7 +55,10 @@ def _availability(point: dict[str, Any], marine: dict[str, Any] | None,
         "local_truth": float(observations.get("local_truth_verified") is True),
         "restriction": float(official.get("restriction") not in (None, "UNKNOWN")),
         "operating_status": float(official.get("operating_status") not in (None, "UNKNOWN")),
-        "tide": float(observations.get("tide") is not None),
+        "tide": float(
+            tide.get("status") == "POINT_NUMERIC_READY"
+            or tide.get("current_height_m") is not None
+        ),
         "pop": float(_has_hourly(point, "pop")),
         "heat_uv": float(_has_hourly(point, "uv")),
     }
@@ -92,7 +97,8 @@ def _rows(point: dict[str, Any], thresholds: dict[str, Any], cutoff_time: str,
 
 def build_product_analysis(points: dict[str, Any], marine_details: dict[str, Any], *,
                            cutoff_time: str, observations: dict[str, Any] | None = None,
-                           official_status: dict[str, Any] | None = None) -> dict[str, Any]:
+                           official_status: dict[str, Any] | None = None,
+                           tide: dict[str, Any] | None = None) -> dict[str, Any]:
     products = _load("products.json")
     thresholds_config = _load("thresholds.json")
     scopes = _load("product_scopes.json")["products"]
@@ -123,6 +129,7 @@ def build_product_analysis(points: dict[str, Any], marine_details: dict[str, Any
             marine_details.get(point_id),
             (observations or {}).get(point_id),
             (official_status or {}).get(output_id) or (official_status or {}).get(base_id),
+            ((tide or {}).get("points") or {}).get(point_id),
         )
         score = completeness(product, availability)
         critical = critical_gaps(product, availability)
@@ -150,6 +157,7 @@ def build_product_analysis(points: dict[str, Any], marine_details: dict[str, Any
             "analysis_gaps": missing_analysis,
             "background_windows": windows,
             "window_status": "PARTIAL_BACKGROUND_ONLY",
+            "tide_context": ((tide or {}).get("points") or {}).get(point_id),
             "window_note": "Deterministic background only. Final operational window still requires Decision Plane gates, actual/local truth and applicable restriction/visibility/convection evidence.",
         }
     return result

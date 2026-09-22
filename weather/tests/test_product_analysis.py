@@ -44,6 +44,39 @@ class ProductAnalysisTests(unittest.TestCase):
         self.assertTrue(all(datetime_hour(w["end_time"]) <= 21 for w in afternoon["background_windows"]))
 
 
+    def test_himawari_convection_and_tide_raise_availability(self):
+        marine = {"an_thoi": {"wave": {"direction_deg": 250}, "current": {"speed_kmh": .5}}}
+        observations = {
+            "an_thoi": {
+                "convective_signal": {
+                    "score": 75,
+                    "level": "HIGH",
+                    "data_class": "OBSERVED_SATELLITE",
+                }
+            }
+        }
+        tide = {
+            "points": {
+                "an_thoi": {
+                    "status": "POINT_NUMERIC_READY",
+                    "current_height_m": 0.18,
+                }
+            }
+        }
+        result = build_product_analysis(
+            self._points(), marine,
+            cutoff_time="2026-09-22T06:00:00+07:00",
+            observations=observations,
+            tide=tide,
+        )
+        cano = result["products"]["cano_south"]
+        fishing = result["products"]["fishing_hon_dam_morning"]
+        self.assertEqual(cano["availability"]["convection"], 1)
+        self.assertEqual(fishing["availability"]["tide"], 1)
+        self.assertNotIn("convection", cano["analysis_gaps"])
+        self.assertNotIn("tide", fishing["analysis_gaps"])
+
+
 def datetime_hour(value: str) -> int:
     from datetime import datetime
     return datetime.fromisoformat(value).hour

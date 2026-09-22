@@ -34,6 +34,10 @@ def build_manifest(snapshot: dict[str, Any], pointer: dict[str, Any]) -> dict[st
         if pointer.get(field) != snapshot.get(field):
             raise ValueError(f"pointer/snapshot mismatch: {field}")
     archive_path = pointer["path"]
+    mandatory = ["duong_dong", "an_thoi", "ganh_dau"]
+    authority = snapshot.get("point_authority", {})
+    verified = sorted(authority)
+    comparison = [point_id for point_id in verified if point_id not in mandatory]
     return {
         "contract_version": CONTRACT_VERSION,
         "production_reference": PRODUCTION_REFERENCE,
@@ -54,8 +58,10 @@ def build_manifest(snapshot: dict[str, Any], pointer: dict[str, Any]) -> dict[st
             "archive_url": "/" + archive_path,
         },
         "source_cycles": snapshot.get("audit", {}).get("source_cycles", {}),
-        "required_production_points": ["duong_dong", "an_thoi", "ganh_dau"],
-        "point_authority": snapshot.get("point_authority", {}),
+        "required_production_points": mandatory,
+        "verified_points": verified,
+        "comparison_points": comparison,
+        "point_authority": authority,
         "analysis_status": snapshot.get("analysis_status", {}),
     }
 
