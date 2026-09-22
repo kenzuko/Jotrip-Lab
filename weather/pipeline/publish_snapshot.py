@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from weather.processing.evidence_bridge import build_evidence_bridge
 from weather.processing.point_drift import compare_point_snapshots
 from weather.processing.product_analysis import build_product_analysis
 from weather.processing.snapshot import seal_snapshot, verify_snapshot
@@ -176,7 +177,10 @@ def _ensemble_payload(gefs: dict) -> dict[str, Any]:
 
 
 def build_canonical_snapshot(dashboard: dict, ecmwf: dict, gefs: dict, icon: dict, copernicus: dict,
-                             previous_snapshot: dict | None = None) -> dict[str, Any]:
+                             previous_snapshot: dict | None = None,
+                             current_bundle: dict | None = None,
+                             nowcast: dict | None = None,
+                             local_ensemble: dict | None = None) -> dict[str, Any]:
     cutoff = _dt(dashboard["generated_at"])
     generated = datetime.now(timezone.utc)
     points = dashboard.get("points", {})
@@ -206,13 +210,39 @@ def build_canonical_snapshot(dashboard: dict, ecmwf: dict, gefs: dict, icon: dic
     )
     ensemble = _ensemble_payload(gefs)
     marine_details = _marine_details(copernicus)
-    observations: dict[str, Any] = {}
+    evidence = build_evidence_bridge(
+        current_bundle=current_bundle,
+        nowcast=nowcast,
+        local_ensemble=local_ensemble,
+        point_authority=point_authority,
+        cutoff_time=cutoff.isoformat(),
+    )
+    ensemble["gefs_local_matrix"] = evidence["ensemble_local"]
+
+    point_evidence: dict[str, Any] = {}
+    for point_id, context in evidence["local_now"].get("points", {}).items():
+        if context.get("status") != "AVAILABLE":
+            continue
+        imminence = ((context.get("rain") or {}).get("imminence") or {})
+        convective_score = imminence.get("convective_score")
+        if convective_score is not None:
+            point_evidence[point_id] = {
+                "convective_signal": {
+                    "score": convective_score,
+                    "level": imminence.get("level"),
+                    "method": imminence.get("method"),
+                    "data_class": "ESTIMATED_NOW",
+                },
+                "local_truth_verified": False,
+            }
+
+    observations: dict[str, Any] = evidence["actual"]
     official_status: dict[str, Any] = {}
     product_analysis = build_product_analysis(
         points,
         marine_details,
         cutoff_time=cutoff.isoformat(),
-        observations=observations,
+        observations=point_evidence,
         official_status=official_status,
     )
     analysis_status = {
@@ -223,9 +253,10 @@ def build_canonical_snapshot(dashboard: dict, ecmwf: dict, gefs: dict, icon: dic
             else "PARTIAL"
         ),
         "ensemble_full_window_analysis": ensemble["p_operational_window"]["status"],
+        "ensemble_local_matrix": evidence["ensemble_local"].get("status", "UNAVAILABLE"),
         "drift": drift.get("status", "NOT_COMPUTABLE"),
         "operational_window": "PARTIAL_BACKGROUND_ONLY",
-        "reality_layer": "NOT_YET_INGESTED",
+        "reality_layer": "AVAILABLE_PARTIAL" if evidence["actual"].get("status") == "READY" or evidence["local_now"].get("engine") else "NOT_YET_INGESTED",
         "product_completeness": "AVAILABLE",
     }
     payload: dict[str, Any] = {
@@ -244,6 +275,8 @@ def build_canonical_snapshot(dashboard: dict, ecmwf: dict, gefs: dict, icon: dic
         "routes": {},
         "ensemble": ensemble,
         "observations": observations,
+        "reality_context": evidence["local_now"],
+        "nowcast": evidence["nowcast"],
         "official_status": official_status,
         "drift": drift,
         "product_analysis": product_analysis,
@@ -335,6 +368,9 @@ def main() -> None:
     parser.add_argument("--gefs", type=Path, required=True)
     parser.add_argument("--icon", type=Path, required=True)
     parser.add_argument("--copernicus", type=Path, required=True)
+    parser.add_argument("--current-bundle", type=Path)
+    parser.add_argument("--nowcast", type=Path)
+    parser.add_argument("--local-ensemble", type=Path)
     parser.add_argument("--root", type=Path, default=Path("weather/snapshots"))
     args = parser.parse_args()
 
@@ -343,6 +379,9 @@ def main() -> None:
     previous_path = args.root / "latest.json"
     if previous_path.exists():
         previous_snapshot = _load(previous_path)
+    def optional(path: Path | None) -> dict[str, Any]:
+        return _load(path) if path is not None and path.exists() else {}
+
     snapshot = build_canonical_snapshot(
         dashboard,
         _load(args.ecmwf),
@@ -350,6 +389,9 @@ def main() -> None:
         _load(args.icon),
         _load(args.copernicus),
         previous_snapshot=previous_snapshot,
+        current_bundle=optional(args.current_bundle),
+        nowcast=optional(args.nowcast),
+        local_ensemble=optional(args.local_ensemble),
     )
     validate_snapshot(snapshot, dashboard)
     archive, latest, pointer = publish(snapshot, args.root)
