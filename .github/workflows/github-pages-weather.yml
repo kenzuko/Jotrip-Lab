@@ -187,8 +187,7 @@ jobs:
           history_js = (root / 'weather-history.js').read_text(encoding='utf-8')
           assert 'raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast' in history_js
           assert 'data-weather/Jotrip-Lab/weather/' not in history_js
-          weather_js = (root / 'weather-v2.js').read_text(encoding='utf-8')
-          assert '/Jotrip-Lab/weather/data/dashboard-data.json' in weather_js
+          assert (root / 'data/dashboard-data.json').exists()
           PY
 
       - name: Verify one forecast snapshot authority
@@ -215,6 +214,11 @@ jobs:
               'regional forecast/ensemble cycle mismatch',
               forecast.get('run_time'),
               ensemble.get('run_time'),
+          )
+          assert forecast.get('run_time') == (dashboard.get('source_cycles') or {}).get('GEFS'), (
+              'regional forecast/dashboard GEFS cycle mismatch',
+              forecast.get('run_time'),
+              (dashboard.get('source_cycles') or {}).get('GEFS'),
           )
           print('snapshot authority OK', dashboard.get('snapshot_id'), forecast.get('run_time'))
           PY
