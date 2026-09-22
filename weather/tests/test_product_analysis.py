@@ -39,7 +39,9 @@ class ProductAnalysisTests(unittest.TestCase):
         morning = result["products"]["fishing_hon_dam_morning"]
         afternoon = result["products"]["fishing_hon_dam_afternoon"]
         self.assertTrue(all(5 <= datetime_hour(w["start_time"]) < 14 for w in morning["background_windows"]))
+        self.assertTrue(all(datetime_hour(w["end_time"]) <= 14 for w in morning["background_windows"]))
         self.assertTrue(all(14 <= datetime_hour(w["start_time"]) < 21 for w in afternoon["background_windows"]))
+        self.assertTrue(all(datetime_hour(w["end_time"]) <= 21 for w in afternoon["background_windows"]))
 
 
 def datetime_hour(value: str) -> int:
