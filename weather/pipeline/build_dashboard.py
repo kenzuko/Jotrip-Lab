@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from weather.points import POINT_NAMES, POINTS
+from weather.points import POINT_NAMES, POINTS, POINT_METADATA
 from weather.processing.units import speed_to_kmh
 
 VN = ZoneInfo("Asia/Ho_Chi_Minh")
@@ -348,6 +348,7 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
             "name": name,
             "status": "LIVE DIRECT MODEL",
             "reference_point": {"lat": ref_lat, "lon": ref_lon, "type": "AREA_REFERENCE"},
+            "marine_forecast_reference": POINT_METADATA.get(point, {}).get("marine_forecast_reference"),
             "marine_sampling": _marine_sampling(copernicus, point),
             "temperature": temperature,
             **values,
