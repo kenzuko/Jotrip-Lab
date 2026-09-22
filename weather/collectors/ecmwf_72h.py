@@ -15,7 +15,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from weather.collectors.live_smoke import _utcnow
-from weather.points import POINTS
+from weather.points import POINTS, POINT_METADATA
 from weather.processing.units import add_speed_display
 from weather.spatial_domain import (
     ECMWF_MEDIUM_BOUNDS,
@@ -53,14 +53,25 @@ def _decode_all(
                 variable = str(codes_get(gid, "shortName"))
                 unit = str(codes_get(gid, "units"))
                 valid_time = run_time + timedelta(hours=step)
-                targets = [
-                    (point_id, lat, lon, "OPERATIONAL_ANCHOR")
-                    for point_id, (lat, lon) in POINTS.items()
-                ] + [
-                    (f"grid_{lat:.2f}_{lon:.2f}", lat, lon, "SPATIAL_GRID")
+                targets = []
+                for point_id, (semantic_lat, semantic_lon) in POINTS.items():
+                    requested_lat, requested_lon = semantic_lat, semantic_lon
+                    sample_kind = "OPERATIONAL_ANCHOR"
+                    marine_ref = POINT_METADATA.get(point_id, {}).get("marine_forecast_reference") if stream == "wave" else None
+                    if isinstance(marine_ref, dict):
+                        try:
+                            requested_lat = float(marine_ref["lat"])
+                            requested_lon = float(marine_ref["lon"])
+                            sample_kind = "MARINE_REFERENCE"
+                        except (KeyError, TypeError, ValueError):
+                            requested_lat, requested_lon = semantic_lat, semantic_lon
+                            sample_kind = "OPERATIONAL_ANCHOR"
+                    targets.append((point_id, requested_lat, requested_lon, sample_kind, semantic_lat, semantic_lon))
+                targets += [
+                    (f"grid_{lat:.2f}_{lon:.2f}", lat, lon, "SPATIAL_GRID", lat, lon)
                     for lat, lon in spatial_grid_requests
                 ]
-                for point_id, lat, lon, sample_kind in targets:
+                for point_id, lat, lon, sample_kind, semantic_lat, semantic_lon in targets:
                     nearest = codes_grib_find_nearest(gid, lat, lon)[0]
                     records.append(add_speed_display({
                         "source": source,
@@ -72,6 +83,8 @@ def _decode_all(
                         "variable": variable,
                         "point_id": point_id,
                         "sample_kind": sample_kind,
+                        "semantic_lat": semantic_lat,
+                        "semantic_lon": semantic_lon,
                         "requested_lat": lat,
                         "requested_lon": lon,
                         "sampled_lat": float(nearest["lat"]),
@@ -80,7 +93,7 @@ def _decode_all(
                         "value": float(nearest["value"]),
                         "unit": unit,
                         "qc": "PASS",
-                        "provenance": "DIRECT",
+                        "provenance": "DIRECT_MARINE_REFERENCE" if sample_kind == "MARINE_REFERENCE" else "DIRECT",
                     }))
             finally:
                 codes_release(gid)
