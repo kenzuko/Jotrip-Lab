@@ -18,6 +18,18 @@ def _dt(value: str) -> datetime:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
+def _same_reference_point(previous_point: dict[str, Any], current_point: dict[str, Any]) -> bool:
+    previous_ref = previous_point.get("reference_point") or {}
+    current_ref = current_point.get("reference_point") or {}
+    try:
+        return (
+            float(previous_ref["lat"]) == float(current_ref["lat"])
+            and float(previous_ref["lon"]) == float(current_ref["lon"])
+        )
+    except (KeyError, TypeError, ValueError):
+        return False
+
+
 def _peak(rows: list[dict[str, Any]], variable: str) -> tuple[float, str] | None:
     values = [
         (float(row[variable]), row["time_iso"])
@@ -59,6 +71,12 @@ def compare_point_snapshots(previous: dict[str, Any] | None, current_points: dic
     for point_id, current in current_points.items():
         old = previous_points.get(point_id)
         if not isinstance(old, dict):
+            continue
+        if not _same_reference_point(old, current):
+            result["points"][point_id] = {
+                "status": "NOT_COMPARABLE",
+                "reason": "POINT_AUTHORITY_CHANGED_OR_UNAVAILABLE",
+            }
             continue
         old_by_time = {row.get("time_iso"): row for row in old.get("hours", []) if row.get("time_iso")}
         current_rows = [
