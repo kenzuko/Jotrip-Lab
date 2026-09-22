@@ -7,6 +7,11 @@ on:
       - ".github/workflows/github-pages-weather.yml"
   schedule:
     - cron: "5,15,25,35,45,55 * * * *"
+  workflow_run:
+    workflows:
+      - "Weather Lab 30m scheduler"
+      - "Weather GEFS Local scheduler"
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -24,6 +29,7 @@ env:
 
 jobs:
   publish:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -55,6 +61,7 @@ jobs:
           rm -rf /tmp/weather-pages
           mkdir -p /tmp/weather-pages/data
           cp source/weather/tide.json /tmp/weather-pages/data/tide.json
+          cp source/weather/dashboard-data.json /tmp/weather-pages/data/dashboard-data.json
 
           cp source/weather.html /tmp/weather-pages/index.html
           cp source/weather.html /tmp/weather-pages/weather.html
@@ -139,6 +146,7 @@ jobs:
               '/weather-v2.js': base + 'weather-v2.js',
               '/weather-brand.svg': base + 'weather-brand.svg',
               '/weather/tide.json': base + 'data/tide.json',
+              '/data/dashboard-data.json': base + 'data/dashboard-data.json',
               '/data/weather-aqi/': base + 'data/weather-aqi/',
               '/data/weather-nowcast/': base + 'data/weather-nowcast/',
               '/data/weather-groundtruth/': base + 'data/weather-groundtruth/',
@@ -179,6 +187,36 @@ jobs:
           history_js = (root / 'weather-history.js').read_text(encoding='utf-8')
           assert 'raw.githubusercontent.com/kenzuko/Jotrip-Lab/data-weather/data/weather-nowcast' in history_js
           assert 'data-weather/Jotrip-Lab/weather/' not in history_js
+          weather_js = (root / 'weather-v2.js').read_text(encoding='utf-8')
+          assert '/Jotrip-Lab/weather/data/dashboard-data.json' in weather_js
+          PY
+
+      - name: Verify one forecast snapshot authority
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root=Path('/tmp/weather-pages')
+          dashboard=json.loads((root/'data/dashboard-data.json').read_text(encoding='utf-8'))
+          critical=json.loads((root/'data/critical.json').read_text(encoding='utf-8'))
+          forecast=json.loads((root/'jotrip-forecast.json').read_text(encoding='utf-8'))
+          ensemble=json.loads(Path('live-data/data/weather-ensemble/latest.json').read_text(encoding='utf-8'))
+
+          assert dashboard.get('snapshot_id'), 'dashboard snapshot_id missing'
+          assert critical.get('snapshot_id') == dashboard.get('snapshot_id'), (
+              'critical/dashboard snapshot mismatch',
+              critical.get('snapshot_id'),
+              dashboard.get('snapshot_id'),
+          )
+          assert critical.get('source_cycles') == dashboard.get('source_cycles'), 'critical source cycles diverged'
+          assert forecast.get('run_time') == ensemble.get('run_time'), (
+              'regional forecast/ensemble cycle mismatch',
+              forecast.get('run_time'),
+              ensemble.get('run_time'),
+          )
+          print('snapshot authority OK', dashboard.get('snapshot_id'), forecast.get('run_time'))
           PY
 
       - name: Publish only Weather folder to gh-pages
