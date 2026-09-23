@@ -1,0 +1,50 @@
+{
+  "categories": {
+    "cano": {
+      "state": "SUSPENDED",
+      "evidence_count": 1,
+      "source_tiers": [
+        "FIELD"
+      ],
+      "confidence_cap": 90,
+      "evidence": [
+        {
+          "category": "cano",
+          "source": "JOTRIP_FIELD_CONFIRMATION",
+          "source_tier": "FIELD",
+          "evidence_class": "DIRECT",
+          "status": "Cano OFF - tạm dừng hoạt động",
+          "area": "Phú Quốc / An Thới",
+          "confirmed_at_text": "24/09/2026 06:08",
+          "evidence_note": "JoTrip xác nhận 'Cấm' trong luồng vận hành sáng 24/09. Không suy lệnh cấm pháp lý từ bản tin dự báo thời tiết."
+        }
+      ]
+    },
+    "fast_boat": {
+      "state": "UNKNOWN",
+      "evidence_count": 0,
+      "source_tiers": [],
+      "confidence_cap": 59,
+      "evidence": []
+    },
+    "ferry": {
+      "state": "UNKNOWN",
+      "evidence_count": 0,
+      "source_tiers": [],
+      "confidence_cap": 59,
+      "evidence": []
+    }
+  },
+  "collected_at_vn": "2026-09-24T06:08:00+07:00",
+  "errors": [],
+  "market_condition_not_data_system_condition": true,
+  "rules": {
+    "cano_independent": true,
+    "no_cross_category_inference": true,
+    "one_normal_fast_boat_can_confirm_category_absent_specific_exception": true,
+    "one_normal_ferry_can_confirm_category_absent_specific_exception": true,
+    "permit_or_departure_slip_is_direct": true
+  },
+  "schema_version": "marine-ops-1.0",
+  "source_date": "24/09/2026"
+}
