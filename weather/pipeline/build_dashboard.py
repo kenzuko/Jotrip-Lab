@@ -168,6 +168,80 @@ def _build_rows(records: list[dict]) -> dict[str, list[dict]]:
     return rows_by_point
 
 
+def _coastal_wave_distance_km(lat_a: float, lon_a: float, lat_b: float, lon_b: float) -> float:
+    """Short-distance great-circle approximation for the Gulf grid; km."""
+    mid_lat = math.radians((lat_a + lat_b) / 2)
+    return 111.2 * math.hypot(lat_a - lat_b, (lon_a - lon_b) * math.cos(mid_lat))
+
+
+def _add_coastal_wave_reference(rows_by_point: dict[str, list[dict]], spatial: dict) -> None:
+    """Fill *only* absent wave at the same ECMWF valid time from reviewed sea-side grids.
+
+    Coastal ECMWF point samples can return GRIB land sentinels even when the
+    surrounding model has real offshore wave fields. The fallback is an
+    explicitly labelled offshore reference, never a nearshore observation.
+    """
+    if not isinstance(spatial, dict) or spatial.get("status") != "READY":
+        return
+    frames = {}
+    for frame in spatial.get("frames") or []:
+        if frame.get("valid_time"):
+            frames[_iso(frame["valid_time"]).astimezone(timezone.utc)] = frame
+    for point_id, rows in rows_by_point.items():
+        ref = POINT_METADATA.get(point_id, {}).get("marine_forecast_reference")
+        if not isinstance(ref, dict) or ref.get("basis") != "COPERNICUS_NEAREST_VALID_SEA_GRID_REVIEWED":
+            continue
+        side = ref.get("coast_side")
+        if side not in {"WEST", "EAST"}:
+            continue
+        lat, lon = float(ref["lat"]), float(ref["lon"])
+        for row in rows:
+            if row.get("wave") is not None:
+                continue
+            frame = frames.get(_iso(row["time_iso"]).astimezone(timezone.utc))
+            if not frame:
+                continue
+            candidates = []
+            for cell in frame.get("cells") or []:
+                hs = cell.get("wave_hs_m")
+                cell_lat, cell_lon = cell.get("lat"), cell.get("lon")
+                if hs is None or cell_lat is None or cell_lon is None:
+                    continue
+                try:
+                    hs, cell_lat, cell_lon = float(hs), float(cell_lat), float(cell_lon)
+                except (TypeError, ValueError):
+                    continue
+                if not math.isfinite(hs) or not 0 <= hs <= 30:
+                    continue
+                if side == "WEST" and cell_lon > lon:
+                    continue
+                if side == "EAST" and cell_lon < lon:
+                    continue
+                distance = _coastal_wave_distance_km(lat, lon, cell_lat, cell_lon)
+                if distance <= 35:
+                    candidates.append((distance, cell_lat, cell_lon, cell))
+            if not candidates:
+                continue
+            distance, cell_lat, cell_lon, cell = min(candidates, key=lambda candidate: candidate[0])
+            hs = round(float(cell["wave_hs_m"]), 2)
+            period = _period_value({"value": cell["wave_period_s"]}) if cell.get("wave_period_s") is not None else None
+            row["wave"] = hs
+            row["wave_source"] = "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE"
+            row["wave_reference"] = {
+                "status": "PASS", "data_class": "MODEL_FORECAST",
+                "reference_lat": lat, "reference_lon": lon,
+                "sampled_lat": cell_lat, "sampled_lon": cell_lon,
+                "distance_km": round(distance, 1), "coast_side": side,
+                "valid_time": frame["valid_time"], "nearshore_observation": False,
+            }
+            if row.get("period") is None:
+                row["period"] = period
+            if row.get("wave_max") is None:
+                row["wave_max"] = _hmax_proxy(hs, period)
+                if row["wave_max"] is not None:
+                    row["wave_max_method"] = "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS"
+
+
 def _merge_short_medium(short_rows: list[dict], medium_rows: list[dict]) -> list[dict]:
     if not short_rows:
         return medium_rows
@@ -313,6 +387,7 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
         point: _merge_short_medium(short_by_point.get(point, []), medium_by_point.get(point, []))
         for point in POINT_NAMES
     }
+    _add_coastal_wave_reference(rows_by_point, ecmwf.get("spatial") or {})
 
     points = {}
     present, expected = 0, len(POINT_NAMES) * 7

@@ -121,16 +121,22 @@ def _collect_gust(
     prefix: str,
     spatial_grid_requests: tuple[tuple[float, float], ...],
 ) -> tuple[list[dict], str | None, str | None]:
-    """Fetch gust independently so an outage cannot break base wind/rain ingest."""
+    """Retrieve 10fg, then try i10fg *only* for valid steps it did not cover."""
     errors = []
-    gust_steps = [step for step in steps if step > 0]
+    requested = {int(step) for step in steps if step > 0}
+    collected: list[dict] = []
+    covered: set[int] = set()
+    used: list[str] = []
     for parameter in ("10fg", "i10fg"):
+        missing = sorted(requested - covered)
+        if not missing:
+            break
         try:
             target = work / f"{prefix}-gust-{parameter}.grib2"
             client.retrieve(
                 type="fc",
                 stream="oper",
-                step=gust_steps,
+                step=missing,
                 param=[parameter],
                 target=str(target),
                 **_cycle_kwargs(run_time),
@@ -138,11 +144,24 @@ def _collect_gust(
             records = _decode_all(
                 target, run_time, "ECMWF_IFS_DIRECT", "oper", spatial_grid_requests
             )
-            if records:
-                return records, parameter, None
+            seen = {
+                int(record["lead_hours"]) for record in records
+                if record.get("variable") in {"10fg", "i10fg"}
+                and record.get("sample_kind") != "SPATIAL_GRID"
+                and record.get("qc") == "PASS"
+            }
+            new_coverage = seen & requested
+            if new_coverage:
+                # The preferred field always wins at the same valid time.
+                collected.extend(r for r in records if int(r.get("lead_hours", -1)) in new_coverage)
+                covered.update(new_coverage)
+                used.append(parameter)
         except Exception as exc:
             errors.append(f"{parameter}: {type(exc).__name__}: {exc}")
-    return [], None, " | ".join(errors) if errors else "No gust records returned"
+    remaining = sorted(requested - covered)
+    if remaining:
+        errors.append("MISSING_GUST_STEPS: " + ",".join(map(str, remaining)))
+    return collected, "+".join(used) or None, " | ".join(errors) or None
 
 
 def _collect_wave_max(client, work: Path, run_time: datetime, steps: list[int], prefix: str) -> tuple[list[dict], str | None, str | None]:
