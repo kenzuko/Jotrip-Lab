@@ -1,41 +1,45 @@
 {
   "module": "JoTrip Weather Ground Truth",
   "state": "READY",
-  "generated_at": "2026-09-23T18:32:12.559875+00:00",
+  "generated_at": "2026-09-23T20:20:18.714368+00:00",
   "vvpq": "FRESH",
   "vrain": "FRESH",
   "rain_stations": [
-    "cua_can",
+    "bai_thom",
     "an_thoi",
-    "bai_thom"
+    "cua_can"
   ],
-  "increment_ready": [],
+  "increment_ready": [
+    "bai_thom",
+    "an_thoi",
+    "cua_can"
+  ],
   "training_usability": {
     "vvpq": {
       "usable_for_training": true,
-      "observed_at": "2026-09-23T18:00:00+00:00",
+      "observed_at": "2026-09-23T20:00:00+00:00",
       "qc": "PASS"
     },
     "rain": {
-      "cua_can": {
+      "bai_thom": {
         "actual": true,
         "qc": "PASS",
-        "increment_qc": "WINDOW_TOO_SHORT",
-        "usable_for_short_increment_training": false,
+        "increment_qc": "PASS",
+        "usable_for_short_increment_training": true,
         "cumulative_counter_available": true
       },
       "an_thoi": {
         "actual": true,
         "qc": "PASS",
-        "increment_qc": "WINDOW_TOO_SHORT",
-        "usable_for_short_increment_training": false,
+        "increment_qc": "PASS",
+        "usable_for_short_increment_training": true,
         "cumulative_counter_available": true
       },
-      "bai_thom": {
+      "cua_can": {
         "actual": true,
         "qc": "PASS",
-        "increment_qc": "WINDOW_TOO_SHORT",
-        "usable_for_short_increment_training": false,
+        "increment_qc": "PASS",
+        "usable_for_short_increment_training": true,
         "cumulative_counter_available": true
       }
     }
