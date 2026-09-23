@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
   "engine": "PQ_ENSEMBLE_LOCAL_V1",
-  "generated_at": "2026-09-23T11:31:09.661735+00:00",
+  "generated_at": "2026-09-23T11:41:05.752511+00:00",
   "minimum_samples": 30,
-  "ready_groups": 0,
+  "ready_groups": 2,
   "total_groups": 25,
-  "status": "LEARNING",
+  "status": "PARTIAL",
   "targets": {
     "vrain_an_thoi": {
       "rain": {
@@ -518,73 +518,73 @@
       "temperature": {
         "D0_24": {
           "engine": "PQ_ENSEMBLE_LOCAL_V1",
-          "status": "LEARNING",
-          "sample_count": 27,
+          "status": "READY",
+          "sample_count": 30,
           "minimum_samples": 30,
-          "shrinkage": 0.4737,
-          "raw_median_bias": -1.164863,
-          "applied_bias": 0.0,
+          "shrinkage": 0.5,
+          "raw_median_bias": -1.325005,
+          "applied_bias": -0.662503,
           "method": "SHRUNK_MEDIAN_ADDITIVE_BIAS",
           "metrics": {
-            "sample_count": 27,
-            "mae": 1.5654,
-            "rmse": 1.7912,
-            "mean_error": -1.0459,
-            "median_error": -1.1649
+            "sample_count": 30,
+            "mae": 1.5741,
+            "rmse": 1.7783,
+            "mean_error": -1.1065,
+            "median_error": -1.325
           },
           "lead_bucket": "D0_24"
         },
         "D1_48": {
           "engine": "PQ_ENSEMBLE_LOCAL_V1",
           "status": "LEARNING",
-          "sample_count": 15,
+          "sample_count": 19,
           "minimum_samples": 30,
-          "shrinkage": 0.3333,
-          "raw_median_bias": -1.348867,
+          "shrinkage": 0.3878,
+          "raw_median_bias": -1.442041,
           "applied_bias": 0.0,
           "method": "SHRUNK_MEDIAN_ADDITIVE_BIAS",
           "metrics": {
-            "sample_count": 15,
-            "mae": 1.6389,
-            "rmse": 1.8978,
-            "mean_error": -0.7341,
-            "median_error": -1.3489
+            "sample_count": 19,
+            "mae": 1.6193,
+            "rmse": 1.832,
+            "mean_error": -0.905,
+            "median_error": -1.442
           },
           "lead_bucket": "D1_48"
         },
         "D2_72": {
           "engine": "PQ_ENSEMBLE_LOCAL_V1",
           "status": "LEARNING",
-          "sample_count": 4,
+          "sample_count": 6,
           "minimum_samples": 30,
-          "shrinkage": 0.1176,
-          "raw_median_bias": -0.582727,
+          "shrinkage": 0.1667,
+          "raw_median_bias": -1.369238,
           "applied_bias": 0.0,
           "method": "SHRUNK_MEDIAN_ADDITIVE_BIAS",
           "metrics": {
-            "sample_count": 4,
-            "mae": 1.0962,
-            "rmse": 1.4082,
-            "mean_error": -0.7327,
-            "median_error": -0.5827
+            "sample_count": 6,
+            "mae": 1.3202,
+            "rmse": 1.5437,
+            "mean_error": -1.0779,
+            "median_error": -1.3692
           },
           "lead_bucket": "D2_72"
         },
         "D3_5": {
           "engine": "PQ_ENSEMBLE_LOCAL_V1",
           "status": "LEARNING",
-          "sample_count": 1,
+          "sample_count": 2,
           "minimum_samples": 30,
-          "shrinkage": 0.0323,
-          "raw_median_bias": 1.218945,
+          "shrinkage": 0.0625,
+          "raw_median_bias": -0.119409,
           "applied_bias": 0.0,
           "method": "SHRUNK_MEDIAN_ADDITIVE_BIAS",
           "metrics": {
-            "sample_count": 1,
-            "mae": 1.2189,
-            "rmse": 1.2189,
-            "mean_error": 1.2189,
-            "median_error": 1.2189
+            "sample_count": 2,
+            "mae": 1.3384,
+            "rmse": 1.3437,
+            "mean_error": -0.1194,
+            "median_error": -0.1194
           },
           "lead_bucket": "D3_5"
         },
@@ -610,73 +610,73 @@
       "wind": {
         "D0_24": {
           "engine": "PQ_ENSEMBLE_LOCAL_V1",
-          "status": "LEARNING",
-          "sample_count": 27,
+          "status": "READY",
+          "sample_count": 30,
           "minimum_samples": 30,
-          "shrinkage": 0.4737,
-          "raw_median_bias": -15.465318,
-          "applied_bias": 0.0,
+          "shrinkage": 0.5,
+          "raw_median_bias": -15.14383,
+          "applied_bias": -7.571915,
           "method": "SHRUNK_MEDIAN_ADDITIVE_BIAS",
           "metrics": {
-            "sample_count": 27,
-            "mae": 15.9288,
-            "rmse": 17.2415,
-            "mean_error": -14.478,
-            "median_error": -15.4653
+            "sample_count": 30,
+            "mae": 15.0596,
+            "rmse": 16.5258,
+            "mean_error": -13.7539,
+            "median_error": -15.1438
           },
           "lead_bucket": "D0_24"
         },
         "D1_48": {
           "engine": "PQ_ENSEMBLE_LOCAL_V1",
           "status": "LEARNING",
-          "sample_count": 15,
+          "sample_count": 19,
           "minimum_samples": 30,
-          "shrinkage": 0.3333,
-          "raw_median_bias": -20.132847,
+          "shrinkage": 0.3878,
+          "raw_median_bias": -16.942127,
           "applied_bias": 0.0,
           "method": "SHRUNK_MEDIAN_ADDITIVE_BIAS",
           "metrics": {
-            "sample_count": 15,
-            "mae": 19.3705,
-            "rmse": 20.1051,
-            "mean_error": -19.3705,
-            "median_error": -20.1328
+            "sample_count": 19,
+            "mae": 16.9602,
+            "rmse": 18.2402,
+            "mean_error": -16.9602,
+            "median_error": -16.9421
           },
           "lead_bucket": "D1_48"
         },
         "D2_72": {
           "engine": "PQ_ENSEMBLE_LOCAL_V1",
           "status": "LEARNING",
-          "sample_count": 4,
+          "sample_count": 6,
           "minimum_samples": 30,
-          "shrinkage": 0.1176,
-          "raw_median_bias": -24.499421,
+          "shrinkage": 0.1667,
+          "raw_median_bias": -19.075014,
           "applied_bias": 0.0,
           "method": "SHRUNK_MEDIAN_ADDITIVE_BIAS",
           "metrics": {
-            "sample_count": 4,
-            "mae": 23.0315,
-            "rmse": 23.4753,
-            "mean_error": -23.0315,
-            "median_error": -24.4994
+            "sample_count": 6,
+            "mae": 16.9726,
+            "rmse": 19.3716,
+            "mean_error": -16.9726,
+            "median_error": -19.075
           },
           "lead_bucket": "D2_72"
         },
         "D3_5": {
           "engine": "PQ_ENSEMBLE_LOCAL_V1",
           "status": "LEARNING",
-          "sample_count": 1,
+          "sample_count": 2,
           "minimum_samples": 30,
-          "shrinkage": 0.0323,
-          "raw_median_bias": -28.943483,
+          "shrinkage": 0.0625,
+          "raw_median_bias": -18.664734,
           "applied_bias": 0.0,
           "method": "SHRUNK_MEDIAN_ADDITIVE_BIAS",
           "metrics": {
-            "sample_count": 1,
-            "mae": 28.9435,
-            "rmse": 28.9435,
-            "mean_error": -28.9435,
-            "median_error": -28.9435
+            "sample_count": 2,
+            "mae": 18.6647,
+            "rmse": 21.3079,
+            "mean_error": -18.6647,
+            "median_error": -18.6647
           },
           "lead_bucket": "D3_5"
         },
