@@ -33,7 +33,13 @@ STEPS = SHORT_STEPS  # backward compatibility for existing callers
 # because it is a trend product, not the live spatial map.
 SPATIAL_GRID_DEG = ECMWF_RENDER_STEP_DEG
 SHORT_SPATIAL_GRID_REQUESTS = grid_requests(ECMWF_SHORT_BOUNDS, SPATIAL_GRID_DEG)
-MEDIUM_SPATIAL_GRID_REQUESTS = grid_requests(ECMWF_MEDIUM_BOUNDS, SPATIAL_GRID_DEG)
+# The 0.5-degree medium grid can miss both Phu Quoc coastlines.
+# Retain the regular Gulf grid and explicitly sample the reviewed sea cells
+# serving west (Duong Dong) and east (Ham Ninh) reference forecasts.
+MEDIUM_SPATIAL_GRID_REQUESTS = tuple(sorted(set(grid_requests(ECMWF_MEDIUM_BOUNDS, SPATIAL_GRID_DEG)) | {
+    (10.0, 103.75),  # Offshore WEST, approx. 26 km from reviewed sea reference
+    (10.0, 104.25),  # Offshore EAST, approx. 26 km from reviewed sea reference
+}))
 
 
 def _decode_all(

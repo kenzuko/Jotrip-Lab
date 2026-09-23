@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from weather.pipeline.build_dashboard import _add_coastal_wave_reference
-from weather.collectors.ecmwf_72h import _collect_gust
+from weather.collectors.ecmwf_72h import _collect_gust, MEDIUM_SPATIAL_GRID_REQUESTS
 
 
 VALID = "2026-09-23T00:00:00Z"
@@ -21,6 +21,12 @@ def offshore_frame(valid=VALID):
 
 
 class FourFieldsTests(unittest.TestCase):
+    def test_medium_forecast_samples_both_reviewed_offshore_coasts(self):
+        # Long-range fields otherwise lack a valid wave grid near either shore.
+        self.assertIn((10.0, 103.75), MEDIUM_SPATIAL_GRID_REQUESTS)
+        self.assertIn((10.0, 104.25), MEDIUM_SPATIAL_GRID_REQUESTS)
+
+
     def test_missing_coastal_wave_uses_correct_side_same_time_with_explicit_reference(self):
         rows = {
             "duong_dong": [{"time_iso": LOCAL, "wind": 12, "gust": 18, "rain": 2, "wave": None, "period": None, "wave_max": None}],
