@@ -132,15 +132,28 @@ def watch(snapshot: Path | None = None) -> dict:
 
     changed = compare_cycles(current, previous)
     known = [source for source, cycle in current.items() if cycle]
+    # Model cycles can remain unchanged while the published dashboard ages out.
+    # Rebuild the SAME verified cycle instead of leaving both websites blank.
+    # This refreshes the analysis timestamp, not the source model run time.
+    snapshot_stamp = previous_payload.get("generated_at") if isinstance(previous_payload, dict) else None
+    try:
+        snapshot_age_min = max(0.0, (datetime.now(timezone.utc) - datetime.fromisoformat(
+            str(snapshot_stamp).replace("Z", "+00:00")
+        ).astimezone(timezone.utc)).total_seconds() / 60)
+    except (TypeError, ValueError, AttributeError):
+        snapshot_age_min = float("inf")
+    stale_rebuild = snapshot_age_min > 105 and bool(known)
     return {
         "checked_at": _utcnow(),
         "status": "PASS" if len(known) == len(current) else "DEGRADED",
-        "run_heavy": bool(changed),
+        "run_heavy": bool(changed) or stale_rebuild,
+        "stale_rebuild": stale_rebuild,
+        "snapshot_age_minutes": round(snapshot_age_min, 1) if snapshot_age_min != float("inf") else None,
         "changed_sources": changed,
         "current_cycles": current,
         "previous_cycles": previous,
         "errors": errors,
-        "policy": "30-minute metadata watch; D0-D3 short cycle + D4-D10 step-240 medium cycle; heavy ingest only on change",
+        "policy": "30-minute metadata watch; ingest on model-cycle change or when published snapshot exceeds 105 minutes; preserve actual model run times",
         "user_agent": USER_AGENT,
     }
 
