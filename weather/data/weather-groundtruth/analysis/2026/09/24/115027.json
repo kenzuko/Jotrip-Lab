@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "engine": "PQ_LOCAL_NOW_V2",
-  "generated_at": "2026-09-24T12:50:35.432355+00:00",
+  "generated_at": "2026-09-24T11:50:27.125588+00:00",
   "data_class": "ESTIMATED_NOW",
   "title": "PQ Local Now",
   "policy": {
@@ -16,46 +16,46 @@
       "lat": 10.2172,
       "lon": 103.9593,
       "reference_type": "production_point",
-      "analysis_time": "2026-09-24T12:50:35.432355+00:00",
-      "temperature_c": 24.9,
+      "analysis_time": "2026-09-24T11:50:27.125588+00:00",
+      "temperature_c": 24.1,
       "temperature": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V1_MODEL_RESIDUAL",
-        "baseline_model": 24.8,
-        "anchor_observed": 25.0,
-        "anchor_model_proxy": 24.8,
-        "applied_residual_c": 0.14,
+        "baseline_model": 24.5,
+        "anchor_observed": 24.0,
+        "anchor_model_proxy": 24.5,
+        "applied_residual_c": -0.35,
         "confidence": 0.74
       },
-      "wind_kmh": 17.0,
+      "wind_kmh": 23.7,
       "wind_direction_deg": null,
       "wind": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V2_ENSEMBLE_AWARE_RESIDUAL_CONVECTIVE",
-        "baseline_model": 14.5,
+        "baseline_model": 19.9,
         "anchor_observed_kmh": 1.85,
-        "anchor_model_proxy_kmh": 14.5,
-        "model_gust_kmh": 29.0,
+        "anchor_model_proxy_kmh": 19.9,
+        "model_gust_kmh": 41.9,
         "convective_score": 75.0,
-        "convective_floor_kmh": 17.0,
+        "convective_floor_kmh": 23.7,
         "ensemble_context": {
           "available": true,
           "valid_time": "2026-09-24T12:00:00+00:00",
-          "gap_hours": 0.84,
+          "gap_hours": 0.16,
           "q50_kmh": 20.790486,
           "q90_kmh": 26.429034,
           "spread_kmh": 9.960908,
-          "adaptive_gain": 1.225,
-          "kalman_like_gain": 0.907,
-          "background_sigma_kmh": 8.03,
-          "observation_repr_sigma_kmh": 2.58,
-          "source_skill_multiplier": 0.953,
+          "adaptive_gain": 1.214,
+          "kalman_like_gain": 0.892,
+          "background_sigma_kmh": 7.4,
+          "observation_repr_sigma_kmh": 2.57,
+          "source_skill_multiplier": 0.952,
           "source_skill_status": "PROVISIONAL"
         },
         "confidence": 0.52
       },
       "rain": {
-        "rain_rate_mm_h": 0.05,
+        "rain_rate_mm_h": 0.43,
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V2_GAUGE_CONVECTIVE_BLEND",
         "confidence": 0.56,
@@ -67,7 +67,7 @@
             "rate_mm_h": 0.0,
             "weight": 0.436,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 174.79999999999995,
+            "accumulation_mm": 171.39999999999995,
             "source_quality_factor": 0.989
           },
           {
@@ -76,7 +76,7 @@
             "rate_mm_h": 0.0,
             "weight": 0.435,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 97.2,
+            "accumulation_mm": 95.0,
             "source_quality_factor": 0.989
           },
           {
@@ -85,45 +85,45 @@
             "rate_mm_h": 0.0,
             "weight": 0.699,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 84.39999999999996,
+            "accumulation_mm": 82.19999999999996,
             "source_quality_factor": 0.989
           }
         ],
-        "model_rain_3h_mm": 1.21,
+        "model_rain_3h_mm": 11.37,
         "model_share": 0.09,
         "gauge_share": 0.91,
         "nearest_gauge_km": 9.7,
         "convective_score": 75.0,
         "imminence": {
-          "score": 58.6,
-          "level": "ELEVATED",
+          "score": 88.0,
+          "level": "HIGH",
           "window_minutes": 60,
           "convective_score": 75.0,
-          "cooling_c_per_20m_proxy": 0.4,
-          "model_rain_3h_mm": 1.21,
+          "cooling_c_per_20m_proxy": 1.8,
+          "model_rain_3h_mm": 11.37,
           "ensemble_q90_mm": 7.38,
           "ensemble_probability_5": 0.3478,
           "cloud_motion": {
-            "status": "MOVING_AWAY",
+            "status": "IMPACT_EXPECTED",
             "source_sector": "Tây Nam",
             "nearest_corridor": null,
-            "motion_heading_deg": 247.8,
-            "motion_heading": "Tây",
-            "motion_speed_kmh": 71.0,
-            "distance_to_target_km": 59.8,
-            "approaching": false,
-            "predicted_impact": false,
+            "motion_heading_deg": 23.0,
+            "motion_heading": "Đông Bắc",
+            "motion_speed_kmh": 17.9,
+            "distance_to_target_km": 33.7,
+            "approaching": true,
+            "predicted_impact": true,
             "public_track_usable": true,
-            "eta_minutes": null,
-            "arrival_time": null,
-            "exit_time": null,
-            "closest_approach_km": null,
+            "eta_minutes": 57.0,
+            "arrival_time": "2026-09-24T12:17:20+00:00",
+            "exit_time": "2026-09-24T13:59:20+00:00",
+            "closest_approach_km": 9.5,
             "tracking_confidence": "MEDIUM_HIGH"
           },
-          "rain_impact_label": "Mưa nhẹ",
-          "background_model_rate_mm_h": 0.4,
+          "rain_impact_label": "Mưa vừa, cục bộ có thể mưa mạnh",
+          "background_model_rate_mm_h": 3.79,
           "impact_basis": "MODEL_3H_BACKGROUND_PLUS_SATELLITE_CONVECTIVE_TAIL",
-          "motion_component": 0.0,
+          "motion_component": 15.0,
           "method": "PQ_RAIN_IMMINENCE_V2_SATELLITE_MOTION_ENSEMBLE_HEURISTIC_NOT_PROBABILITY",
           "not_probability": true,
           "note": "Short-range convective context only. It does not replace ACTUAL rain observations or claim a numeric rain probability."
@@ -131,7 +131,7 @@
         "remote_gauge_uncertainty_share": 0.09,
         "ensemble_context": {
           "valid_time": "2026-09-24T12:00:00+00:00",
-          "gap_hours": 0.84,
+          "gap_hours": 0.16,
           "q50_mm": 4.3,
           "q90_mm": 7.38,
           "spread_mm": 3.05,
@@ -140,10 +140,10 @@
         },
         "note": "ACTUAL VRain remains separate from ESTIMATED_NOW. A dry co-located gauge remains strong evidence, while a remote dry gauge is down-weighted during strong convection so localized rain is not forced to near-zero."
       },
-      "wave_hs_m": 1.28,
-      "wave_hmax_m": 2.09,
+      "wave_hs_m": 1.62,
+      "wave_hmax_m": 2.65,
       "wave_period_s": 5.7,
-      "current_kmh": 0.01,
+      "current_kmh": 0.16,
       "marine": {
         "data_class": "MODEL_ONLY",
         "method": "COPERNICUS_ECMWF_MODEL",
@@ -153,7 +153,7 @@
       "actual_anchors": {
         "vvpq": {
           "status": "FRESH",
-          "observed_at": "2026-09-24T12:30:00+00:00",
+          "observed_at": "2026-09-24T11:30:00+00:00",
           "distance_km": 6.6
         },
         "rain_gauges": [
@@ -161,25 +161,25 @@
             "station": "An Thới",
             "lat": 10.018482,
             "lon": 104.0149,
-            "accumulation_mm": 174.79999999999995,
+            "accumulation_mm": 171.39999999999995,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           },
           {
             "station": "Bãi Thơm",
             "lat": 10.411765,
             "lon": 104.031055,
-            "accumulation_mm": 97.2,
+            "accumulation_mm": 95.0,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           },
           {
             "station": "Cửa Cạn",
             "lat": 10.292693,
             "lon": 103.914799,
-            "accumulation_mm": 84.39999999999996,
+            "accumulation_mm": 82.19999999999996,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           }
         ]
       }
@@ -189,43 +189,43 @@
       "lat": 10.0191,
       "lon": 104.015,
       "reference_type": "production_point",
-      "analysis_time": "2026-09-24T12:50:35.432355+00:00",
-      "temperature_c": 27.4,
+      "analysis_time": "2026-09-24T11:50:27.125588+00:00",
+      "temperature_c": 26.7,
       "temperature": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V1_MODEL_RESIDUAL",
-        "baseline_model": 27.3,
-        "anchor_observed": 25.0,
-        "anchor_model_proxy": 24.8,
-        "applied_residual_c": 0.11,
+        "baseline_model": 27.0,
+        "anchor_observed": 24.0,
+        "anchor_model_proxy": 24.5,
+        "applied_residual_c": -0.28,
         "confidence": 0.66
       },
-      "wind_kmh": 30.6,
+      "wind_kmh": 40.2,
       "wind_direction_deg": null,
       "wind": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V2_ENSEMBLE_AWARE_RESIDUAL_CONVECTIVE",
-        "baseline_model": 29.0,
+        "baseline_model": 37.9,
         "anchor_observed_kmh": 1.85,
-        "anchor_model_proxy_kmh": 14.5,
-        "model_gust_kmh": 38.5,
+        "anchor_model_proxy_kmh": 19.9,
+        "model_gust_kmh": 51.3,
         "convective_score": 75.0,
-        "convective_floor_kmh": 30.6,
+        "convective_floor_kmh": 40.2,
         "ensemble_context": {
           "available": true,
           "valid_time": "2026-09-24T12:00:00+00:00",
-          "gap_hours": 0.84,
+          "gap_hours": 0.16,
           "q50_kmh": 29.758106,
           "q90_kmh": 35.396654,
           "spread_kmh": 9.960908,
-          "adaptive_gain": 1.16,
-          "kalman_like_gain": 0.809,
-          "background_sigma_kmh": 7.4,
+          "adaptive_gain": 1.183,
+          "kalman_like_gain": 0.846,
+          "background_sigma_kmh": 8.43,
           "observation_repr_sigma_kmh": 3.59,
-          "source_skill_multiplier": 0.953,
+          "source_skill_multiplier": 0.952,
           "source_skill_status": "PROVISIONAL"
         },
-        "confidence": 0.44
+        "confidence": 0.45
       },
       "rain": {
         "rain_rate_mm_h": 0.0,
@@ -240,7 +240,7 @@
             "rate_mm_h": 0.0,
             "weight": 0.987,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 174.79999999999995,
+            "accumulation_mm": 171.39999999999995,
             "source_quality_factor": 0.989
           },
           {
@@ -249,7 +249,7 @@
             "rate_mm_h": 0.0,
             "weight": 0.208,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 97.2,
+            "accumulation_mm": 95.0,
             "source_quality_factor": 0.989
           },
           {
@@ -258,43 +258,43 @@
             "rate_mm_h": 0.0,
             "weight": 0.312,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 84.39999999999996,
+            "accumulation_mm": 82.19999999999996,
             "source_quality_factor": 0.989
           }
         ],
-        "model_rain_3h_mm": 0.87,
+        "model_rain_3h_mm": 10.96,
         "model_share": 0.0,
         "gauge_share": 1.0,
         "nearest_gauge_km": 0.1,
         "convective_score": 75.0,
         "imminence": {
-          "score": 57.6,
+          "score": 73.0,
           "level": "ELEVATED",
           "window_minutes": 60,
           "convective_score": 75.0,
-          "cooling_c_per_20m_proxy": 0.3,
-          "model_rain_3h_mm": 0.87,
+          "cooling_c_per_20m_proxy": 1.8,
+          "model_rain_3h_mm": 10.96,
           "ensemble_q90_mm": 5.299947,
           "ensemble_probability_5": 0.2174,
           "cloud_motion": {
-            "status": "MOVING_AWAY",
+            "status": "PASSING_BY",
             "source_sector": "Tây",
             "nearest_corridor": null,
-            "motion_heading_deg": 246.4,
-            "motion_heading": "Tây Nam",
-            "motion_speed_kmh": 68.7,
-            "distance_to_target_km": 58.3,
+            "motion_heading_deg": 19.9,
+            "motion_heading": "Bắc",
+            "motion_speed_kmh": 14.1,
+            "distance_to_target_km": 29.6,
             "approaching": false,
             "predicted_impact": false,
             "public_track_usable": true,
             "eta_minutes": null,
             "arrival_time": null,
             "exit_time": null,
-            "closest_approach_km": null,
+            "closest_approach_km": 21.8,
             "tracking_confidence": "MEDIUM_HIGH"
           },
-          "rain_impact_label": "Mưa nhẹ",
-          "background_model_rate_mm_h": 0.29,
+          "rain_impact_label": "Mưa vừa",
+          "background_model_rate_mm_h": 3.65,
           "impact_basis": "MODEL_3H_BACKGROUND_PLUS_SATELLITE_CONVECTIVE_TAIL",
           "motion_component": 0.0,
           "method": "PQ_RAIN_IMMINENCE_V2_SATELLITE_MOTION_ENSEMBLE_HEURISTIC_NOT_PROBABILITY",
@@ -305,7 +305,7 @@
         "colocated_actual_rate_mm_h": 0.0,
         "ensemble_context": {
           "valid_time": "2026-09-24T12:00:00+00:00",
-          "gap_hours": 0.84,
+          "gap_hours": 0.16,
           "q50_mm": 3.088045,
           "q90_mm": 5.299947,
           "spread_mm": 2.190357,
@@ -314,10 +314,10 @@
         },
         "note": "Fresh co-located VRain observation dominates this point. Remote gauges and model/ensemble remain context only."
       },
-      "wave_hs_m": 1.09,
-      "wave_hmax_m": 1.79,
-      "wave_period_s": 5.5,
-      "current_kmh": 0.14,
+      "wave_hs_m": 1.43,
+      "wave_hmax_m": 2.34,
+      "wave_period_s": 5.6,
+      "current_kmh": 0.2,
       "marine": {
         "data_class": "MODEL_ONLY",
         "method": "COPERNICUS_ECMWF_MODEL",
@@ -327,7 +327,7 @@
       "actual_anchors": {
         "vvpq": {
           "status": "FRESH",
-          "observed_at": "2026-09-24T12:30:00+00:00",
+          "observed_at": "2026-09-24T11:30:00+00:00",
           "distance_km": 16.8
         },
         "rain_gauges": [
@@ -335,25 +335,25 @@
             "station": "An Thới",
             "lat": 10.018482,
             "lon": 104.0149,
-            "accumulation_mm": 174.79999999999995,
+            "accumulation_mm": 171.39999999999995,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           },
           {
             "station": "Bãi Thơm",
             "lat": 10.411765,
             "lon": 104.031055,
-            "accumulation_mm": 97.2,
+            "accumulation_mm": 95.0,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           },
           {
             "station": "Cửa Cạn",
             "lat": 10.292693,
             "lon": 103.914799,
-            "accumulation_mm": 84.39999999999996,
+            "accumulation_mm": 82.19999999999996,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           }
         ]
       }
@@ -363,46 +363,46 @@
       "lat": 10.3759,
       "lon": 103.9,
       "reference_type": "production_point",
-      "analysis_time": "2026-09-24T12:50:35.432355+00:00",
-      "temperature_c": 27.0,
+      "analysis_time": "2026-09-24T11:50:27.125588+00:00",
+      "temperature_c": 26.1,
       "temperature": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V1_MODEL_RESIDUAL",
-        "baseline_model": 26.9,
-        "anchor_observed": 25.0,
-        "anchor_model_proxy": 24.8,
-        "applied_residual_c": 0.09,
+        "baseline_model": 26.3,
+        "anchor_observed": 24.0,
+        "anchor_model_proxy": 24.5,
+        "applied_residual_c": -0.23,
         "confidence": 0.61
       },
-      "wind_kmh": 23.5,
+      "wind_kmh": 29.1,
       "wind_direction_deg": null,
       "wind": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V2_ENSEMBLE_AWARE_RESIDUAL_CONVECTIVE",
-        "baseline_model": 21.7,
+        "baseline_model": 27.3,
         "anchor_observed_kmh": 1.85,
-        "anchor_model_proxy_kmh": 14.5,
-        "model_gust_kmh": 32.4,
+        "anchor_model_proxy_kmh": 19.9,
+        "model_gust_kmh": 37.6,
         "convective_score": 75.0,
-        "convective_floor_kmh": 23.5,
+        "convective_floor_kmh": 29.1,
         "ensemble_context": {
           "available": true,
           "valid_time": "2026-09-24T12:00:00+00:00",
-          "gap_hours": 0.84,
+          "gap_hours": 0.16,
           "q50_kmh": 19.869897,
           "q90_kmh": 26.963276,
           "spread_kmh": 5.699328,
-          "adaptive_gain": 0.945,
-          "kalman_like_gain": 0.488,
-          "background_sigma_kmh": 4.33,
-          "observation_repr_sigma_kmh": 4.44,
-          "source_skill_multiplier": 0.953,
+          "adaptive_gain": 1.03,
+          "kalman_like_gain": 0.617,
+          "background_sigma_kmh": 5.63,
+          "observation_repr_sigma_kmh": 4.43,
+          "source_skill_multiplier": 0.952,
           "source_skill_status": "PROVISIONAL"
         },
-        "confidence": 0.37
+        "confidence": 0.38
       },
       "rain": {
-        "rain_rate_mm_h": 0.02,
+        "rain_rate_mm_h": 0.32,
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V2_GAUGE_CONVECTIVE_BLEND",
         "confidence": 0.56,
@@ -414,7 +414,7 @@
             "rate_mm_h": 0.0,
             "weight": 0.223,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 174.79999999999995,
+            "accumulation_mm": 171.39999999999995,
             "source_quality_factor": 0.989
           },
           {
@@ -423,7 +423,7 @@
             "rate_mm_h": 0.0,
             "weight": 0.581,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 97.2,
+            "accumulation_mm": 95.0,
             "source_quality_factor": 0.989
           },
           {
@@ -432,45 +432,45 @@
             "rate_mm_h": 0.0,
             "weight": 0.707,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 84.39999999999996,
+            "accumulation_mm": 82.19999999999996,
             "source_quality_factor": 0.989
           }
         ],
-        "model_rain_3h_mm": 0.44,
+        "model_rain_3h_mm": 8.93,
         "model_share": 0.086,
         "gauge_share": 0.914,
         "nearest_gauge_km": 9.4,
         "convective_score": 75.0,
         "imminence": {
-          "score": 56.3,
-          "level": "ELEVATED",
+          "score": 88.0,
+          "level": "HIGH",
           "window_minutes": 60,
           "convective_score": 75.0,
-          "cooling_c_per_20m_proxy": 0.8,
-          "model_rain_3h_mm": 0.44,
+          "cooling_c_per_20m_proxy": 1.7,
+          "model_rain_3h_mm": 8.93,
           "ensemble_q90_mm": 6.0,
           "ensemble_probability_5": 0.3043,
           "cloud_motion": {
-            "status": "MOVING_AWAY",
+            "status": "IMPACT_EXPECTED",
             "source_sector": "Tây Nam",
             "nearest_corridor": null,
-            "motion_heading_deg": 247.1,
-            "motion_heading": "Tây Nam",
-            "motion_speed_kmh": 73.3,
-            "distance_to_target_km": 62.3,
-            "approaching": false,
-            "predicted_impact": false,
+            "motion_heading_deg": 23.3,
+            "motion_heading": "Đông Bắc",
+            "motion_speed_kmh": 22.4,
+            "distance_to_target_km": 39.6,
+            "approaching": true,
+            "predicted_impact": true,
             "public_track_usable": true,
-            "eta_minutes": null,
-            "arrival_time": null,
-            "exit_time": null,
-            "closest_approach_km": null,
+            "eta_minutes": 58.0,
+            "arrival_time": "2026-09-24T12:18:20+00:00",
+            "exit_time": "2026-09-24T13:54:20+00:00",
+            "closest_approach_km": 0.4,
             "tracking_confidence": "MEDIUM_HIGH"
           },
-          "rain_impact_label": "Mưa nhẹ",
-          "background_model_rate_mm_h": 0.15,
+          "rain_impact_label": "Mưa vừa, cục bộ có thể mưa mạnh",
+          "background_model_rate_mm_h": 2.98,
           "impact_basis": "MODEL_3H_BACKGROUND_PLUS_SATELLITE_CONVECTIVE_TAIL",
-          "motion_component": 0.0,
+          "motion_component": 15.0,
           "method": "PQ_RAIN_IMMINENCE_V2_SATELLITE_MOTION_ENSEMBLE_HEURISTIC_NOT_PROBABILITY",
           "not_probability": true,
           "note": "Short-range convective context only. It does not replace ACTUAL rain observations or claim a numeric rain probability."
@@ -478,7 +478,7 @@
         "remote_gauge_uncertainty_share": 0.086,
         "ensemble_context": {
           "valid_time": "2026-09-24T12:00:00+00:00",
-          "gap_hours": 0.84,
+          "gap_hours": 0.16,
           "q50_mm": 2.3,
           "q90_mm": 6.0,
           "spread_mm": 4.2,
@@ -487,10 +487,10 @@
         },
         "note": "ACTUAL VRain remains separate from ESTIMATED_NOW. A dry co-located gauge remains strong evidence, while a remote dry gauge is down-weighted during strong convection so localized rain is not forced to near-zero."
       },
-      "wave_hs_m": 0.51,
-      "wave_hmax_m": 0.88,
-      "wave_period_s": 3.3,
-      "current_kmh": 0.27,
+      "wave_hs_m": 0.53,
+      "wave_hmax_m": 0.91,
+      "wave_period_s": 3.1,
+      "current_kmh": 0.09,
       "marine": {
         "data_class": "MODEL_ONLY",
         "method": "COPERNICUS_ECMWF_MODEL",
@@ -500,7 +500,7 @@
       "actual_anchors": {
         "vvpq": {
           "status": "FRESH",
-          "observed_at": "2026-09-24T12:30:00+00:00",
+          "observed_at": "2026-09-24T11:30:00+00:00",
           "distance_km": 25.2
         },
         "rain_gauges": [
@@ -508,25 +508,25 @@
             "station": "An Thới",
             "lat": 10.018482,
             "lon": 104.0149,
-            "accumulation_mm": 174.79999999999995,
+            "accumulation_mm": 171.39999999999995,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           },
           {
             "station": "Bãi Thơm",
             "lat": 10.411765,
             "lon": 104.031055,
-            "accumulation_mm": 97.2,
+            "accumulation_mm": 95.0,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           },
           {
             "station": "Cửa Cạn",
             "lat": 10.292693,
             "lon": 103.914799,
-            "accumulation_mm": 84.39999999999996,
+            "accumulation_mm": 82.19999999999996,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           }
         ]
       }
@@ -536,43 +536,43 @@
       "lat": 10.292693,
       "lon": 103.914799,
       "reference_type": "island_watch_groundtruth_anchor",
-      "analysis_time": "2026-09-24T12:50:35.432355+00:00",
-      "temperature_c": 24.9,
+      "analysis_time": "2026-09-24T11:50:27.125588+00:00",
+      "temperature_c": 24.2,
       "temperature": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V1_MODEL_RESIDUAL",
-        "baseline_model": 24.8,
-        "anchor_observed": 25.0,
-        "anchor_model_proxy": 24.8,
-        "applied_residual_c": 0.11,
+        "baseline_model": 24.5,
+        "anchor_observed": 24.0,
+        "anchor_model_proxy": 24.5,
+        "applied_residual_c": -0.29,
         "confidence": 0.66
       },
-      "wind_kmh": 17.0,
+      "wind_kmh": 23.7,
       "wind_direction_deg": null,
       "wind": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V2_ENSEMBLE_AWARE_RESIDUAL_CONVECTIVE",
-        "baseline_model": 14.5,
+        "baseline_model": 19.9,
         "anchor_observed_kmh": 1.85,
-        "anchor_model_proxy_kmh": 14.5,
-        "model_gust_kmh": 29.0,
+        "anchor_model_proxy_kmh": 19.9,
+        "model_gust_kmh": 41.9,
         "convective_score": 75.0,
-        "convective_floor_kmh": 17.0,
+        "convective_floor_kmh": 23.7,
         "ensemble_context": {
           "available": true,
           "valid_time": "2026-09-24T12:00:00+00:00",
-          "gap_hours": 0.84,
+          "gap_hours": 0.16,
           "q50_kmh": 19.869897,
           "q90_kmh": 26.963276,
           "spread_kmh": 5.699328,
-          "adaptive_gain": 1.065,
-          "kalman_like_gain": 0.667,
-          "background_sigma_kmh": 5.01,
+          "adaptive_gain": 1.01,
+          "kalman_like_gain": 0.587,
+          "background_sigma_kmh": 4.23,
           "observation_repr_sigma_kmh": 3.54,
-          "source_skill_multiplier": 0.953,
+          "source_skill_multiplier": 0.952,
           "source_skill_status": "PROVISIONAL"
         },
-        "confidence": 0.43
+        "confidence": 0.42
       },
       "rain": {
         "rain_rate_mm_h": 0.0,
@@ -587,7 +587,7 @@
             "rate_mm_h": 0.0,
             "weight": 0.311,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 174.79999999999995,
+            "accumulation_mm": 171.39999999999995,
             "source_quality_factor": 0.989
           },
           {
@@ -596,7 +596,7 @@
             "rate_mm_h": 0.0,
             "weight": 0.513,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 97.2,
+            "accumulation_mm": 95.0,
             "source_quality_factor": 0.989
           },
           {
@@ -605,45 +605,45 @@
             "rate_mm_h": 0.0,
             "weight": 0.989,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 84.39999999999996,
+            "accumulation_mm": 82.19999999999996,
             "source_quality_factor": 0.989
           }
         ],
-        "model_rain_3h_mm": 1.21,
+        "model_rain_3h_mm": 11.37,
         "model_share": 0.0,
         "gauge_share": 1.0,
         "nearest_gauge_km": 0.0,
         "convective_score": 75.0,
         "imminence": {
-          "score": 58.6,
-          "level": "ELEVATED",
+          "score": 88.0,
+          "level": "HIGH",
           "window_minutes": 60,
           "convective_score": 75.0,
-          "cooling_c_per_20m_proxy": 0.7,
-          "model_rain_3h_mm": 1.21,
+          "cooling_c_per_20m_proxy": 1.8,
+          "model_rain_3h_mm": 11.37,
           "ensemble_q90_mm": 6.47619,
           "ensemble_probability_5": 0.3043,
           "cloud_motion": {
-            "status": "MOVING_AWAY",
+            "status": "IMPACT_EXPECTED",
             "source_sector": "Tây Nam",
             "nearest_corridor": null,
-            "motion_heading_deg": 248.6,
-            "motion_heading": "Tây",
-            "motion_speed_kmh": 71.6,
-            "distance_to_target_km": 59.8,
-            "approaching": false,
-            "predicted_impact": false,
+            "motion_heading_deg": 24.4,
+            "motion_heading": "Đông Bắc",
+            "motion_speed_kmh": 19.3,
+            "distance_to_target_km": 36.0,
+            "approaching": true,
+            "predicted_impact": true,
             "public_track_usable": true,
-            "eta_minutes": null,
-            "arrival_time": null,
-            "exit_time": null,
-            "closest_approach_km": null,
+            "eta_minutes": 56.0,
+            "arrival_time": "2026-09-24T12:16:20+00:00",
+            "exit_time": "2026-09-24T14:07:20+00:00",
+            "closest_approach_km": 2.8,
             "tracking_confidence": "MEDIUM_HIGH"
           },
-          "rain_impact_label": "Mưa nhẹ",
-          "background_model_rate_mm_h": 0.4,
+          "rain_impact_label": "Mưa vừa, cục bộ có thể mưa mạnh",
+          "background_model_rate_mm_h": 3.79,
           "impact_basis": "MODEL_3H_BACKGROUND_PLUS_SATELLITE_CONVECTIVE_TAIL",
-          "motion_component": 0.0,
+          "motion_component": 15.0,
           "method": "PQ_RAIN_IMMINENCE_V2_SATELLITE_MOTION_ENSEMBLE_HEURISTIC_NOT_PROBABILITY",
           "not_probability": true,
           "note": "Short-range convective context only. It does not replace ACTUAL rain observations or claim a numeric rain probability."
@@ -652,7 +652,7 @@
         "colocated_actual_rate_mm_h": 0.0,
         "ensemble_context": {
           "valid_time": "2026-09-24T12:00:00+00:00",
-          "gap_hours": 0.84,
+          "gap_hours": 0.16,
           "q50_mm": 2.48254,
           "q90_mm": 6.47619,
           "spread_mm": 4.533333,
@@ -661,10 +661,10 @@
         },
         "note": "Fresh co-located VRain observation dominates this point. Remote gauges and model/ensemble remain context only."
       },
-      "wave_hs_m": 1.13,
-      "wave_hmax_m": 1.85,
-      "wave_period_s": 5.6,
-      "current_kmh": 0.01,
+      "wave_hs_m": 1.33,
+      "wave_hmax_m": 2.18,
+      "wave_period_s": 5.5,
+      "current_kmh": 0.16,
       "marine": {
         "data_class": "MODEL_ONLY",
         "method": "COPERNICUS_ECMWF_MODEL",
@@ -674,7 +674,7 @@
       "actual_anchors": {
         "vvpq": {
           "status": "FRESH",
-          "observed_at": "2026-09-24T12:30:00+00:00",
+          "observed_at": "2026-09-24T11:30:00+00:00",
           "distance_km": 16.3
         },
         "rain_gauges": [
@@ -682,25 +682,25 @@
             "station": "An Thới",
             "lat": 10.018482,
             "lon": 104.0149,
-            "accumulation_mm": 174.79999999999995,
+            "accumulation_mm": 171.39999999999995,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           },
           {
             "station": "Bãi Thơm",
             "lat": 10.411765,
             "lon": 104.031055,
-            "accumulation_mm": 97.2,
+            "accumulation_mm": 95.0,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           },
           {
             "station": "Cửa Cạn",
             "lat": 10.292693,
             "lon": 103.914799,
-            "accumulation_mm": 84.39999999999996,
+            "accumulation_mm": 82.19999999999996,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           }
         ]
       }
@@ -710,43 +710,43 @@
       "lat": 10.411765,
       "lon": 104.031055,
       "reference_type": "island_watch_groundtruth_anchor",
-      "analysis_time": "2026-09-24T12:50:35.432355+00:00",
-      "temperature_c": 27.0,
+      "analysis_time": "2026-09-24T11:50:27.125588+00:00",
+      "temperature_c": 26.1,
       "temperature": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V1_MODEL_RESIDUAL",
-        "baseline_model": 26.9,
-        "anchor_observed": 25.0,
-        "anchor_model_proxy": 24.8,
-        "applied_residual_c": 0.09,
+        "baseline_model": 26.3,
+        "anchor_observed": 24.0,
+        "anchor_model_proxy": 24.5,
+        "applied_residual_c": -0.22,
         "confidence": 0.6
       },
-      "wind_kmh": 23.5,
+      "wind_kmh": 29.1,
       "wind_direction_deg": null,
       "wind": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V2_ENSEMBLE_AWARE_RESIDUAL_CONVECTIVE",
-        "baseline_model": 21.7,
+        "baseline_model": 27.3,
         "anchor_observed_kmh": 1.85,
-        "anchor_model_proxy_kmh": 14.5,
-        "model_gust_kmh": 32.4,
+        "anchor_model_proxy_kmh": 19.9,
+        "model_gust_kmh": 37.6,
         "convective_score": 75.0,
-        "convective_floor_kmh": 23.5,
+        "convective_floor_kmh": 29.1,
         "ensemble_context": {
           "available": true,
           "valid_time": "2026-09-24T12:00:00+00:00",
-          "gap_hours": 0.84,
+          "gap_hours": 0.16,
           "q50_kmh": 19.869897,
           "q90_kmh": 26.963276,
           "spread_kmh": 5.699328,
-          "adaptive_gain": 0.93,
-          "kalman_like_gain": 0.466,
-          "background_sigma_kmh": 4.33,
+          "adaptive_gain": 1.016,
+          "kalman_like_gain": 0.595,
+          "background_sigma_kmh": 5.63,
           "observation_repr_sigma_kmh": 4.64,
-          "source_skill_multiplier": 0.953,
+          "source_skill_multiplier": 0.952,
           "source_skill_status": "PROVISIONAL"
         },
-        "confidence": 0.36
+        "confidence": 0.37
       },
       "rain": {
         "rain_rate_mm_h": 0.0,
@@ -761,7 +761,7 @@
             "rate_mm_h": 0.0,
             "weight": 0.207,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 174.79999999999995,
+            "accumulation_mm": 171.39999999999995,
             "source_quality_factor": 0.989
           },
           {
@@ -770,7 +770,7 @@
             "rate_mm_h": 0.0,
             "weight": 0.989,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 97.2,
+            "accumulation_mm": 95.0,
             "source_quality_factor": 0.989
           },
           {
@@ -779,45 +779,45 @@
             "rate_mm_h": 0.0,
             "weight": 0.513,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 84.39999999999996,
+            "accumulation_mm": 82.19999999999996,
             "source_quality_factor": 0.989
           }
         ],
-        "model_rain_3h_mm": 0.44,
+        "model_rain_3h_mm": 8.93,
         "model_share": 0.0,
         "gauge_share": 1.0,
         "nearest_gauge_km": 0.0,
         "convective_score": 75.0,
         "imminence": {
-          "score": 56.3,
-          "level": "ELEVATED",
+          "score": 81.0,
+          "level": "HIGH",
           "window_minutes": 60,
           "convective_score": 75.0,
-          "cooling_c_per_20m_proxy": 0.7,
-          "model_rain_3h_mm": 0.44,
+          "cooling_c_per_20m_proxy": 0.9,
+          "model_rain_3h_mm": 8.93,
           "ensemble_q90_mm": 6.010878,
           "ensemble_probability_5": 0.3043,
           "cloud_motion": {
-            "status": "MOVING_AWAY",
+            "status": "IMPACT_EXPECTED",
             "source_sector": "Tây Nam",
             "nearest_corridor": null,
-            "motion_heading_deg": 246.2,
-            "motion_heading": "Tây Nam",
-            "motion_speed_kmh": 74.9,
-            "distance_to_target_km": 67.8,
-            "approaching": false,
-            "predicted_impact": false,
+            "motion_heading_deg": 23.1,
+            "motion_heading": "Đông Bắc",
+            "motion_speed_kmh": 25.4,
+            "distance_to_target_km": 44.2,
+            "approaching": true,
+            "predicted_impact": true,
             "public_track_usable": true,
-            "eta_minutes": null,
-            "arrival_time": null,
-            "exit_time": null,
-            "closest_approach_km": null,
+            "eta_minutes": 64.0,
+            "arrival_time": "2026-09-24T12:24:20+00:00",
+            "exit_time": "2026-09-24T13:42:20+00:00",
+            "closest_approach_km": 6.9,
             "tracking_confidence": "MEDIUM_HIGH"
           },
-          "rain_impact_label": "Mưa nhẹ",
-          "background_model_rate_mm_h": 0.15,
+          "rain_impact_label": "Mưa vừa, cục bộ có thể mưa mạnh",
+          "background_model_rate_mm_h": 2.98,
           "impact_basis": "MODEL_3H_BACKGROUND_PLUS_SATELLITE_CONVECTIVE_TAIL",
-          "motion_component": 0.0,
+          "motion_component": 8.0,
           "method": "PQ_RAIN_IMMINENCE_V2_SATELLITE_MOTION_ENSEMBLE_HEURISTIC_NOT_PROBABILITY",
           "not_probability": true,
           "note": "Short-range convective context only. It does not replace ACTUAL rain observations or claim a numeric rain probability."
@@ -826,7 +826,7 @@
         "colocated_actual_rate_mm_h": 0.0,
         "ensemble_context": {
           "valid_time": "2026-09-24T12:00:00+00:00",
-          "gap_hours": 0.84,
+          "gap_hours": 0.16,
           "q50_mm": 2.30417,
           "q90_mm": 6.010878,
           "spread_mm": 4.207615,
@@ -835,10 +835,10 @@
         },
         "note": "Fresh co-located VRain observation dominates this point. Remote gauges and model/ensemble remain context only."
       },
-      "wave_hs_m": 0.51,
-      "wave_hmax_m": 0.88,
-      "wave_period_s": 3.3,
-      "current_kmh": 0.21,
+      "wave_hs_m": 0.53,
+      "wave_hmax_m": 0.91,
+      "wave_period_s": 3.1,
+      "current_kmh": 0.17,
       "marine": {
         "data_class": "MODEL_ONLY",
         "method": "COPERNICUS_ECMWF_MODEL",
@@ -848,7 +848,7 @@
       "actual_anchors": {
         "vvpq": {
           "status": "FRESH",
-          "observed_at": "2026-09-24T12:30:00+00:00",
+          "observed_at": "2026-09-24T11:30:00+00:00",
           "distance_km": 27.3
         },
         "rain_gauges": [
@@ -856,25 +856,25 @@
             "station": "An Thới",
             "lat": 10.018482,
             "lon": 104.0149,
-            "accumulation_mm": 174.79999999999995,
+            "accumulation_mm": 171.39999999999995,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           },
           {
             "station": "Bãi Thơm",
             "lat": 10.411765,
             "lon": 104.031055,
-            "accumulation_mm": 97.2,
+            "accumulation_mm": 95.0,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           },
           {
             "station": "Cửa Cạn",
             "lat": 10.292693,
             "lon": 103.914799,
-            "accumulation_mm": 84.39999999999996,
+            "accumulation_mm": 82.19999999999996,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           }
         ]
       }
@@ -884,46 +884,46 @@
       "lat": 10.18062,
       "lon": 104.04463,
       "reference_type": "island_watch_locality",
-      "analysis_time": "2026-09-24T12:50:35.432355+00:00",
-      "temperature_c": 24.9,
+      "analysis_time": "2026-09-24T11:50:27.125588+00:00",
+      "temperature_c": 24.1,
       "temperature": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V1_MODEL_RESIDUAL",
-        "baseline_model": 24.8,
-        "anchor_observed": 25.0,
-        "anchor_model_proxy": 24.8,
-        "applied_residual_c": 0.14,
+        "baseline_model": 24.5,
+        "anchor_observed": 24.0,
+        "anchor_model_proxy": 24.5,
+        "applied_residual_c": -0.36,
         "confidence": 0.75
       },
-      "wind_kmh": 17.0,
+      "wind_kmh": 23.7,
       "wind_direction_deg": null,
       "wind": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V2_ENSEMBLE_AWARE_RESIDUAL_CONVECTIVE",
-        "baseline_model": 14.5,
+        "baseline_model": 19.9,
         "anchor_observed_kmh": 1.85,
-        "anchor_model_proxy_kmh": 14.5,
-        "model_gust_kmh": 29.0,
+        "anchor_model_proxy_kmh": 19.9,
+        "model_gust_kmh": 41.9,
         "convective_score": 75.0,
-        "convective_floor_kmh": 17.0,
+        "convective_floor_kmh": 23.7,
         "ensemble_context": {
           "available": true,
           "valid_time": "2026-09-24T12:00:00+00:00",
-          "gap_hours": 0.84,
+          "gap_hours": 0.16,
           "q50_kmh": 29.758106,
           "q90_kmh": 35.396654,
           "spread_kmh": 9.960908,
-          "adaptive_gain": 1.253,
-          "kalman_like_gain": 0.949,
-          "background_sigma_kmh": 10.62,
+          "adaptive_gain": 1.238,
+          "kalman_like_gain": 0.928,
+          "background_sigma_kmh": 8.88,
           "observation_repr_sigma_kmh": 2.47,
-          "source_skill_multiplier": 0.953,
+          "source_skill_multiplier": 0.952,
           "source_skill_status": "PROVISIONAL"
         },
         "confidence": 0.54
       },
       "rain": {
-        "rain_rate_mm_h": 0.09,
+        "rain_rate_mm_h": 0.83,
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V2_GAUGE_CONVECTIVE_BLEND",
         "confidence": 0.52,
@@ -935,7 +935,7 @@
             "rate_mm_h": 0.0,
             "weight": 0.514,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 174.79999999999995,
+            "accumulation_mm": 171.39999999999995,
             "source_quality_factor": 0.989
           },
           {
@@ -944,7 +944,7 @@
             "rate_mm_h": 0.0,
             "weight": 0.394,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 97.2,
+            "accumulation_mm": 95.0,
             "source_quality_factor": 0.989
           },
           {
@@ -953,45 +953,45 @@
             "rate_mm_h": 0.0,
             "weight": 0.504,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 84.39999999999996,
+            "accumulation_mm": 82.19999999999996,
             "source_quality_factor": 0.989
           }
         ],
-        "model_rain_3h_mm": 1.21,
+        "model_rain_3h_mm": 11.37,
         "model_share": 0.175,
         "gauge_share": 0.825,
         "nearest_gauge_km": 18.3,
         "convective_score": 75.0,
         "imminence": {
-          "score": 58.6,
-          "level": "ELEVATED",
+          "score": 81.0,
+          "level": "HIGH",
           "window_minutes": 60,
           "convective_score": 75.0,
-          "cooling_c_per_20m_proxy": 0.6,
-          "model_rain_3h_mm": 1.21,
+          "cooling_c_per_20m_proxy": 1.7,
+          "model_rain_3h_mm": 11.37,
           "ensemble_q90_mm": 7.38,
           "ensemble_probability_5": 0.3478,
           "cloud_motion": {
-            "status": "MOVING_AWAY",
+            "status": "IMPACT_EXPECTED",
             "source_sector": "Tây Nam",
             "nearest_corridor": null,
-            "motion_heading_deg": 245.9,
-            "motion_heading": "Tây Nam",
-            "motion_speed_kmh": 71.5,
-            "distance_to_target_km": 62.9,
-            "approaching": false,
-            "predicted_impact": false,
+            "motion_heading_deg": 21.4,
+            "motion_heading": "Bắc",
+            "motion_speed_kmh": 17.9,
+            "distance_to_target_km": 35.5,
+            "approaching": true,
+            "predicted_impact": true,
             "public_track_usable": true,
-            "eta_minutes": null,
-            "arrival_time": null,
-            "exit_time": null,
-            "closest_approach_km": null,
+            "eta_minutes": 89.0,
+            "arrival_time": "2026-09-24T12:49:20+00:00",
+            "exit_time": "2026-09-24T13:19:20+00:00",
+            "closest_approach_km": 17.4,
             "tracking_confidence": "MEDIUM_HIGH"
           },
-          "rain_impact_label": "Mưa nhẹ",
-          "background_model_rate_mm_h": 0.4,
+          "rain_impact_label": "Mưa vừa, cục bộ có thể mưa mạnh",
+          "background_model_rate_mm_h": 3.79,
           "impact_basis": "MODEL_3H_BACKGROUND_PLUS_SATELLITE_CONVECTIVE_TAIL",
-          "motion_component": 0.0,
+          "motion_component": 8.0,
           "method": "PQ_RAIN_IMMINENCE_V2_SATELLITE_MOTION_ENSEMBLE_HEURISTIC_NOT_PROBABILITY",
           "not_probability": true,
           "note": "Short-range convective context only. It does not replace ACTUAL rain observations or claim a numeric rain probability."
@@ -999,7 +999,7 @@
         "remote_gauge_uncertainty_share": 0.175,
         "ensemble_context": {
           "valid_time": "2026-09-24T12:00:00+00:00",
-          "gap_hours": 0.84,
+          "gap_hours": 0.16,
           "q50_mm": 4.3,
           "q90_mm": 7.38,
           "spread_mm": 3.05,
@@ -1008,10 +1008,10 @@
         },
         "note": "ACTUAL VRain remains separate from ESTIMATED_NOW. A dry co-located gauge remains strong evidence, while a remote dry gauge is down-weighted during strong convection so localized rain is not forced to near-zero."
       },
-      "wave_hs_m": 1.01,
-      "wave_hmax_m": 1.68,
-      "wave_period_s": 4.6,
-      "current_kmh": 0.19,
+      "wave_hs_m": 1.37,
+      "wave_hmax_m": 2.26,
+      "wave_period_s": 5.1,
+      "current_kmh": 0.08,
       "marine": {
         "data_class": "MODEL_ONLY",
         "method": "COPERNICUS_ECMWF_MODEL",
@@ -1021,7 +1021,7 @@
       "actual_anchors": {
         "vvpq": {
           "status": "FRESH",
-          "observed_at": "2026-09-24T12:30:00+00:00",
+          "observed_at": "2026-09-24T11:30:00+00:00",
           "distance_km": 5.6
         },
         "rain_gauges": [
@@ -1029,25 +1029,25 @@
             "station": "An Thới",
             "lat": 10.018482,
             "lon": 104.0149,
-            "accumulation_mm": 174.79999999999995,
+            "accumulation_mm": 171.39999999999995,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           },
           {
             "station": "Bãi Thơm",
             "lat": 10.411765,
             "lon": 104.031055,
-            "accumulation_mm": 97.2,
+            "accumulation_mm": 95.0,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           },
           {
             "station": "Cửa Cạn",
             "lat": 10.292693,
             "lon": 103.914799,
-            "accumulation_mm": 84.39999999999996,
+            "accumulation_mm": 82.19999999999996,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           }
         ]
       }
@@ -1057,46 +1057,46 @@
       "lat": 10.0572576,
       "lon": 104.0363948,
       "reference_type": "island_watch_beach",
-      "analysis_time": "2026-09-24T12:50:35.432355+00:00",
-      "temperature_c": 27.4,
+      "analysis_time": "2026-09-24T11:50:27.125588+00:00",
+      "temperature_c": 26.7,
       "temperature": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V1_MODEL_RESIDUAL",
-        "baseline_model": 27.3,
-        "anchor_observed": 25.0,
-        "anchor_model_proxy": 24.8,
-        "applied_residual_c": 0.12,
+        "baseline_model": 27.0,
+        "anchor_observed": 24.0,
+        "anchor_model_proxy": 24.5,
+        "applied_residual_c": -0.31,
         "confidence": 0.69
       },
-      "wind_kmh": 30.6,
+      "wind_kmh": 40.2,
       "wind_direction_deg": null,
       "wind": {
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V2_ENSEMBLE_AWARE_RESIDUAL_CONVECTIVE",
-        "baseline_model": 29.0,
+        "baseline_model": 37.9,
         "anchor_observed_kmh": 1.85,
-        "anchor_model_proxy_kmh": 14.5,
-        "model_gust_kmh": 38.5,
+        "anchor_model_proxy_kmh": 19.9,
+        "model_gust_kmh": 51.3,
         "convective_score": 75.0,
-        "convective_floor_kmh": 30.6,
+        "convective_floor_kmh": 40.2,
         "ensemble_context": {
           "available": true,
           "valid_time": "2026-09-24T12:00:00+00:00",
-          "gap_hours": 0.84,
+          "gap_hours": 0.16,
           "q50_kmh": 17.259701,
           "q90_kmh": 21.387113,
           "spread_kmh": 6.68771,
-          "adaptive_gain": 1.187,
-          "kalman_like_gain": 0.85,
-          "background_sigma_kmh": 7.69,
+          "adaptive_gain": 1.236,
+          "kalman_like_gain": 0.926,
+          "background_sigma_kmh": 11.45,
           "observation_repr_sigma_kmh": 3.23,
-          "source_skill_multiplier": 0.953,
+          "source_skill_multiplier": 0.952,
           "source_skill_status": "PROVISIONAL"
         },
-        "confidence": 0.47
+        "confidence": 0.48
       },
       "rain": {
-        "rain_rate_mm_h": 0.01,
+        "rain_rate_mm_h": 0.15,
         "data_class": "ESTIMATED_NOW",
         "method": "PQ_LOCAL_NOW_V2_GAUGE_CONVECTIVE_BLEND",
         "confidence": 0.58,
@@ -1108,7 +1108,7 @@
             "rate_mm_h": 0.0,
             "weight": 0.83,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 174.79999999999995,
+            "accumulation_mm": 171.39999999999995,
             "source_quality_factor": 0.989
           },
           {
@@ -1117,7 +1117,7 @@
             "rate_mm_h": 0.0,
             "weight": 0.242,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 97.2,
+            "accumulation_mm": 95.0,
             "source_quality_factor": 0.989
           },
           {
@@ -1126,43 +1126,43 @@
             "rate_mm_h": 0.0,
             "weight": 0.346,
             "evidence": "RECENT_INCREMENT",
-            "accumulation_mm": 84.39999999999996,
+            "accumulation_mm": 82.19999999999996,
             "source_quality_factor": 0.989
           }
         ],
-        "model_rain_3h_mm": 0.87,
+        "model_rain_3h_mm": 10.96,
         "model_share": 0.034,
         "gauge_share": 0.966,
         "nearest_gauge_km": 4.9,
         "convective_score": 75.0,
         "imminence": {
-          "score": 57.6,
+          "score": 73.0,
           "level": "ELEVATED",
           "window_minutes": 60,
           "convective_score": 75.0,
-          "cooling_c_per_20m_proxy": 0.3,
-          "model_rain_3h_mm": 0.87,
+          "cooling_c_per_20m_proxy": 1.8,
+          "model_rain_3h_mm": 10.96,
           "ensemble_q90_mm": 7.38,
           "ensemble_probability_5": 0.3478,
           "cloud_motion": {
-            "status": "MOVING_AWAY",
-            "source_sector": "Tây",
+            "status": "PASSING_BY",
+            "source_sector": "Tây Nam",
             "nearest_corridor": null,
-            "motion_heading_deg": 246.2,
-            "motion_heading": "Tây Nam",
-            "motion_speed_kmh": 69.4,
-            "distance_to_target_km": 60.1,
+            "motion_heading_deg": 19.9,
+            "motion_heading": "Bắc",
+            "motion_speed_kmh": 15.0,
+            "distance_to_target_km": 31.6,
             "approaching": false,
             "predicted_impact": false,
             "public_track_usable": true,
             "eta_minutes": null,
             "arrival_time": null,
             "exit_time": null,
-            "closest_approach_km": null,
+            "closest_approach_km": 22.0,
             "tracking_confidence": "MEDIUM_HIGH"
           },
-          "rain_impact_label": "Mưa nhẹ",
-          "background_model_rate_mm_h": 0.29,
+          "rain_impact_label": "Mưa vừa",
+          "background_model_rate_mm_h": 3.65,
           "impact_basis": "MODEL_3H_BACKGROUND_PLUS_SATELLITE_CONVECTIVE_TAIL",
           "motion_component": 0.0,
           "method": "PQ_RAIN_IMMINENCE_V2_SATELLITE_MOTION_ENSEMBLE_HEURISTIC_NOT_PROBABILITY",
@@ -1172,7 +1172,7 @@
         "remote_gauge_uncertainty_share": 0.034,
         "ensemble_context": {
           "valid_time": "2026-09-24T12:00:00+00:00",
-          "gap_hours": 0.84,
+          "gap_hours": 0.16,
           "q50_mm": 4.3,
           "q90_mm": 7.38,
           "spread_mm": 3.05,
@@ -1181,10 +1181,10 @@
         },
         "note": "ACTUAL VRain remains separate from ESTIMATED_NOW. A dry co-located gauge remains strong evidence, while a remote dry gauge is down-weighted during strong convection so localized rain is not forced to near-zero."
       },
-      "wave_hs_m": 1.09,
-      "wave_hmax_m": 1.79,
-      "wave_period_s": 5.5,
-      "current_kmh": 0.18,
+      "wave_hs_m": 1.43,
+      "wave_hmax_m": 2.34,
+      "wave_period_s": 5.6,
+      "current_kmh": 0.13,
       "marine": {
         "data_class": "MODEL_ONLY",
         "method": "COPERNICUS_ECMWF_MODEL",
@@ -1194,7 +1194,7 @@
       "actual_anchors": {
         "vvpq": {
           "status": "FRESH",
-          "observed_at": "2026-09-24T12:30:00+00:00",
+          "observed_at": "2026-09-24T11:30:00+00:00",
           "distance_km": 13.2
         },
         "rain_gauges": [
@@ -1202,25 +1202,25 @@
             "station": "An Thới",
             "lat": 10.018482,
             "lon": 104.0149,
-            "accumulation_mm": 174.79999999999995,
+            "accumulation_mm": 171.39999999999995,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           },
           {
             "station": "Bãi Thơm",
             "lat": 10.411765,
             "lon": 104.031055,
-            "accumulation_mm": 97.2,
+            "accumulation_mm": 95.0,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           },
           {
             "station": "Cửa Cạn",
             "lat": 10.292693,
             "lon": 103.914799,
-            "accumulation_mm": 84.39999999999996,
+            "accumulation_mm": 82.19999999999996,
             "increment_mm": 0.0,
-            "increment_window_minutes": 10.2
+            "increment_window_minutes": 10.1
           }
         ]
       }
@@ -1230,20 +1230,20 @@
       "lat": 10.00677,
       "lon": 105.07845,
       "reference_type": "coastal_operations_reference",
-      "analysis_time": "2026-09-24T12:50:35.432355+00:00",
-      "temperature_c": 26.9,
+      "analysis_time": "2026-09-24T11:50:27.125588+00:00",
+      "temperature_c": 26.5,
       "temperature": {
         "data_class": "MODEL_ONLY",
         "method": "DIRECT_MODEL_RACH_GIA",
         "confidence": 0.35
       },
-      "wind_kmh": 30.6,
+      "wind_kmh": 34.1,
       "wind_direction_deg": null,
       "wind": {
         "data_class": "MODEL_ONLY",
         "method": "DIRECT_MODEL_RACH_GIA",
-        "baseline_model": 30.6,
-        "model_gust_kmh": 42.9,
+        "baseline_model": 34.1,
+        "model_gust_kmh": 48.9,
         "convective_score": 60.0,
         "ensemble_context": {
           "valid_time": null,
@@ -1254,19 +1254,19 @@
         "confidence": 0.35
       },
       "rain": {
-        "rain_rate_mm_h": 3.11,
+        "rain_rate_mm_h": 11.97,
         "data_class": "MODEL_ONLY",
         "method": "DIRECT_MODEL_RACH_GIA",
         "confidence": 0.3,
-        "model_rain_3h_mm": 9.32,
+        "model_rain_3h_mm": 35.9,
         "convective_score": 60.0,
         "imminence": {
           "score": 54.0,
           "level": "WATCH",
           "window_minutes": 60,
           "convective_score": 60.0,
-          "cooling_c_per_20m_proxy": 0.1,
-          "model_rain_3h_mm": 9.32,
+          "cooling_c_per_20m_proxy": 2.6,
+          "model_rain_3h_mm": 35.9,
           "ensemble_q90_mm": null,
           "ensemble_probability_5": null,
           "cloud_motion": {
@@ -1275,23 +1275,23 @@
             "nearest_corridor": {
               "id": "ha_tien",
               "name": "Hà Tiên",
-              "distance_km": 41.6
+              "distance_km": 46.0
             },
-            "motion_heading_deg": 126.5,
-            "motion_heading": "Đông Nam",
-            "motion_speed_kmh": 84.9,
-            "distance_to_target_km": 64.4,
+            "motion_heading_deg": 32.8,
+            "motion_heading": "Đông Bắc",
+            "motion_speed_kmh": 40.7,
+            "distance_to_target_km": 84.4,
             "approaching": false,
             "predicted_impact": false,
             "public_track_usable": true,
             "eta_minutes": null,
             "arrival_time": null,
             "exit_time": null,
-            "closest_approach_km": 38.1,
+            "closest_approach_km": 71.1,
             "tracking_confidence": "MEDIUM_HIGH"
           },
-          "rain_impact_label": "Mưa vừa",
-          "background_model_rate_mm_h": 3.11,
+          "rain_impact_label": "Mưa mạnh",
+          "background_model_rate_mm_h": 11.97,
           "impact_basis": "MODEL_3H_BACKGROUND_PLUS_SATELLITE_CONVECTIVE_TAIL",
           "motion_component": 0.0,
           "method": "PQ_RAIN_IMMINENCE_V2_SATELLITE_MOTION_ENSEMBLE_HEURISTIC_NOT_PROBABILITY",
@@ -1308,10 +1308,10 @@
         },
         "note": "Rạch Giá currently uses direct model + Himawari context. Phú Quốc VVPQ/VRain are intentionally not transported here."
       },
-      "wave_hs_m": 0.67,
-      "wave_hmax_m": 1.15,
-      "wave_period_s": 3.4,
-      "current_kmh": 0.22,
+      "wave_hs_m": 0.78,
+      "wave_hmax_m": 1.33,
+      "wave_period_s": 3.7,
+      "current_kmh": 0.05,
       "marine": {
         "data_class": "MODEL_ONLY",
         "method": "DIRECT_MARINE_MODEL_RACH_GIA",
