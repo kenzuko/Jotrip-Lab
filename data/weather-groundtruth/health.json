@@ -1,7 +1,7 @@
 {
   "module": "JoTrip Weather Ground Truth",
   "state": "READY",
-  "generated_at": "2026-09-25T04:00:28.749457+00:00",
+  "generated_at": "2026-09-25T04:10:24.320180+00:00",
   "vvpq": "FRESH",
   "vrain": "FRESH",
   "rain_stations": [
@@ -10,14 +10,12 @@
     "an_thoi"
   ],
   "increment_ready": [
-    "cua_can",
-    "bai_thom",
-    "an_thoi"
+    "cua_can"
   ],
   "training_usability": {
     "vvpq": {
       "usable_for_training": true,
-      "observed_at": "2026-09-25T03:30:00+00:00",
+      "observed_at": "2026-09-25T04:00:00+00:00",
       "qc": "PASS"
     },
     "rain": {
@@ -31,15 +29,15 @@
       "bai_thom": {
         "actual": true,
         "qc": "PASS",
-        "increment_qc": "PASS",
-        "usable_for_short_increment_training": true,
+        "increment_qc": "ACCUMULATION_RESET",
+        "usable_for_short_increment_training": false,
         "cumulative_counter_available": true
       },
       "an_thoi": {
         "actual": true,
         "qc": "PASS",
-        "increment_qc": "PASS",
-        "usable_for_short_increment_training": true,
+        "increment_qc": "ACCUMULATION_RESET",
+        "usable_for_short_increment_training": false,
         "cumulative_counter_available": true
       }
     }
