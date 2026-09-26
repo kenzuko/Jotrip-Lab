@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-26T22:51:28.555781+00:00",
+  "generated_at": "2026-09-26T22:00:28.618899+00:00",
   "status": "READY",
   "actual_policy": "Only machine-readable numeric observations with timestamps are ACTUAL. Remote sensing and models are separate classes.",
   "atmosphere": {
@@ -14,45 +14,41 @@
       "source": "AVIATION_WEATHER_CENTER_METAR",
       "source_channel": "METAR",
       "data_class": "ACTUAL",
-      "observed_at": "2026-09-26T22:30:00+00:00",
-      "age_minutes": 21.5,
+      "observed_at": "2026-09-26T21:30:00+00:00",
+      "age_minutes": 30.5,
       "temperature_c": 25.0,
       "dewpoint_c": 24.0,
-      "wind_direction_deg": 110.0,
-      "wind_speed_kt": 6.0,
-      "wind_speed_ms": 3.087,
-      "wind_speed_kmh": 11.11,
-      "pressure_hpa": 1009.0,
-      "visibility_sm": 4.97,
-      "visibility_m": 7998,
-      "weather": "SHRA",
-      "convective_cloud": true,
+      "wind_direction_deg": 0.0,
+      "wind_speed_kt": 0.0,
+      "wind_speed_ms": 0.0,
+      "wind_speed_kmh": 0.0,
+      "pressure_hpa": 1010.0,
+      "visibility_sm": null,
+      "visibility_m": null,
+      "weather": null,
+      "convective_cloud": false,
       "clouds": [
         {
           "cover": "SCT",
           "base": 1500
         },
         {
-          "cover": "FEW",
-          "base": 1700
-        },
-        {
           "cover": "SCT",
           "base": 4000
         }
       ],
-      "flight_category": "MVFR",
-      "raw_observation": "METAR VVPQ 262230Z 11006KT 8000 SHRA SCT015 FEW017CB SCT040 25/24 Q1009 NOSIG",
+      "flight_category": "VFR",
+      "raw_observation": "METAR VVPQ 262130Z 00000KT 9999 SCT015 SCT040 25/24 Q1010 NOSIG",
       "qc": "PASS",
       "provenance_url": "https://aviationweather.gov/api/data/metar?ids=VVPQ&format=json&hours=24",
-      "raw_payload_hash": "1a7b3e8645ea08cc5ed5714bca1ebfd25d728fbcf7fa13992caaf29fe8a7f102"
+      "raw_payload_hash": "e76a052a4ed3be740346364c10c7baf408c5ec42905f5f64117dae2a28893fbd"
     }
   },
   "rainfall": {
     "status": "FRESH",
     "source": "VRAIN_PUBLIC",
     "period_start": "2026-09-26T12:00:00+00:00",
-    "period_end": "2026-09-26T22:51:32+00:00",
+    "period_end": "2026-09-26T22:00:29+00:00",
     "stations": {
       "cua_can": {
         "station_id": "VRAIN_CUA_CAN",
@@ -63,13 +59,13 @@
         "source": "VRAIN_PUBLIC",
         "source_channel": "current/all.json",
         "data_class": "ACTUAL",
-        "observed_at": "2026-09-26T22:51:32+00:00",
+        "observed_at": "2026-09-26T22:00:29+00:00",
         "age_minutes": 0.0,
         "variable": "precipitation",
         "accumulation_mm": 0.0,
         "accumulation_label": "Không mưa",
         "period_start": "2026-09-26T12:00:00+00:00",
-        "period_end": "2026-09-26T22:51:32+00:00",
+        "period_end": "2026-09-26T22:00:29+00:00",
         "statistic": "ACCUMULATION",
         "timestamp_semantics": "END_OF_WINDOW",
         "increment_mm": 0.0,
@@ -93,13 +89,13 @@
         "source": "VRAIN_PUBLIC",
         "source_channel": "current/all.json",
         "data_class": "ACTUAL",
-        "observed_at": "2026-09-26T22:51:32+00:00",
+        "observed_at": "2026-09-26T22:00:29+00:00",
         "age_minutes": 0.0,
         "variable": "precipitation",
         "accumulation_mm": 0.0,
         "accumulation_label": "Không mưa",
         "period_start": "2026-09-26T12:00:00+00:00",
-        "period_end": "2026-09-26T22:51:32+00:00",
+        "period_end": "2026-09-26T22:00:29+00:00",
         "statistic": "ACCUMULATION",
         "timestamp_semantics": "END_OF_WINDOW",
         "increment_mm": 0.0,
@@ -123,13 +119,13 @@
         "source": "VRAIN_PUBLIC",
         "source_channel": "current/all.json",
         "data_class": "ACTUAL",
-        "observed_at": "2026-09-26T22:51:32+00:00",
+        "observed_at": "2026-09-26T22:00:29+00:00",
         "age_minutes": 0.0,
         "variable": "precipitation",
         "accumulation_mm": 0.0,
         "accumulation_label": "Không mưa",
         "period_start": "2026-09-26T12:00:00+00:00",
-        "period_end": "2026-09-26T22:51:32+00:00",
+        "period_end": "2026-09-26T22:00:29+00:00",
         "statistic": "ACCUMULATION",
         "timestamp_semantics": "END_OF_WINDOW",
         "increment_mm": 0.0,
@@ -159,5 +155,5 @@
     }
   },
   "errors": [],
-  "payload_hash": "464e58ab8bcba54a0318779918a118e21fadf3bfc54b79aa4b33e7220c2de0e4"
+  "payload_hash": "67db729938135f03f2cfd9eea47904d885ced9200578c979b2ce857bc0a5c615"
 }
