@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-26T07:50:52.580893+00:00",
+  "generated_at": "2026-09-26T06:30:54.546478+00:00",
   "status": "READY",
   "actual_policy": "Only machine-readable numeric observations with timestamps are ACTUAL. Remote sensing and models are separate classes.",
   "atmosphere": {
@@ -14,18 +14,18 @@
       "source": "AVIATION_WEATHER_CENTER_METAR",
       "source_channel": "METAR",
       "data_class": "ACTUAL",
-      "observed_at": "2026-09-26T07:30:00+00:00",
-      "age_minutes": 20.9,
-      "temperature_c": 28.0,
+      "observed_at": "2026-09-26T06:00:00+00:00",
+      "age_minutes": 30.9,
+      "temperature_c": 26.0,
       "dewpoint_c": 25.0,
       "wind_direction_deg": 230.0,
-      "wind_speed_kt": 6.0,
-      "wind_speed_ms": 3.087,
-      "wind_speed_kmh": 11.11,
-      "pressure_hpa": 1010.0,
-      "visibility_sm": 5.59,
-      "visibility_m": 8996,
-      "weather": null,
+      "wind_speed_kt": 12.0,
+      "wind_speed_ms": 6.173,
+      "wind_speed_kmh": 22.22,
+      "pressure_hpa": 1012.0,
+      "visibility_sm": 3.11,
+      "visibility_m": 5005,
+      "weather": "SHRA",
       "convective_cloud": true,
       "clouds": [
         {
@@ -41,18 +41,18 @@
           "base": 4000
         }
       ],
-      "flight_category": "VFR",
-      "raw_observation": "METAR VVPQ 260730Z 23006KT 9000 SCT015 FEW017CB BKN040 28/25 Q1010 NOSIG",
+      "flight_category": "MVFR",
+      "raw_observation": "METAR VVPQ 260600Z 23012KT 5000 SHRA SCT015 FEW017CB BKN040 26/25 Q1012 TEMPO TL0630 4000 SHRA",
       "qc": "PASS",
       "provenance_url": "https://aviationweather.gov/api/data/metar?ids=VVPQ&format=json&hours=24",
-      "raw_payload_hash": "0d0757c8a78e346bc491683c6d199bbb320ce728eb1b7e406e32754e76c724c7"
+      "raw_payload_hash": "259c321325566144fe37f84a0ec35ab7670393d9fddac7846bb12e72dc843393"
     }
   },
   "rainfall": {
     "status": "FRESH",
     "source": "VRAIN_PUBLIC",
     "period_start": "2026-09-25T12:00:00+00:00",
-    "period_end": "2026-09-26T07:50:54+00:00",
+    "period_end": "2026-09-26T06:30:55+00:00",
     "stations": {
       "cua_can": {
         "station_id": "VRAIN_CUA_CAN",
@@ -63,13 +63,13 @@
         "source": "VRAIN_PUBLIC",
         "source_channel": "current/all.json",
         "data_class": "ACTUAL",
-        "observed_at": "2026-09-26T07:50:54+00:00",
+        "observed_at": "2026-09-26T06:30:55+00:00",
         "age_minutes": 0.0,
         "variable": "precipitation",
-        "accumulation_mm": 60.2,
+        "accumulation_mm": 57.8,
         "accumulation_label": "Mưa to",
         "period_start": "2026-09-25T12:00:00+00:00",
-        "period_end": "2026-09-26T07:50:54+00:00",
+        "period_end": "2026-09-26T06:30:55+00:00",
         "statistic": "ACCUMULATION",
         "timestamp_semantics": "END_OF_WINDOW",
         "increment_mm": 0.0,
@@ -82,7 +82,7 @@
         "increment_qc": "PASS",
         "qc": "PASS",
         "provenance_url": "https://data.vrain.vn/public/current/all.json",
-        "raw_payload_hash": "7659ecc72fc9ee8313a92e140111fe638885c17bc450ed7b14dd714e7edcbf8d"
+        "raw_payload_hash": "1c8a2a08e99f33e6d767dec5a9f0cb94ff72793ba08b9d6b717047e171e7123f"
       },
       "bai_thom": {
         "station_id": "VRAIN_BAI_THOM",
@@ -93,13 +93,13 @@
         "source": "VRAIN_PUBLIC",
         "source_channel": "current/all.json",
         "data_class": "ACTUAL",
-        "observed_at": "2026-09-26T07:50:54+00:00",
+        "observed_at": "2026-09-26T06:30:55+00:00",
         "age_minutes": 0.0,
         "variable": "precipitation",
-        "accumulation_mm": 49.8,
+        "accumulation_mm": 45.2,
         "accumulation_label": "Mưa vừa",
         "period_start": "2026-09-25T12:00:00+00:00",
-        "period_end": "2026-09-26T07:50:54+00:00",
+        "period_end": "2026-09-26T06:30:55+00:00",
         "statistic": "ACCUMULATION",
         "timestamp_semantics": "END_OF_WINDOW",
         "increment_mm": 0.0,
@@ -112,7 +112,7 @@
         "increment_qc": "PASS",
         "qc": "PASS",
         "provenance_url": "https://data.vrain.vn/public/current/all.json",
-        "raw_payload_hash": "83acc0dfcbe488b477f611610eb18cc0257088b223377473a24bf45cfa8c49ec"
+        "raw_payload_hash": "289cac2b2dc2791d23c99d0055bc8ef9f94af816ec2678cbbd1ca08a8552f29f"
       },
       "an_thoi": {
         "station_id": "VRAIN_AN_THOI",
@@ -123,13 +123,13 @@
         "source": "VRAIN_PUBLIC",
         "source_channel": "current/all.json",
         "data_class": "ACTUAL",
-        "observed_at": "2026-09-26T07:50:54+00:00",
+        "observed_at": "2026-09-26T06:30:55+00:00",
         "age_minutes": 0.0,
         "variable": "precipitation",
         "accumulation_mm": 35.8,
         "accumulation_label": "Mưa vừa",
         "period_start": "2026-09-25T12:00:00+00:00",
-        "period_end": "2026-09-26T07:50:54+00:00",
+        "period_end": "2026-09-26T06:30:55+00:00",
         "statistic": "ACCUMULATION",
         "timestamp_semantics": "END_OF_WINDOW",
         "increment_mm": 0.0,
@@ -159,5 +159,5 @@
     }
   },
   "errors": [],
-  "payload_hash": "959818157f51db469091b36c4e580e9af410c850b4f98f362d2bb83e0250be3b"
+  "payload_hash": "00104ea9bc5dbf2e5458642576bf2ee240ee0492bb8b06859cdb0d4cbec3460d"
 }
