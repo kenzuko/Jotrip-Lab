@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 from tourism_intelligence_v2.collectors.airfare.collector import parse_vietnam_airlines
 from tourism_intelligence_v2.collectors.airfare.processor import summarize as airfare_summary
 from tourism_intelligence_v2.collectors.hotel_forward.processor import summarize as hotel_summary
-from tourism_intelligence_v2.collectors.marine_ops.collector import parse_port_clearance_html, parse_thanh_thoi_html
+from tourism_intelligence_v2.collectors.marine_ops.collector import parse_port_clearance_html, parse_thanh_thoi_html, build_cano_history
 from tourism_intelligence_v2.readiness import build as build_readiness
 from tourism_intelligence_v2.registry import freshness, load_registry
 
@@ -40,6 +40,26 @@ class SafeModuleTests(unittest.TestCase):
         rows = parse_thanh_thoi_html(html, "16/09/2026")
         self.assertEqual(rows[0]["category"], "ferry")
         self.assertEqual(parse_thanh_thoi_html(html, "15/09/2026"), [])
+
+    def test_cano_history_uses_latest_same_day_confirmation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            def put(filename, day, time, state, category="cano"):
+                (root / filename).write_text(json.dumps({
+                    "date": day, "category": category, "state": state,
+                    "recorded_at_vn": time,
+                    "evidence": {"source": "JOTRIP_FIELD_CONFIRMATION", "area": "An Thới"},
+                }), encoding="utf-8")
+            put("a.json", "27/09/2026", "2026-09-27T06:00:00+07:00", "RUNNING")
+            put("b.json", "27/09/2026", "2026-09-27T07:00:00+07:00", "SUSPENDED")
+            put("ferry.json", "27/09/2026", "2026-09-27T08:00:00+07:00", "RUNNING", "ferry")
+            put("future.json", "29/09/2026", "2026-09-29T06:00:00+07:00", "RUNNING")
+            now = datetime(2026, 9, 28, 6, 15, tzinfo=VN)
+            history = build_cano_history(root, now)
+            self.assertEqual(len(history["events"]), 1)
+            self.assertEqual(history["events"][0]["state"], "SUSPENDED")
+            self.assertEqual(history["archive_through_date"], "2026-09-27")
+            self.assertIsNone(build_cano_history(None, now))
 
     def test_hotel_gate_blocks_low_coverage(self):
         result = hotel_summary([{"hotel_id": "a", "available": True, "rate_all_in_vnd": 100}], {"a", "b", "c"})
