@@ -1,6 +1,6 @@
 {
   "schema_version": "weather-source-skill-v1",
-  "generated_at": "2026-09-27T06:01:02.855858+00:00",
+  "generated_at": "2026-09-27T06:10:57.211613+00:00",
   "policy": {
     "actual_only": true,
     "early_weight_adjustment_only": true,
@@ -10,32 +10,32 @@
     "note": "Rain gauges are not scored against distant gauges; local rain variability is real. VRain early factors reflect QC/freshness only until forecast verification matures."
   },
   "vvpq": {
-    "unique_actual_samples": 274,
+    "unique_actual_samples": 275,
     "wind": {
       "deterministic_background": {
-        "sample_count": 274,
-        "mae": 6.124,
-        "rmse": 7.925,
-        "mean_error": 0.264,
-        "median_error": -0.35
+        "sample_count": 275,
+        "mae": 6.125,
+        "rmse": 7.92,
+        "mean_error": 0.24,
+        "median_error": -0.4
       },
       "ensemble_q50": {
-        "sample_count": 254,
-        "mae": 8.221,
-        "rmse": 10.241,
-        "mean_error": -5.87,
-        "median_error": -5.007
+        "sample_count": 255,
+        "mae": 8.201,
+        "rmse": 10.223,
+        "mean_error": -5.86,
+        "median_error": -4.995
       },
-      "ensemble_gain_multiplier": 0.9683,
+      "ensemble_gain_multiplier": 0.9686,
       "status": "PROVISIONAL"
     },
     "temperature": {
       "deterministic_background": {
-        "sample_count": 274,
-        "mae": 1.4,
-        "rmse": 1.734,
-        "mean_error": 1.152,
-        "median_error": 1.05
+        "sample_count": 275,
+        "mae": 1.406,
+        "rmse": 1.741,
+        "mean_error": 1.159,
+        "median_error": 1.1
       }
     }
   },
@@ -55,8 +55,8 @@
       "increment_pass_ratio": 0.87,
       "fresh_ratio": 1.0,
       "quality_factor": 0.993,
-      "wet_samples": 56,
-      "dry_samples": 585
+      "wet_samples": 55,
+      "dry_samples": 586
     },
     "cua_can": {
       "sample_count": 744,
@@ -64,8 +64,8 @@
       "increment_pass_ratio": 0.871,
       "fresh_ratio": 1.0,
       "quality_factor": 0.994,
-      "wet_samples": 60,
-      "dry_samples": 582
+      "wet_samples": 59,
+      "dry_samples": 583
     }
   }
 }
