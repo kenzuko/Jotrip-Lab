@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-27T18:30:21.694209+00:00",
+  "generated_at": "2026-09-27T17:40:18.038427+00:00",
   "status": "READY",
   "actual_policy": "Only machine-readable numeric observations with timestamps are ACTUAL. Remote sensing and models are separate classes.",
   "atmosphere": {
@@ -14,14 +14,14 @@
       "source": "AVIATION_WEATHER_CENTER_METAR",
       "source_channel": "METAR",
       "data_class": "ACTUAL",
-      "observed_at": "2026-09-27T18:00:00+00:00",
-      "age_minutes": 30.4,
+      "observed_at": "2026-09-27T17:30:00+00:00",
+      "age_minutes": 10.3,
       "temperature_c": 26.0,
       "dewpoint_c": 26.0,
-      "wind_direction_deg": 0.0,
-      "wind_speed_kt": 0.0,
-      "wind_speed_ms": 0.0,
-      "wind_speed_kmh": 0.0,
+      "wind_direction_deg": 80.0,
+      "wind_speed_kt": 1.0,
+      "wind_speed_ms": 0.514,
+      "wind_speed_kmh": 1.85,
       "pressure_hpa": 1011.0,
       "visibility_sm": 4.97,
       "visibility_m": 7998,
@@ -31,20 +31,24 @@
         {
           "cover": "SCT",
           "base": 1500
+        },
+        {
+          "cover": "SCT",
+          "base": 4000
         }
       ],
       "flight_category": "MVFR",
-      "raw_observation": "METAR VVPQ 271800Z 00000KT 8000 SCT015 26/26 Q1011 NOSIG",
+      "raw_observation": "METAR VVPQ 271730Z 08001KT 8000 SCT015 SCT040 26/26 Q1011 NOSIG",
       "qc": "PASS",
       "provenance_url": "https://aviationweather.gov/api/data/metar?ids=VVPQ&format=json&hours=24",
-      "raw_payload_hash": "011b6c544aa78f18ce59b3626b61b816ba8eeba058b03b7dfd27a284e77e899d"
+      "raw_payload_hash": "ae01ae42940f11e832f6fedee913553efa78de1696eee25c71061f9c561e795f"
     }
   },
   "rainfall": {
     "status": "FRESH",
     "source": "VRAIN_PUBLIC",
     "period_start": "2026-09-27T12:00:00+00:00",
-    "period_end": "2026-09-27T18:30:22+00:00",
+    "period_end": "2026-09-27T17:40:20+00:00",
     "stations": {
       "cua_can": {
         "station_id": "VRAIN_CUA_CAN",
@@ -55,13 +59,13 @@
         "source": "VRAIN_PUBLIC",
         "source_channel": "current/all.json",
         "data_class": "ACTUAL",
-        "observed_at": "2026-09-27T18:30:22+00:00",
+        "observed_at": "2026-09-27T17:40:20+00:00",
         "age_minutes": 0.0,
         "variable": "precipitation",
         "accumulation_mm": 10.0,
         "accumulation_label": "Mưa nhỏ",
         "period_start": "2026-09-27T12:00:00+00:00",
-        "period_end": "2026-09-27T18:30:22+00:00",
+        "period_end": "2026-09-27T17:40:20+00:00",
         "statistic": "ACCUMULATION",
         "timestamp_semantics": "END_OF_WINDOW",
         "increment_mm": 0.0,
@@ -85,13 +89,13 @@
         "source": "VRAIN_PUBLIC",
         "source_channel": "current/all.json",
         "data_class": "ACTUAL",
-        "observed_at": "2026-09-27T18:30:22+00:00",
+        "observed_at": "2026-09-27T17:40:20+00:00",
         "age_minutes": 0.0,
         "variable": "precipitation",
         "accumulation_mm": 1.8,
         "accumulation_label": "Mưa nhỏ",
         "period_start": "2026-09-27T12:00:00+00:00",
-        "period_end": "2026-09-27T18:30:22+00:00",
+        "period_end": "2026-09-27T17:40:20+00:00",
         "statistic": "ACCUMULATION",
         "timestamp_semantics": "END_OF_WINDOW",
         "increment_mm": 0.0,
@@ -115,13 +119,13 @@
         "source": "VRAIN_PUBLIC",
         "source_channel": "current/all.json",
         "data_class": "ACTUAL",
-        "observed_at": "2026-09-27T18:30:22+00:00",
+        "observed_at": "2026-09-27T17:40:20+00:00",
         "age_minutes": 0.0,
         "variable": "precipitation",
         "accumulation_mm": 0.0,
         "accumulation_label": "Không mưa",
         "period_start": "2026-09-27T12:00:00+00:00",
-        "period_end": "2026-09-27T18:30:22+00:00",
+        "period_end": "2026-09-27T17:40:20+00:00",
         "statistic": "ACCUMULATION",
         "timestamp_semantics": "END_OF_WINDOW",
         "increment_mm": 0.0,
@@ -151,5 +155,5 @@
     }
   },
   "errors": [],
-  "payload_hash": "da8631c078f4d94f2934a9b7e4e956d7ececa3cf86772d5234937f42fef29058"
+  "payload_hash": "347cf2128d31e2936344476729346e01fb1726313f65987ee8a88f4396389ed2"
 }

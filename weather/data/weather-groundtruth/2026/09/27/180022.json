@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-09-27T18:00:22.725528+00:00",
+  "status": "READY",
+  "actual_policy": "Only machine-readable numeric observations with timestamps are ACTUAL. Remote sensing and models are separate classes.",
+  "atmosphere": {
+    "vvpq": {
+      "status": "FRESH",
+      "station_id": "VVPQ",
+      "station_name": "Phu Quoc International Airport",
+      "location_id": "phu_quoc_airport",
+      "lat": 10.169,
+      "lon": 103.995,
+      "source": "AVIATION_WEATHER_CENTER_METAR",
+      "source_channel": "METAR",
+      "data_class": "ACTUAL",
+      "observed_at": "2026-09-27T17:30:00+00:00",
+      "age_minutes": 30.4,
+      "temperature_c": 26.0,
+      "dewpoint_c": 26.0,
+      "wind_direction_deg": 80.0,
+      "wind_speed_kt": 1.0,
+      "wind_speed_ms": 0.514,
+      "wind_speed_kmh": 1.85,
+      "pressure_hpa": 1011.0,
+      "visibility_sm": 4.97,
+      "visibility_m": 7998,
+      "weather": null,
+      "convective_cloud": false,
+      "clouds": [
+        {
+          "cover": "SCT",
+          "base": 1500
+        },
+        {
+          "cover": "SCT",
+          "base": 4000
+        }
+      ],
+      "flight_category": "MVFR",
+      "raw_observation": "METAR VVPQ 271730Z 08001KT 8000 SCT015 SCT040 26/26 Q1011 NOSIG",
+      "qc": "PASS",
+      "provenance_url": "https://aviationweather.gov/api/data/metar?ids=VVPQ&format=json&hours=24",
+      "raw_payload_hash": "ae01ae42940f11e832f6fedee913553efa78de1696eee25c71061f9c561e795f"
+    }
+  },
+  "rainfall": {
+    "status": "UNAVAILABLE",
+    "stations": {},
+    "detail": "<HTTPError 502: 'Bad Gateway'>"
+  },
+  "station_status": {
+    "VVPQ": {
+      "station_id": "VVPQ",
+      "station_name": "Phu Quoc International Airport",
+      "location_id": "phu_quoc_airport",
+      "lat": 10.169,
+      "lon": 103.995,
+      "source": "AVIATION_WEATHER_CENTER_METAR",
+      "readiness": "PRODUCTION_ACTUAL"
+    }
+  },
+  "errors": [
+    {
+      "source": "VRAIN",
+      "error": "<HTTPError 502: 'Bad Gateway'>"
+    }
+  ],
+  "payload_hash": "e8ba79a6a4c503abac1b57aeb9a71a1478f447b200a5651b93449339ec6d9adb"
+}
