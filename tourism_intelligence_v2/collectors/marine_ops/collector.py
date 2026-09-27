@@ -132,6 +132,65 @@ def _load_manual_confirmations(target_date: str, manual_dir: str | Path | None) 
     return evidence, states
 
 
+
+def build_cano_history(manual_dir: str | Path | None, now: datetime | None = None) -> dict[str, Any] | None:
+    """Produce a dated public history solely from existing manual confirmations.
+
+    The archive has NO authority to set today's operating state. Consumers must
+    continue using latest.json with its strict same-day evidence check.
+    """
+    if not manual_dir or not Path(manual_dir).exists():
+        return None
+    observed = now or datetime.now(VN)
+    today = observed.astimezone(VN).date()
+    by_date: dict[str, dict[str, Any]] = {}
+    for path in sorted(Path(manual_dir).glob("*.json")):
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if record.get("category") != "cano" or record.get("state") not in {"RUNNING", "SUSPENDED"}:
+            continue
+        try:
+            day = datetime.strptime(str(record.get("date")), "%d/%m/%Y").date()
+        except ValueError:
+            continue
+        if day > today:
+            continue
+        evidence = record.get("evidence") if isinstance(record.get("evidence"), dict) else {}
+        recorded_at = str(record.get("recorded_at_vn") or "")
+        item = {
+            "date": day.isoformat(),
+            "time": recorded_at[11:16] if len(recorded_at) >= 16 else None,
+            "state": record["state"],
+            "label": str(record.get("status_label") or ("Hoạt động bình thường" if record["state"] == "RUNNING" else "Tạm dừng")),
+            "scope": str(evidence.get("area") or "Cano Phú Quốc"),
+            "note": str(evidence.get("evidence_note") or ""),
+            "source": {
+                "tier": "FIELD_ARCHIVE" if evidence.get("source") == "JOTRIP_FIELD_CONFIRMATION" else "OFFICIAL_ARCHIVE",
+                "label": "Xác nhận thực địa" if evidence.get("source") == "JOTRIP_FIELD_CONFIRMATION" else "Thông báo cơ quan chức năng",
+            },
+            "recorded_at_vn": recorded_at or None,
+        }
+        # If multiple confirmed updates occur on one date, retain the latest
+        # recorded state (e.g. morning RUNNING superseded by afternoon OFF).
+        previous = by_date.get(item["date"])
+        if previous is None or (item["recorded_at_vn"] or "") >= (previous["recorded_at_vn"] or ""):
+            by_date[item["date"]] = item
+
+    if not by_date:
+        return None
+    events = [by_date[day] for day in sorted(by_date)]
+    return {
+        "schema_version": "1.0",
+        "category": "cano",
+        "generated_at_vn": iso_vn(observed),
+        "archive_through_date": events[-1]["date"],
+        "source_policy": "Historical direct confirmations only; never infer today's cano operations from an earlier day, weather, ferry or fast-boat status.",
+        "events": events,
+    }
+
+
 def _category_state(category: str, evidence: list[dict[str, Any]], manual_state: str | None = None) -> dict[str, Any]:
     rows = [item for item in evidence if item.get("category") == category]
     if rows:
@@ -220,6 +279,9 @@ def collect(target_date: str | None = None, output_dir: str | Path = "out/marine
         "paid_services_used": False,
     }
     write_bundle(output_dir, latest, health, manifest)
+    history = build_cano_history(manual_dir, now)
+    if history:
+        write_json_atomic(Path(output_dir) / "cano-history.json", history)
     stamp = now.strftime("%H%M")
     date_dir = now.strftime("%Y-%m-%d") if not target_date else datetime.strptime(target, "%d/%m/%Y").strftime("%Y-%m-%d")
     write_json_atomic(Path(output_dir) / date_dir / f"{stamp}.json", latest)
