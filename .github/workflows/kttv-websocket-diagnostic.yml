@@ -37,6 +37,9 @@ jobs:
           }
           const stationid=val('stationid',33);
           const localtime=val('localtime',Math.floor(Date.now()/1000)-6*3600);
+          const li=html.indexOf('var localtime');
+          console.log('===== LOCALTIME CONTEXT =====');
+          console.log(html.slice(Math.max(0,li-2500),li+6500));
           console.log('RESOLVED',JSON.stringify({stationid,localtime,now:Math.floor(Date.now()/1000)}));
 
           const url='wss://kttvtudong.net/kttvtudong.ashx?view=detail';
@@ -53,9 +56,12 @@ jobs:
             try{
               const o=JSON.parse(text);
               if(o?.msg==='connected' && !sent){
-                const q={Ctr:'LogDetail',Message:stationid,Times:localtime};
-                console.log('WS_SEND',JSON.stringify(q));
-                ws.send(JSON.stringify(q));
+                const candidates=[localtime-36*600,localtime-35*600,localtime,Math.floor(Date.now()/1000)];
+                for(const t of candidates){
+                  const q={Ctr:'LogDetail',Message:stationid,Times:t};
+                  console.log('WS_SEND',JSON.stringify(q));
+                  ws.send(JSON.stringify(q));
+                }
                 sent=true;
               }
             }catch{}
