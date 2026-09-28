@@ -1,0 +1,66 @@
+name: KTTv websocket diagnostic
+
+on:
+  push:
+    branches:
+      - diag/kttv-phuquoc-scrape-20260928
+    paths:
+      - ".github/workflows/kttv-websocket-diagnostic.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe public station WebSocket
+        shell: bash
+        run: |
+          cat > /tmp/probe.mjs <<'JS'
+          const pageUrl = 'https://kttvtudong.net/kttv/detail/view?sid=33';
+          const html = await (await fetch(pageUrl, {headers:{'user-agent':'Mozilla/5.0 Chrome/136'}})).text();
+          const relevant = html.split(/\r?\n/).filter(x => /stationid|localtime|kWebKTTV|LogDetail/i.test(x));
+          console.log('===== PAGE VARS =====');
+          for (const x of relevant) console.log(x.trim().slice(0,2000));
+
+          function val(name, fallback) {
+            const patterns=[
+              new RegExp('(?:var|let|const)\\s+'+name+'\\s*=\\s*([0-9]+)', 'i'),
+              new RegExp(name+'\\s*=\\s*[\"\\\']?([0-9]+)', 'i')
+            ];
+            for(const p of patterns){ const m=html.match(p); if(m) return Number(m[1]); }
+            return fallback;
+          }
+          const stationid=val('stationid',33);
+          const localtime=val('localtime',Math.floor(Date.now()/1000)-6*3600);
+          console.log('RESOLVED',JSON.stringify({stationid,localtime,now:Math.floor(Date.now()/1000)}));
+
+          const url='wss://kttvtudong.net/kttvtudong.ashx?view=detail';
+          const ws=new WebSocket(url);
+          let sent=false, count=0;
+          const timer=setTimeout(()=>{console.log('TIMEOUT closing'); try{ws.close()}catch{}},20000);
+          ws.onopen=()=>console.log('WS_OPEN');
+          ws.onerror=(e)=>console.log('WS_ERROR',String(e?.message||e));
+          ws.onclose=(e)=>{console.log('WS_CLOSE',e.code,e.reason); clearTimeout(timer);};
+          ws.onmessage=(e)=>{
+            count++;
+            const text=String(e.data);
+            console.log('WS_MESSAGE',count,text.slice(0,30000));
+            try{
+              const o=JSON.parse(text);
+              if(o?.msg==='connected' && !sent){
+                const q={Ctr:'LogDetail',Message:stationid,Times:localtime};
+                console.log('WS_SEND',JSON.stringify(q));
+                ws.send(JSON.stringify(q));
+                sent=true;
+              }
+            }catch{}
+            if(count>=10){clearTimeout(timer);ws.close();}
+          };
+          await new Promise(resolve=>ws.addEventListener('close',resolve,{once:true}));
+          JS
+          node /tmp/probe.mjs
