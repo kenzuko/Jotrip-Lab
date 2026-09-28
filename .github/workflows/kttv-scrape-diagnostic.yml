@@ -1,0 +1,135 @@
+name: KTTv Phu Quoc scrape diagnostic
+
+on:
+  push:
+    branches:
+      - diag/kttv-phuquoc-scrape-20260928
+    paths:
+      - ".github/workflows/kttv-scrape-diagnostic.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Probe public KTTv pages and assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/kttv
+          python - <<'PY'
+          from urllib.request import Request, build_opener, HTTPCookieProcessor
+          from urllib.parse import urljoin, urlparse
+          from http.cookiejar import CookieJar
+          from html.parser import HTMLParser
+          import json, re, pathlib, time
+
+          BASE="https://kttvtudong.net"
+          URLS={
+            "auto33": f"{BASE}/kttv/detail/view?sid=33",
+            "bhv60": f"{BASE}/kttv/book/view?sid=60",
+            "shv82": f"{BASE}/kttv/book/viewday?sid=82",
+          }
+          ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/136 Safari/537.36"
+          opener=build_opener(HTTPCookieProcessor(CookieJar()))
+
+          def get(url):
+            req=Request(url,headers={
+              "User-Agent":ua,
+              "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+              "Accept-Language":"vi,en-US;q=0.8,en;q=0.7",
+              "Cache-Control":"no-cache",
+            })
+            with opener.open(req,timeout=30) as r:
+              body=r.read()
+              return r.status, dict(r.headers.items()), r.geturl(), body
+
+          class P(HTMLParser):
+            def __init__(self):
+              super().__init__()
+              self.forms=[]; self.inputs=[]; self.scripts=[]; self.links=[]; self.current_form=None
+            def handle_starttag(self,tag,attrs):
+              a=dict(attrs)
+              if tag=="form":
+                f={"action":a.get("action"),"method":a.get("method"),"id":a.get("id"),"class":a.get("class")}
+                self.forms.append(f); self.current_form=f
+              elif tag=="input":
+                self.inputs.append({k:a.get(k) for k in ("type","name","id","value","class","placeholder")})
+              elif tag=="script" and a.get("src"):
+                self.scripts.append(a.get("src"))
+              elif tag=="a" and a.get("href"):
+                self.links.append(a.get("href"))
+            def handle_endtag(self,tag):
+              if tag=="form": self.current_form=None
+
+          summary={}
+          all_scripts=set()
+          for name,url in URLS.items():
+            print("\n===== PAGE",name,url,"=====")
+            try:
+              status,headers,final,body=get(url)
+            except Exception as e:
+              print("ERROR",repr(e)); summary[name]={"error":repr(e)}; continue
+            text=body.decode("utf-8","replace")
+            pathlib.Path(f"/tmp/kttv/{name}.html").write_bytes(body)
+            p=P(); p.feed(text)
+            all_scripts.update(urljoin(final,s) for s in p.scripts)
+            info={
+              "status":status,"final_url":final,"content_type":headers.get("Content-Type"),
+              "bytes":len(body),"forms":p.forms,"inputs":p.inputs,"scripts":p.scripts,
+              "interesting_links":[x for x in p.links if any(k in x.lower() for k in ("book","detail","export","excel","report","download","sid="))][:100],
+            }
+            summary[name]=info
+            print(json.dumps(info,ensure_ascii=False,indent=2))
+            # Print lines around likely endpoints / AJAX / exports / date navigation.
+            pats=("export","excel","ajax","fetch(","$.get","$.post","url:","viewday","datepicker","datetimepicker","from_date","to_date","tungay","denngay")
+            for i,line in enumerate(text.splitlines(),1):
+              low=line.lower()
+              if any(x in low for x in pats):
+                print(f"HTML_MATCH {i}: {line[:900]}")
+
+          print("\n===== SCRIPT ASSETS =====")
+          script_meta=[]
+          for idx,url in enumerate(sorted(all_scripts)):
+            if urlparse(url).netloc not in {"kttvtudong.net","www.kttvtudong.net"}:
+              continue
+            try:
+              status,headers,final,body=get(url)
+              txt=body.decode("utf-8","replace")
+              pathlib.Path(f"/tmp/kttv/script_{idx}.js").write_bytes(body)
+              hits=[]
+              for i,line in enumerate(txt.splitlines(),1):
+                low=line.lower()
+                if any(k in low for k in ("export","excel","ajax","viewday","sid","report","download","datepicker","fetch(","url:")):
+                  hits.append((i,line[:1000]))
+              script_meta.append({"url":url,"status":status,"bytes":len(body),"hits":hits[:80]})
+              print("SCRIPT",url,status,len(body))
+              for i,line in hits[:80]:
+                print(f"JS_MATCH {i}: {line}")
+            except Exception as e:
+              print("SCRIPT_ERROR",url,repr(e))
+
+          pathlib.Path("/tmp/kttv/summary.json").write_text(
+            json.dumps({"pages":summary,"scripts":script_meta},ensure_ascii=False,indent=2),
+            encoding="utf-8"
+          )
+          PY
+
+      - name: Show discovered form controls
+        if: always()
+        run: |
+          echo "===== SUMMARY ====="
+          cat /tmp/kttv/summary.json || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kttv-phuquoc-probe
+          path: /tmp/kttv
+          retention-days: 3
