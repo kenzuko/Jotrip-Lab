@@ -1,6 +1,6 @@
 {
-  "snapshot_id": "PQWX_LIVE_20260928_050113",
-  "generated_at": "2026-09-28T05:01:13.103855+07:00",
+  "snapshot_id": "PQWX_LIVE_20260928_072328",
+  "generated_at": "2026-09-28T07:23:28.975850+07:00",
   "data_mode": "B",
   "completeness": 100,
   "confidence": null,
@@ -8,7 +8,7 @@
   "decision": "NOT_ISSUED",
   "headline": "Live D0-D10 snapshot đã được phát; D4-D10 là xu hướng, quyết định vận hành chưa được phát.",
   "next_review": "watch cycle mỗi 30 phút; rebuild khi short hoặc medium model cycle đổi",
-  "git_commit_sha": "e01f74dc9690",
+  "git_commit_sha": "40869fa56b50",
   "forecast_horizon_hours": 240,
   "horizon_policy": {
     "D0_D3": "3-hour operational detail from freshest ECMWF cycle",
@@ -18,13 +18,13 @@
   "source_cycles": {
     "ECMWF": "2026-09-27T12:00:00+00:00",
     "ECMWF_MEDIUM": "2026-09-27T12:00:00+00:00",
-    "GEFS": "2026-09-27T12:00:00+00:00",
+    "GEFS": "2026-09-27T18:00:00+00:00",
     "ICON": "2026-09-27T18:00:00+00:00"
   },
   "sources": {
     "ECMWF": {
       "status": "PASS",
-      "detail": "IFS/Wave D0-D10 · short=25 bước · medium=65 bước · 5952 records · temp=2t · gust=10fg/unavailable · hmax=proxy-only"
+      "detail": "IFS/Wave D0-D10 · short=25 bước · medium=65 bước · 3872 records · temp=2t · gust=10fg/unavailable · hmax=proxy-only"
     },
     "GEFS": {
       "status": "PARTIAL",
@@ -78,7 +78,7 @@
           "sampled_lat": 10.166666666666657,
           "sampled_lon": 104.0,
           "distance_km": 7.17,
-          "sampled_time": "2026-09-27T21:00:00Z"
+          "sampled_time": "2026-09-28T00:00:00Z"
         },
         "current": {
           "sampled_lat": 10.25,
@@ -87,17 +87,17 @@
           "sampled_time": "2026-09-28T00:00:00Z"
         }
       },
-      "temperature": 25.5,
-      "wind": 9.0,
-      "gust": 17.4,
-      "wave_max": 0.96,
-      "wave": 0.51,
-      "period": 4.21,
-      "rain": 0.16,
+      "temperature": 26.5,
+      "wind": 6.4,
+      "gust": 14.1,
+      "wave_max": 1.02,
+      "wave": 0.56,
+      "period": 4.24,
+      "rain": 0.53,
       "current": 0.1,
-      "wave_regional_hs": 0.57,
+      "wave_regional_hs": 0.61,
       "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_REGIONAL_HS",
-      "marine_sampled_time": "2026-09-27T21:00:00Z",
+      "marine_sampled_time": "2026-09-28T00:00:00Z",
       "forecast_end": "2026-10-07T19:00:00+07:00",
       "long_range_status": "CONTROL_TREND_ONLY",
       "caveat": "D0-D3 dùng cycle ECMWF mới nhất. D4-D10 nối từ cycle 00/12 có horizon 240 giờ. Hs và Hmax dùng để nhìn biển nền và biên rủi ro; D4-D10 hiện là xu hướng control forecast, chưa phải quyết định vận hành vì lớp ensemble consensus còn đang bổ sung.",
@@ -734,23 +734,10 @@
           "wind": 3.4,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.2,
-          "wave_max": 0.34,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 4.2,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-09-30T15:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 01:00",
@@ -759,23 +746,10 @@
           "wind": 4.1,
           "gust": null,
           "rain": 0.03,
-          "wave": 0.18,
-          "wave_max": 0.3,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 4.1,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-09-30T18:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 04:00",
@@ -784,23 +758,10 @@
           "wind": 2.6,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.15,
-          "wave_max": 0.25,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 4.1,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-09-30T21:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 07:00",
@@ -809,23 +770,10 @@
           "wind": 3.2,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.13,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 4.0,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-01T00:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 10:00",
@@ -834,23 +782,10 @@
           "wind": 1.3,
           "gust": null,
           "rain": 0.26,
-          "wave": 0.12,
-          "wave_max": 0.2,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 4.0,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-01T03:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 13:00",
@@ -859,23 +794,10 @@
           "wind": 7.4,
           "gust": null,
           "rain": 1.8,
-          "wave": 0.11,
-          "wave_max": 0.19,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 4.0,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-01T06:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 16:00",
@@ -884,23 +806,10 @@
           "wind": 5.7,
           "gust": null,
           "rain": 3.69,
-          "wave": 0.14,
-          "wave_max": 0.24,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.9,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-01T09:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 19:00",
@@ -909,23 +818,10 @@
           "wind": 1.7,
           "gust": null,
           "rain": 0.2,
-          "wave": 0.12,
-          "wave_max": 0.2,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.6,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-01T12:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 22:00",
@@ -934,23 +830,10 @@
           "wind": 5.3,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.11,
-          "wave_max": 0.19,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 4.0,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-01T15:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 01:00",
@@ -959,23 +842,10 @@
           "wind": 5.1,
           "gust": null,
           "rain": 0.14,
-          "wave": 0.12,
-          "wave_max": 0.21,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.4,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-01T18:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 04:00",
@@ -984,23 +854,10 @@
           "wind": 2.7,
           "gust": null,
           "rain": 0.43,
-          "wave": 0.1,
-          "wave_max": 0.17,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.9,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-01T21:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 07:00",
@@ -1009,23 +866,10 @@
           "wind": 6.4,
           "gust": null,
           "rain": 0.67,
-          "wave": 0.09,
-          "wave_max": 0.15,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.7,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-02T00:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 10:00",
@@ -1034,23 +878,10 @@
           "wind": 5.9,
           "gust": null,
           "rain": 0.11,
-          "wave": 0.1,
-          "wave_max": 0.17,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.9,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-02T03:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 13:00",
@@ -1059,23 +890,10 @@
           "wind": 6.3,
           "gust": null,
           "rain": 2.35,
-          "wave": 0.09,
-          "wave_max": 0.15,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.7,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-02T06:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 16:00",
@@ -1084,23 +902,10 @@
           "wind": 6.1,
           "gust": null,
           "rain": 1.34,
-          "wave": 0.11,
-          "wave_max": 0.2,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 1.7,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-02T09:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 19:00",
@@ -1109,23 +914,10 @@
           "wind": 5.2,
           "gust": null,
           "rain": 0.08,
-          "wave": 0.12,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 1.7,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-02T12:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 22:00",
@@ -1134,23 +926,10 @@
           "wind": 8.0,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.2,
-          "wave_max": 0.36,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 1.9,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-02T15:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 01:00",
@@ -1159,23 +938,10 @@
           "wind": 8.1,
           "gust": null,
           "rain": 0.11,
-          "wave": 0.23,
-          "wave_max": 0.41,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.2,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-02T18:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 04:00",
@@ -1184,23 +950,10 @@
           "wind": 5.6,
           "gust": null,
           "rain": 0.14,
-          "wave": 0.25,
-          "wave_max": 0.44,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.4,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-02T21:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 07:00",
@@ -1209,23 +962,10 @@
           "wind": 9.6,
           "gust": null,
           "rain": 0.53,
-          "wave": 0.26,
-          "wave_max": 0.46,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.6,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-03T00:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 10:00",
@@ -1234,23 +974,10 @@
           "wind": 2.9,
           "gust": null,
           "rain": 1.71,
-          "wave": 0.25,
-          "wave_max": 0.44,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.6,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-03T03:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 13:00",
@@ -1259,23 +986,10 @@
           "wind": 10.3,
           "gust": null,
           "rain": 0.95,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.6,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-03T06:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 16:00",
@@ -1284,23 +998,10 @@
           "wind": 9.7,
           "gust": null,
           "rain": 0.55,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.6,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-03T09:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 19:00",
@@ -1309,23 +1010,10 @@
           "wind": 6.4,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.25,
-          "wave_max": 0.44,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.8,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-03T12:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 01:00",
@@ -1334,23 +1022,10 @@
           "wind": 8.2,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.26,
-          "wave_max": 0.45,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.9,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-03T18:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 07:00",
@@ -1359,23 +1034,10 @@
           "wind": 6.1,
           "gust": null,
           "rain": 0.69,
-          "wave": 0.27,
-          "wave_max": 0.47,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.8,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-04T00:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 13:00",
@@ -1384,23 +1046,10 @@
           "wind": 11.5,
           "gust": null,
           "rain": 0.82,
-          "wave": 0.28,
-          "wave_max": 0.48,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.0,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-04T06:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 19:00",
@@ -1409,23 +1058,10 @@
           "wind": 6.7,
           "gust": null,
           "rain": 0.32,
-          "wave": 0.32,
-          "wave_max": 0.55,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.1,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-04T12:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 01:00",
@@ -1434,23 +1070,10 @@
           "wind": 5.0,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.29,
-          "wave_max": 0.5,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.5,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-04T18:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 07:00",
@@ -1459,23 +1082,10 @@
           "wind": 5.9,
           "gust": null,
           "rain": 4.9,
-          "wave": 0.36,
-          "wave_max": 0.62,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.1,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-05T00:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 13:00",
@@ -1484,23 +1094,10 @@
           "wind": 10.0,
           "gust": null,
           "rain": 0.66,
-          "wave": 0.29,
-          "wave_max": 0.5,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.3,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-05T06:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 19:00",
@@ -1509,23 +1106,10 @@
           "wind": 6.3,
           "gust": null,
           "rain": 0.12,
-          "wave": 0.29,
-          "wave_max": 0.5,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.0,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-05T12:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 01:00",
@@ -1534,23 +1118,10 @@
           "wind": 2.0,
           "gust": null,
           "rain": 4.62,
-          "wave": 0.23,
-          "wave_max": 0.4,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.1,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-05T18:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 07:00",
@@ -1559,23 +1130,10 @@
           "wind": 1.8,
           "gust": null,
           "rain": 0.03,
-          "wave": 0.21,
-          "wave_max": 0.36,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.1,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-06T00:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 13:00",
@@ -1584,23 +1142,10 @@
           "wind": 7.0,
           "gust": null,
           "rain": 3.11,
-          "wave": 0.19,
-          "wave_max": 0.33,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.1,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-06T06:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 19:00",
@@ -1609,23 +1154,10 @@
           "wind": 3.9,
           "gust": null,
           "rain": 3.39,
-          "wave": 0.2,
-          "wave_max": 0.35,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.0,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-06T12:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 01:00",
@@ -1634,23 +1166,10 @@
           "wind": 1.7,
           "gust": null,
           "rain": 0.95,
-          "wave": 0.17,
-          "wave_max": 0.29,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.1,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-06T18:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 07:00",
@@ -1659,23 +1178,10 @@
           "wind": 7.5,
           "gust": null,
           "rain": 1.63,
-          "wave": 0.26,
-          "wave_max": 0.46,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.3,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-07T00:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 13:00",
@@ -1684,23 +1190,10 @@
           "wind": 7.6,
           "gust": null,
           "rain": 1.89,
-          "wave": 0.2,
-          "wave_max": 0.35,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.0,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-07T06:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 19:00",
@@ -1709,23 +1202,10 @@
           "wind": 5.9,
           "gust": null,
           "rain": 1.85,
-          "wave": 0.19,
-          "wave_max": 0.33,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.2,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 103.91667,
-            "sampled_lat": 10.0,
-            "sampled_lon": 103.75,
-            "distance_km": 26.0,
-            "coast_side": "WEST",
-            "valid_time": "2026-10-07T12:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         }
       ],
       "daily_outlook": [
@@ -1734,9 +1214,9 @@
           "day_offset": 7,
           "wind_max": 10.0,
           "gust_max": null,
-          "rain_total": 5.68,
-          "hs_max": 0.36,
-          "hmax_max": 0.62,
+          "rain_total": 0.78,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         },
@@ -1746,8 +1226,8 @@
           "wind_max": 7.0,
           "gust_max": null,
           "rain_total": 11.15,
-          "hs_max": 0.23,
-          "hmax_max": 0.4,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         },
@@ -1757,8 +1237,8 @@
           "wind_max": 7.6,
           "gust_max": null,
           "rain_total": 6.32,
-          "hs_max": 0.26,
-          "hmax_max": 0.46,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         }
@@ -1778,7 +1258,7 @@
           "sampled_lat": 10.0,
           "sampled_lon": 104.0,
           "distance_km": 2.685,
-          "sampled_time": "2026-09-27T21:00:00Z"
+          "sampled_time": "2026-09-28T00:00:00Z"
         },
         "current": {
           "sampled_lat": 10.0,
@@ -1787,17 +1267,17 @@
           "sampled_time": "2026-09-28T00:00:00Z"
         }
       },
-      "temperature": 28.3,
-      "wind": 18.1,
-      "gust": 26.2,
-      "wave_max": 1.06,
-      "wave": 0.59,
-      "period": 4.18,
-      "rain": 0.79,
+      "temperature": 28.2,
+      "wind": 14.9,
+      "gust": 21.8,
+      "wave_max": 1.11,
+      "wave": 0.63,
+      "period": 4.22,
+      "rain": 1.28,
       "current": 0.18,
-      "wave_regional_hs": 0.63,
+      "wave_regional_hs": 0.66,
       "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_REGIONAL_HS",
-      "marine_sampled_time": "2026-09-27T21:00:00Z",
+      "marine_sampled_time": "2026-09-28T00:00:00Z",
       "forecast_end": "2026-10-07T19:00:00+07:00",
       "long_range_status": "CONTROL_TREND_ONLY",
       "caveat": "D0-D3 dùng cycle ECMWF mới nhất. D4-D10 nối từ cycle 00/12 có horizon 240 giờ. Hs và Hmax dùng để nhìn biển nền và biên rủi ro; D4-D10 hiện là xu hướng control forecast, chưa phải quyết định vận hành vì lớp ensemble consensus còn đang bổ sung.",
@@ -2109,10 +1589,10 @@
           "wind": 7.4,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.18,
-          "wave_max": 0.31,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 01:00",
@@ -2121,10 +1601,10 @@
           "wind": 8.3,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.16,
-          "wave_max": 0.27,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 04:00",
@@ -2133,10 +1613,10 @@
           "wind": 7.6,
           "gust": null,
           "rain": 0.03,
-          "wave": 0.13,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 07:00",
@@ -2145,10 +1625,10 @@
           "wind": 5.9,
           "gust": null,
           "rain": 0.32,
-          "wave": 0.11,
-          "wave_max": 0.19,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 10:00",
@@ -2157,10 +1637,10 @@
           "wind": 3.3,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.09,
-          "wave_max": 0.15,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 13:00",
@@ -2169,10 +1649,10 @@
           "wind": 9.8,
           "gust": null,
           "rain": 0.29,
-          "wave": 0.09,
-          "wave_max": 0.15,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 16:00",
@@ -2181,10 +1661,10 @@
           "wind": 5.8,
           "gust": null,
           "rain": 0.84,
-          "wave": 0.12,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.6
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 19:00",
@@ -2193,10 +1673,10 @@
           "wind": 6.0,
           "gust": null,
           "rain": 0.05,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 22:00",
@@ -2205,10 +1685,10 @@
           "wind": 9.6,
           "gust": null,
           "rain": 0.06,
-          "wave": 0.09,
-          "wave_max": 0.16,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 01:00",
@@ -2217,10 +1697,10 @@
           "wind": 8.5,
           "gust": null,
           "rain": 2.26,
-          "wave": 0.11,
-          "wave_max": 0.2,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 04:00",
@@ -2229,10 +1709,10 @@
           "wind": 6.4,
           "gust": null,
           "rain": 2.94,
-          "wave": 0.09,
-          "wave_max": 0.16,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 07:00",
@@ -2241,10 +1721,10 @@
           "wind": 10.4,
           "gust": null,
           "rain": 0.08,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 10:00",
@@ -2253,10 +1733,10 @@
           "wind": 8.3,
           "gust": null,
           "rain": 0.09,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 13:00",
@@ -2265,10 +1745,10 @@
           "wind": 8.5,
           "gust": null,
           "rain": 1.16,
-          "wave": 0.08,
-          "wave_max": 0.14,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 16:00",
@@ -2277,10 +1757,10 @@
           "wind": 9.4,
           "gust": null,
           "rain": 0.05,
-          "wave": 0.12,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 19:00",
@@ -2289,10 +1769,10 @@
           "wind": 8.5,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.12,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 22:00",
@@ -2301,10 +1781,10 @@
           "wind": 14.7,
           "gust": null,
           "rain": 0.14,
-          "wave": 0.18,
-          "wave_max": 0.32,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 01:00",
@@ -2313,10 +1793,10 @@
           "wind": 14.8,
           "gust": null,
           "rain": 0.29,
-          "wave": 0.23,
-          "wave_max": 0.41,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 04:00",
@@ -2325,10 +1805,10 @@
           "wind": 11.2,
           "gust": null,
           "rain": 2.06,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 07:00",
@@ -2337,10 +1817,10 @@
           "wind": 13.7,
           "gust": null,
           "rain": 1.77,
-          "wave": 0.23,
-          "wave_max": 0.41,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 10:00",
@@ -2349,10 +1829,10 @@
           "wind": 7.6,
           "gust": null,
           "rain": 2.12,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 13:00",
@@ -2361,10 +1841,10 @@
           "wind": 13.0,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.22,
-          "wave_max": 0.39,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 16:00",
@@ -2373,10 +1853,10 @@
           "wind": 14.1,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 19:00",
@@ -2385,10 +1865,10 @@
           "wind": 12.4,
           "gust": null,
           "rain": 0.03,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 01:00",
@@ -2397,10 +1877,10 @@
           "wind": 15.6,
           "gust": null,
           "rain": 0.12,
-          "wave": 0.26,
-          "wave_max": 0.46,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 07:00",
@@ -2409,10 +1889,10 @@
           "wind": 11.4,
           "gust": null,
           "rain": 4.88,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 13:00",
@@ -2421,10 +1901,10 @@
           "wind": 15.0,
           "gust": null,
           "rain": 0.26,
-          "wave": 0.25,
-          "wave_max": 0.44,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 19:00",
@@ -2433,10 +1913,10 @@
           "wind": 15.4,
           "gust": null,
           "rain": 0.12,
-          "wave": 0.3,
-          "wave_max": 0.52,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 01:00",
@@ -2445,10 +1925,10 @@
           "wind": 11.9,
           "gust": null,
           "rain": 0.31,
-          "wave": 0.26,
-          "wave_max": 0.45,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 07:00",
@@ -2457,10 +1937,10 @@
           "wind": 10.9,
           "gust": null,
           "rain": 4.97,
-          "wave": 0.31,
-          "wave_max": 0.54,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 13:00",
@@ -2469,10 +1949,10 @@
           "wind": 12.6,
           "gust": null,
           "rain": 0.08,
-          "wave": 0.26,
-          "wave_max": 0.45,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 19:00",
@@ -2481,10 +1961,10 @@
           "wind": 12.2,
           "gust": null,
           "rain": 0.26,
-          "wave": 0.26,
-          "wave_max": 0.45,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 01:00",
@@ -2493,10 +1973,10 @@
           "wind": 3.4,
           "gust": null,
           "rain": 9.26,
-          "wave": 0.2,
-          "wave_max": 0.35,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 07:00",
@@ -2505,10 +1985,10 @@
           "wind": 5.7,
           "gust": null,
           "rain": 1.69,
-          "wave": 0.17,
-          "wave_max": 0.29,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 13:00",
@@ -2517,10 +1997,10 @@
           "wind": 8.6,
           "gust": null,
           "rain": 0.17,
-          "wave": 0.16,
-          "wave_max": 0.28,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 19:00",
@@ -2529,10 +2009,10 @@
           "wind": 10.9,
           "gust": null,
           "rain": 0.15,
-          "wave": 0.17,
-          "wave_max": 0.29,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 01:00",
@@ -2541,10 +2021,10 @@
           "wind": 4.1,
           "gust": null,
           "rain": 2.12,
-          "wave": 0.14,
-          "wave_max": 0.24,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 07:00",
@@ -2553,10 +2033,10 @@
           "wind": 7.0,
           "gust": null,
           "rain": 3.74,
-          "wave": 0.19,
-          "wave_max": 0.34,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 13:00",
@@ -2565,10 +2045,10 @@
           "wind": 9.7,
           "gust": null,
           "rain": 3.11,
-          "wave": 0.16,
-          "wave_max": 0.28,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 19:00",
@@ -2577,10 +2057,10 @@
           "wind": 11.3,
           "gust": null,
           "rain": 0.21,
-          "wave": 0.18,
-          "wave_max": 0.32,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         }
       ],
       "daily_outlook": [
@@ -2589,9 +2069,9 @@
           "day_offset": 7,
           "wind_max": 12.6,
           "gust_max": null,
-          "rain_total": 5.31,
-          "hs_max": 0.31,
-          "hmax_max": 0.54,
+          "rain_total": 0.34,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         },
@@ -2601,8 +2081,8 @@
           "wind_max": 10.9,
           "gust_max": null,
           "rain_total": 11.27,
-          "hs_max": 0.2,
-          "hmax_max": 0.35,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         },
@@ -2612,8 +2092,8 @@
           "wind_max": 11.3,
           "gust_max": null,
           "rain_total": 9.18,
-          "hs_max": 0.19,
-          "hmax_max": 0.34,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         }
@@ -2633,7 +2113,7 @@
           "sampled_lat": 10.416666666666657,
           "sampled_lon": 103.83333333333331,
           "distance_km": 8.586,
-          "sampled_time": "2026-09-27T21:00:00Z"
+          "sampled_time": "2026-09-28T00:00:00Z"
         },
         "current": {
           "sampled_lat": 10.416671752929688,
@@ -2642,17 +2122,17 @@
           "sampled_time": "2026-09-28T00:00:00Z"
         }
       },
-      "temperature": 27.7,
-      "wind": 14.5,
-      "gust": 21.2,
-      "wave_max": 0.71,
-      "wave": 0.37,
-      "period": 4.22,
-      "rain": 0.03,
+      "temperature": 26.5,
+      "wind": 9.0,
+      "gust": 15.3,
+      "wave_max": 0.74,
+      "wave": 0.38,
+      "period": 4.29,
+      "rain": 3.16,
       "current": 0.2,
-      "wave_regional_hs": 0.42,
+      "wave_regional_hs": 0.44,
       "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_REGIONAL_HS",
-      "marine_sampled_time": "2026-09-27T21:00:00Z",
+      "marine_sampled_time": "2026-09-28T00:00:00Z",
       "forecast_end": "2026-10-07T19:00:00+07:00",
       "long_range_status": "CONTROL_TREND_ONLY",
       "caveat": "D0-D3 dùng cycle ECMWF mới nhất. D4-D10 nối từ cycle 00/12 có horizon 240 giờ. Hs và Hmax dùng để nhìn biển nền và biên rủi ro; D4-D10 hiện là xu hướng control forecast, chưa phải quyết định vận hành vì lớp ensemble consensus còn đang bổ sung.",
@@ -2964,10 +2444,10 @@
           "wind": 5.2,
           "gust": null,
           "rain": 0.08,
-          "wave": 0.09,
-          "wave_max": 0.16,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 01:00",
@@ -2976,10 +2456,10 @@
           "wind": 7.3,
           "gust": null,
           "rain": 0.06,
-          "wave": 0.08,
-          "wave_max": 0.14,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 04:00",
@@ -2988,10 +2468,10 @@
           "wind": 1.7,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.06,
-          "wave_max": 0.11,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 07:00",
@@ -3000,10 +2480,10 @@
           "wind": 3.3,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.05,
-          "wave_max": 0.09,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 10:00",
@@ -3012,10 +2492,10 @@
           "wind": 3.6,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.04,
-          "wave_max": 0.07,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 13:00",
@@ -3024,10 +2504,10 @@
           "wind": 9.4,
           "gust": null,
           "rain": 0.12,
-          "wave": 0.04,
-          "wave_max": 0.07,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 16:00",
@@ -3036,10 +2516,10 @@
           "wind": 9.1,
           "gust": null,
           "rain": 0.5,
-          "wave": 0.17,
-          "wave_max": 0.31,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 19:00",
@@ -3048,10 +2528,10 @@
           "wind": 10.1,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.12,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 22:00",
@@ -3060,10 +2540,10 @@
           "wind": 12.0,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.15,
-          "wave_max": 0.27,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 01:00",
@@ -3072,10 +2552,10 @@
           "wind": 15.2,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.17,
-          "wave_max": 0.31,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 04:00",
@@ -3084,10 +2564,10 @@
           "wind": 5.4,
           "gust": null,
           "rain": 0.2,
-          "wave": 0.13,
-          "wave_max": 0.23,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 07:00",
@@ -3096,10 +2576,10 @@
           "wind": 5.6,
           "gust": null,
           "rain": 0.32,
-          "wave": 0.09,
-          "wave_max": 0.16,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 10:00",
@@ -3108,10 +2588,10 @@
           "wind": 7.1,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.07,
-          "wave_max": 0.13,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 13:00",
@@ -3120,10 +2600,10 @@
           "wind": 7.4,
           "gust": null,
           "rain": 0.26,
-          "wave": 0.08,
-          "wave_max": 0.15,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.6
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 16:00",
@@ -3132,10 +2612,10 @@
           "wind": 11.4,
           "gust": null,
           "rain": 0.24,
-          "wave": 0.14,
-          "wave_max": 0.25,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 19:00",
@@ -3144,10 +2624,10 @@
           "wind": 12.5,
           "gust": null,
           "rain": 0.06,
-          "wave": 0.14,
-          "wave_max": 0.25,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 22:00",
@@ -3156,10 +2636,10 @@
           "wind": 15.9,
           "gust": null,
           "rain": 0.2,
-          "wave": 0.21,
-          "wave_max": 0.37,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 01:00",
@@ -3168,10 +2648,10 @@
           "wind": 18.7,
           "gust": null,
           "rain": 0.55,
-          "wave": 0.26,
-          "wave_max": 0.46,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 04:00",
@@ -3180,10 +2660,10 @@
           "wind": 14.8,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 07:00",
@@ -3192,10 +2672,10 @@
           "wind": 14.6,
           "gust": null,
           "rain": 1.79,
-          "wave": 0.21,
-          "wave_max": 0.38,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 10:00",
@@ -3204,10 +2684,10 @@
           "wind": 9.8,
           "gust": null,
           "rain": 1.59,
-          "wave": 0.16,
-          "wave_max": 0.29,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 13:00",
@@ -3216,10 +2696,10 @@
           "wind": 15.8,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.21,
-          "wave_max": 0.38,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 16:00",
@@ -3228,10 +2708,10 @@
           "wind": 16.0,
           "gust": null,
           "rain": 0.11,
-          "wave": 0.26,
-          "wave_max": 0.46,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 19:00",
@@ -3240,10 +2720,10 @@
           "wind": 13.3,
           "gust": null,
           "rain": 0.41,
-          "wave": 0.23,
-          "wave_max": 0.41,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 01:00",
@@ -3252,10 +2732,10 @@
           "wind": 15.3,
           "gust": null,
           "rain": 0.11,
-          "wave": 0.24,
-          "wave_max": 0.43,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 07:00",
@@ -3264,10 +2744,10 @@
           "wind": 7.1,
           "gust": null,
           "rain": 0.29,
-          "wave": 0.12,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 13:00",
@@ -3276,10 +2756,10 @@
           "wind": 16.8,
           "gust": null,
           "rain": 0.34,
-          "wave": 0.21,
-          "wave_max": 0.38,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 19:00",
@@ -3288,10 +2768,10 @@
           "wind": 16.3,
           "gust": null,
           "rain": 0.15,
-          "wave": 0.23,
-          "wave_max": 0.41,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 01:00",
@@ -3300,10 +2780,10 @@
           "wind": 13.7,
           "gust": null,
           "rain": 0.24,
-          "wave": 0.18,
-          "wave_max": 0.32,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 07:00",
@@ -3312,10 +2792,10 @@
           "wind": 4.8,
           "gust": null,
           "rain": 3.65,
-          "wave": 0.23,
-          "wave_max": 0.41,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 13:00",
@@ -3324,10 +2804,10 @@
           "wind": 15.7,
           "gust": null,
           "rain": 0.03,
-          "wave": 0.18,
-          "wave_max": 0.32,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 19:00",
@@ -3336,10 +2816,10 @@
           "wind": 15.2,
           "gust": null,
           "rain": 0.06,
-          "wave": 0.23,
-          "wave_max": 0.41,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 01:00",
@@ -3348,10 +2828,10 @@
           "wind": 5.3,
           "gust": null,
           "rain": 4.47,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 07:00",
@@ -3360,10 +2840,10 @@
           "wind": 3.6,
           "gust": null,
           "rain": 0.35,
-          "wave": 0.06,
-          "wave_max": 0.11,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 13:00",
@@ -3372,10 +2852,10 @@
           "wind": 2.4,
           "gust": null,
           "rain": 0.29,
-          "wave": 0.05,
-          "wave_max": 0.09,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 19:00",
@@ -3384,10 +2864,10 @@
           "wind": 8.7,
           "gust": null,
           "rain": 0.31,
-          "wave": 0.05,
-          "wave_max": 0.09,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 01:00",
@@ -3396,10 +2876,10 @@
           "wind": 4.0,
           "gust": null,
           "rain": 1.51,
-          "wave": 0.08,
-          "wave_max": 0.14,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 07:00",
@@ -3408,10 +2888,10 @@
           "wind": 2.2,
           "gust": null,
           "rain": 1.57,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 13:00",
@@ -3420,10 +2900,10 @@
           "wind": 12.9,
           "gust": null,
           "rain": 0.49,
-          "wave": 0.08,
-          "wave_max": 0.15,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.6
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 19:00",
@@ -3432,10 +2912,10 @@
           "wind": 13.5,
           "gust": null,
           "rain": 0.47,
-          "wave": 0.17,
-          "wave_max": 0.31,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         }
       ],
       "daily_outlook": [
@@ -3444,9 +2924,9 @@
           "day_offset": 7,
           "wind_max": 15.7,
           "gust_max": null,
-          "rain_total": 3.74,
-          "hs_max": 0.23,
-          "hmax_max": 0.41,
+          "rain_total": 0.09,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         },
@@ -3456,8 +2936,8 @@
           "wind_max": 8.7,
           "gust_max": null,
           "rain_total": 5.42,
-          "hs_max": 0.1,
-          "hmax_max": 0.18,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         },
@@ -3467,8 +2947,8 @@
           "wind_max": 13.5,
           "gust_max": null,
           "rain_total": 4.04,
-          "hs_max": 0.17,
-          "hmax_max": 0.31,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         }
@@ -3488,7 +2968,7 @@
           "sampled_lat": 10.0,
           "sampled_lon": 105.0,
           "distance_km": 8.624,
-          "sampled_time": "2026-09-27T21:00:00Z"
+          "sampled_time": "2026-09-28T00:00:00Z"
         },
         "current": {
           "sampled_lat": 10.0,
@@ -3497,17 +2977,17 @@
           "sampled_time": "2026-09-28T00:00:00Z"
         }
       },
-      "temperature": 26.4,
-      "wind": 10.9,
-      "gust": 17.8,
-      "wave_max": 0.26,
-      "wave": 0.13,
-      "period": 3.47,
+      "temperature": 26.7,
+      "wind": 8.3,
+      "gust": 14.9,
+      "wave_max": 0.22,
+      "wave": 0.12,
+      "period": 3.71,
       "rain": 0.0,
       "current": 0.1,
-      "wave_regional_hs": 0.15,
+      "wave_regional_hs": 0.13,
       "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_REGIONAL_HS",
-      "marine_sampled_time": "2026-09-27T21:00:00Z",
+      "marine_sampled_time": "2026-09-28T00:00:00Z",
       "forecast_end": "2026-10-07T19:00:00+07:00",
       "long_range_status": "CONTROL_TREND_ONLY",
       "caveat": "D0-D3 dùng cycle ECMWF mới nhất. D4-D10 nối từ cycle 00/12 có horizon 240 giờ. Hs và Hmax dùng để nhìn biển nền và biên rủi ro; D4-D10 hiện là xu hướng control forecast, chưa phải quyết định vận hành vì lớp ensemble consensus còn đang bổ sung.",
@@ -3819,10 +3299,10 @@
           "wind": 3.5,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.11,
-          "wave_max": 0.19,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 01:00",
@@ -3831,10 +3311,10 @@
           "wind": 0.4,
           "gust": null,
           "rain": 0.27,
-          "wave": 0.08,
-          "wave_max": 0.14,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 04:00",
@@ -3843,10 +3323,10 @@
           "wind": 6.6,
           "gust": null,
           "rain": 0.4,
-          "wave": 0.06,
-          "wave_max": 0.11,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 07:00",
@@ -3855,10 +3335,10 @@
           "wind": 7.7,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.09,
-          "wave_max": 0.17,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 10:00",
@@ -3867,10 +3347,10 @@
           "wind": 3.3,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.06,
-          "wave_max": 0.11,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.6
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 13:00",
@@ -3879,10 +3359,10 @@
           "wind": 11.9,
           "gust": null,
           "rain": 0.03,
-          "wave": 0.14,
-          "wave_max": 0.26,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 16:00",
@@ -3891,10 +3371,10 @@
           "wind": 10.2,
           "gust": null,
           "rain": 1.77,
-          "wave": 0.14,
-          "wave_max": 0.25,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 19:00",
@@ -3903,10 +3383,10 @@
           "wind": 7.6,
           "gust": null,
           "rain": 0.78,
-          "wave": 0.12,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 22:00",
@@ -3915,10 +3395,10 @@
           "wind": 8.1,
           "gust": null,
           "rain": 0.14,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 01:00",
@@ -3927,10 +3407,10 @@
           "wind": 7.2,
           "gust": null,
           "rain": 1.05,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 04:00",
@@ -3939,10 +3419,10 @@
           "wind": 3.0,
           "gust": null,
           "rain": 1.65,
-          "wave": 0.08,
-          "wave_max": 0.14,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 07:00",
@@ -3951,10 +3431,10 @@
           "wind": 6.1,
           "gust": null,
           "rain": 0.06,
-          "wave": 0.06,
-          "wave_max": 0.11,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 10:00",
@@ -3963,10 +3443,10 @@
           "wind": 3.5,
           "gust": null,
           "rain": 0.35,
-          "wave": 0.05,
-          "wave_max": 0.09,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 13:00",
@@ -3975,10 +3455,10 @@
           "wind": 11.0,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 16:00",
@@ -3987,10 +3467,10 @@
           "wind": 13.2,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.17,
-          "wave_max": 0.31,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 19:00",
@@ -3999,10 +3479,10 @@
           "wind": 11.4,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.18,
-          "wave_max": 0.32,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 22:00",
@@ -4011,10 +3491,10 @@
           "wind": 12.5,
           "gust": null,
           "rain": 0.14,
-          "wave": 0.18,
-          "wave_max": 0.32,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 01:00",
@@ -4023,10 +3503,10 @@
           "wind": 14.0,
           "gust": null,
           "rain": 0.75,
-          "wave": 0.22,
-          "wave_max": 0.39,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 04:00",
@@ -4035,10 +3515,10 @@
           "wind": 9.9,
           "gust": null,
           "rain": 2.82,
-          "wave": 0.21,
-          "wave_max": 0.37,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 07:00",
@@ -4047,10 +3527,10 @@
           "wind": 13.7,
           "gust": null,
           "rain": 1.79,
-          "wave": 0.18,
-          "wave_max": 0.32,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 10:00",
@@ -4059,10 +3539,10 @@
           "wind": 16.4,
           "gust": null,
           "rain": 0.66,
-          "wave": 0.25,
-          "wave_max": 0.44,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 13:00",
@@ -4071,10 +3551,10 @@
           "wind": 16.0,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.25,
-          "wave_max": 0.44,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 16:00",
@@ -4083,10 +3563,10 @@
           "wind": 19.0,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.32,
-          "wave_max": 0.56,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 19:00",
@@ -4095,10 +3575,10 @@
           "wind": 13.9,
           "gust": null,
           "rain": 0.03,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 01:00",
@@ -4107,10 +3587,10 @@
           "wind": 13.6,
           "gust": null,
           "rain": 0.56,
-          "wave": 0.27,
-          "wave_max": 0.47,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 07:00",
@@ -4119,10 +3599,10 @@
           "wind": 13.9,
           "gust": null,
           "rain": 2.76,
-          "wave": 0.19,
-          "wave_max": 0.33,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 13:00",
@@ -4131,10 +3611,10 @@
           "wind": 19.3,
           "gust": null,
           "rain": 0.53,
-          "wave": 0.31,
-          "wave_max": 0.54,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 19:00",
@@ -4143,10 +3623,10 @@
           "wind": 13.0,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.26,
-          "wave_max": 0.46,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 01:00",
@@ -4155,10 +3635,10 @@
           "wind": 7.5,
           "gust": null,
           "rain": 0.95,
-          "wave": 0.19,
-          "wave_max": 0.33,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 07:00",
@@ -4167,10 +3647,10 @@
           "wind": 13.5,
           "gust": null,
           "rain": 4.5,
-          "wave": 0.25,
-          "wave_max": 0.44,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 13:00",
@@ -4179,10 +3659,10 @@
           "wind": 17.7,
           "gust": null,
           "rain": 2.38,
-          "wave": 0.24,
-          "wave_max": 0.43,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 19:00",
@@ -4191,10 +3671,10 @@
           "wind": 11.3,
           "gust": null,
           "rain": 0.32,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 01:00",
@@ -4203,10 +3683,10 @@
           "wind": 5.2,
           "gust": null,
           "rain": 5.31,
-          "wave": 0.15,
-          "wave_max": 0.27,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 07:00",
@@ -4215,10 +3695,10 @@
           "wind": 7.1,
           "gust": null,
           "rain": 0.95,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 13:00",
@@ -4227,10 +3707,10 @@
           "wind": 15.8,
           "gust": null,
           "rain": 0.15,
-          "wave": 0.18,
-          "wave_max": 0.32,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 19:00",
@@ -4239,10 +3719,10 @@
           "wind": 10.7,
           "gust": null,
           "rain": 0.5,
-          "wave": 0.15,
-          "wave_max": 0.27,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 01:00",
@@ -4251,10 +3731,10 @@
           "wind": 5.9,
           "gust": null,
           "rain": 6.91,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 07:00",
@@ -4263,10 +3743,10 @@
           "wind": 13.1,
           "gust": null,
           "rain": 5.54,
-          "wave": 0.13,
-          "wave_max": 0.24,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 13:00",
@@ -4275,10 +3755,10 @@
           "wind": 9.0,
           "gust": null,
           "rain": 1.28,
-          "wave": 0.16,
-          "wave_max": 0.29,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 19:00",
@@ -4287,10 +3767,10 @@
           "wind": 10.4,
           "gust": null,
           "rain": 0.4,
-          "wave": 0.19,
-          "wave_max": 0.34,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         }
       ],
       "daily_outlook": [
@@ -4299,9 +3779,9 @@
           "day_offset": 7,
           "wind_max": 17.7,
           "gust_max": null,
-          "rain_total": 7.2,
-          "hs_max": 0.25,
-          "hmax_max": 0.44,
+          "rain_total": 2.7,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         },
@@ -4311,8 +3791,8 @@
           "wind_max": 15.8,
           "gust_max": null,
           "rain_total": 6.91,
-          "hs_max": 0.18,
-          "hmax_max": 0.32,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         },
@@ -4322,8 +3802,8 @@
           "wind_max": 13.1,
           "gust_max": null,
           "rain_total": 14.13,
-          "hs_max": 0.19,
-          "hmax_max": 0.34,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         }
@@ -4349,7 +3829,7 @@
           "sampled_lat": 10.333333333333329,
           "sampled_lon": 103.83333333333331,
           "distance_km": 9.993,
-          "sampled_time": "2026-09-27T21:00:00Z"
+          "sampled_time": "2026-09-28T00:00:00Z"
         },
         "current": {
           "sampled_lat": 10.25,
@@ -4358,17 +3838,17 @@
           "sampled_time": "2026-09-28T00:00:00Z"
         }
       },
-      "temperature": 25.5,
-      "wind": 9.0,
-      "gust": 17.4,
-      "wave_max": 0.91,
-      "wave": 0.42,
-      "period": 4.24,
-      "rain": 0.16,
+      "temperature": 26.5,
+      "wind": 6.4,
+      "gust": 14.1,
+      "wave_max": 0.97,
+      "wave": 0.44,
+      "period": 4.29,
+      "rain": 0.53,
       "current": 0.1,
-      "wave_regional_hs": 0.54,
+      "wave_regional_hs": 0.58,
       "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_REGIONAL_HS",
-      "marine_sampled_time": "2026-09-27T21:00:00Z",
+      "marine_sampled_time": "2026-09-28T00:00:00Z",
       "forecast_end": "2026-10-07T19:00:00+07:00",
       "long_range_status": "CONTROL_TREND_ONLY",
       "caveat": "D0-D3 dùng cycle ECMWF mới nhất. D4-D10 nối từ cycle 00/12 có horizon 240 giờ. Hs và Hmax dùng để nhìn biển nền và biên rủi ro; D4-D10 hiện là xu hướng control forecast, chưa phải quyết định vận hành vì lớp ensemble consensus còn đang bổ sung.",
@@ -4680,10 +4160,10 @@
           "wind": 3.4,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.2,
-          "wave_max": 0.34,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 4.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 01:00",
@@ -4692,10 +4172,10 @@
           "wind": 4.1,
           "gust": null,
           "rain": 0.03,
-          "wave": 0.17,
-          "wave_max": 0.29,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 4.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 04:00",
@@ -4704,10 +4184,10 @@
           "wind": 2.6,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.15,
-          "wave_max": 0.25,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 4.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 07:00",
@@ -4716,10 +4196,10 @@
           "wind": 3.2,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.13,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 4.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 10:00",
@@ -4728,10 +4208,10 @@
           "wind": 1.3,
           "gust": null,
           "rain": 0.26,
-          "wave": 0.11,
-          "wave_max": 0.19,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 4.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 13:00",
@@ -4740,10 +4220,10 @@
           "wind": 7.4,
           "gust": null,
           "rain": 1.8,
-          "wave": 0.1,
-          "wave_max": 0.17,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 4.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 16:00",
@@ -4752,10 +4232,10 @@
           "wind": 5.7,
           "gust": null,
           "rain": 3.69,
-          "wave": 0.15,
-          "wave_max": 0.26,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 19:00",
@@ -4764,10 +4244,10 @@
           "wind": 1.7,
           "gust": null,
           "rain": 0.2,
-          "wave": 0.12,
-          "wave_max": 0.21,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 22:00",
@@ -4776,10 +4256,10 @@
           "wind": 5.3,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.12,
-          "wave_max": 0.21,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 01:00",
@@ -4788,10 +4268,10 @@
           "wind": 5.1,
           "gust": null,
           "rain": 0.14,
-          "wave": 0.13,
-          "wave_max": 0.23,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 04:00",
@@ -4800,10 +4280,10 @@
           "wind": 2.7,
           "gust": null,
           "rain": 0.43,
-          "wave": 0.11,
-          "wave_max": 0.2,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 07:00",
@@ -4812,10 +4292,10 @@
           "wind": 6.4,
           "gust": null,
           "rain": 0.67,
-          "wave": 0.09,
-          "wave_max": 0.16,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 10:00",
@@ -4824,10 +4304,10 @@
           "wind": 5.9,
           "gust": null,
           "rain": 0.11,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 13:00",
@@ -4836,10 +4316,10 @@
           "wind": 6.3,
           "gust": null,
           "rain": 2.35,
-          "wave": 0.08,
-          "wave_max": 0.14,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 16:00",
@@ -4848,10 +4328,10 @@
           "wind": 6.1,
           "gust": null,
           "rain": 1.34,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 19:00",
@@ -4860,10 +4340,10 @@
           "wind": 5.2,
           "gust": null,
           "rain": 0.08,
-          "wave": 0.11,
-          "wave_max": 0.2,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.6
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 22:00",
@@ -4872,10 +4352,10 @@
           "wind": 8.0,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.19,
-          "wave_max": 0.34,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 01:00",
@@ -4884,10 +4364,10 @@
           "wind": 8.1,
           "gust": null,
           "rain": 0.11,
-          "wave": 0.25,
-          "wave_max": 0.44,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 04:00",
@@ -4896,10 +4376,10 @@
           "wind": 5.6,
           "gust": null,
           "rain": 0.14,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 07:00",
@@ -4908,10 +4388,10 @@
           "wind": 9.6,
           "gust": null,
           "rain": 0.53,
-          "wave": 0.25,
-          "wave_max": 0.44,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 10:00",
@@ -4920,10 +4400,10 @@
           "wind": 2.9,
           "gust": null,
           "rain": 1.71,
-          "wave": 0.21,
-          "wave_max": 0.37,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.6
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 13:00",
@@ -4932,10 +4412,10 @@
           "wind": 10.3,
           "gust": null,
           "rain": 0.95,
-          "wave": 0.22,
-          "wave_max": 0.38,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 16:00",
@@ -4944,10 +4424,10 @@
           "wind": 9.7,
           "gust": null,
           "rain": 0.55,
-          "wave": 0.25,
-          "wave_max": 0.44,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 19:00",
@@ -4956,10 +4436,10 @@
           "wind": 6.4,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.25,
-          "wave_max": 0.44,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.6
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 01:00",
@@ -4968,10 +4448,10 @@
           "wind": 8.2,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.25,
-          "wave_max": 0.43,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 07:00",
@@ -4980,10 +4460,10 @@
           "wind": 6.1,
           "gust": null,
           "rain": 0.69,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 13:00",
@@ -4992,10 +4472,10 @@
           "wind": 11.5,
           "gust": null,
           "rain": 0.82,
-          "wave": 0.24,
-          "wave_max": 0.41,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 19:00",
@@ -5004,10 +4484,10 @@
           "wind": 6.7,
           "gust": null,
           "rain": 0.32,
-          "wave": 0.31,
-          "wave_max": 0.54,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 01:00",
@@ -5016,10 +4496,10 @@
           "wind": 5.0,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.27,
-          "wave_max": 0.46,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 07:00",
@@ -5028,10 +4508,10 @@
           "wind": 5.9,
           "gust": null,
           "rain": 4.9,
-          "wave": 0.36,
-          "wave_max": 0.62,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 13:00",
@@ -5040,10 +4520,10 @@
           "wind": 10.0,
           "gust": null,
           "rain": 0.66,
-          "wave": 0.28,
-          "wave_max": 0.48,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 19:00",
@@ -5052,10 +4532,10 @@
           "wind": 6.3,
           "gust": null,
           "rain": 0.12,
-          "wave": 0.28,
-          "wave_max": 0.48,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 01:00",
@@ -5064,10 +4544,10 @@
           "wind": 2.0,
           "gust": null,
           "rain": 4.62,
-          "wave": 0.25,
-          "wave_max": 0.43,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 07:00",
@@ -5076,10 +4556,10 @@
           "wind": 1.8,
           "gust": null,
           "rain": 0.03,
-          "wave": 0.2,
-          "wave_max": 0.35,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 13:00",
@@ -5088,10 +4568,10 @@
           "wind": 7.0,
           "gust": null,
           "rain": 3.11,
-          "wave": 0.17,
-          "wave_max": 0.29,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 19:00",
@@ -5100,10 +4580,10 @@
           "wind": 3.9,
           "gust": null,
           "rain": 3.39,
-          "wave": 0.18,
-          "wave_max": 0.31,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 01:00",
@@ -5112,10 +4592,10 @@
           "wind": 1.7,
           "gust": null,
           "rain": 0.95,
-          "wave": 0.15,
-          "wave_max": 0.26,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 07:00",
@@ -5124,10 +4604,10 @@
           "wind": 7.5,
           "gust": null,
           "rain": 1.63,
-          "wave": 0.24,
-          "wave_max": 0.43,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 13:00",
@@ -5136,10 +4616,10 @@
           "wind": 7.6,
           "gust": null,
           "rain": 1.89,
-          "wave": 0.17,
-          "wave_max": 0.29,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 19:00",
@@ -5148,10 +4628,10 @@
           "wind": 5.9,
           "gust": null,
           "rain": 1.85,
-          "wave": 0.18,
-          "wave_max": 0.31,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         }
       ],
       "daily_outlook": [
@@ -5160,9 +4640,9 @@
           "day_offset": 7,
           "wind_max": 10.0,
           "gust_max": null,
-          "rain_total": 5.68,
-          "hs_max": 0.36,
-          "hmax_max": 0.62,
+          "rain_total": 0.78,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         },
@@ -5172,8 +4652,8 @@
           "wind_max": 7.0,
           "gust_max": null,
           "rain_total": 11.15,
-          "hs_max": 0.25,
-          "hmax_max": 0.43,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         },
@@ -5183,8 +4663,8 @@
           "wind_max": 7.6,
           "gust_max": null,
           "rain_total": 6.32,
-          "hs_max": 0.24,
-          "hmax_max": 0.43,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         }
@@ -5204,7 +4684,7 @@
           "sampled_lat": 10.5,
           "sampled_lon": 104.0,
           "distance_km": 10.383,
-          "sampled_time": "2026-09-27T21:00:00Z"
+          "sampled_time": "2026-09-28T00:00:00Z"
         },
         "current": {
           "sampled_lat": 10.416671752929688,
@@ -5213,17 +4693,17 @@
           "sampled_time": "2026-09-28T00:00:00Z"
         }
       },
-      "temperature": 27.7,
-      "wind": 14.5,
-      "gust": 21.2,
-      "wave_max": 0.57,
-      "wave": 0.28,
-      "period": 4.11,
-      "rain": 0.03,
+      "temperature": 26.5,
+      "wind": 9.0,
+      "gust": 15.3,
+      "wave_max": 0.59,
+      "wave": 0.29,
+      "period": 4.17,
+      "rain": 3.16,
       "current": 0.16,
-      "wave_regional_hs": 0.34,
+      "wave_regional_hs": 0.35,
       "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_REGIONAL_HS",
-      "marine_sampled_time": "2026-09-27T21:00:00Z",
+      "marine_sampled_time": "2026-09-28T00:00:00Z",
       "forecast_end": "2026-10-07T19:00:00+07:00",
       "long_range_status": "CONTROL_TREND_ONLY",
       "caveat": "D0-D3 dùng cycle ECMWF mới nhất. D4-D10 nối từ cycle 00/12 có horizon 240 giờ. Hs và Hmax dùng để nhìn biển nền và biên rủi ro; D4-D10 hiện là xu hướng control forecast, chưa phải quyết định vận hành vì lớp ensemble consensus còn đang bổ sung.",
@@ -5535,10 +5015,10 @@
           "wind": 5.2,
           "gust": null,
           "rain": 0.08,
-          "wave": 0.09,
-          "wave_max": 0.16,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 01:00",
@@ -5547,10 +5027,10 @@
           "wind": 7.3,
           "gust": null,
           "rain": 0.06,
-          "wave": 0.08,
-          "wave_max": 0.14,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 04:00",
@@ -5559,10 +5039,10 @@
           "wind": 1.7,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.06,
-          "wave_max": 0.11,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 07:00",
@@ -5571,10 +5051,10 @@
           "wind": 3.3,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.05,
-          "wave_max": 0.09,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 10:00",
@@ -5583,10 +5063,10 @@
           "wind": 3.6,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.04,
-          "wave_max": 0.07,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 13:00",
@@ -5595,10 +5075,10 @@
           "wind": 9.4,
           "gust": null,
           "rain": 0.12,
-          "wave": 0.04,
-          "wave_max": 0.07,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 16:00",
@@ -5607,10 +5087,10 @@
           "wind": 9.1,
           "gust": null,
           "rain": 0.5,
-          "wave": 0.17,
-          "wave_max": 0.31,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 19:00",
@@ -5619,10 +5099,10 @@
           "wind": 10.1,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.12,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 22:00",
@@ -5631,10 +5111,10 @@
           "wind": 12.0,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.15,
-          "wave_max": 0.27,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 01:00",
@@ -5643,10 +5123,10 @@
           "wind": 15.2,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.17,
-          "wave_max": 0.31,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 04:00",
@@ -5655,10 +5135,10 @@
           "wind": 5.4,
           "gust": null,
           "rain": 0.2,
-          "wave": 0.13,
-          "wave_max": 0.23,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 07:00",
@@ -5667,10 +5147,10 @@
           "wind": 5.6,
           "gust": null,
           "rain": 0.32,
-          "wave": 0.09,
-          "wave_max": 0.16,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 10:00",
@@ -5679,10 +5159,10 @@
           "wind": 7.1,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.07,
-          "wave_max": 0.13,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 13:00",
@@ -5691,10 +5171,10 @@
           "wind": 7.4,
           "gust": null,
           "rain": 0.26,
-          "wave": 0.08,
-          "wave_max": 0.15,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.6
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 16:00",
@@ -5703,10 +5183,10 @@
           "wind": 11.4,
           "gust": null,
           "rain": 0.24,
-          "wave": 0.14,
-          "wave_max": 0.25,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 19:00",
@@ -5715,10 +5195,10 @@
           "wind": 12.5,
           "gust": null,
           "rain": 0.06,
-          "wave": 0.14,
-          "wave_max": 0.25,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 22:00",
@@ -5727,10 +5207,10 @@
           "wind": 15.9,
           "gust": null,
           "rain": 0.2,
-          "wave": 0.21,
-          "wave_max": 0.37,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 01:00",
@@ -5739,10 +5219,10 @@
           "wind": 18.7,
           "gust": null,
           "rain": 0.55,
-          "wave": 0.26,
-          "wave_max": 0.46,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 04:00",
@@ -5751,10 +5231,10 @@
           "wind": 14.8,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 07:00",
@@ -5763,10 +5243,10 @@
           "wind": 14.6,
           "gust": null,
           "rain": 1.79,
-          "wave": 0.21,
-          "wave_max": 0.38,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 10:00",
@@ -5775,10 +5255,10 @@
           "wind": 9.8,
           "gust": null,
           "rain": 1.59,
-          "wave": 0.16,
-          "wave_max": 0.29,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 13:00",
@@ -5787,10 +5267,10 @@
           "wind": 15.8,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.21,
-          "wave_max": 0.38,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 16:00",
@@ -5799,10 +5279,10 @@
           "wind": 16.0,
           "gust": null,
           "rain": 0.11,
-          "wave": 0.26,
-          "wave_max": 0.46,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 19:00",
@@ -5811,10 +5291,10 @@
           "wind": 13.3,
           "gust": null,
           "rain": 0.41,
-          "wave": 0.23,
-          "wave_max": 0.41,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 01:00",
@@ -5823,10 +5303,10 @@
           "wind": 15.3,
           "gust": null,
           "rain": 0.11,
-          "wave": 0.24,
-          "wave_max": 0.43,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 07:00",
@@ -5835,10 +5315,10 @@
           "wind": 7.1,
           "gust": null,
           "rain": 0.29,
-          "wave": 0.12,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 13:00",
@@ -5847,10 +5327,10 @@
           "wind": 16.8,
           "gust": null,
           "rain": 0.34,
-          "wave": 0.21,
-          "wave_max": 0.38,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 19:00",
@@ -5859,10 +5339,10 @@
           "wind": 16.3,
           "gust": null,
           "rain": 0.15,
-          "wave": 0.23,
-          "wave_max": 0.41,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 01:00",
@@ -5871,10 +5351,10 @@
           "wind": 13.7,
           "gust": null,
           "rain": 0.24,
-          "wave": 0.18,
-          "wave_max": 0.32,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 07:00",
@@ -5883,10 +5363,10 @@
           "wind": 4.8,
           "gust": null,
           "rain": 3.65,
-          "wave": 0.23,
-          "wave_max": 0.41,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 13:00",
@@ -5895,10 +5375,10 @@
           "wind": 15.7,
           "gust": null,
           "rain": 0.03,
-          "wave": 0.18,
-          "wave_max": 0.32,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 19:00",
@@ -5907,10 +5387,10 @@
           "wind": 15.2,
           "gust": null,
           "rain": 0.06,
-          "wave": 0.23,
-          "wave_max": 0.41,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 01:00",
@@ -5919,10 +5399,10 @@
           "wind": 5.3,
           "gust": null,
           "rain": 4.47,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 07:00",
@@ -5931,10 +5411,10 @@
           "wind": 3.6,
           "gust": null,
           "rain": 0.35,
-          "wave": 0.06,
-          "wave_max": 0.11,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 13:00",
@@ -5943,10 +5423,10 @@
           "wind": 2.4,
           "gust": null,
           "rain": 0.29,
-          "wave": 0.05,
-          "wave_max": 0.09,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 19:00",
@@ -5955,10 +5435,10 @@
           "wind": 8.7,
           "gust": null,
           "rain": 0.31,
-          "wave": 0.05,
-          "wave_max": 0.09,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 01:00",
@@ -5967,10 +5447,10 @@
           "wind": 4.0,
           "gust": null,
           "rain": 1.51,
-          "wave": 0.08,
-          "wave_max": 0.14,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 07:00",
@@ -5979,10 +5459,10 @@
           "wind": 2.2,
           "gust": null,
           "rain": 1.57,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 13:00",
@@ -5991,10 +5471,10 @@
           "wind": 12.9,
           "gust": null,
           "rain": 0.49,
-          "wave": 0.08,
-          "wave_max": 0.15,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.6
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 19:00",
@@ -6003,10 +5483,10 @@
           "wind": 13.5,
           "gust": null,
           "rain": 0.47,
-          "wave": 0.17,
-          "wave_max": 0.31,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         }
       ],
       "daily_outlook": [
@@ -6015,9 +5495,9 @@
           "day_offset": 7,
           "wind_max": 15.7,
           "gust_max": null,
-          "rain_total": 3.74,
-          "hs_max": 0.23,
-          "hmax_max": 0.41,
+          "rain_total": 0.09,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         },
@@ -6027,8 +5507,8 @@
           "wind_max": 8.7,
           "gust_max": null,
           "rain_total": 5.42,
-          "hs_max": 0.1,
-          "hmax_max": 0.18,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         },
@@ -6038,8 +5518,8 @@
           "wind_max": 13.5,
           "gust_max": null,
           "rain_total": 4.04,
-          "hs_max": 0.17,
-          "hmax_max": 0.31,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         }
@@ -6065,7 +5545,7 @@
           "sampled_lat": 10.166666666666657,
           "sampled_lon": 104.08333333333331,
           "distance_km": 4.511,
-          "sampled_time": "2026-09-27T21:00:00Z"
+          "sampled_time": "2026-09-28T00:00:00Z"
         },
         "current": {
           "sampled_lat": 10.166671752929688,
@@ -6074,17 +5554,17 @@
           "sampled_time": "2026-09-28T00:00:00Z"
         }
       },
-      "temperature": 25.5,
-      "wind": 9.0,
-      "gust": 17.4,
-      "wave_max": 0.93,
-      "wave": 0.49,
-      "period": 4.07,
-      "rain": 0.16,
+      "temperature": 26.5,
+      "wind": 6.4,
+      "gust": 14.1,
+      "wave_max": 1.01,
+      "wave": 0.53,
+      "period": 4.16,
+      "rain": 0.53,
       "current": 0.13,
-      "wave_regional_hs": 0.55,
+      "wave_regional_hs": 0.6,
       "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_REGIONAL_HS",
-      "marine_sampled_time": "2026-09-27T21:00:00Z",
+      "marine_sampled_time": "2026-09-28T00:00:00Z",
       "forecast_end": "2026-10-07T19:00:00+07:00",
       "long_range_status": "CONTROL_TREND_ONLY",
       "caveat": "D0-D3 dùng cycle ECMWF mới nhất. D4-D10 nối từ cycle 00/12 có horizon 240 giờ. Hs và Hmax dùng để nhìn biển nền và biên rủi ro; D4-D10 hiện là xu hướng control forecast, chưa phải quyết định vận hành vì lớp ensemble consensus còn đang bổ sung.",
@@ -6721,23 +6201,10 @@
           "wind": 3.4,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.18,
-          "wave_max": 0.31,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.2,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-09-30T15:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 01:00",
@@ -6746,23 +6213,10 @@
           "wind": 4.1,
           "gust": null,
           "rain": 0.03,
-          "wave": 0.17,
-          "wave_max": 0.29,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.5,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-09-30T18:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 04:00",
@@ -6771,23 +6225,10 @@
           "wind": 2.6,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.14,
-          "wave_max": 0.24,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.7,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-09-30T21:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 07:00",
@@ -6796,23 +6237,10 @@
           "wind": 3.2,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.12,
-          "wave_max": 0.2,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.7,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-01T00:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 10:00",
@@ -6821,23 +6249,10 @@
           "wind": 1.3,
           "gust": null,
           "rain": 0.26,
-          "wave": 0.1,
-          "wave_max": 0.17,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.8,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-01T03:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 13:00",
@@ -6846,23 +6261,10 @@
           "wind": 7.4,
           "gust": null,
           "rain": 1.8,
-          "wave": 0.09,
-          "wave_max": 0.15,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.7,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-01T06:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 16:00",
@@ -6871,23 +6273,10 @@
           "wind": 5.7,
           "gust": null,
           "rain": 3.69,
-          "wave": 0.11,
-          "wave_max": 0.2,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.0,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-01T09:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 19:00",
@@ -6896,23 +6285,10 @@
           "wind": 1.7,
           "gust": null,
           "rain": 0.2,
-          "wave": 0.12,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 1.7,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-01T12:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 22:00",
@@ -6921,23 +6297,10 @@
           "wind": 5.3,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.11,
-          "wave_max": 0.2,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 1.8,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-01T15:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 01:00",
@@ -6946,23 +6309,10 @@
           "wind": 5.1,
           "gust": null,
           "rain": 0.14,
-          "wave": 0.12,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 1.8,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-01T18:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 04:00",
@@ -6971,23 +6321,10 @@
           "wind": 2.7,
           "gust": null,
           "rain": 0.43,
-          "wave": 0.09,
-          "wave_max": 0.16,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 1.8,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-01T21:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 07:00",
@@ -6996,23 +6333,10 @@
           "wind": 6.4,
           "gust": null,
           "rain": 0.67,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 1.8,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-02T00:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 10:00",
@@ -7021,23 +6345,10 @@
           "wind": 5.9,
           "gust": null,
           "rain": 0.11,
-          "wave": 0.11,
-          "wave_max": 0.2,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 1.7,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-02T03:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 13:00",
@@ -7046,23 +6357,10 @@
           "wind": 6.3,
           "gust": null,
           "rain": 2.35,
-          "wave": 0.09,
-          "wave_max": 0.16,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 1.8,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-02T06:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 16:00",
@@ -7071,23 +6369,10 @@
           "wind": 6.1,
           "gust": null,
           "rain": 1.34,
-          "wave": 0.14,
-          "wave_max": 0.25,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 1.7,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-02T09:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 19:00",
@@ -7096,23 +6381,10 @@
           "wind": 5.2,
           "gust": null,
           "rain": 0.08,
-          "wave": 0.15,
-          "wave_max": 0.27,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 1.8,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-02T12:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 22:00",
@@ -7121,23 +6393,10 @@
           "wind": 8.0,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.21,
-          "wave_max": 0.38,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.0,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-02T15:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 01:00",
@@ -7146,23 +6405,10 @@
           "wind": 8.1,
           "gust": null,
           "rain": 0.11,
-          "wave": 0.27,
-          "wave_max": 0.48,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.3,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-02T18:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 04:00",
@@ -7171,23 +6417,10 @@
           "wind": 5.6,
           "gust": null,
           "rain": 0.14,
-          "wave": 0.28,
-          "wave_max": 0.49,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.5,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-02T21:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 07:00",
@@ -7196,23 +6429,10 @@
           "wind": 9.6,
           "gust": null,
           "rain": 0.53,
-          "wave": 0.25,
-          "wave_max": 0.44,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.4,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-03T00:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 10:00",
@@ -7221,23 +6441,10 @@
           "wind": 2.9,
           "gust": null,
           "rain": 1.71,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.4,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-03T03:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 13:00",
@@ -7246,23 +6453,10 @@
           "wind": 10.3,
           "gust": null,
           "rain": 0.95,
-          "wave": 0.22,
-          "wave_max": 0.39,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.4,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-03T06:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 16:00",
@@ -7271,23 +6465,10 @@
           "wind": 9.7,
           "gust": null,
           "rain": 0.55,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.3,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-03T09:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 19:00",
@@ -7296,23 +6477,10 @@
           "wind": 6.4,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.26,
-          "wave_max": 0.46,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.4,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-03T12:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 01:00",
@@ -7321,23 +6489,10 @@
           "wind": 8.2,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.29,
-          "wave_max": 0.51,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.5,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-03T18:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 07:00",
@@ -7346,23 +6501,10 @@
           "wind": 6.1,
           "gust": null,
           "rain": 0.69,
-          "wave": 0.27,
-          "wave_max": 0.47,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.5,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-04T00:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 13:00",
@@ -7371,23 +6513,10 @@
           "wind": 11.5,
           "gust": null,
           "rain": 0.82,
-          "wave": 0.23,
-          "wave_max": 0.4,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.5,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-04T06:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 19:00",
@@ -7396,23 +6525,10 @@
           "wind": 6.7,
           "gust": null,
           "rain": 0.32,
-          "wave": 0.32,
-          "wave_max": 0.56,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.8,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-04T12:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 01:00",
@@ -7421,23 +6537,10 @@
           "wind": 5.0,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.26,
-          "wave_max": 0.45,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.8,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-04T18:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 07:00",
@@ -7446,23 +6549,10 @@
           "wind": 5.9,
           "gust": null,
           "rain": 4.9,
-          "wave": 0.35,
-          "wave_max": 0.61,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.8,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-05T00:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 13:00",
@@ -7471,23 +6561,10 @@
           "wind": 10.0,
           "gust": null,
           "rain": 0.66,
-          "wave": 0.24,
-          "wave_max": 0.41,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.1,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-05T06:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 19:00",
@@ -7496,23 +6573,10 @@
           "wind": 6.3,
           "gust": null,
           "rain": 0.12,
-          "wave": 0.29,
-          "wave_max": 0.51,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.6,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-05T12:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 01:00",
@@ -7521,23 +6585,10 @@
           "wind": 2.0,
           "gust": null,
           "rain": 4.62,
-          "wave": 0.2,
-          "wave_max": 0.35,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.9,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-05T18:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 07:00",
@@ -7546,23 +6597,10 @@
           "wind": 1.8,
           "gust": null,
           "rain": 0.03,
-          "wave": 0.17,
-          "wave_max": 0.29,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.1,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-06T00:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 13:00",
@@ -7571,23 +6609,10 @@
           "wind": 7.0,
           "gust": null,
           "rain": 3.11,
-          "wave": 0.15,
-          "wave_max": 0.26,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.2,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-06T06:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 19:00",
@@ -7596,23 +6621,10 @@
           "wind": 3.9,
           "gust": null,
           "rain": 3.39,
-          "wave": 0.18,
-          "wave_max": 0.31,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.7,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-06T12:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 01:00",
@@ -7621,23 +6633,10 @@
           "wind": 1.7,
           "gust": null,
           "rain": 0.95,
-          "wave": 0.15,
-          "wave_max": 0.26,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 3.0,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-06T18:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 07:00",
@@ -7646,23 +6645,10 @@
           "wind": 7.5,
           "gust": null,
           "rain": 1.63,
-          "wave": 0.19,
-          "wave_max": 0.34,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.0,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-07T00:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 13:00",
@@ -7671,23 +6657,10 @@
           "wind": 7.6,
           "gust": null,
           "rain": 1.89,
-          "wave": 0.14,
-          "wave_max": 0.24,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.9,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-07T06:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 19:00",
@@ -7696,23 +6669,10 @@
           "wind": 5.9,
           "gust": null,
           "rain": 1.85,
-          "wave": 0.19,
-          "wave_max": 0.34,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS",
-          "period": 2.1,
-          "wave_source": "ECMWF_WAVE_OFFSHORE_GRID_REFERENCE",
-          "wave_reference": {
-            "status": "PASS",
-            "data_class": "MODEL_FORECAST",
-            "reference_lat": 10.16667,
-            "reference_lon": 104.08333,
-            "sampled_lat": 10.0,
-            "sampled_lon": 104.25,
-            "distance_km": 26.0,
-            "coast_side": "EAST",
-            "valid_time": "2026-10-07T12:00:00+00:00",
-            "nearshore_observation": false
-          }
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         }
       ],
       "daily_outlook": [
@@ -7721,9 +6681,9 @@
           "day_offset": 7,
           "wind_max": 10.0,
           "gust_max": null,
-          "rain_total": 5.68,
-          "hs_max": 0.35,
-          "hmax_max": 0.61,
+          "rain_total": 0.78,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         },
@@ -7733,8 +6693,8 @@
           "wind_max": 7.0,
           "gust_max": null,
           "rain_total": 11.15,
-          "hs_max": 0.2,
-          "hmax_max": 0.35,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         },
@@ -7744,8 +6704,8 @@
           "wind_max": 7.6,
           "gust_max": null,
           "rain_total": 6.32,
-          "hs_max": 0.19,
-          "hmax_max": 0.34,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         }
@@ -7765,7 +6725,7 @@
           "sampled_lat": 10.083333333333329,
           "sampled_lon": 104.0,
           "distance_km": 4.928,
-          "sampled_time": "2026-09-27T21:00:00Z"
+          "sampled_time": "2026-09-28T00:00:00Z"
         },
         "current": {
           "sampled_lat": 10.083335876464844,
@@ -7774,17 +6734,17 @@
           "sampled_time": "2026-09-28T00:00:00Z"
         }
       },
-      "temperature": 28.3,
-      "wind": 18.1,
-      "gust": 26.2,
-      "wave_max": 1.04,
-      "wave": 0.55,
-      "period": 4.21,
-      "rain": 0.79,
+      "temperature": 28.2,
+      "wind": 14.9,
+      "gust": 21.8,
+      "wave_max": 1.11,
+      "wave": 0.6,
+      "period": 4.23,
+      "rain": 1.28,
       "current": 0.12,
-      "wave_regional_hs": 0.62,
+      "wave_regional_hs": 0.66,
       "wave_max_method": "RAYLEIGH_20MIN_PROXY_FROM_REGIONAL_HS",
-      "marine_sampled_time": "2026-09-27T21:00:00Z",
+      "marine_sampled_time": "2026-09-28T00:00:00Z",
       "forecast_end": "2026-10-07T19:00:00+07:00",
       "long_range_status": "CONTROL_TREND_ONLY",
       "caveat": "D0-D3 dùng cycle ECMWF mới nhất. D4-D10 nối từ cycle 00/12 có horizon 240 giờ. Hs và Hmax dùng để nhìn biển nền và biên rủi ro; D4-D10 hiện là xu hướng control forecast, chưa phải quyết định vận hành vì lớp ensemble consensus còn đang bổ sung.",
@@ -8096,10 +7056,10 @@
           "wind": 7.4,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.18,
-          "wave_max": 0.31,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 01:00",
@@ -8108,10 +7068,10 @@
           "wind": 8.3,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.16,
-          "wave_max": 0.27,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 04:00",
@@ -8120,10 +7080,10 @@
           "wind": 7.6,
           "gust": null,
           "rain": 0.03,
-          "wave": 0.13,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 07:00",
@@ -8132,10 +7092,10 @@
           "wind": 5.9,
           "gust": null,
           "rain": 0.32,
-          "wave": 0.11,
-          "wave_max": 0.19,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 10:00",
@@ -8144,10 +7104,10 @@
           "wind": 3.3,
           "gust": null,
           "rain": 0.02,
-          "wave": 0.09,
-          "wave_max": 0.15,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 13:00",
@@ -8156,10 +7116,10 @@
           "wind": 9.8,
           "gust": null,
           "rain": 0.29,
-          "wave": 0.09,
-          "wave_max": 0.15,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 16:00",
@@ -8168,10 +7128,10 @@
           "wind": 5.8,
           "gust": null,
           "rain": 0.84,
-          "wave": 0.12,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.6
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 19:00",
@@ -8180,10 +7140,10 @@
           "wind": 6.0,
           "gust": null,
           "rain": 0.05,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "01/10 22:00",
@@ -8192,10 +7152,10 @@
           "wind": 9.6,
           "gust": null,
           "rain": 0.06,
-          "wave": 0.09,
-          "wave_max": 0.16,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 01:00",
@@ -8204,10 +7164,10 @@
           "wind": 8.5,
           "gust": null,
           "rain": 2.26,
-          "wave": 0.11,
-          "wave_max": 0.2,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 04:00",
@@ -8216,10 +7176,10 @@
           "wind": 6.4,
           "gust": null,
           "rain": 2.94,
-          "wave": 0.09,
-          "wave_max": 0.16,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 07:00",
@@ -8228,10 +7188,10 @@
           "wind": 10.4,
           "gust": null,
           "rain": 0.08,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 10:00",
@@ -8240,10 +7200,10 @@
           "wind": 8.3,
           "gust": null,
           "rain": 0.09,
-          "wave": 0.1,
-          "wave_max": 0.18,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 13:00",
@@ -8252,10 +7212,10 @@
           "wind": 8.5,
           "gust": null,
           "rain": 1.16,
-          "wave": 0.08,
-          "wave_max": 0.14,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 16:00",
@@ -8264,10 +7224,10 @@
           "wind": 9.4,
           "gust": null,
           "rain": 0.05,
-          "wave": 0.12,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 19:00",
@@ -8276,10 +7236,10 @@
           "wind": 8.5,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.12,
-          "wave_max": 0.22,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "02/10 22:00",
@@ -8288,10 +7248,10 @@
           "wind": 14.7,
           "gust": null,
           "rain": 0.14,
-          "wave": 0.18,
-          "wave_max": 0.32,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 1.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 01:00",
@@ -8300,10 +7260,10 @@
           "wind": 14.8,
           "gust": null,
           "rain": 0.29,
-          "wave": 0.23,
-          "wave_max": 0.41,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 04:00",
@@ -8312,10 +7272,10 @@
           "wind": 11.2,
           "gust": null,
           "rain": 2.06,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 07:00",
@@ -8324,10 +7284,10 @@
           "wind": 13.7,
           "gust": null,
           "rain": 1.77,
-          "wave": 0.23,
-          "wave_max": 0.41,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 10:00",
@@ -8336,10 +7296,10 @@
           "wind": 7.6,
           "gust": null,
           "rain": 2.12,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 13:00",
@@ -8348,10 +7308,10 @@
           "wind": 13.0,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.22,
-          "wave_max": 0.39,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 16:00",
@@ -8360,10 +7320,10 @@
           "wind": 14.1,
           "gust": null,
           "rain": 0.0,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.4
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "03/10 19:00",
@@ -8372,10 +7332,10 @@
           "wind": 12.4,
           "gust": null,
           "rain": 0.03,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 01:00",
@@ -8384,10 +7344,10 @@
           "wind": 15.6,
           "gust": null,
           "rain": 0.12,
-          "wave": 0.26,
-          "wave_max": 0.46,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.5
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 07:00",
@@ -8396,10 +7356,10 @@
           "wind": 11.4,
           "gust": null,
           "rain": 4.88,
-          "wave": 0.24,
-          "wave_max": 0.42,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.8
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 13:00",
@@ -8408,10 +7368,10 @@
           "wind": 15.0,
           "gust": null,
           "rain": 0.26,
-          "wave": 0.25,
-          "wave_max": 0.44,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "04/10 19:00",
@@ -8420,10 +7380,10 @@
           "wind": 15.4,
           "gust": null,
           "rain": 0.12,
-          "wave": 0.3,
-          "wave_max": 0.52,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 01:00",
@@ -8432,10 +7392,10 @@
           "wind": 11.9,
           "gust": null,
           "rain": 0.31,
-          "wave": 0.26,
-          "wave_max": 0.45,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 07:00",
@@ -8444,10 +7404,10 @@
           "wind": 10.9,
           "gust": null,
           "rain": 4.97,
-          "wave": 0.31,
-          "wave_max": 0.54,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 13:00",
@@ -8456,10 +7416,10 @@
           "wind": 12.6,
           "gust": null,
           "rain": 0.08,
-          "wave": 0.26,
-          "wave_max": 0.45,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.3
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "05/10 19:00",
@@ -8468,10 +7428,10 @@
           "wind": 12.2,
           "gust": null,
           "rain": 0.26,
-          "wave": 0.26,
-          "wave_max": 0.45,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.9
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 01:00",
@@ -8480,10 +7440,10 @@
           "wind": 3.4,
           "gust": null,
           "rain": 9.26,
-          "wave": 0.2,
-          "wave_max": 0.35,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 07:00",
@@ -8492,10 +7452,10 @@
           "wind": 5.7,
           "gust": null,
           "rain": 1.69,
-          "wave": 0.17,
-          "wave_max": 0.29,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 13:00",
@@ -8504,10 +7464,10 @@
           "wind": 8.6,
           "gust": null,
           "rain": 0.17,
-          "wave": 0.16,
-          "wave_max": 0.28,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "06/10 19:00",
@@ -8516,10 +7476,10 @@
           "wind": 10.9,
           "gust": null,
           "rain": 0.15,
-          "wave": 0.17,
-          "wave_max": 0.29,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 01:00",
@@ -8528,10 +7488,10 @@
           "wind": 4.1,
           "gust": null,
           "rain": 2.12,
-          "wave": 0.14,
-          "wave_max": 0.24,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 3.0
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 07:00",
@@ -8540,10 +7500,10 @@
           "wind": 7.0,
           "gust": null,
           "rain": 3.74,
-          "wave": 0.19,
-          "wave_max": 0.34,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.1
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 13:00",
@@ -8552,10 +7512,10 @@
           "wind": 9.7,
           "gust": null,
           "rain": 3.11,
-          "wave": 0.16,
-          "wave_max": 0.28,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.7
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         },
         {
           "time": "07/10 19:00",
@@ -8564,10 +7524,10 @@
           "wind": 11.3,
           "gust": null,
           "rain": 0.21,
-          "wave": 0.18,
-          "wave_max": 0.32,
-          "wave_max_method": "RAYLEIGH_20MIN_PROXY",
-          "period": 2.2
+          "wave": null,
+          "wave_max": null,
+          "wave_max_method": null,
+          "period": null
         }
       ],
       "daily_outlook": [
@@ -8576,9 +7536,9 @@
           "day_offset": 7,
           "wind_max": 12.6,
           "gust_max": null,
-          "rain_total": 5.31,
-          "hs_max": 0.31,
-          "hmax_max": 0.54,
+          "rain_total": 0.34,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         },
@@ -8588,8 +7548,8 @@
           "wind_max": 10.9,
           "gust_max": null,
           "rain_total": 11.27,
-          "hs_max": 0.2,
-          "hmax_max": 0.35,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         },
@@ -8599,8 +7559,8 @@
           "wind_max": 11.3,
           "gust_max": null,
           "rain_total": 9.18,
-          "hs_max": 0.19,
-          "hmax_max": 0.34,
+          "hs_max": null,
+          "hmax_max": null,
           "status": "TREND_ONLY",
           "confidence": "UNSCORED"
         }
