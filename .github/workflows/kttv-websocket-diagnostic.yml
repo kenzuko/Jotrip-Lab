@@ -52,16 +52,24 @@ jobs:
           ws.onmessage=(e)=>{
             count++;
             const text=String(e.data);
-            console.log('WS_MESSAGE',count,text.slice(0,30000));
             try{
               const o=JSON.parse(text);
-              if(o?.msg==='connected' && !sent){
-                const candidates=[localtime-36*600,localtime-35*600,localtime,Math.floor(Date.now()/1000)];
-                for(const t of candidates){
-                  const q={Ctr:'LogDetail',Message:stationid,Times:t};
-                  console.log('WS_SEND',JSON.stringify(q));
-                  ws.send(JSON.stringify(q));
+              if(o?.msg==='logdetail'){
+                const ids=new Set(Array.from({length:14},(_,i)=>String(421+i)));
+                const groups=[];
+                for(const g of (o.data||[])){
+                  const d=(g.data||[]).filter(x=>ids.has(String(x.se)));
+                  if(d.length) groups.push({id:g.id,current:g.current,count:d.length,data:d});
                 }
+                console.log('PHUQUOC_TARGET',JSON.stringify(groups));
+              } else {
+                console.log('WS_MESSAGE',count,text.slice(0,30000));
+              }
+              if(o?.msg==='connected' && !sent){
+                const t=localtime-48*600;
+                const q={Ctr:'LogDetail',Message:stationid,Times:t};
+                console.log('WS_SEND',JSON.stringify(q));
+                ws.send(JSON.stringify(q));
                 sent=true;
               }
             }catch{}
