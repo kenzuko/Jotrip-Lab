@@ -121,6 +121,93 @@ jobs:
           )
           PY
 
+      - name: Probe discovered data endpoints
+        shell: bash
+        run: |
+          python - <<'PY'
+          from urllib.request import Request, build_opener, HTTPCookieProcessor
+          from urllib.parse import urlencode
+          from urllib.error import HTTPError
+          from http.cookiejar import CookieJar
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import json, re
+
+          BASE="https://kttvtudong.net"
+          UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/136 Safari/537.36"
+          opener=build_opener(HTTPCookieProcessor(CookieJar()))
+          Path('/tmp/kttv/direct').mkdir(parents=True,exist_ok=True)
+
+          def req(path, data=None, name='resp'):
+            body=None if data is None else urlencode(data).encode()
+            r=Request(BASE+path,data=body,headers={
+              'User-Agent':UA,
+              'Accept':'*/*',
+              'Accept-Language':'vi,en-US;q=0.8',
+              'Referer':BASE+'/kttv/detail/view?sid=33',
+              'X-Requested-With':'XMLHttpRequest' if data is not None else '',
+              'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8' if data is not None else 'text/plain',
+            },method='POST' if data is not None else 'GET')
+            try:
+              with opener.open(r,timeout=30) as x:
+                b=x.read(); h=dict(x.headers.items()); status=x.status; final=x.geturl()
+            except HTTPError as e:
+              b=e.read(); h=dict(e.headers.items()); status=e.code; final=e.geturl()
+            ctype=h.get('Content-Type','')
+            ext='.bin'
+            if 'json' in ctype: ext='.json'
+            elif 'text' in ctype or 'html' in ctype: ext='.txt'
+            elif 'spreadsheet' in ctype or 'excel' in ctype: ext='.xlsx'
+            Path('/tmp/kttv/direct/'+name+ext).write_bytes(b)
+            print('\n###',name,'###')
+            print(json.dumps({'path':path,'data':data,'status':status,'final':final,'content_type':ctype,'content_disposition':h.get('Content-Disposition'),'bytes':len(b)},ensure_ascii=False))
+            if ext in ('.txt','.json'):
+              txt=b.decode('utf-8','replace')
+              print(txt[:30000])
+            else:
+              print('MAGIC',b[:32].hex())
+            return b,ctype
+
+          # Establish cookies/session from public pages first.
+          for p in ['/kttv/detail/view?sid=33','/kttv/book/view?sid=60','/kttv/book/viewday?sid=82']:
+            req(p,None,'session_'+re.sub(r'\\W+','_',p)[-30:])
+
+          tests=[
+            ('wind2457_6','/kttv/report/huonggio?hour=6',{'sdid':'2457'}),
+            ('windspd2457_6','/kttv/report/tocdogio?hour=6',{'sdid':'2457'}),
+            ('sea2458_24','/kttv/report/mucnuochaivan?hour=24',{'sdid':'2458'}),
+            ('wind57_6','/kttv/report/huonggio?hour=6',{'sdid':'57'}),
+            ('windspd57_6','/kttv/report/tocdogio?hour=6',{'sdid':'57'}),
+            ('sea58_24','/kttv/report/mucnuochaivan?hour=24',{'sdid':'58'}),
+            ('bhv60_get','/kttv/book/get',{'year':'2026','month':'9','sid':'60'}),
+            ('shv82_gethour','/kttv/book/gethour',{'year':'2026','month':'9','day':'28','sid':'82'}),
+            ('bhv60_exceltemplate','/kttv/export/exceltemplate?sid=60&month=9&year=2026',{}),
+            ('bhv60_exceltram','/kttv/export/exceltram?sid=60&month=9&year=2026',{}),
+            ('shv82_exceltemplate','/kttv/export/exceltemplateshv1?sid=82&month=9&year=2026&day=28',{}),
+            ('shv82_exceltram','/kttv/export/exceltram?sid=82&month=9&year=2026',{}),
+            ('auto33_excel_slash','/kttv/export/excelexport?sid=33',{'fd':'28/09/2026','td':'28/09/2026'}),
+            ('auto33_excel_iso','/kttv/export/excelexport?sid=33',{'fd':'2026-09-28','td':'2026-09-28'}),
+          ]
+          for name,path,data in tests:
+            try: req(path,data,name)
+            except Exception as e: print('\n###',name,'ERROR ###',repr(e))
+
+          # Summarize non-empty input values from the huge SHV1 page.
+          raw=Path('/tmp/kttv/shv82.html').read_text(encoding='utf-8',errors='replace')
+          class IP(HTMLParser):
+            def __init__(self): super().__init__(); self.rows=[]
+            def handle_starttag(self,tag,attrs):
+              if tag=='input':
+                a=dict(attrs); v=a.get('value')
+                if v not in (None,''):
+                  self.rows.append({k:a.get(k) for k in ('name','id','value','class','type')})
+          p=IP(); p.feed(raw)
+          print('\n### SHV82 NONEMPTY INPUT VALUES ###')
+          print('count=',len(p.rows))
+          print(json.dumps(p.rows[:1000],ensure_ascii=False,indent=2))
+          Path('/tmp/kttv/direct/shv82_nonempty_inputs.json').write_text(json.dumps(p.rows,ensure_ascii=False,indent=2),encoding='utf-8')
+          PY
+
       - name: Show discovered form controls
         if: always()
         run: |
