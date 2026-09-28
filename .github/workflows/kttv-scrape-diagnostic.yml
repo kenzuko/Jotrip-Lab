@@ -169,8 +169,8 @@ jobs:
             return b,ctype
 
           # Establish cookies/session from public pages first.
-          for p in ['/kttv/detail/view?sid=33','/kttv/book/view?sid=60','/kttv/book/viewday?sid=82']:
-            req(p,None,'session_'+re.sub(r'\\W+','_',p)[-30:])
+          for name,p in [('session_auto33','/kttv/detail/view?sid=33'),('session_bhv60','/kttv/book/view?sid=60'),('session_shv82','/kttv/book/viewday?sid=82')]:
+            req(p,None,name)
 
           tests=[
             ('wind2457_6','/kttv/report/huonggio?hour=6',{'sdid':'2457'}),
