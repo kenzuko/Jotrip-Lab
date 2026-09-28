@@ -1,0 +1,54 @@
+name: KTTv realtime channel diagnostic
+
+on:
+  push:
+    branches:
+      - diag/kttv-phuquoc-scrape-20260928
+    paths:
+      - ".github/workflows/kttv-realtime-diagnostic.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect public realtime JS and page hooks
+        shell: bash
+        run: |
+          python - <<'PY'
+          from urllib.request import Request,urlopen
+          import re, json, pathlib
+          base='https://kttvtudong.net'
+          ua='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/136 Safari/537.36'
+          def get(path):
+            req=Request(base+path,headers={'User-Agent':ua,'Accept':'*/*'})
+            with urlopen(req,timeout=30) as r:return r.read().decode('utf-8','replace')
+          js=get('/Areas/KTTV/Content/js/kWeb.KTTVDetail.js')
+          html=get('/kttv/detail/view?sid=33')
+          pathlib.Path('/tmp/kWeb.KTTVDetail.js').write_text(js,encoding='utf-8')
+          print('===== CUSTOM JS FULL =====')
+          print(js)
+          print('===== REALTIME TOKENS =====')
+          pats=[
+            r'https?://[^\\"\'\s<>]+',r'wss?://[^\\"\'\s<>]+',
+            r'[^\n]{0,180}(?:socket|websocket|signalr|hubconnection|hub|mqtt|stomp|subscribe|onmessage|eventsource)[^\n]{0,220}',
+          ]
+          for pat in pats:
+            for m in re.finditer(pat,js,re.I):
+              print(m.group(0)[:900])
+          print('===== INLINE DATA HOOKS =====')
+          for i,line in enumerate(html.splitlines(),1):
+            if any(k in line.lower() for k in ('socket','signalr','hub','websocket','sdid','2457','2458','60018','dg60018','ds60018','report/')):
+              print(i,line[:1600])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kttv-realtime-js
+          path: /tmp/kWeb.KTTVDetail.js
+          retention-days: 3
