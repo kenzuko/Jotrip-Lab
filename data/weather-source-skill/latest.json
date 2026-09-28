@@ -1,6 +1,6 @@
 {
   "schema_version": "weather-source-skill-v1",
-  "generated_at": "2026-09-28T22:00:52.289619+00:00",
+  "generated_at": "2026-09-28T22:10:53.152693+00:00",
   "policy": {
     "actual_only": true,
     "early_weight_adjustment_only": true,
@@ -10,62 +10,62 @@
     "note": "Rain gauges are not scored against distant gauges; local rain variability is real. VRain early factors reflect QC/freshness only until forecast verification matures."
   },
   "vvpq": {
-    "unique_actual_samples": 350,
+    "unique_actual_samples": 351,
     "wind": {
       "deterministic_background": {
-        "sample_count": 350,
-        "mae": 5.81,
-        "rmse": 7.424,
-        "mean_error": -0.385,
+        "sample_count": 351,
+        "mae": 5.803,
+        "rmse": 7.416,
+        "mean_error": -0.394,
         "median_error": -1.9
       },
       "ensemble_q50": {
-        "sample_count": 330,
-        "mae": 7.698,
-        "rmse": 9.636,
-        "mean_error": -4.255,
-        "median_error": -4.578
+        "sample_count": 331,
+        "mae": 7.687,
+        "rmse": 9.624,
+        "mean_error": -4.23,
+        "median_error": -4.542
       },
       "ensemble_gain_multiplier": 0.9694,
       "status": "PROVISIONAL"
     },
     "temperature": {
       "deterministic_background": {
-        "sample_count": 350,
-        "mae": 1.421,
-        "rmse": 1.822,
-        "mean_error": 1.152,
+        "sample_count": 351,
+        "mae": 1.417,
+        "rmse": 1.819,
+        "mean_error": 1.15,
         "median_error": 1.0
       }
     }
   },
   "vrain": {
     "an_thoi": {
-      "sample_count": 963,
+      "sample_count": 964,
       "qc_pass_ratio": 1.0,
       "increment_pass_ratio": 0.894,
       "fresh_ratio": 1.0,
       "quality_factor": 0.995,
       "wet_samples": 47,
-      "dry_samples": 808
+      "dry_samples": 809
     },
     "bai_thom": {
-      "sample_count": 963,
+      "sample_count": 964,
       "qc_pass_ratio": 1.0,
       "increment_pass_ratio": 0.893,
       "fresh_ratio": 1.0,
       "quality_factor": 0.995,
       "wet_samples": 59,
-      "dry_samples": 795
+      "dry_samples": 796
     },
     "cua_can": {
-      "sample_count": 963,
+      "sample_count": 964,
       "qc_pass_ratio": 1.0,
       "increment_pass_ratio": 0.894,
       "fresh_ratio": 1.0,
       "quality_factor": 0.995,
       "wet_samples": 60,
-      "dry_samples": 795
+      "dry_samples": 796
     }
   }
 }
