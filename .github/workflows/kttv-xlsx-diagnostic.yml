@@ -1,0 +1,149 @@
+name: KTTv XLSX history diagnostic
+
+on:
+  push:
+    branches:
+      - diag/kttv-phuquoc-scrape-20260928
+    paths:
+      - ".github/workflows/kttv-xlsx-diagnostic.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and inspect public Phu Quoc station exports
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/kttv-xlsx
+          python - <<'PY'
+          from urllib.request import Request, build_opener, HTTPCookieProcessor
+          from urllib.parse import urlencode
+          from urllib.error import HTTPError
+          from http.cookiejar import CookieJar
+          from pathlib import Path
+          import zipfile, xml.etree.ElementTree as ET, json, re
+
+          BASE='https://kttvtudong.net'
+          UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/136 Safari/537.36'
+          opener=build_opener(HTTPCookieProcessor(CookieJar()))
+          OUT=Path('/tmp/kttv-xlsx')
+
+          def request(path,data=None):
+            body=None if data is None else urlencode(data).encode()
+            req=Request(BASE+path,data=body,headers={
+              'User-Agent':UA,'Accept':'*/*','Accept-Language':'vi,en-US;q=0.8',
+              'Referer':BASE+'/kttv/detail/view?sid=33',
+              'X-Requested-With':'XMLHttpRequest',
+              'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8',
+            },method='POST' if data is not None else 'GET')
+            try:
+              with opener.open(req,timeout=30) as r:
+                return r.status,dict(r.headers.items()),r.read()
+            except HTTPError as e:
+              return e.code,dict(e.headers.items()),e.read()
+
+          for p in ['/kttv/detail/view?sid=33','/kttv/book/view?sid=60','/kttv/book/viewday?sid=82']:
+            request(p)
+
+          tests=[
+            ('auto_2026_09_28','/kttv/export/excelexport?sid=33',{'fd':'28/09/2026','td':'28/09/2026'}),
+            ('auto_2026_09_27','/kttv/export/excelexport?sid=33',{'fd':'27/09/2026','td':'27/09/2026'}),
+            ('auto_sep_2026','/kttv/export/excelexport?sid=33',{'fd':'01/09/2026','td':'28/09/2026'}),
+            ('auto_aug_2026','/kttv/export/excelexport?sid=33',{'fd':'01/08/2026','td':'31/08/2026'}),
+            ('auto_jul_2026','/kttv/export/excelexport?sid=33',{'fd':'01/07/2026','td':'31/07/2026'}),
+            ('bhv60_sep','/kttv/export/exceltram?sid=60&month=9&year=2026',{}),
+            ('bhv60_aug','/kttv/export/exceltram?sid=60&month=8&year=2026',{}),
+            ('bhv60_jul','/kttv/export/exceltram?sid=60&month=7&year=2026',{}),
+            ('bhv60_template_sep','/kttv/export/exceltemplate?sid=60&month=9&year=2026',{}),
+            ('bhv60_template_aug','/kttv/export/exceltemplate?sid=60&month=8&year=2026',{}),
+            ('shv82_0928','/kttv/export/exceltemplateshv1?sid=82&month=9&year=2026&day=28',{}),
+            ('shv82_0927','/kttv/export/exceltemplateshv1?sid=82&month=9&year=2026&day=27',{}),
+            ('shv82_0831','/kttv/export/exceltemplateshv1?sid=82&month=8&year=2026&day=31',{}),
+            ('shv82_aug','/kttv/export/exceltram?sid=82&month=8&year=2026',{}),
+          ]
+
+          def col_to_idx(ref):
+            letters=''.join(ch for ch in ref if ch.isalpha())
+            n=0
+            for ch in letters: n=n*26+(ord(ch.upper())-64)
+            return n
+
+          def inspect_xlsx(path):
+            try:
+              z=zipfile.ZipFile(path)
+            except Exception as e:
+              return {'valid_xlsx':False,'error':repr(e),'bytes':path.stat().st_size}
+            ns={'m':'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
+                'r':'http://schemas.openxmlformats.org/officeDocument/2006/relationships'}
+            shared=[]
+            if 'xl/sharedStrings.xml' in z.namelist():
+              root=ET.fromstring(z.read('xl/sharedStrings.xml'))
+              for si in root.findall('m:si',ns):
+                shared.append(''.join(t.text or '' for t in si.findall('.//m:t',ns)))
+            wb=ET.fromstring(z.read('xl/workbook.xml'))
+            rels=ET.fromstring(z.read('xl/_rels/workbook.xml.rels'))
+            relmap={x.attrib['Id']:x.attrib['Target'] for x in rels}
+            sheets=[]
+            for sh in wb.find('m:sheets',ns):
+              name=sh.attrib.get('name')
+              rid=sh.attrib.get('{%s}id'%ns['r'])
+              target=relmap.get(rid,'')
+              sheet_path='xl/'+target.lstrip('/') if not target.startswith('xl/') else target
+              try: root=ET.fromstring(z.read(sheet_path))
+              except Exception as e:
+                sheets.append({'name':name,'error':repr(e)}); continue
+              cells=[]
+              numeric_nonzero=[]
+              for c in root.findall('.//m:c',ns):
+                ref=c.attrib.get('r','')
+                typ=c.attrib.get('t')
+                v=c.find('m:v',ns)
+                inline=c.find('m:is',ns)
+                val=None
+                if typ=='s' and v is not None:
+                  try: val=shared[int(v.text)]
+                  except: val=v.text
+                elif typ=='inlineStr' and inline is not None:
+                  val=''.join(t.text or '' for t in inline.findall('.//m:t',ns))
+                elif v is not None:
+                  val=v.text
+                if val not in (None,''):
+                  cells.append([ref,val,typ])
+                  try:
+                    num=float(val)
+                    if abs(num)>1e-12: numeric_nonzero.append([ref,num])
+                  except: pass
+              sheets.append({
+                'name':name,
+                'nonempty_cells':len(cells),
+                'numeric_nonzero_count':len(numeric_nonzero),
+                'sample':cells[:250],
+                'numeric_nonzero_sample':numeric_nonzero[:120],
+              })
+            return {'valid_xlsx':True,'bytes':path.stat().st_size,'shared_strings':shared[:120],'sheets':sheets}
+
+          results={}
+          for name,path,data in tests:
+            status,h,b=request(path,data)
+            fp=OUT/(name+'.xlsx'); fp.write_bytes(b)
+            meta={'status':status,'content_type':h.get('Content-Type'),'content_disposition':h.get('Content-Disposition'),'bytes':len(b)}
+            meta['xlsx']=inspect_xlsx(fp)
+            results[name]=meta
+            print('\n===== '+name+' =====')
+            print(json.dumps(meta,ensure_ascii=False,indent=2)[:45000])
+
+          (OUT/'inspection.json').write_text(json.dumps(results,ensure_ascii=False,indent=2),encoding='utf-8')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kttv-phuquoc-xlsx-history
+          path: /tmp/kttv-xlsx
+          retention-days: 3
