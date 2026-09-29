@@ -1,0 +1,66 @@
+name: Weather RAW SYNOP 48917 probe
+
+on:
+  push:
+    branches:
+      - feat/weather-synop-48917-groundtruth
+    paths:
+      - ".github/workflows/weather-synop-48917-probe.yml"
+      - "weather/collectors/phuquoc_synop_raw.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch raw Phu Quoc SYNOP observations
+        run: |
+          python -m weather.collectors.phuquoc_synop_raw \
+            --begin 202609210000 \
+            --end 202609291030 \
+            --output /tmp/phuquoc-synop-48917.json
+
+      - name: Validate observation provenance
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/phuquoc-synop-48917.json'))
+          assert p['station_id']=='48917'
+          assert p['data_class']=='ACTUAL'
+          assert p['observation_class']=='RAW_OBS'
+          assert p['count'] > 0, 'No SYNOP observations returned'
+          for row in p['observations']:
+              assert row['station_id']=='48917'
+              assert row['data_class']=='ACTUAL'
+              assert row['observation_class']=='RAW_OBS'
+              assert row['raw_observation']
+              assert row['observed_at']
+          print('RAW SYNOP validation OK:', p['count'], 'observations')
+          PY
+
+      - name: Print 22 Sep raw reports for inspection
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/phuquoc-synop-48917.json'))
+          rows=[r for r in p['observations'] if r['observed_at'].startswith('2026-09-22')]
+          print('2026-09-22 rows:', len(rows))
+          for r in rows:
+              print(r['observed_at'], r['raw_observation'])
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phuquoc-synop-48917-raw
+          path: /tmp/phuquoc-synop-48917.json
+          retention-days: 7
