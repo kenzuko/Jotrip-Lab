@@ -130,6 +130,7 @@ def compact_tide(tide:dict,key:str)->dict:
 def compact_nowcast(nowcast:dict,key:str)->dict:
     p=(nowcast.get("points") or {}).get(key,{})
     sig=p.get("convective_signal") or {}
+    motion=p.get("cloud_motion") or {}
     return {
         "status":nowcast.get("status","UNAVAILABLE"),
         "sampled_time":nowcast.get("sampled_time"),
@@ -139,6 +140,22 @@ def compact_nowcast(nowcast:dict,key:str)->dict:
         "cooling_c_per_20m":num(p.get("cooling_c_per_20m_proxy")),
         "convective_score":num(sig.get("score")),
         "convective_level":sig.get("level"),
+        "cloud_motion":{
+            "status":motion.get("status"),
+            "source_sector":motion.get("source_sector"),
+            "motion_heading":motion.get("motion_heading"),
+            "motion_heading_deg":num(motion.get("motion_heading_deg")),
+            "motion_speed_kmh":num(motion.get("motion_speed_kmh")),
+            "distance_to_target_km":num(motion.get("distance_to_target_km")),
+            "predicted_impact":bool(motion.get("predicted_impact")),
+            "approaching":bool(motion.get("approaching")),
+            "public_track_usable":bool(motion.get("public_track_usable")),
+            "eta_minutes":num(motion.get("eta_minutes")),
+            "closest_approach_km":num(motion.get("closest_approach_km")),
+            "closest_approach_minutes":num(motion.get("closest_approach_minutes")),
+            "tracking_confidence":motion.get("tracking_confidence"),
+            "method":motion.get("method"),
+        },
         "lightning":p.get("lightning_observed") or (nowcast.get("lightning_observed") or {}).get("status"),
     }
 
