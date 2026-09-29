@@ -37,7 +37,7 @@ def _request_json(url: str, *, method: str = "GET", payload: dict[str, Any] | No
         return exc.code, parsed
 
 
-def run_probe(path: str, query: str) -> dict:
+def run_probe(path: str, query: str, range_header: str | None = None) -> dict:
     create = {
         "type": "http",
         "target": "kttvtudong.net",
