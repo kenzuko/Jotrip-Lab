@@ -1,0 +1,66 @@
+name: Weather Vietnam HTTP probe
+
+on:
+  push:
+    branches:
+      - feat/weather-synop-48917-groundtruth
+    paths:
+      - ".github/workflows/weather-vn-http-probe.yml"
+      - "weather/tools/globalping_vn_http_probe.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Probe Phu Quoc station page from Vietnam
+        run: |
+          python weather/tools/globalping_vn_http_probe.py \
+            --path /kttv/detail/view \
+            --query sid=33 \
+            --output /tmp/kttvtudong-sid33-vn.json
+
+      - name: Inspect returned HTML for station/export controls
+        run: |
+          python - <<'PY'
+          import json,re
+          p=json.load(open('/tmp/kttvtudong-sid33-vn.json'))
+          rows=p.get('results') or []
+          assert rows, 'No Vietnam probe result'
+          row=rows[0]
+          assert (row.get('probe') or {}).get('country')=='VN', row.get('probe')
+          r=row.get('result') or {}
+          print('HTTP',r.get('statusCode'),'probe=',row.get('probe'))
+          body=r.get('rawBody') or ''
+          print('body length=',len(body),'truncated=',r.get('truncated'))
+          for pattern in [
+              r'<form[^>]*>',
+              r'<input[^>]*(?:date|from|to|start|end|excel|export)[^>]*>',
+              r'<button[^>]*>.*?</button>',
+              r'<script[^>]+src=["\'][^"\']+["\']',
+              r'(?:excel|export|report|download)[^\s<>"\']*',
+          ]:
+              print('\nPATTERN',pattern)
+              for m in re.finditer(pattern,body,re.I|re.S):
+                  print(m.group(0)[:800].replace('\n',' '))
+          print('\n--- BODY START ---')
+          print(body[:10000])
+          print('--- BODY END ---')
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kttvtudong-sid33-vietnam-probe
+          path: /tmp/kttvtudong-sid33-vn.json
+          retention-days: 3
