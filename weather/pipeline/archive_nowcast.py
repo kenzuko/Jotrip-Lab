@@ -19,7 +19,11 @@ from pathlib import Path
 from typing import Any
 
 from weather.points import POINTS
-from weather.collectors.himawari_nowcast import CORRIDOR_WATCH, _cloud_motion_for_target
+from weather.collectors.himawari_nowcast import (
+    CORRIDOR_WATCH,
+    _cloud_motion_for_target,
+    _horizon_cloud_for_target,
+)
 
 VN_TZ = timezone(timedelta(hours=7))
 POINT_ORDER = tuple(POINTS)
@@ -114,6 +118,7 @@ def _num(value: Any) -> float | None:
 def _compact_point(point: dict[str, Any]) -> dict[str, Any]:
     signal = point.get("convective_signal") or {}
     motion = point.get("cloud_motion") or {}
+    horizon = point.get("horizon_cloud") or {}
     return {
         "score": _num(signal.get("score")),
         "level": str(signal.get("level") or "").upper() or None,
@@ -124,6 +129,20 @@ def _compact_point(point: dict[str, Any]) -> dict[str, Any]:
             point.get("regional_high_cloud_top_height_m", point.get("regional_max_cloud_top_height_m"))
         ),
         "cooling_c_per_20m_proxy": _num(point.get("cooling_c_per_20m_proxy")),
+        "horizon_cloud": {
+            "status": horizon.get("status"),
+            "obscuration_score": _num(horizon.get("obscuration_score")),
+            "sector_cloud_fraction": _num(horizon.get("sector_cloud_fraction")),
+            "core_cloud_fraction": _num(horizon.get("core_cloud_fraction")),
+            "sunset_azimuth_deg": _num(horizon.get("sunset_azimuth_deg")),
+            "trend": horizon.get("trend"),
+            "score_change": _num(horizon.get("score_change")),
+            "dominant_layer": horizon.get("dominant_layer"),
+            "confidence": horizon.get("confidence"),
+            "support_cells": horizon.get("support_cells"),
+            "core_support_cells": horizon.get("core_support_cells"),
+            "method": horizon.get("method"),
+        },
         "cloud_motion": {
             "status": motion.get("status"),
             "cloud_center_lat": _num(motion.get("cloud_center_lat")),
@@ -306,6 +325,9 @@ def archive(snapshot: dict[str, Any], root: Path) -> dict[str, Any]:
     for point_id, (lat, lon) in POINTS.items():
         if point_id in (persisted_snapshot.get("points") or {}):
             persisted_snapshot["points"][point_id]["cloud_motion"] = _cloud_motion_for_target(
+                persisted_snapshot["spatial"], lat, lon
+            )
+            persisted_snapshot["points"][point_id]["horizon_cloud"] = _horizon_cloud_for_target(
                 persisted_snapshot["spatial"], lat, lon
             )
     persisted_snapshot["spatial"]["corridor_watch"] = CORRIDOR_WATCH
