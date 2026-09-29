@@ -52,10 +52,11 @@ class CriticalPayloadSunsetContextTests(unittest.TestCase):
 
         out = compact_nowcast(payload, "duong_dong")
         self.assertEqual(out["convective_level"], "WATCH")
-        self.assertEqual(out["horizon_cloud"]["status"], "CLOUD_RISK")
         self.assertEqual(out["horizon_cloud"]["obscuration_score"], 58.4)
-        self.assertEqual(out["horizon_cloud"]["dominant_layer"], "LOW")
         self.assertEqual(out["horizon_cloud"]["confidence"], "HIGH")
+        self.assertEqual(out["horizon_cloud"]["trend"], "INCREASING")
+        self.assertNotIn("status", out["horizon_cloud"])
+        self.assertNotIn("dominant_layer", out["horizon_cloud"])
         self.assertNotIn("method", out["horizon_cloud"])
         self.assertNotIn("support_cells", out["horizon_cloud"])
         self.assertEqual(out["cloud_motion"]["status"], "PASSING_BY")

@@ -144,10 +144,8 @@ def compact_nowcast(nowcast:dict,key:str)->dict:
         # Keep public critical.json compact: detailed horizon diagnostics remain
         # in data-weather/compact-latest.json for audit and Weather internals.
         "horizon_cloud":{
-            "status":horizon.get("status"),
             "obscuration_score":num(horizon.get("obscuration_score")),
             "trend":horizon.get("trend"),
-            "dominant_layer":horizon.get("dominant_layer"),
             "confidence":horizon.get("confidence"),
         },
         "cloud_motion":{
