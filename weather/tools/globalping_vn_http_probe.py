@@ -19,7 +19,12 @@ API = "https://api.globalping.io/v1/measurements"
 USER_AGENT = "JoTrip-WeatherLab/1.0 VN-readonly-probe"
 
 
-def _request_json(url: str, *, method: str = "GET", payload: dict[str, Any] | None = None) -> tuple[int, dict]:
+def _request_json(
+    url: str,
+    *,
+    method: str = "GET",
+    payload: dict[str, Any] | None = None,
+) -> tuple[int, dict]:
     body = json.dumps(payload).encode("utf-8") if payload is not None else None
     headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
     if body is not None:
@@ -37,7 +42,18 @@ def _request_json(url: str, *, method: str = "GET", payload: dict[str, Any] | No
         return exc.code, parsed
 
 
-def run_probe(path: str, query: str, range_header: str | None = None) -> dict:
+def run_probe(
+    path: str,
+    query: str,
+    range_header: str | None = None,
+) -> dict:
+    request_headers = {
+        "Accept": "text/html,application/xhtml+xml",
+        "User-Agent": USER_AGENT,
+    }
+    if range_header:
+        request_headers["Range"] = range_header
+
     create = {
         "type": "http",
         "target": "kttvtudong.net",
@@ -50,10 +66,7 @@ def run_probe(path: str, query: str, range_header: str | None = None) -> dict:
                 "method": "GET",
                 "path": path,
                 "query": query,
-                "headers": {
-                    "Accept": "text/html,application/xhtml+xml",
-                    "User-Agent": USER_AGENT,
-                },
+                "headers": request_headers,
             },
         },
     }
@@ -76,12 +89,16 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--path", default="/kttv/detail/view")
     parser.add_argument("--query", default="sid=33")
+    parser.add_argument("--range", dest="range_header")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
-    result = run_probe(args.path, args.query)
+    result = run_probe(args.path, args.query, args.range_header)
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    args.output.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
     rows = result.get("results") or []
     summary = []
@@ -98,10 +115,17 @@ def main() -> None:
                 "statusCode": measured.get("statusCode"),
                 "resolvedAddress": measured.get("resolvedAddress"),
                 "truncated": measured.get("truncated"),
+                "contentRange": (measured.get("headers") or {}).get("content-range"),
                 "rawBodyLength": len(raw_body) if isinstance(raw_body, str) else None,
             }
         )
-    print(json.dumps({"id": result.get("id"), "status": result.get("status"), "probes": summary}, ensure_ascii=False, indent=2))
+    print(
+        json.dumps(
+            {"id": result.get("id"), "status": result.get("status"), "probes": summary},
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":
