@@ -131,6 +131,7 @@ def compact_nowcast(nowcast:dict,key:str)->dict:
     p=(nowcast.get("points") or {}).get(key,{})
     sig=p.get("convective_signal") or {}
     motion=p.get("cloud_motion") or {}
+    horizon=p.get("horizon_cloud") or {}
     return {
         "status":nowcast.get("status","UNAVAILABLE"),
         "sampled_time":nowcast.get("sampled_time"),
@@ -140,6 +141,20 @@ def compact_nowcast(nowcast:dict,key:str)->dict:
         "cooling_c_per_20m":num(p.get("cooling_c_per_20m_proxy")),
         "convective_score":num(sig.get("score")),
         "convective_level":sig.get("level"),
+        "horizon_cloud":{
+            "status":horizon.get("status"),
+            "obscuration_score":num(horizon.get("obscuration_score")),
+            "sector_cloud_fraction":num(horizon.get("sector_cloud_fraction")),
+            "core_cloud_fraction":num(horizon.get("core_cloud_fraction")),
+            "sunset_azimuth_deg":num(horizon.get("sunset_azimuth_deg")),
+            "trend":horizon.get("trend"),
+            "score_change":num(horizon.get("score_change")),
+            "dominant_layer":horizon.get("dominant_layer"),
+            "confidence":horizon.get("confidence"),
+            "support_cells":horizon.get("support_cells"),
+            "core_support_cells":horizon.get("core_support_cells"),
+            "method":horizon.get("method"),
+        },
         "cloud_motion":{
             "status":motion.get("status"),
             "source_sector":motion.get("source_sector"),
@@ -298,7 +313,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
     }
     sources["HIMAWARI"]={
         "status":ready_status(nowcast.get("status")),
-        "detail":"Himawari-9 giúp theo dõi mây đối lưu quanh Phú Quốc qua nhiệt độ đỉnh mây, độ cao đỉnh mây và xu hướng phát triển trong khoảng 20 phút."
+        "detail":"Himawari-9 giúp theo dõi mây quanh Phú Quốc qua trường đỉnh mây, xu hướng phát triển và vùng mây trên hướng chân trời hoàng hôn. Lớp chân trời là chỉ báo che khuất, không phải phép đo độ dày quang học."
     }
     sources["AQI"]={
         "status":ready_status(aqi.get("status"),partial_ok=True),

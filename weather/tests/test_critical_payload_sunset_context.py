@@ -15,6 +15,20 @@ class CriticalPayloadSunsetContextTests(unittest.TestCase):
                     "regional_high_cloud_top_height_m": 12172,
                     "cooling_c_per_20m_proxy": 0.5,
                     "convective_signal": {"score": 45, "level": "WATCH"},
+                    "horizon_cloud": {
+                        "status": "CLOUD_RISK",
+                        "obscuration_score": 58.4,
+                        "sector_cloud_fraction": 0.51,
+                        "core_cloud_fraction": 0.61,
+                        "sunset_azimuth_deg": 267.2,
+                        "trend": "INCREASING",
+                        "score_change": 14.2,
+                        "dominant_layer": "LOW",
+                        "confidence": "HIGH",
+                        "support_cells": 18,
+                        "core_support_cells": 7,
+                        "method": "HIMAWARI_SUNSET_HORIZON_OCCUPANCY_V1_NOT_OPTICAL_DEPTH",
+                    },
                     "cloud_motion": {
                         "status": "PASSING_BY",
                         "source_sector": "Đông Bắc",
@@ -38,6 +52,10 @@ class CriticalPayloadSunsetContextTests(unittest.TestCase):
 
         out = compact_nowcast(payload, "duong_dong")
         self.assertEqual(out["convective_level"], "WATCH")
+        self.assertEqual(out["horizon_cloud"]["status"], "CLOUD_RISK")
+        self.assertEqual(out["horizon_cloud"]["obscuration_score"], 58.4)
+        self.assertEqual(out["horizon_cloud"]["dominant_layer"], "LOW")
+        self.assertEqual(out["horizon_cloud"]["method"], "HIMAWARI_SUNSET_HORIZON_OCCUPANCY_V1_NOT_OPTICAL_DEPTH")
         self.assertEqual(out["cloud_motion"]["status"], "PASSING_BY")
         self.assertTrue(out["cloud_motion"]["public_track_usable"])
         self.assertFalse(out["cloud_motion"]["predicted_impact"])
