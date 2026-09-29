@@ -141,19 +141,14 @@ def compact_nowcast(nowcast:dict,key:str)->dict:
         "cooling_c_per_20m":num(p.get("cooling_c_per_20m_proxy")),
         "convective_score":num(sig.get("score")),
         "convective_level":sig.get("level"),
+        # Keep public critical.json compact: detailed horizon diagnostics remain
+        # in data-weather/compact-latest.json for audit and Weather internals.
         "horizon_cloud":{
             "status":horizon.get("status"),
             "obscuration_score":num(horizon.get("obscuration_score")),
-            "sector_cloud_fraction":num(horizon.get("sector_cloud_fraction")),
-            "core_cloud_fraction":num(horizon.get("core_cloud_fraction")),
-            "sunset_azimuth_deg":num(horizon.get("sunset_azimuth_deg")),
             "trend":horizon.get("trend"),
-            "score_change":num(horizon.get("score_change")),
             "dominant_layer":horizon.get("dominant_layer"),
             "confidence":horizon.get("confidence"),
-            "support_cells":horizon.get("support_cells"),
-            "core_support_cells":horizon.get("core_support_cells"),
-            "method":horizon.get("method"),
         },
         "cloud_motion":{
             "status":motion.get("status"),
