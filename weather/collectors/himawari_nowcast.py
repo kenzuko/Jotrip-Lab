@@ -42,6 +42,15 @@ CORRIDOR_WATCH = {
 MOTION_RADIUS_KM = 150.0
 MOTION_SCORE_MIN = 70.0
 
+# Sunset visibility is a separate, non-convective use of the observed cloud-top
+# field. It looks only through the seaward horizon sector around the astronomical
+# sunset azimuth. The score is cloud occupancy, not optical depth: thin cirrus can
+# still be translucent, so the public layer must phrase it as obscuration risk.
+HORIZON_MIN_KM = 8.0
+HORIZON_MAX_KM = 120.0
+HORIZON_SECTOR_HALF_DEG = 22.0
+HORIZON_CORE_HALF_DEG = 9.0
+
 
 def _write(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -153,6 +162,21 @@ def _height_stats(array) -> tuple[float | None, float | None, float | None]:
     if not values.size:
         return None, None, None
     return float(np.max(values)), float(np.nanpercentile(values, 95)), float(np.nanmedian(values))
+
+
+def _cloud_fraction(array) -> float | None:
+    """Fraction of sampled pixels carrying a valid cloud-top height.
+
+    AHI cloud-height clear/fill pixels decode to non-finite values. This is a
+    small local occupancy estimate, not cloud optical depth or opacity.
+    """
+    import numpy as np
+
+    values = np.asarray(array, dtype=float)
+    if values.size == 0:
+        return None
+    valid = np.isfinite(values) & (values >= -300) & (values <= 20000)
+    return float(np.count_nonzero(valid) / values.size)
 
 
 def _sample(ds, lat: float, lon: float) -> dict:
@@ -418,6 +442,155 @@ def _cloud_motion_for_target(spatial: dict, target_lat: float, target_lon: float
     }
 
 
+
+
+def _sunset_azimuth_deg(sampled_time: str | None, latitude: float) -> float:
+    """Approximate astronomical sunset azimuth, degrees clockwise from north."""
+    dt = _parse_iso(sampled_time) or datetime.now(timezone.utc)
+    n = dt.timetuple().tm_yday
+    gamma = 2.0 * math.pi / 365.0 * (n - 1)
+    decl = (
+        0.006918
+        - 0.399912 * math.cos(gamma)
+        + 0.070257 * math.sin(gamma)
+        - 0.006758 * math.cos(2 * gamma)
+        + 0.000907 * math.sin(2 * gamma)
+        - 0.002697 * math.cos(3 * gamma)
+        + 0.00148 * math.sin(3 * gamma)
+    )
+    ratio = math.sin(decl) / max(1e-6, math.cos(math.radians(latitude)))
+    west_hour_angle = math.degrees(math.acos(max(-1.0, min(1.0, ratio))))
+    return (360.0 - west_hour_angle) % 360.0
+
+
+def _horizon_frame(frame: dict, target_lat: float, target_lon: float, azimuth: float) -> dict | None:
+    selected = []
+    core = []
+    layers = {"LOW": 0.0, "MID": 0.0, "HIGH": 0.0}
+    for cell in frame.get("cells") or []:
+        try:
+            lat = float(cell.get("lat"))
+            lon = float(cell.get("lon"))
+            fraction = float(cell.get("cloud_fraction"))
+        except (TypeError, ValueError):
+            continue
+        if not 0.0 <= fraction <= 1.0:
+            continue
+        distance = _haversine_km(target_lat, target_lon, lat, lon)
+        if distance < HORIZON_MIN_KM or distance > HORIZON_MAX_KM:
+            continue
+        bearing = _bearing_deg(target_lat, target_lon, lat, lon)
+        delta = _angle_diff(bearing, azimuth)
+        if delta > HORIZON_SECTOR_HALF_DEG:
+            continue
+        # Highest weight goes to the exact sunset bearing and the nearer/middle
+        # part of the Gulf, while keeping enough offshore depth to detect a bank
+        # on the visible horizon.
+        angle_weight = math.exp(-((delta / 12.0) ** 2))
+        distance_weight = math.exp(-distance / 140.0)
+        weight = max(0.02, angle_weight * distance_weight)
+        selected.append((fraction, weight))
+        if delta <= HORIZON_CORE_HALF_DEG:
+            core.append((fraction, weight))
+
+        height = cell.get("cloud_top_median_m")
+        try:
+            height = float(height)
+        except (TypeError, ValueError):
+            height = None
+        if height is not None and fraction > 0:
+            layer = "LOW" if height < 3000 else ("MID" if height < 7000 else "HIGH")
+            layers[layer] += fraction * weight
+
+    if not selected:
+        return None
+
+    def weighted_mean(rows):
+        total = sum(weight for _, weight in rows)
+        return sum(value * weight for value, weight in rows) / total if total > 0 else 0.0
+
+    sector_mean = weighted_mean(selected)
+    core_mean = weighted_mean(core) if core else sector_mean
+    score = max(0.0, min(100.0, 100.0 * (0.72 * core_mean + 0.28 * sector_mean)))
+    if score >= 70:
+        status = "LIKELY_OBSCURED"
+    elif score >= 45:
+        status = "CLOUD_RISK"
+    elif score >= 20:
+        status = "PARTLY_CLOUDY"
+    else:
+        status = "CLEAR"
+
+    support = len(selected)
+    core_support = len(core)
+    confidence = "LOW"
+    if support >= 6 and core_support >= 2:
+        confidence = "MEDIUM"
+    if support >= 12 and core_support >= 4:
+        confidence = "HIGH"
+    dominant_layer = max(layers, key=layers.get) if max(layers.values(), default=0.0) > 0 else None
+    return {
+        "sampled_time": frame.get("sampled_time"),
+        "status": status,
+        "obscuration_score": round(score, 1),
+        "sector_cloud_fraction": round(sector_mean, 3),
+        "core_cloud_fraction": round(core_mean, 3),
+        "support_cells": support,
+        "core_support_cells": core_support,
+        "dominant_layer": dominant_layer,
+        "confidence": confidence,
+    }
+
+
+def _horizon_cloud_for_target(spatial: dict, target_lat: float, target_lon: float) -> dict:
+    frames = list(spatial.get("frames") or [])
+    if not frames:
+        return {
+            "status": "UNAVAILABLE",
+            "obscuration_score": None,
+            "trend": "UNKNOWN",
+            "method": "HIMAWARI_SUNSET_HORIZON_OCCUPANCY_V1_NOT_OPTICAL_DEPTH",
+        }
+
+    current = frames[-1]
+    azimuth = _sunset_azimuth_deg(current.get("sampled_time"), target_lat)
+    current_view = _horizon_frame(current, target_lat, target_lon, azimuth)
+    if current_view is None:
+        return {
+            "status": "UNAVAILABLE",
+            "sampled_time": current.get("sampled_time"),
+            "sunset_azimuth_deg": round(azimuth, 1),
+            "obscuration_score": None,
+            "trend": "UNKNOWN",
+            "method": "HIMAWARI_SUNSET_HORIZON_OCCUPANCY_V1_NOT_OPTICAL_DEPTH",
+        }
+
+    previous_view = None
+    for frame in reversed(frames[:-1]):
+        candidate = _horizon_frame(frame, target_lat, target_lon, azimuth)
+        if candidate is not None:
+            previous_view = candidate
+            break
+
+    delta = None
+    trend = "UNKNOWN"
+    if previous_view is not None:
+        delta = current_view["obscuration_score"] - previous_view["obscuration_score"]
+        trend = "INCREASING" if delta >= 10 else ("DECREASING" if delta <= -10 else "STABLE")
+
+    return {
+        **current_view,
+        "sunset_azimuth_deg": round(azimuth, 1),
+        "sector_half_width_deg": HORIZON_SECTOR_HALF_DEG,
+        "distance_min_km": HORIZON_MIN_KM,
+        "distance_max_km": HORIZON_MAX_KM,
+        "trend": trend,
+        "score_change": round(delta, 1) if delta is not None else None,
+        "method": "HIMAWARI_SUNSET_HORIZON_OCCUPANCY_V1_NOT_OPTICAL_DEPTH",
+        "note": "Tỷ lệ mây quan sát trong hướng chân trời hoàng hôn; không đo độ dày quang học nên chỉ dùng như nguy cơ mặt trời bị che.",
+    }
+
+
 def _axis(start: float, end: float, step: float) -> list[float]:
     values = []
     value = start
@@ -442,11 +615,13 @@ def _spatial_sample(ds, lat: float, lon: float) -> dict:
     height = ds[height_key].isel(y=slice(y0, y1), x=slice(x0, x1)) if "y" in ds[height_key].dims else ds[height_key].isel(Rows=slice(y0, y1), Columns=slice(x0, x1))
     _, cold_c, median_c = _temp_stats(temp.values)
     _, high_m, median_m = _height_stats(height.values)
+    cloud_fraction = _cloud_fraction(height.values)
     return {
         "cloud_top_cold_c": round(cold_c, 1) if cold_c is not None else None,
         "cloud_top_median_c": round(median_c, 1) if median_c is not None else None,
         "cloud_top_high_m": round(high_m) if high_m is not None else None,
         "cloud_top_median_m": round(median_m) if median_m is not None else None,
+        "cloud_fraction": round(cloud_fraction, 3) if cloud_fraction is not None else None,
     }
 
 
@@ -568,6 +743,7 @@ def collect() -> dict:
                 "cooling_c_per_20m_proxy": cooling,
                 "convective_signal": signal,
                 "cloud_motion": _cloud_motion_for_target(spatial, lat, lon),
+                "horizon_cloud": _horizon_cloud_for_target(spatial, lat, lon),
                 "lightning_observed": "NOT_CONNECTED",
             }
 
