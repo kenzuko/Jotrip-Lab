@@ -127,7 +127,7 @@ def collect(begin: datetime, end: datetime) -> dict[str, Any]:
     generated = datetime.now(timezone.utc)
 
     return {
-        "schema_version": "weather-raw-synop-v1",
+        "schema_version": "weather-raw-synop-v2",
         "generated_at": generated.isoformat(),
         "station_id": STATION_ID,
         "station_name": "Phu Quoc",
