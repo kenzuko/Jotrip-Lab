@@ -1,11 +1,11 @@
 """Fetch raw SYNOP observations for Phu Quoc WMO 48917.
 
-This collector deliberately archives the undecoded station reports first.
-It does not infer rainfall, wind, or any other numeric variable from a report.
-Those fields must be decoded in a separate, tested step.
+Raw station reports are archived verbatim first. A narrow tested decoder then
+attaches measured wind and precipitation accumulation groups while retaining
+the original SYNOP groups for auditability. No model, fusion, interpolation,
+or spatial estimate is introduced.
 
-Source: OGIMET getsynop public CSV endpoint, which returns undecoded SYNOP
-reports with station index and UTC observation timestamp.
+Source: OGIMET getsynop public CSV endpoint.
 """
 from __future__ import annotations
 
@@ -14,12 +14,13 @@ import csv
 import hashlib
 import io
 import json
-import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+
+from weather.processing.synop_actual import decode_synop_actual
 
 STATION_ID = "48917"
 SOURCE = "OGIMET_GETSYNOP"
@@ -97,6 +98,7 @@ def _parse_rows(raw_csv: str) -> list[dict[str, Any]]:
         if not report:
             continue
 
+        decoded = decode_synop_actual(report)
         rows.append(
             {
                 "station_id": STATION_ID,
@@ -108,7 +110,8 @@ def _parse_rows(raw_csv: str) -> list[dict[str, Any]]:
                 "observed_at": obs.isoformat(),
                 "raw_observation": report,
                 "raw_payload_hash": _sha256(report),
-                "qc": "PASS_RAW_UNDECODED",
+                "decoded_actual": decoded,
+                "qc": "PASS_RAW_WITH_TESTED_SUBSET_DECODE",
             }
         )
 
@@ -124,11 +127,10 @@ def collect(begin: datetime, end: datetime) -> dict[str, Any]:
 
     provenance_url, raw_csv = _fetch_csv(begin, end)
     rows = _parse_rows(raw_csv)
-    generated = datetime.now(timezone.utc)
 
     return {
         "schema_version": "weather-raw-synop-v2",
-        "generated_at": generated.isoformat(),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
         "station_id": STATION_ID,
         "station_name": "Phu Quoc",
         "source": SOURCE,
@@ -141,8 +143,9 @@ def collect(begin: datetime, end: datetime) -> dict[str, Any]:
         "count": len(rows),
         "observations": rows,
         "policy": (
-            "Raw undecoded station observations only. No model, fusion, interpolation, "
-            "or inferred meteorological values are stored by this collector."
+            "Raw station observations are archived verbatim. Only tested WMO SYNOP "
+            "wind and precipitation groups are decoded. No model, fusion, interpolation, "
+            "or spatial estimate is introduced."
         ),
     }
 
@@ -173,16 +176,12 @@ def main() -> None:
                 "end": payload["end"],
                 "count": payload["count"],
                 "provenance_url": payload["provenance_url"],
-                "first_observed_at": (
-                    payload["observations"][0]["observed_at"]
-                    if payload["observations"]
-                    else None
-                ),
-                "last_observed_at": (
-                    payload["observations"][-1]["observed_at"]
-                    if payload["observations"]
-                    else None
-                ),
+                "first_observed_at": payload["observations"][0]["observed_at"]
+                if payload["observations"]
+                else None,
+                "last_observed_at": payload["observations"][-1]["observed_at"]
+                if payload["observations"]
+                else None,
             },
             ensure_ascii=False,
             indent=2,
