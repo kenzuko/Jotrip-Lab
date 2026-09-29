@@ -41,7 +41,7 @@ def run_probe(path: str, query: str) -> dict:
     create = {
         "type": "http",
         "target": "kttvtudong.net",
-        "locations": [{"country": "VN", "limit": 1}],
+        "locations": [{"country": "VN"}],
         "limit": 1,
         "measurementOptions": {
             "protocol": "HTTPS",
