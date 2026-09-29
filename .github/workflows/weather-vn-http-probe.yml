@@ -30,19 +30,40 @@ jobs:
             --query sid=33 \
             --output /tmp/kttvtudong-sid33-vn.json
 
+      - name: Probe second HTML byte range from Vietnam
+        run: |
+          python weather/tools/globalping_vn_http_probe.py \
+            --path /kttv/detail/view \
+            --query sid=33 \
+            --range 'bytes=9000-18999' \
+            --output /tmp/kttvtudong-sid33-vn-range2.json
+
       - name: Inspect returned HTML for station/export controls
         run: |
           python - <<'PY'
           import json,re
-          p=json.load(open('/tmp/kttvtudong-sid33-vn.json'))
+          payloads=[]
+          for fn in ['/tmp/kttvtudong-sid33-vn.json','/tmp/kttvtudong-sid33-vn-range2.json']:
+              try:
+                  payloads.append((fn,json.load(open(fn))))
+              except Exception as exc:
+                  print('skip',fn,exc)
+          assert payloads
+          p=payloads[0][1]
           rows=p.get('results') or []
           assert rows, 'No Vietnam probe result'
           row=rows[0]
           assert (row.get('probe') or {}).get('country')=='VN', row.get('probe')
           r=row.get('result') or {}
           print('HTTP',r.get('statusCode'),'probe=',row.get('probe'))
-          body=r.get('rawBody') or ''
-          print('body length=',len(body),'truncated=',r.get('truncated'))
+          bodies=[]
+          for fn,payload in payloads:
+              rr=(payload.get('results') or [{}])[0].get('result') or {}
+              b=rr.get('rawBody') or ''
+              print('payload',fn,'HTTP',rr.get('statusCode'),'body length=',len(b),'truncated=',rr.get('truncated'))
+              print('content-range=',(rr.get('headers') or {}).get('content-range'))
+              bodies.append(b)
+          body='\n'.join(bodies)
           for pattern in [
               r'<form[^>]*>',
               r'<input[^>]*(?:date|from|to|start|end|excel|export)[^>]*>',
