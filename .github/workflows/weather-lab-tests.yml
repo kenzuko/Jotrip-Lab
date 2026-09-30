@@ -47,6 +47,10 @@ jobs:
     timeout-minutes: 5
     outputs:
       run_heavy: ${{ steps.gate.outputs.run_heavy }}
+      ecmwf_changed: ${{ steps.gate.outputs.ecmwf_changed }}
+      gefs_changed: ${{ steps.gate.outputs.gefs_changed }}
+      icon_changed: ${{ steps.gate.outputs.icon_changed }}
+      force_refresh_all: ${{ steps.gate.outputs.force_refresh_all }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -64,11 +68,22 @@ jobs:
         run: |
           if [[ "${{ inputs.scheduled_watch }}" == "true" ]]; then
             RUN_HEAVY=$(python -c 'import json; p=json.load(open("/tmp/cycle-watch.json")); print(str(bool(p["run_heavy"])).lower())')
+            FORCE_ALL=false
           else
             RUN_HEAVY=true
+            FORCE_ALL=true
           fi
           echo "run_heavy=${RUN_HEAVY}" >> "$GITHUB_OUTPUT"
-          echo "Weather Lab heavy ingest: ${RUN_HEAVY}"
+          echo "force_refresh_all=${FORCE_ALL}" >> "$GITHUB_OUTPUT"
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          p=json.load(open('/tmp/cycle-watch.json'))
+          changed=set(p.get('changed_sources') or [])
+          print("ecmwf_changed="+("true" if changed & {'ECMWF','ECMWF_MEDIUM'} else "false"))
+          print("gefs_changed="+("true" if 'GEFS' in changed else "false"))
+          print("icon_changed="+("true" if 'ICON' in changed else "false"))
+          PY
+          echo "Weather Lab heavy ingest: ${RUN_HEAVY}; force all: ${FORCE_ALL}"
           cat /tmp/cycle-watch.json
       - uses: actions/upload-artifact@v4
         with:
@@ -103,10 +118,25 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Restore cached ECMWF normalized product
+        id: source_cache
+        shell: bash
+        run: |
+          git fetch origin data-weather --depth=1
+          if git show origin/data-weather:data/weather-model-cache/ecmwf.json > /tmp/ecmwf-cache.json 2>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Install official ECMWF client and GRIB decoder
+        if: needs.cycle-watch.outputs.force_refresh_all == 'true' || needs.cycle-watch.outputs.ecmwf_changed == 'true' || steps.source_cache.outputs.exists != 'true'
         run: python -m pip install --quiet ecmwf-opendata eccodes
       - name: Collect freshest D0-D3 and medium-range D4-D10 fields
+        if: needs.cycle-watch.outputs.force_refresh_all == 'true' || needs.cycle-watch.outputs.ecmwf_changed == 'true' || steps.source_cache.outputs.exists != 'true'
         run: python -m weather.collectors.ecmwf_72h --output /tmp/ecmwf-d10.json
+      - name: Reuse last-known-good ECMWF product
+        if: needs.cycle-watch.outputs.force_refresh_all != 'true' && needs.cycle-watch.outputs.ecmwf_changed != 'true' && steps.source_cache.outputs.exists == 'true'
+        run: cp /tmp/ecmwf-cache.json /tmp/ecmwf-d10.json
       - name: Enforce D10 point readiness
         run: |
           python - <<'PY'
@@ -150,10 +180,25 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Restore cached GEFS normalized product
+        id: source_cache
+        shell: bash
+        run: |
+          git fetch origin data-weather --depth=1
+          if git show origin/data-weather:data/weather-model-cache/gefs.json > /tmp/gefs-cache.json 2>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Install GRIB decoder
+        if: needs.cycle-watch.outputs.force_refresh_all == 'true' || needs.cycle-watch.outputs.gefs_changed == 'true' || steps.source_cache.outputs.exists != 'true'
         run: python -m pip install --quiet eccodes
       - name: Collect GEFS atmosphere and wave member gate
+        if: needs.cycle-watch.outputs.force_refresh_all == 'true' || needs.cycle-watch.outputs.gefs_changed == 'true' || steps.source_cache.outputs.exists != 'true'
         run: python -m weather.collectors.noaa_member_smoke --lead 3 --output /tmp/noaa-members.json
+      - name: Reuse last-known-good GEFS product
+        if: needs.cycle-watch.outputs.force_refresh_all != 'true' && needs.cycle-watch.outputs.gefs_changed != 'true' && steps.source_cache.outputs.exists == 'true'
+        run: cp /tmp/gefs-cache.json /tmp/noaa-members.json
       - name: Enforce member gate
         run: python -c 'import json; p=json.load(open("/tmp/noaa-members.json")); assert p["atmosphere"]["readiness"] == "MEMBER_COMPLETE", p["atmosphere"]; assert p["wave"]["readiness"] == "MEMBER_COMPLETE", p["wave"]'
       - uses: actions/upload-artifact@v4
@@ -174,13 +219,28 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Restore cached ICON normalized product
+        id: source_cache
+        shell: bash
+        run: |
+          git fetch origin data-weather --depth=1
+          if git show origin/data-weather:data/weather-model-cache/icon.json > /tmp/icon-cache.json 2>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Install CDO and GRIB decoder
+        if: needs.cycle-watch.outputs.force_refresh_all == 'true' || needs.cycle-watch.outputs.icon_changed == 'true' || steps.source_cache.outputs.exists != 'true'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y cdo
           python -m pip install --quiet eccodes
       - name: Remap live ICON field and extract Phu Quoc
+        if: needs.cycle-watch.outputs.force_refresh_all == 'true' || needs.cycle-watch.outputs.icon_changed == 'true' || steps.source_cache.outputs.exists != 'true'
         run: python -m weather.collectors.icon_point --output /tmp/icon-point.json
+      - name: Reuse last-known-good ICON product
+        if: needs.cycle-watch.outputs.force_refresh_all != 'true' && needs.cycle-watch.outputs.icon_changed != 'true' && steps.source_cache.outputs.exists == 'true'
+        run: cp /tmp/icon-cache.json /tmp/icon-point.json
       - name: Enforce point and spatial readiness
         run: |
           python - <<'PY'
@@ -215,10 +275,41 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Restore cached Copernicus normalized product
+        id: source_cache
+        shell: bash
+        run: |
+          git fetch origin data-weather --depth=1
+          if git show origin/data-weather:data/weather-model-cache/copernicus.json > /tmp/copernicus-cache.json 2>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from datetime import datetime, timezone
+          try:
+              p=json.load(open('/tmp/copernicus-cache.json'))
+              t=datetime.fromisoformat(str(p.get('target_time') or '').replace('Z','+00:00'))
+              if t.tzinfo is None:
+                  t=t.replace(tzinfo=timezone.utc)
+              age=max(0.0,(datetime.now(timezone.utc)-t.astimezone(timezone.utc)).total_seconds()/60)
+          except Exception:
+              age=99999.0
+          print(f"age_minutes={age:.1f}")
+          print("refresh="+("true" if age>180 else "false"))
+          PY
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "age_minutes=99999" >> "$GITHUB_OUTPUT"
+            echo "refresh=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Install official Toolbox and NetCDF reader
+        if: needs.cycle-watch.outputs.force_refresh_all == 'true' || steps.source_cache.outputs.refresh == 'true'
         run: python -m pip install --quiet copernicusmarine xarray netCDF4 numpy
       - name: Download Phu Quoc and Rach Gia wave and current subsets
+        if: needs.cycle-watch.outputs.force_refresh_all == 'true' || steps.source_cache.outputs.refresh == 'true'
         run: python -m weather.collectors.copernicus_live --output /tmp/copernicus-live.json
+      - name: Reuse last-known-good Copernicus product
+        if: needs.cycle-watch.outputs.force_refresh_all != 'true' && steps.source_cache.outputs.refresh != 'true' && steps.source_cache.outputs.exists == 'true'
+        run: cp /tmp/copernicus-cache.json /tmp/copernicus-live.json
       - name: Enforce credential, variable and point gates
         run: |
           python - <<'PY'
@@ -471,3 +562,83 @@ jobs:
           git commit -m "chore(weather): publish canonical LAB snapshot [skip ci]"
           git pull --rebase origin "${{ inputs.target_ref || github.ref_name }}"
           git push origin "HEAD:${{ inputs.target_ref || github.ref_name }}"
+
+      - name: Persist normalized model source cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/weather-model-cache-export
+          mkdir -p /tmp/weather-model-cache-export
+          cp /tmp/weather-artifacts/ecmwf/ecmwf-d10.json /tmp/weather-model-cache-export/ecmwf.json
+          cp /tmp/weather-artifacts/gefs/noaa-members.json /tmp/weather-model-cache-export/gefs.json
+          cp /tmp/weather-artifacts/icon/icon-point.json /tmp/weather-model-cache-export/icon.json
+          cp /tmp/weather-artifacts/copernicus/copernicus-live.json /tmp/weather-model-cache-export/copernicus.json
+
+          python - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          root=Path('/tmp/weather-model-cache-export')
+          e=json.loads((root/'ecmwf.json').read_text())
+          g=json.loads((root/'gefs.json').read_text())
+          i=json.loads((root/'icon.json').read_text())
+          c=json.loads((root/'copernicus.json').read_text())
+          manifest={
+              'schema_version':'weather-model-cache-v1',
+              'generated_at':datetime.now(timezone.utc).isoformat(),
+              'sources':{
+                  'ECMWF':{
+                      'run_time':e.get('run_time'),
+                      'medium_run_time':e.get('medium_run_time'),
+                      'checked_at':e.get('checked_at'),
+                      'status':e.get('status'),
+                  },
+                  'GEFS':{
+                      'run_time':((g.get('atmosphere') or {}).get('run_time')),
+                      'wave_run_time':((g.get('wave') or {}).get('run_time')),
+                      'checked_at':max(
+                          str((g.get('atmosphere') or {}).get('checked_at') or ''),
+                          str((g.get('wave') or {}).get('checked_at') or ''),
+                      ) or None,
+                      'status':'READY' if (g.get('atmosphere') or {}).get('readiness')=='MEMBER_COMPLETE' else 'PARTIAL',
+                  },
+                  'ICON':{
+                      'cycle_stamp':i.get('cycle_stamp'),
+                      'status':i.get('status'),
+                  },
+                  'COPERNICUS':{
+                      'target_time':c.get('target_time'),
+                      'wave_dataset':c.get('wave_dataset'),
+                      'current_dataset':c.get('current_dataset'),
+                      'status':c.get('status'),
+                  },
+              },
+          }
+          (root/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          assert all((root/name).stat().st_size>10 for name in ('ecmwf.json','gefs.json','icon.json','copernicus.json','manifest.json'))
+          PY
+
+          git reset --hard HEAD
+          git fetch origin data-weather
+          git checkout -B data-weather origin/data-weather
+          mkdir -p data/weather-model-cache
+          cp -a /tmp/weather-model-cache-export/. data/weather-model-cache/
+
+          git config user.name "jotrip-weather-bot"
+          git config user.email "jotrip-weather-bot@users.noreply.github.com"
+          git add data/weather-model-cache
+          if git diff --cached --quiet; then
+            echo "Model source cache already current"
+            exit 0
+          fi
+          git commit -m "data: refresh normalized Weather model cache"
+          for attempt in 1 2 3; do
+            if git pull --rebase origin data-weather && git push origin HEAD:data-weather; then
+              echo "Model cache persisted on attempt $attempt"
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+          exit 1
