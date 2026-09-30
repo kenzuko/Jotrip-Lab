@@ -148,7 +148,9 @@ def _hashes_changed(current: dict[str, dict], previous: dict[str, dict]) -> bool
     return False
 
 
-def watch(previous_groundtruth: dict, previous_nowcast: dict) -> dict:
+def watch(previous_groundtruth: dict, previous_nowcast: dict, only: str = "all") -> dict:
+    if only not in {"all", "groundtruth", "himawari"}:
+        raise ValueError(f"Unsupported source watch subset: {only}")
     checked_at = datetime.now(timezone.utc).isoformat()
     errors: dict[str, str] = {}
 
@@ -156,20 +158,22 @@ def watch(previous_groundtruth: dict, previous_nowcast: dict) -> dict:
     current_vrain: dict[str, dict] = {}
     current_himawari: dict = {}
 
-    try:
-        current_vvpq = _vvpq_signature(_fetch_json(AWC_URL))
-    except Exception as exc:
-        errors["vvpq"] = f"{type(exc).__name__}: {exc}"
+    if only in {"all", "groundtruth"}:
+        try:
+            current_vvpq = _vvpq_signature(_fetch_json(AWC_URL))
+        except Exception as exc:
+            errors["vvpq"] = f"{type(exc).__name__}: {exc}"
 
-    try:
-        current_vrain = _vrain_signatures(_fetch_json(VRAIN_CURRENT_URL))
-    except Exception as exc:
-        errors["vrain"] = f"{type(exc).__name__}: {exc}"
+        try:
+            current_vrain = _vrain_signatures(_fetch_json(VRAIN_CURRENT_URL))
+        except Exception as exc:
+            errors["vrain"] = f"{type(exc).__name__}: {exc}"
 
-    try:
-        current_himawari = _latest_himawari_object()
-    except Exception as exc:
-        errors["himawari"] = f"{type(exc).__name__}: {exc}"
+    if only in {"all", "himawari"}:
+        try:
+            current_himawari = _latest_himawari_object()
+        except Exception as exc:
+            errors["himawari"] = f"{type(exc).__name__}: {exc}"
 
     prev_vvpq = _previous_vvpq(previous_groundtruth)
     prev_vrain = _previous_vrain(previous_groundtruth)
@@ -190,6 +194,7 @@ def watch(previous_groundtruth: dict, previous_nowcast: dict) -> dict:
         "schema_version": "weather-source-watch-v1",
         "checked_at": checked_at,
         "status": "PASS" if not errors else "DEGRADED",
+        "sources_probed": only,
         "groundtruth_changed": vvpq_changed or vrain_changed,
         "vvpq_changed": vvpq_changed,
         "vrain_changed": vrain_changed,
@@ -214,8 +219,9 @@ def main() -> None:
     parser.add_argument("--previous-groundtruth", type=Path)
     parser.add_argument("--previous-nowcast", type=Path)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--only", choices=("all", "groundtruth", "himawari"), default="all")
     args = parser.parse_args()
-    result = watch(_read(args.previous_groundtruth), _read(args.previous_nowcast))
+    result = watch(_read(args.previous_groundtruth), _read(args.previous_nowcast), only=args.only)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(result, ensure_ascii=False, indent=2))
