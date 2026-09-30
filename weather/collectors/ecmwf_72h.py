@@ -127,7 +127,7 @@ def _collect_gust(
     prefix: str,
     spatial_grid_requests: tuple[tuple[float, float], ...],
 ) -> tuple[list[dict], str | None, str | None]:
-    """Retrieve 10fg, then try i10fg *only* for valid steps it did not cover."""
+    """Retrieve 10fg (including ecCodes 10fg3), then i10fg for uncovered steps."""
     errors = []
     requested = {int(step) for step in steps if step > 0}
     collected: list[dict] = []
@@ -152,7 +152,7 @@ def _collect_gust(
             )
             seen = {
                 int(record["lead_hours"]) for record in records
-                if record.get("variable") in {"10fg", "i10fg"}
+                if record.get("variable") in {"10fg", "10fg3", "i10fg", "max_i10fg"}
                 and record.get("sample_kind") != "SPATIAL_GRID"
                 and record.get("qc") == "PASS"
             }
@@ -318,7 +318,8 @@ def _spatial_frames(records: list[dict]) -> list[dict]:
         wind_kmh = math.hypot(u_ms, v_ms) * 3.6 if u_ms is not None and v_ms is not None else None
         wind_dir = (math.degrees(math.atan2(-u_ms, -v_ms)) + 360.0) % 360.0 if u_ms is not None and v_ms is not None else None
         temp = bucket.get("2t") or bucket.get("t2m")
-        gust = bucket.get("10fg") or bucket.get("i10fg")
+        gust = (bucket.get("10fg") or bucket.get("10fg3")
+                or bucket.get("i10fg") or bucket.get("max_i10fg"))
         tp = bucket.get("tp")
         swh = bucket.get("swh")
         mwd = bucket.get("mwd")
