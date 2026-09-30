@@ -29,3 +29,42 @@ jobs:
         run: python -m unittest weather.tests.test_human_weather weather.tests.test_critical_human_weather -v
       - name: Full Weather Lab unit regression
         run: python -m unittest discover -s weather/tests -v
+      - name: Build Human Weather against current live-data branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/human-live
+          git fetch origin data-weather --depth=1
+          git show origin/data-weather:data/weather-groundtruth/local-now.json > /tmp/human-live/local-now.json
+          git show origin/data-weather:data/weather-groundtruth/latest.json > /tmp/human-live/groundtruth.json
+          git show origin/data-weather:data/weather-aqi/latest.json > /tmp/human-live/aqi.json
+          git show origin/data-weather:data/weather-nowcast/latest.json > /tmp/human-live/nowcast.json
+          git show origin/data-weather:data/weather-ensemble/latest.json > /tmp/human-live/ensemble.json
+          python -m weather.pipeline.build_critical_payload \
+            --dashboard weather/dashboard-data.json \
+            --local-now /tmp/human-live/local-now.json \
+            --groundtruth /tmp/human-live/groundtruth.json \
+            --aqi /tmp/human-live/aqi.json \
+            --tide weather/tide.json \
+            --nowcast /tmp/human-live/nowcast.json \
+            --ensemble /tmp/human-live/ensemble.json \
+            --output /tmp/human-live/critical.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('/tmp/human-live/critical.json')
+          data=json.loads(p.read_text(encoding='utf-8'))
+          human=data.get('human_weather') or {}
+          assert human.get('schema_version')=='jotrip-human-weather-v1', human
+          assert (human.get('island') or {}).get('spatial_scope')=='REFERENCE_STATION_ACTUAL', human.get('island')
+          assert all((x.get('interpretation') or {}).get('evidence_class') in {'ACTUAL','DERIVED','UNAVAILABLE'}
+                     for x in (human.get('points') or {}).values())
+          size=p.stat().st_size
+          assert size < 60000, f'critical.json exceeds gh-pages cap: {size} bytes'
+          print(json.dumps({
+              'critical_bytes':size,
+              'generated_at':data.get('generated_at'),
+              'island':human.get('island'),
+              'an_thoi':(human.get('points') or {}).get('an_thoi'),
+          },ensure_ascii=False,indent=2))
+          PY
