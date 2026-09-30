@@ -19,7 +19,7 @@ class HumanWeatherTests(unittest.TestCase):
         self.assertGreater(heat_index_c(31.0,rh),31.0)
 
     def test_rain_language_thresholds(self):
-        self.assertEqual(rain_intensity_label(1.0),"mưa rào nhẹ")
+        self.assertEqual(rain_intensity_label(1.0),"mưa nhẹ")
         self.assertEqual(rain_intensity_label(3.0),"mưa vừa")
         self.assertEqual(rain_intensity_label(8.0),"mưa lớn")
 
@@ -38,7 +38,7 @@ class HumanWeatherTests(unittest.TestCase):
             "tracking_confidence":"HIGH","public_track_usable":True,
             "exit_time":"2026-09-30T03:37:00Z"}}}}
         item=build_human_weather(self.local,self.ground,now,self.generated)["points"]["an_thoi"]["interpretation"]
-        self.assertEqual(item["headline"],"An Thới đang có mưa rào nhẹ.")
+        self.assertEqual(item["headline"],"An Thới đang có mưa nhẹ.")
         self.assertNotIn("phút",item["detail"])
         self.assertIsNone(item["duration"])
 
