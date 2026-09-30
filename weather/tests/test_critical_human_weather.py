@@ -25,13 +25,13 @@ class CriticalHumanWeatherTests(unittest.TestCase):
         payload=build(dashboard,local,ground,nowcast=nowcast)
         human=payload["human_weather"]
         self.assertEqual(human["schema_version"],"jotrip-human-weather-v1")
-        self.assertEqual(human["island"]["actual"]["data_class"],"ACTUAL")
-        self.assertEqual(human["island"]["spatial_scope"],"REFERENCE_STATION_ACTUAL")
-        self.assertEqual(human["island"]["reference_location_name"],"Sân bay Phú Quốc")
-        self.assertEqual(human["island"]["derived"]["data_class"],"DERIVED_FROM_ACTUAL")
-        self.assertEqual(human["points"]["an_thoi"]["interpretation"]["headline"],
+        self.assertEqual(human["reference"]["actual"]["class"],"ACTUAL")
+        self.assertEqual(human["reference"]["scope"],"REFERENCE_STATION_ACTUAL")
+        self.assertEqual(human["reference"]["location"],"Sân bay Phú Quốc")
+        self.assertEqual(human["reference"]["derived"]["class"],"DERIVED_FROM_ACTUAL")
+        self.assertEqual(human["points"]["an_thoi"]["message"]["headline"],
                          "An Thới đang có mưa rào nhẹ.")
-        self.assertEqual(human["points"]["an_thoi"]["interpretation"]["detail"],
+        self.assertEqual(human["points"]["an_thoi"]["message"]["detail"],
                          "Dự kiến mưa sẽ giảm trong khoảng 30-45 phút.")
         self.assertEqual(payload["actual"]["vvpq"]["dewpoint_c"],27.0)
 
