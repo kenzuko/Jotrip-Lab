@@ -47,6 +47,10 @@ jobs:
     timeout-minutes: 5
     outputs:
       run_heavy: ${{ steps.gate.outputs.run_heavy }}
+      ecmwf_changed: ${{ steps.gate.outputs.ecmwf_changed }}
+      gefs_changed: ${{ steps.gate.outputs.gefs_changed }}
+      icon_changed: ${{ steps.gate.outputs.icon_changed }}
+      force_refresh_all: ${{ steps.gate.outputs.force_refresh_all }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -64,11 +68,22 @@ jobs:
         run: |
           if [[ "${{ inputs.scheduled_watch }}" == "true" ]]; then
             RUN_HEAVY=$(python -c 'import json; p=json.load(open("/tmp/cycle-watch.json")); print(str(bool(p["run_heavy"])).lower())')
+            FORCE_ALL=false
           else
             RUN_HEAVY=true
+            FORCE_ALL=true
           fi
           echo "run_heavy=${RUN_HEAVY}" >> "$GITHUB_OUTPUT"
-          echo "Weather Lab heavy ingest: ${RUN_HEAVY}"
+          echo "force_refresh_all=${FORCE_ALL}" >> "$GITHUB_OUTPUT"
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          p=json.load(open('/tmp/cycle-watch.json'))
+          changed=set(p.get('changed_sources') or [])
+          print("ecmwf_changed="+("true" if changed & {'ECMWF','ECMWF_MEDIUM'} else "false"))
+          print("gefs_changed="+("true" if 'GEFS' in changed else "false"))
+          print("icon_changed="+("true" if 'ICON' in changed else "false"))
+          PY
+          echo "Weather Lab heavy ingest: ${RUN_HEAVY}; force all: ${FORCE_ALL}"
           cat /tmp/cycle-watch.json
       - uses: actions/upload-artifact@v4
         with:
