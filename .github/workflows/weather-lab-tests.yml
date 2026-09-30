@@ -92,7 +92,8 @@ jobs:
           retention-days: 7
 
   test:
-    if: github.event_name != 'workflow_call' || !inputs.scheduled_watch
+    # Reusable workflows retain the caller's event (push/schedule), not workflow_call.
+    if: ${{ !inputs.scheduled_watch }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -108,7 +109,7 @@ jobs:
 
   ecmwf-d10-point:
     needs: cycle-watch
-    if: github.event_name != 'pull_request' && ((github.event_name != 'workflow_call' || !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
+    if: ${{ github.event_name != 'pull_request' && (!inputs.scheduled_watch || needs.cycle-watch.outputs.run_heavy == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -170,7 +171,7 @@ jobs:
 
   noaa-member-smoke:
     needs: cycle-watch
-    if: github.event_name != 'pull_request' && ((github.event_name != 'workflow_call' || !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
+    if: ${{ github.event_name != 'pull_request' && (!inputs.scheduled_watch || needs.cycle-watch.outputs.run_heavy == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -209,7 +210,7 @@ jobs:
 
   icon-point-smoke:
     needs: cycle-watch
-    if: github.event_name != 'pull_request' && ((github.event_name != 'workflow_call' || !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
+    if: ${{ github.event_name != 'pull_request' && (!inputs.scheduled_watch || needs.cycle-watch.outputs.run_heavy == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -262,7 +263,7 @@ jobs:
 
   copernicus-live-subset:
     needs: cycle-watch
-    if: github.event_name != 'pull_request' && ((github.event_name != 'workflow_call' || !inputs.scheduled_watch) || needs.cycle-watch.outputs.run_heavy == 'true')
+    if: ${{ github.event_name != 'pull_request' && (!inputs.scheduled_watch || needs.cycle-watch.outputs.run_heavy == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
