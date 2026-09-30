@@ -57,14 +57,14 @@ jobs:
           human=data.get('human_weather') or {}
           assert human.get('schema_version')=='jotrip-human-weather-v1', human
           assert (human.get('reference') or {}).get('scope')=='REFERENCE_STATION_ACTUAL', human.get('reference')
-          assert all((x.get('interpretation') or {}).get('evidence_class') in {'ACTUAL','DERIVED','UNAVAILABLE'}
-                     for x in (human.get('points') or {}).values())
+          assert all(x.get('evidence') in {'ACTUAL','DERIVED'}
+                     for x in (human.get('rain') or {}).values())
           size=p.stat().st_size
           assert size < 60000, f'critical.json exceeds gh-pages cap: {size} bytes'
           print(json.dumps({
               'critical_bytes':size,
               'generated_at':data.get('generated_at'),
               'reference':human.get('reference'),
-              'an_thoi':(human.get('points') or {}).get('an_thoi'),
+              'an_thoi':(human.get('rain') or {}).get('an_thoi'),
           },ensure_ascii=False,indent=2))
           PY
