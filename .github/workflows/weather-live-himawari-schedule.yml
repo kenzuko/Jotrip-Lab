@@ -5,10 +5,10 @@ on:
     paths:
       - ".github/workflows/weather-live-himawari-schedule.yml"
   schedule:
-    - cron: "3,13,23,33,43,53 * * * *"
+    - cron: "9,39 * * * *"
   workflow_dispatch:
 
-# shifted cadence away from exact tens to reduce GitHub schedule delay
+# 30-minute safety fallback. The 5-minute source watcher probes object identity.
 
 permissions:
   contents: write
