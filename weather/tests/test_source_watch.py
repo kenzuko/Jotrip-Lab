@@ -43,6 +43,22 @@ class SourceWatchTests(unittest.TestCase):
              patch.object(source_watch,"_latest_himawari_object",return_value=himawari):
             return source_watch.watch(self.previous_gt,self.previous_nowcast)
 
+    def test_groundtruth_subset_avoids_himawari_probe(self):
+        with patch.object(source_watch,"_fetch_json",side_effect=lambda u:self.awc if "aviationweather" in u else self.vrain), \
+             patch.object(source_watch,"_latest_himawari_object",side_effect=AssertionError("cloud probe must be skipped")):
+            out=source_watch.watch(self.previous_gt,self.previous_nowcast,only="groundtruth")
+        self.assertEqual(out["sources_probed"],"groundtruth")
+        self.assertFalse(out["groundtruth_changed"])
+        self.assertFalse(out["himawari_changed"])
+
+    def test_himawari_subset_avoids_groundtruth_requests(self):
+        with patch.object(source_watch,"_fetch_json",side_effect=AssertionError("groundtruth requests must be skipped")), \
+             patch.object(source_watch,"_latest_himawari_object",return_value={"key":"AHI-L2-FLDK-Clouds/new/AHI-CHGT_new.nc"}):
+            out=source_watch.watch(self.previous_gt,self.previous_nowcast,only="himawari")
+        self.assertEqual(out["sources_probed"],"himawari")
+        self.assertFalse(out["groundtruth_changed"])
+        self.assertTrue(out["himawari_changed"])
+
     def test_unchanged_sources_do_not_trigger_heavy_processors(self):
         out=self._run()
         self.assertFalse(out["groundtruth_changed"])
