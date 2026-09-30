@@ -192,21 +192,84 @@ def build_point_interpretation(point_id:str,local_point:dict,groundtruth:dict,no
                               "data_class":"DERIVED_FROM_ACTUAL" if evidence=="ACTUAL" else "DERIVED",
                               "duration":duration}}
 
+def _public_reference(island:dict)->dict:
+    actual=island.get("actual") or {}
+    derived=island.get("derived") or {}
+    return {
+        "status":island.get("observation_status"),
+        "at":island.get("observed_at"),
+        "scope":island.get("spatial_scope"),
+        "location":island.get("reference_location_name"),
+        "actual":{
+            "temperature_c":actual.get("temperature_c"),
+            "dewpoint_c":actual.get("dewpoint_c"),
+            "wind_kmh":actual.get("wind_kmh"),
+            "class":actual.get("data_class"),
+        },
+        "derived":{
+            "humidity_pct":derived.get("humidity_percent"),
+            "feels_like_c":derived.get("feels_like_c"),
+            "label":derived.get("comfort_label"),
+            "reason":derived.get("comfort_reason"),
+            "class":derived.get("data_class"),
+        },
+    }
+
+def _public_point(point:dict)->dict|None:
+    rain=point.get("rain") or {}
+    actual=rain.get("actual")
+    estimate=rain.get("estimate") or {}
+    interpretation=point.get("interpretation") or {}
+    actual_out=None
+    if isinstance(actual,dict):
+        derived=actual.get("derived") or {}
+        actual_out={
+            "status":actual.get("observation_status"),
+            "at":actual.get("observed_at"),
+            "observed":actual.get("rain_observed"),
+            "class":actual.get("data_class"),
+            "derived":{
+                "rate_mm_h":derived.get("rate_mm_h"),
+                "class":derived.get("data_class"),
+            },
+        }
+    estimate_out=None
+    if estimate.get("rate_mm_h") is not None:
+        estimate_out={
+            "rate_mm_h":estimate.get("rate_mm_h"),
+            "class":estimate.get("data_class"),
+        }
+    evidence=interpretation.get("evidence_class")
+    if actual_out is None and estimate_out is None and evidence=="UNAVAILABLE":
+        return None
+    message={
+        "headline":interpretation.get("headline"),
+        "detail":interpretation.get("detail"),
+        "evidence":evidence,
+    }
+    duration=interpretation.get("duration")
+    if isinstance(duration,dict):
+        lo,hi=duration.get("lower_minutes"),duration.get("upper_minutes")
+        if lo is not None and hi is not None:
+            message["duration_min"]=[lo,hi]
+    return {"rain":{"actual":actual_out,"estimate":estimate_out},"message":message}
+
 def build_human_weather(local:dict,groundtruth:dict,nowcast:dict,generated_at:datetime|str|None=None)->dict:
     generated=_time(generated_at) if not isinstance(generated_at,datetime) else generated_at.astimezone(timezone.utc)
     generated=generated or _time(groundtruth.get("generated_at")) or datetime.now(timezone.utc)
     lp=local.get("points") or {};np=nowcast.get("points") or {}
     nowcast_sampled_at=nowcast.get("sampled_time")
-    points={pid:build_point_interpretation(pid,lp.get(pid) or {},groundtruth,np.get(pid) or {},generated,nowcast_sampled_at)
-            for pid in POINT_NAMES if pid!="rach_gia"}
-    island=build_island_comfort(groundtruth,generated);comfort=island.get("derived") or {}
-    actual=island.get("actual") or {}
-    if island.get("observation_status")=="ACTUAL" and actual.get("temperature_c") is not None:
-        t=actual["temperature_c"];f=comfort.get("feels_like_c");label=comfort.get("comfort_label") or "Thời tiết hiện tại"
-        summary=f"{label} - {t:.1f}°C, cảm giác khoảng {f:.0f}°C." if f is not None and abs(f-t)>=1 else f"{label} - {t:.1f}°C."
-    else:
-        summary="Chưa có quan trắc nhiệt độ đủ mới để mô tả cảm nhận ngoài trời."
-    return {"schema_version":"jotrip-human-weather-v1","generated_at":generated.isoformat(),
-            "island":{**island,"summary":summary},"points":points,
-            "contract":{"actual_label":"ACTUAL","forecast_label":"FORECAST","derived_label":"DERIVED",
-                        "rule":"Public wording may simplify meaning but must preserve evidence class, time and spatial scope."}}
+    rich_points={pid:build_point_interpretation(pid,lp.get(pid) or {},groundtruth,np.get(pid) or {},generated,nowcast_sampled_at)
+                 for pid in POINT_NAMES if pid!="rach_gia"}
+    reference=build_island_comfort(groundtruth,generated)
+    points={}
+    for pid,item in rich_points.items():
+        public=_public_point(item)
+        if public is not None:
+            points[pid]=public
+    return {
+        "schema_version":"jotrip-human-weather-v1",
+        "generated_at":generated.isoformat(),
+        "reference":_public_reference(reference),
+        "points":points,
+    }
