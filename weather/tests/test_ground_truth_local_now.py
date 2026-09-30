@@ -27,6 +27,26 @@ class GroundTruthTests(unittest.TestCase):
         self.assertTrue(s["rain_observed"])
         self.assertEqual(s["rain_intensity_mm_h"], 3.0)
 
+    def test_vrain_unchanged_payload_does_not_create_fake_new_sample(self):
+        first_now = datetime(2026, 9, 18, 0, 10, tzinfo=timezone.utc)
+        row = {"sn": "An Thới", "lt": 10.018482, "lg": 104.0149, "d": 0.0, "l": "Không mưa"}
+        timing1 = {"fr": 1789646400, "n": 1789690200}
+        first = _vrain([row], timing1, None, first_now)
+        original = first["stations"]["an_thoi"]
+
+        second_now = datetime(2026, 9, 18, 0, 15, tzinfo=timezone.utc)
+        timing2 = {"fr": 1789646400, "n": 1789690500}
+        previous = {"rainfall": {"stations": {"an_thoi": original}}}
+        second = _vrain([row], timing2, previous, second_now)["stations"]["an_thoi"]
+
+        self.assertEqual(second["sample_state"], "UNCHANGED_PAYLOAD")
+        self.assertEqual(second["observed_at"], original["observed_at"])
+        self.assertNotEqual(second["source_reported_at"], original["source_reported_at"])
+        self.assertEqual(second["increment_qc"], "NO_NEW_SENSOR_SAMPLE")
+        self.assertIsNone(second["rain_observed"])
+        self.assertIsNone(second["rain_intensity_mm_h"])
+        self.assertGreater(second["age_minutes"], 0)
+
     def test_vrain_rejects_too_short_window_for_current_rain(self):
         now = datetime(2026, 9, 18, 0, 20, tzinfo=timezone.utc)
         previous = {
