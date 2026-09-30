@@ -49,7 +49,7 @@ class HumanWeatherTests(unittest.TestCase):
 
     def test_duration_not_invented_without_exit(self):
         item=build_human_weather(self.local,self.ground,{"points":{}},self.generated)["points"]["an_thoi"]["interpretation"]
-        self.assertEqual(item["headline"],"An Thới đang có mưa rào nhẹ.")
+        self.assertEqual(item["headline"],"An Thới đang có mưa nhẹ.")
         self.assertNotIn("phút",item["detail"])
         self.assertIsNone(item["duration"])
 
