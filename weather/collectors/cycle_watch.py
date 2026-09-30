@@ -1,6 +1,6 @@
 """Lightweight model-cycle watcher for Weather Lab.
 
-Checks metadata every 30 minutes. ECMWF is tracked as two cycles: the freshest
+Checks lightweight metadata on the scheduler cadence (15 minutes in production). ECMWF is tracked as two cycles: the freshest
 short operational cycle for D0-D3 and the latest 00/12 cycle exposing step 240
 for D4-D10. Heavy ingestion runs only when a tracked cycle changes.
 """
@@ -153,7 +153,7 @@ def watch(snapshot: Path | None = None) -> dict:
         "current_cycles": current,
         "previous_cycles": previous,
         "errors": errors,
-        "policy": "30-minute metadata watch; ingest on model-cycle change or when published snapshot exceeds 105 minutes; preserve actual model run times",
+        "policy": "15-minute metadata watch; ingest on model-cycle change or when published snapshot exceeds 105 minutes; preserve actual model run times",
         "user_agent": USER_AGENT,
     }
 
