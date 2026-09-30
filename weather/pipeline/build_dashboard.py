@@ -242,14 +242,35 @@ def _add_coastal_wave_reference(rows_by_point: dict[str, list[dict]], spatial: d
                     row["wave_max_method"] = "RAYLEIGH_20MIN_PROXY_FROM_OFFSHORE_HS"
 
 
-def _merge_short_medium(short_rows: list[dict], medium_rows: list[dict]) -> list[dict]:
+def _merge_short_medium(short_rows: list[dict], medium_rows: list[dict], *,
+                        same_cycle: bool = False) -> list[dict]:
+    """Prefer the short run, filling missing *wind/gust pairs* only from the identical run.
+
+    A medium forecast from an older 00/12 cycle must never be passed off as a
+    gust belonging to a fresher 06/18 short forecast. Keep unavailable pairs
+    explicit; the public wind guard will not infer a safe gust from a null.
+    """
     if not short_rows:
         return medium_rows
     if not medium_rows:
         return short_rows
     short_end = max(_iso(row["time_iso"]) for row in short_rows)
     tail = [row for row in medium_rows if _iso(row["time_iso"]) > short_end]
-    return sorted(short_rows + tail, key=lambda row: _iso(row["time_iso"]))
+    medium_by_time = {row["time_iso"]: row for row in medium_rows} if same_cycle else {}
+    merged = []
+    for short in short_rows:
+        row = dict(short)
+        alternative = medium_by_time.get(row["time_iso"])
+        if row.get("gust") is None and alternative:
+            wind, gust = alternative.get("wind"), alternative.get("gust")
+            if (isinstance(wind, (int, float)) and not isinstance(wind, bool)
+                and isinstance(gust, (int, float)) and not isinstance(gust, bool)
+                and 0 <= wind <= gust <= 250):
+                # Treat this as one internally coherent same-run model pair.
+                row["wind"], row["gust"] = wind, gust
+                row["wind_gust_source"] = "ECMWF_SAME_CYCLE_MEDIUM_PAIR"
+        merged.append(row)
+    return sorted(merged + tail, key=lambda row: _iso(row["time_iso"]))
 
 
 def _nearest_row(rows: list[dict], now: datetime) -> dict:
@@ -383,8 +404,11 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
     now = datetime.now(timezone.utc)
     short_by_point = _build_rows(ecmwf.get("records", []))
     medium_by_point = _build_rows(ecmwf.get("medium_records", []))
+    same_cycle = bool(ecmwf.get("run_time") and ecmwf.get("medium_run_time")
+                      and _iso(ecmwf["run_time"]) == _iso(ecmwf["medium_run_time"]))
     rows_by_point = {
-        point: _merge_short_medium(short_by_point.get(point, []), medium_by_point.get(point, []))
+        point: _merge_short_medium(short_by_point.get(point, []), medium_by_point.get(point, []),
+                                   same_cycle=same_cycle)
         for point in POINT_NAMES
     }
     _add_coastal_wave_reference(rows_by_point, ecmwf.get("spatial") or {})
@@ -450,11 +474,13 @@ def build(ecmwf: dict, gefs: dict, icon: dict, copernicus: dict) -> dict:
 
     gust_detail = ecmwf.get("gust_parameter") or "unavailable"
     medium_gust_detail = ecmwf.get("medium_gust_parameter") or "unavailable"
+    paired = sum(row.get("wind_gust_source") == "ECMWF_SAME_CYCLE_MEDIUM_PAIR"
+                 for rows in rows_by_point.values() for row in rows)
     hmax_detail = ecmwf.get("wave_max_parameter") or "proxy-only"
     sources = {
         "ECMWF": {
             "status": "PASS" if atmosphere_ready and medium_ready else "FAIL",
-            "detail": f"IFS/Wave D0-D10 · short={len(ecmwf.get('steps', []))} bước · medium={len(ecmwf.get('medium_steps', []))} bước · {ecmwf.get('record_count', 0)} records · temp=2t · gust={gust_detail}/{medium_gust_detail} · hmax={hmax_detail}",
+            "detail": f"IFS/Wave D0-D10 · short={len(ecmwf.get('steps', []))} bước · medium={len(ecmwf.get('medium_steps', []))} bước · {ecmwf.get('record_count', 0)} records · temp=2t · gust={gust_detail}/{medium_gust_detail} · same_cycle_paired={paired} · hmax={hmax_detail}",
         },
         "GEFS": {
             "status": "PARTIAL" if gefs_ready else "FAIL",

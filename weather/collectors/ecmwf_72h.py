@@ -127,7 +127,7 @@ def _collect_gust(
     prefix: str,
     spatial_grid_requests: tuple[tuple[float, float], ...],
 ) -> tuple[list[dict], str | None, str | None]:
-    """Retrieve 10fg, then try i10fg *only* for valid steps it did not cover."""
+    """Retrieve 10fg (including ecCodes 10fg3), then i10fg for uncovered steps."""
     errors = []
     requested = {int(step) for step in steps if step > 0}
     collected: list[dict] = []
@@ -152,7 +152,7 @@ def _collect_gust(
             )
             seen = {
                 int(record["lead_hours"]) for record in records
-                if record.get("variable") in {"10fg", "i10fg"}
+                if record.get("variable") in {"10fg", "10fg3", "i10fg", "max_i10fg"}
                 and record.get("sample_kind") != "SPATIAL_GRID"
                 and record.get("qc") == "PASS"
             }
@@ -318,7 +318,8 @@ def _spatial_frames(records: list[dict]) -> list[dict]:
         wind_kmh = math.hypot(u_ms, v_ms) * 3.6 if u_ms is not None and v_ms is not None else None
         wind_dir = (math.degrees(math.atan2(-u_ms, -v_ms)) + 360.0) % 360.0 if u_ms is not None and v_ms is not None else None
         temp = bucket.get("2t") or bucket.get("t2m")
-        gust = bucket.get("10fg") or bucket.get("i10fg")
+        gust = (bucket.get("10fg") or bucket.get("10fg3")
+                or bucket.get("i10fg") or bucket.get("max_i10fg"))
         tp = bucket.get("tp")
         swh = bucket.get("swh")
         mwd = bucket.get("mwd")
@@ -380,6 +381,29 @@ def _merge_spatial(short_records: list[dict], medium_records: list[dict], short_
     medium_frames = _spatial_frames(medium_records)
     short_end = max((datetime.fromisoformat(f["valid_time"].replace("Z", "+00:00")) for f in short_frames), default=None)
     frames = list(short_frames)
+    if short_run == medium_run and short_frames and medium_frames:
+        # Match the same forecast run, valid time AND native grid cell.
+        # Copy the complete wind/gust pair, never a naked gust joined to
+        # a potentially different wind vector or a previous model cycle.
+        medium_cells = {(f["valid_time"], c["cell_id"]): c
+                        for f in medium_frames for c in f["cells"]}
+        for frame in frames:
+            for cell in frame["cells"]:
+                if cell.get("gust_kmh") is not None:
+                    continue
+                other = medium_cells.get((frame["valid_time"], cell["cell_id"]))
+                if not other:
+                    continue
+                wind, gust = other.get("wind_kmh"), other.get("gust_kmh")
+                if (isinstance(wind, (int, float)) and not isinstance(wind, bool)
+                    and isinstance(gust, (int, float)) and not isinstance(gust, bool)
+                    and 0 <= wind <= gust <= 250
+                    and all(isinstance(other.get(k), (int, float))
+                            for k in ("u10_ms", "v10_ms", "wind_direction_deg"))):
+                    for field in ("u10_ms", "v10_ms", "wind_kmh",
+                                  "wind_direction_deg", "gust_kmh"):
+                        cell[field] = other[field]
+                    cell["wind_gust_source"] = "ECMWF_SAME_CYCLE_MEDIUM_GRID_PAIR"
     if short_end is not None:
         frames.extend(
             f for f in medium_frames
