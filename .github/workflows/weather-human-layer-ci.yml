@@ -1,0 +1,70 @@
+name: Human Weather Layer CI
+
+on:
+  push:
+    branches: ["feat/weather-human-layer-v1-20260930"]
+    paths:
+      - ".github/workflows/weather-human-layer-ci.yml"
+      - "weather/processing/human_weather.py"
+      - "weather/pipeline/build_critical_payload.py"
+      - "weather/tests/test_human_weather.py"
+      - "weather/tests/test_critical_human_weather.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  human-weather:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Syntax
+        run: python -m py_compile weather/processing/human_weather.py weather/pipeline/build_critical_payload.py
+      - name: Human Weather unit and payload integration
+        run: python -m unittest weather.tests.test_human_weather weather.tests.test_critical_human_weather -v
+      - name: Full Weather Lab unit regression
+        run: python -m unittest discover -s weather/tests -v
+      - name: Build Human Weather against current live-data branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/human-live
+          git fetch origin data-weather --depth=1
+          git show origin/data-weather:data/weather-groundtruth/local-now.json > /tmp/human-live/local-now.json
+          git show origin/data-weather:data/weather-groundtruth/latest.json > /tmp/human-live/groundtruth.json
+          git show origin/data-weather:data/weather-aqi/latest.json > /tmp/human-live/aqi.json
+          git show origin/data-weather:data/weather-nowcast/latest.json > /tmp/human-live/nowcast.json
+          git show origin/data-weather:data/weather-ensemble/latest.json > /tmp/human-live/ensemble.json
+          python -m weather.pipeline.build_critical_payload \
+            --dashboard weather/dashboard-data.json \
+            --local-now /tmp/human-live/local-now.json \
+            --groundtruth /tmp/human-live/groundtruth.json \
+            --aqi /tmp/human-live/aqi.json \
+            --tide weather/tide.json \
+            --nowcast /tmp/human-live/nowcast.json \
+            --ensemble /tmp/human-live/ensemble.json \
+            --output /tmp/human-live/critical.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('/tmp/human-live/critical.json')
+          data=json.loads(p.read_text(encoding='utf-8'))
+          human=data.get('human_weather') or {}
+          assert human.get('schema_version')=='jotrip-human-weather-v1', human
+          assert (human.get('reference') or {}).get('scope')=='REFERENCE_STATION_ACTUAL', human.get('reference')
+          assert all(x.get('evidence') in {'ACTUAL','DERIVED'}
+                     for x in (human.get('rain') or {}).values())
+          size=p.stat().st_size
+          assert size < 60000, f'critical.json exceeds gh-pages cap: {size} bytes'
+          print(json.dumps({
+              'critical_bytes':size,
+              'generated_at':data.get('generated_at'),
+              'reference':human.get('reference'),
+              'an_thoi':(human.get('rain') or {}).get('an_thoi'),
+          },ensure_ascii=False,indent=2))
+          PY
