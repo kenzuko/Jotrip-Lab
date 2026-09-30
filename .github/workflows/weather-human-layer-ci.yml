@@ -56,7 +56,7 @@ jobs:
           data=json.loads(p.read_text(encoding='utf-8'))
           human=data.get('human_weather') or {}
           assert human.get('schema_version')=='jotrip-human-weather-v1', human
-          assert (human.get('island') or {}).get('spatial_scope')=='REFERENCE_STATION_ACTUAL', human.get('island')
+          assert (human.get('reference') or {}).get('scope')=='REFERENCE_STATION_ACTUAL', human.get('reference')
           assert all((x.get('interpretation') or {}).get('evidence_class') in {'ACTUAL','DERIVED','UNAVAILABLE'}
                      for x in (human.get('points') or {}).values())
           size=p.stat().st_size
@@ -64,7 +64,7 @@ jobs:
           print(json.dumps({
               'critical_bytes':size,
               'generated_at':data.get('generated_at'),
-              'island':human.get('island'),
+              'reference':human.get('reference'),
               'an_thoi':(human.get('points') or {}).get('an_thoi'),
           },ensure_ascii=False,indent=2))
           PY
