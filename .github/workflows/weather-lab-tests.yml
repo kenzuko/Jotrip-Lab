@@ -471,3 +471,83 @@ jobs:
           git commit -m "chore(weather): publish canonical LAB snapshot [skip ci]"
           git pull --rebase origin "${{ inputs.target_ref || github.ref_name }}"
           git push origin "HEAD:${{ inputs.target_ref || github.ref_name }}"
+
+      - name: Persist normalized model source cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/weather-model-cache-export
+          mkdir -p /tmp/weather-model-cache-export
+          cp /tmp/weather-artifacts/ecmwf/ecmwf-d10.json /tmp/weather-model-cache-export/ecmwf.json
+          cp /tmp/weather-artifacts/gefs/noaa-members.json /tmp/weather-model-cache-export/gefs.json
+          cp /tmp/weather-artifacts/icon/icon-point.json /tmp/weather-model-cache-export/icon.json
+          cp /tmp/weather-artifacts/copernicus/copernicus-live.json /tmp/weather-model-cache-export/copernicus.json
+
+          python - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          root=Path('/tmp/weather-model-cache-export')
+          e=json.loads((root/'ecmwf.json').read_text())
+          g=json.loads((root/'gefs.json').read_text())
+          i=json.loads((root/'icon.json').read_text())
+          c=json.loads((root/'copernicus.json').read_text())
+          manifest={
+              'schema_version':'weather-model-cache-v1',
+              'generated_at':datetime.now(timezone.utc).isoformat(),
+              'sources':{
+                  'ECMWF':{
+                      'run_time':e.get('run_time'),
+                      'medium_run_time':e.get('medium_run_time'),
+                      'checked_at':e.get('checked_at'),
+                      'status':e.get('status'),
+                  },
+                  'GEFS':{
+                      'run_time':((g.get('atmosphere') or {}).get('run_time')),
+                      'wave_run_time':((g.get('wave') or {}).get('run_time')),
+                      'checked_at':max(
+                          str((g.get('atmosphere') or {}).get('checked_at') or ''),
+                          str((g.get('wave') or {}).get('checked_at') or ''),
+                      ) or None,
+                      'status':'READY' if (g.get('atmosphere') or {}).get('readiness')=='MEMBER_COMPLETE' else 'PARTIAL',
+                  },
+                  'ICON':{
+                      'cycle_stamp':i.get('cycle_stamp'),
+                      'status':i.get('status'),
+                  },
+                  'COPERNICUS':{
+                      'target_time':c.get('target_time'),
+                      'wave_dataset':c.get('wave_dataset'),
+                      'current_dataset':c.get('current_dataset'),
+                      'status':c.get('status'),
+                  },
+              },
+          }
+          (root/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          assert all((root/name).stat().st_size>10 for name in ('ecmwf.json','gefs.json','icon.json','copernicus.json','manifest.json'))
+          PY
+
+          git reset --hard HEAD
+          git fetch origin data-weather
+          git checkout -B data-weather origin/data-weather
+          mkdir -p data/weather-model-cache
+          cp -a /tmp/weather-model-cache-export/. data/weather-model-cache/
+
+          git config user.name "jotrip-weather-bot"
+          git config user.email "jotrip-weather-bot@users.noreply.github.com"
+          git add data/weather-model-cache
+          if git diff --cached --quiet; then
+            echo "Model source cache already current"
+            exit 0
+          fi
+          git commit -m "data: refresh normalized Weather model cache"
+          for attempt in 1 2 3; do
+            if git pull --rebase origin data-weather && git push origin HEAD:data-weather; then
+              echo "Model cache persisted on attempt $attempt"
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+          exit 1
