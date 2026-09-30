@@ -32,6 +32,7 @@ def snapshot(sampled: str, score_delta: int = 0, temp_delta: float = 0.0, level:
         "generated_at": sampled,
         "sampled_time": sampled,
         "source": "JMA_HIMAWARI9_VIA_NOAA_OPEN_DATA",
+        "latest_object": f"AHI-L2-FLDK-Clouds/test/AHI-CHGT_{sampled}.nc",
         "points": points,
         "spatial": {
             "status": "READY",
@@ -87,6 +88,9 @@ class NowcastArchiveTests(unittest.TestCase):
             self.assertEqual(catalog["latest_date"], day)
             self.assertEqual(catalog["dates"][0]["sample_count"], 3)
             health = json.loads((root / "health.json").read_text(encoding="utf-8"))
+            compact = json.loads((root / "compact-latest.json").read_text(encoding="utf-8"))
+            self.assertIn("latest_object", compact)
+            self.assertEqual(compact["latest_object"], health["latest_object"])
             self.assertFalse(health["full_snapshot_history"])
             self.assertEqual(health["spatial_frame_history"], 12)
             self.assertEqual(health["spatial_frames_available"], 3)
