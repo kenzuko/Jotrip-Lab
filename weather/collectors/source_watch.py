@@ -148,7 +148,9 @@ def _hashes_changed(current: dict[str, dict], previous: dict[str, dict]) -> bool
     return False
 
 
-def watch(previous_groundtruth: dict, previous_nowcast: dict, only: str = "all") -> dict:\n    if only not in {"all", "groundtruth", "himawari"}:\n        raise ValueError(f"Unsupported source watch subset: {only}")
+def watch(previous_groundtruth: dict, previous_nowcast: dict, only: str = "all") -> dict:
+    if only not in {"all", "groundtruth", "himawari"}:
+        raise ValueError(f"Unsupported source watch subset: {only}")
     checked_at = datetime.now(timezone.utc).isoformat()
     errors: dict[str, str] = {}
 
