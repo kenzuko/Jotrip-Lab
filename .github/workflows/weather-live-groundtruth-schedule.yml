@@ -4,8 +4,9 @@ on:
   push:
     paths:
       - ".github/workflows/weather-live-groundtruth-schedule.yml"
+  # 30-minute safety fallback. The 5-minute source watcher is authoritative.
   schedule:
-    - cron: "3,13,23,33,43,53 * * * *"
+    - cron: "4,34 * * * *"
   workflow_dispatch:
 
 permissions:

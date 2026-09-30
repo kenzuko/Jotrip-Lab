@@ -1,8 +1,10 @@
 name: Weather Lab 30m scheduler
 
 on:
+  # Compatibility name retained because downstream workflow_run triggers depend on it.
+  # Metadata cycle watch now runs every 15 minutes; heavy model ingest remains cycle-gated.
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
   push:
     paths:

@@ -1,9 +1,9 @@
 name: Weather Nowcast 30m scheduler
 
 on:
-  # Scheduled cadence moved to weather-live-himawari-schedule.yml (every 10m).
-  # Keep this workflow for manual/path-triggered recovery only to avoid duplicate
-  # reusable runs cancelling each other.
+  # Fast cadence moved to Weather Source Change Watch (5-minute object probe).
+  # weather-live-himawari-schedule.yml is now a 30-minute safety fallback.
+  # Keep this workflow for manual/path-triggered recovery only.
   workflow_dispatch:
   push:
     paths:

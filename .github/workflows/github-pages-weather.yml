@@ -5,14 +5,16 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/github-pages-weather.yml"
+  # 30-minute fallback. Fast-source changes call this workflow directly.
   schedule:
-    - cron: "5,15,25,35,45,55 * * * *"
+    - cron: "5,35 * * * *"
   workflow_run:
     workflows:
       - "Weather Lab 30m scheduler"
       - "Weather GEFS Local scheduler"
     types: [completed]
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: write
@@ -121,6 +123,14 @@ jobs:
             --ensemble live-data/data/weather-ensemble/latest.json \
             --output /tmp/weather-pages/data/critical.json
           test $(wc -c < /tmp/weather-pages/data/critical.json) -lt 60000
+          PYTHONPATH=source python -m weather.pipeline.build_state_manifest \
+            --dashboard source/weather/dashboard-data.json \
+            --groundtruth live-data/data/weather-groundtruth/latest.json \
+            --local-now live-data/data/weather-groundtruth/local-now.json \
+            --nowcast live-data/data/weather-nowcast/latest.json \
+            --ensemble live-data/data/weather-ensemble/latest.json \
+            --output /tmp/weather-pages/data/state.json
+          test $(wc -c < /tmp/weather-pages/data/state.json) -lt 10000
           PYTHONPATH=source python -m weather.pipeline.build_jotrip_forecast \
             --ensemble live-data/data/weather-ensemble/latest.json \
             --nowcast live-data/data/weather-nowcast/compact-latest.json \
