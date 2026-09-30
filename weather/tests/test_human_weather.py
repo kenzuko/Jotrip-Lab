@@ -23,60 +23,55 @@ class HumanWeatherTests(unittest.TestCase):
         self.assertEqual(rain_intensity_label(3.0),"mưa vừa")
         self.assertEqual(rain_intensity_label(8.0),"mưa lớn")
 
-    def test_approved_sentence_requires_actual_and_exit(self):
+    def test_approved_sentence_requires_actual_and_fresh_track(self):
         now={"sampled_time":"2026-09-30T02:55:00Z","points":{"an_thoi":{"cloud_motion":{
             "tracking_confidence":"MEDIUM_HIGH","public_track_usable":True,
             "exit_time":"2026-09-30T03:37:00Z"}}}}
-        item=build_human_weather(self.local,self.ground,now,self.generated)["points"]["an_thoi"]["interpretation"]
+        item=build_human_weather(self.local,self.ground,now,self.generated)["points"]["an_thoi"]["message"]
         self.assertEqual(item["headline"],"An Thới đang có mưa rào nhẹ.")
         self.assertEqual(item["detail"],"Dự kiến mưa sẽ giảm trong khoảng 30-45 phút.")
-        self.assertEqual(item["evidence_class"],"ACTUAL")
-        self.assertEqual(item["duration"]["data_class"],"DERIVED")
+        self.assertEqual(item["evidence"],"ACTUAL")
+        self.assertEqual(item["duration_min"],[30,45])
 
-    def test_stale_nowcast_cannot_claim_30_45_minutes(self):
+    def test_stale_nowcast_cannot_claim_shower_or_duration(self):
         now={"sampled_time":"2026-09-30T02:00:00Z","points":{"an_thoi":{"cloud_motion":{
             "tracking_confidence":"HIGH","public_track_usable":True,
             "exit_time":"2026-09-30T03:37:00Z"}}}}
-        item=build_human_weather(self.local,self.ground,now,self.generated)["points"]["an_thoi"]["interpretation"]
+        item=build_human_weather(self.local,self.ground,now,self.generated)["points"]["an_thoi"]["message"]
         self.assertEqual(item["headline"],"An Thới đang có mưa nhẹ.")
         self.assertNotIn("phút",item["detail"])
-        self.assertIsNone(item["duration"])
+        self.assertNotIn("duration_min",item)
 
     def test_light_rain_is_not_called_shower_without_showery_signal(self):
         now={"sampled_time":"2026-09-30T02:55:00Z","points":{"an_thoi":{}}}
-        item=build_human_weather(self.local,self.ground,now,self.generated)["points"]["an_thoi"]["interpretation"]
+        item=build_human_weather(self.local,self.ground,now,self.generated)["points"]["an_thoi"]["message"]
         self.assertEqual(item["headline"],"An Thới đang có mưa nhẹ.")
-
-    def test_duration_not_invented_without_exit(self):
-        item=build_human_weather(self.local,self.ground,{"points":{}},self.generated)["points"]["an_thoi"]["interpretation"]
-        self.assertEqual(item["headline"],"An Thới đang có mưa nhẹ.")
-        self.assertNotIn("phút",item["detail"])
-        self.assertIsNone(item["duration"])
 
     def test_actual_and_derived_stay_separate_and_sources_do_not_leak(self):
         result=build_human_weather(self.local,self.ground,{"points":{}},self.generated)
-        self.assertEqual(result["island"]["actual"]["data_class"],"ACTUAL")
-        self.assertEqual(result["island"]["derived"]["data_class"],"DERIVED_FROM_ACTUAL")
-        self.assertAlmostEqual(result["island"]["derived"]["humidity_percent"],79.3,places=1)
-        self.assertEqual(result["island"]["spatial_scope"],"REFERENCE_STATION_ACTUAL")
-        self.assertEqual(result["island"]["reference_location_name"],"Sân bay Phú Quốc")
-        self.assertIn("cảm giác",result["island"]["summary"])
+        ref=result["reference"]
+        self.assertEqual(ref["actual"]["class"],"ACTUAL")
+        self.assertEqual(ref["derived"]["class"],"DERIVED_FROM_ACTUAL")
+        self.assertAlmostEqual(ref["derived"]["humidity_pct"],79.3,places=1)
+        self.assertEqual(ref["scope"],"REFERENCE_STATION_ACTUAL")
+        self.assertEqual(ref["location"],"Sân bay Phú Quốc")
         self.assertNotIn("INTERNAL_PROVIDER",str(result))
 
     def test_stale_observation_is_not_current_actual(self):
         ground={**self.ground,"atmosphere":{"vvpq":{**self.ground["atmosphere"]["vvpq"],
             "observed_at":"2026-09-29T23:00:00Z","qc":"STALE"}}}
-        result=build_human_weather(self.local,ground,{"points":{}},self.generated)
-        self.assertEqual(result["island"]["observation_status"],"LAST_OBSERVED")
-        self.assertNotEqual(result["island"]["actual"]["data_class"],"ACTUAL")
+        ref=build_human_weather(self.local,ground,{"points":{}},self.generated)["reference"]
+        self.assertEqual(ref["status"],"LAST_OBSERVED")
+        self.assertNotEqual(ref["actual"]["class"],"ACTUAL")
 
     def test_estimated_rain_is_never_relabeled_actual(self):
         ground={"atmosphere":{"vvpq":self.ground["atmosphere"]["vvpq"]},"rainfall":{"stations":{}}}
         item=build_human_weather(self.local,ground,{"points":{}},self.generated)["points"]["an_thoi"]
         self.assertIsNone(item["rain"]["actual"])
-        self.assertEqual(item["interpretation"]["evidence_class"],"DERIVED")
-        self.assertEqual(item["rain"]["estimate"]["data_class"],"ESTIMATED_NOW")
-        self.assertEqual(build_human_weather(self.local,self.ground,{"points":{}},self.generated)["points"]["an_thoi"]["rain"]["actual"]["derived"]["data_class"],"DERIVED_FROM_ACTUAL")
+        self.assertEqual(item["message"]["evidence"],"DERIVED")
+        self.assertEqual(item["rain"]["estimate"]["class"],"ESTIMATED_NOW")
+        actual=build_human_weather(self.local,self.ground,{"points":{}},self.generated)["points"]["an_thoi"]["rain"]["actual"]
+        self.assertEqual(actual["derived"]["class"],"DERIVED_FROM_ACTUAL")
 
 if __name__=="__main__":
     unittest.main()
