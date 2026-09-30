@@ -118,10 +118,25 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Restore cached ECMWF normalized product
+        id: source_cache
+        shell: bash
+        run: |
+          git fetch origin data-weather --depth=1
+          if git show origin/data-weather:data/weather-model-cache/ecmwf.json > /tmp/ecmwf-cache.json 2>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Install official ECMWF client and GRIB decoder
+        if: needs.cycle-watch.outputs.force_refresh_all == 'true' || needs.cycle-watch.outputs.ecmwf_changed == 'true' || steps.source_cache.outputs.exists != 'true'
         run: python -m pip install --quiet ecmwf-opendata eccodes
       - name: Collect freshest D0-D3 and medium-range D4-D10 fields
+        if: needs.cycle-watch.outputs.force_refresh_all == 'true' || needs.cycle-watch.outputs.ecmwf_changed == 'true' || steps.source_cache.outputs.exists != 'true'
         run: python -m weather.collectors.ecmwf_72h --output /tmp/ecmwf-d10.json
+      - name: Reuse last-known-good ECMWF product
+        if: needs.cycle-watch.outputs.force_refresh_all != 'true' && needs.cycle-watch.outputs.ecmwf_changed != 'true' && steps.source_cache.outputs.exists == 'true'
+        run: cp /tmp/ecmwf-cache.json /tmp/ecmwf-d10.json
       - name: Enforce D10 point readiness
         run: |
           python - <<'PY'
@@ -165,10 +180,25 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Restore cached GEFS normalized product
+        id: source_cache
+        shell: bash
+        run: |
+          git fetch origin data-weather --depth=1
+          if git show origin/data-weather:data/weather-model-cache/gefs.json > /tmp/gefs-cache.json 2>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Install GRIB decoder
+        if: needs.cycle-watch.outputs.force_refresh_all == 'true' || needs.cycle-watch.outputs.gefs_changed == 'true' || steps.source_cache.outputs.exists != 'true'
         run: python -m pip install --quiet eccodes
       - name: Collect GEFS atmosphere and wave member gate
+        if: needs.cycle-watch.outputs.force_refresh_all == 'true' || needs.cycle-watch.outputs.gefs_changed == 'true' || steps.source_cache.outputs.exists != 'true'
         run: python -m weather.collectors.noaa_member_smoke --lead 3 --output /tmp/noaa-members.json
+      - name: Reuse last-known-good GEFS product
+        if: needs.cycle-watch.outputs.force_refresh_all != 'true' && needs.cycle-watch.outputs.gefs_changed != 'true' && steps.source_cache.outputs.exists == 'true'
+        run: cp /tmp/gefs-cache.json /tmp/noaa-members.json
       - name: Enforce member gate
         run: python -c 'import json; p=json.load(open("/tmp/noaa-members.json")); assert p["atmosphere"]["readiness"] == "MEMBER_COMPLETE", p["atmosphere"]; assert p["wave"]["readiness"] == "MEMBER_COMPLETE", p["wave"]'
       - uses: actions/upload-artifact@v4
@@ -189,13 +219,28 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Restore cached ICON normalized product
+        id: source_cache
+        shell: bash
+        run: |
+          git fetch origin data-weather --depth=1
+          if git show origin/data-weather:data/weather-model-cache/icon.json > /tmp/icon-cache.json 2>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Install CDO and GRIB decoder
+        if: needs.cycle-watch.outputs.force_refresh_all == 'true' || needs.cycle-watch.outputs.icon_changed == 'true' || steps.source_cache.outputs.exists != 'true'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y cdo
           python -m pip install --quiet eccodes
       - name: Remap live ICON field and extract Phu Quoc
+        if: needs.cycle-watch.outputs.force_refresh_all == 'true' || needs.cycle-watch.outputs.icon_changed == 'true' || steps.source_cache.outputs.exists != 'true'
         run: python -m weather.collectors.icon_point --output /tmp/icon-point.json
+      - name: Reuse last-known-good ICON product
+        if: needs.cycle-watch.outputs.force_refresh_all != 'true' && needs.cycle-watch.outputs.icon_changed != 'true' && steps.source_cache.outputs.exists == 'true'
+        run: cp /tmp/icon-cache.json /tmp/icon-point.json
       - name: Enforce point and spatial readiness
         run: |
           python - <<'PY'
