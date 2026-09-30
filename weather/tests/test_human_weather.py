@@ -24,13 +24,28 @@ class HumanWeatherTests(unittest.TestCase):
         self.assertEqual(rain_intensity_label(8.0),"mưa lớn")
 
     def test_approved_sentence_requires_actual_and_exit(self):
-        now={"points":{"an_thoi":{"cloud_motion":{"tracking_confidence":"MEDIUM_HIGH",
+        now={"sampled_time":"2026-09-30T02:55:00Z","points":{"an_thoi":{"cloud_motion":{
+            "tracking_confidence":"MEDIUM_HIGH","public_track_usable":True,
             "exit_time":"2026-09-30T03:37:00Z"}}}}
         item=build_human_weather(self.local,self.ground,now,self.generated)["points"]["an_thoi"]["interpretation"]
         self.assertEqual(item["headline"],"An Thới đang có mưa rào nhẹ.")
         self.assertEqual(item["detail"],"Dự kiến mưa sẽ giảm trong khoảng 30-45 phút.")
         self.assertEqual(item["evidence_class"],"ACTUAL")
         self.assertEqual(item["duration"]["data_class"],"DERIVED")
+
+    def test_stale_nowcast_cannot_claim_30_45_minutes(self):
+        now={"sampled_time":"2026-09-30T02:00:00Z","points":{"an_thoi":{"cloud_motion":{
+            "tracking_confidence":"HIGH","public_track_usable":True,
+            "exit_time":"2026-09-30T03:37:00Z"}}}}
+        item=build_human_weather(self.local,self.ground,now,self.generated)["points"]["an_thoi"]["interpretation"]
+        self.assertEqual(item["headline"],"An Thới đang có mưa rào nhẹ.")
+        self.assertNotIn("phút",item["detail"])
+        self.assertIsNone(item["duration"])
+
+    def test_light_rain_is_not_called_shower_without_showery_signal(self):
+        now={"sampled_time":"2026-09-30T02:55:00Z","points":{"an_thoi":{}}}
+        item=build_human_weather(self.local,self.ground,now,self.generated)["points"]["an_thoi"]["interpretation"]
+        self.assertEqual(item["headline"],"An Thới đang có mưa nhẹ.")
 
     def test_duration_not_invented_without_exit(self):
         item=build_human_weather(self.local,self.ground,{"points":{}},self.generated)["points"]["an_thoi"]["interpretation"]
@@ -43,7 +58,8 @@ class HumanWeatherTests(unittest.TestCase):
         self.assertEqual(result["island"]["actual"]["data_class"],"ACTUAL")
         self.assertEqual(result["island"]["derived"]["data_class"],"DERIVED_FROM_ACTUAL")
         self.assertAlmostEqual(result["island"]["derived"]["humidity_percent"],79.3,places=1)
-        self.assertEqual(result["island"]["spatial_scope"],"ISLAND_ACTUAL_ANCHOR")
+        self.assertEqual(result["island"]["spatial_scope"],"REFERENCE_STATION_ACTUAL")
+        self.assertEqual(result["island"]["reference_location_name"],"Sân bay Phú Quốc")
         self.assertIn("cảm giác",result["island"]["summary"])
         self.assertNotIn("INTERNAL_PROVIDER",str(result))
 
