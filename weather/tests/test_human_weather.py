@@ -40,8 +40,9 @@ class HumanWeatherTests(unittest.TestCase):
 
     def test_actual_and_derived_stay_separate_and_sources_do_not_leak(self):
         result=build_human_weather(self.local,self.ground,{"points":{}},self.generated)
-        self.assertEqual(result["island"]["data_class"],"ACTUAL")
-        self.assertEqual(result["island"]["derived"]["data_class"],"DERIVED")
+        self.assertEqual(result["island"]["actual"]["data_class"],"ACTUAL")
+        self.assertEqual(result["island"]["derived"]["data_class"],"DERIVED_FROM_ACTUAL")
+        self.assertAlmostEqual(result["island"]["derived"]["humidity_percent"],79.3,places=1)
         self.assertEqual(result["island"]["spatial_scope"],"ISLAND_ACTUAL_ANCHOR")
         self.assertIn("cảm giác",result["island"]["summary"])
         self.assertNotIn("INTERNAL_PROVIDER",str(result))
@@ -51,7 +52,7 @@ class HumanWeatherTests(unittest.TestCase):
             "observed_at":"2026-09-29T23:00:00Z","qc":"STALE"}}}
         result=build_human_weather(self.local,ground,{"points":{}},self.generated)
         self.assertEqual(result["island"]["observation_status"],"LAST_OBSERVED")
-        self.assertNotEqual(result["island"]["data_class"],"ACTUAL")
+        self.assertNotEqual(result["island"]["actual"]["data_class"],"ACTUAL")
 
     def test_estimated_rain_is_never_relabeled_actual(self):
         ground={"atmosphere":{"vvpq":self.ground["atmosphere"]["vvpq"]},"rainfall":{"stations":{}}}
@@ -59,6 +60,7 @@ class HumanWeatherTests(unittest.TestCase):
         self.assertIsNone(item["rain"]["actual"])
         self.assertEqual(item["interpretation"]["evidence_class"],"DERIVED")
         self.assertEqual(item["rain"]["estimate"]["data_class"],"ESTIMATED_NOW")
+        self.assertEqual(build_human_weather(self.local,self.ground,{"points":{}},self.generated)["points"]["an_thoi"]["rain"]["actual"]["derived"]["data_class"],"DERIVED_FROM_ACTUAL")
 
 if __name__=="__main__":
     unittest.main()
