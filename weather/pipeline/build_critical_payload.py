@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 from weather.points import POINT_NAMES
+from weather.processing.human_weather import build_human_weather
 
 POINTS=tuple(POINT_NAMES)
 NAMES=POINT_NAMES
@@ -212,6 +213,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
     dg=iso(dashboard.get("generated_at"))
     lg=iso(local.get("generated_at"))
     generated=max([x for x in (dg,lg) if x],default=datetime.now(timezone.utc))
+    human_weather=build_human_weather(local,ground,nowcast,generated)
 
     out={}
     for key in POINTS:
@@ -364,6 +366,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
                 "status":v.get("status"),
                 "observed_at":v.get("observed_at"),
                 "temperature_c":num(v.get("temperature_c")),
+                "dewpoint_c":num(v.get("dewpoint_c")),
                 "wind_kmh":num(v.get("wind_speed_kmh")),
                 "wind_direction_deg":num(v.get("wind_direction_deg")),
                 "pressure_hpa":num(v.get("pressure_hpa")),
@@ -373,6 +376,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
             },
             "rain_gauges":gauges,
         },
+        "human_weather":human_weather,
         "source_state":{
             "vvpq":v.get("status","UNAVAILABLE"),
             "vrain":(ground.get("rainfall") or {}).get("status","UNAVAILABLE"),
