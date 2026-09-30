@@ -54,7 +54,7 @@ class HumanWeatherTests(unittest.TestCase):
         ref=result["reference"]
         self.assertEqual(ref["status"],"ACTUAL")
         self.assertAlmostEqual(ref["derived"]["humidity_pct"],79.3,places=1)
-        self.assertEqual(ref["derived"]["comfort_code"],"hot_very_humid")
+        self.assertEqual(ref["derived"]["comfort_code"],"very_hot_humid")
         self.assertIn("humidity_hotter",ref["derived"]["reason_codes"])
         self.assertEqual(ref["scope"],"REFERENCE_STATION_ACTUAL")
         self.assertEqual(ref["location"],"Sân bay Phú Quốc")
