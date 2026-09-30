@@ -1,0 +1,30 @@
+name: Weather Fast Source Recompose
+
+on:
+  workflow_run:
+    workflows:
+      - "Weather Live Ground Truth Schedule"
+      - "Weather Live Himawari Schedule"
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weather-fast-source-recompose
+  cancel-in-progress: false
+
+jobs:
+  recompose:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    uses: kenzuko/Jotrip-Lab/.github/workflows/weather-local-now-fast.yml@feat/weather-lab-data-engine-v1
+    with:
+      target_ref: feat/weather-lab-data-engine-v1
+    secrets: inherit
+
+  publish:
+    needs: recompose
+    if: needs.recompose.result == 'success'
+    uses: kenzuko/Jotrip-Lab/.github/workflows/github-pages-weather.yml@main
+    secrets: inherit
