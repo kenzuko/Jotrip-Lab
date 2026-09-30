@@ -5,6 +5,10 @@ on:
     branches: ["feat/weather-human-layer-v1-20260930"]
     paths:
       - ".github/workflows/weather-human-layer-ci.yml"
+      - "weather/processing/human_weather.py"
+      - "weather/pipeline/build_critical_payload.py"
+      - "weather/tests/test_human_weather.py"
+      - "weather/tests/test_critical_human_weather.py"
   workflow_dispatch:
 
 permissions:
