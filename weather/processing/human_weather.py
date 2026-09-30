@@ -229,15 +229,10 @@ def _public_rain(point:dict)->dict|None:
             "detail":message.get("detail"),
         }
     else:
-        rate=estimate.get("rate_mm_h")
-        if evidence!="DERIVED" or rate is None or float(rate)<=0.05:
-            return None
-        out={
-            "evidence":"DERIVED",
-            "estimated_rate_mm_h":rate,
-            "headline":message.get("headline"),
-            "detail":message.get("detail"),
-        }
+        # Public Human Weather V1 only narrates observed rain. Estimated rain
+        # remains available in Local Now and must not be duplicated as a second
+        # public authority.
+        return None
 
     duration=message.get("duration")
     if isinstance(duration,dict):
