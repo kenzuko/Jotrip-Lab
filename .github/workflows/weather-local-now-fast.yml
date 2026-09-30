@@ -1,0 +1,113 @@
+name: Weather Local Now Fast Recompose
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      target_ref:
+        description: "Branch containing Weather Lab code"
+        required: false
+        type: string
+        default: "feat/weather-lab-data-engine-v1"
+
+concurrency:
+  group: weather-local-now-fast
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  recompose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || github.ref_name }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Read newest canonical source products
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin data-weather --depth=1
+          git show origin/data-weather:data/weather-groundtruth/latest.json > /tmp/groundtruth.json
+          git show origin/data-weather:data/weather-nowcast/latest.json > /tmp/nowcast.json 2>/dev/null || cp weather/nowcast.json /tmp/nowcast.json
+          git show origin/data-weather:data/weather-ensemble/latest.json > /tmp/ensemble.json 2>/dev/null || printf '{}\n' > /tmp/ensemble.json
+          git show origin/data-weather:data/weather-source-skill/latest.json > /tmp/source-skill.json 2>/dev/null || printf '{}\n' > /tmp/source-skill.json
+
+      - name: Recompose Local Now only
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXTRA_ENSEMBLE=""
+          if python - <<'PY'
+          import json
+          p=json.load(open('/tmp/ensemble.json'))
+          raise SystemExit(0 if p else 1)
+          PY
+          then
+            EXTRA_ENSEMBLE="--ensemble /tmp/ensemble.json"
+          fi
+          python -m weather.processing.local_now \
+            --groundtruth /tmp/groundtruth.json \
+            --dashboard weather/dashboard-data.json \
+            --nowcast /tmp/nowcast.json \
+            $EXTRA_ENSEMBLE \
+            --source-skill /tmp/source-skill.json \
+            --output /tmp/local-now.json
+
+      - name: Validate fast-lane semantics
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/local-now.json'))
+          assert p['engine']=='PQ_LOCAL_NOW_V2'
+          assert p['data_class']=='ESTIMATED_NOW'
+          for point in p['points'].values():
+              assert point['temperature']['data_class'] in {'ESTIMATED_NOW','MODEL_ONLY'}
+              assert point['wind']['data_class'] in {'ESTIMATED_NOW','MODEL_ONLY'}
+              assert point['rain']['data_class'] in {'ESTIMATED_NOW','MODEL_ONLY'}
+              assert point['marine']['data_class']=='MODEL_ONLY'
+          PY
+
+      - name: Persist only fast Local Now state
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/local-now.json /tmp/local-now-latest.json
+          git reset --hard HEAD
+          git fetch origin data-weather
+          git checkout -B data-weather origin/data-weather
+          mkdir -p data/weather-groundtruth
+          cp /tmp/local-now-latest.json data/weather-groundtruth/local-now.json
+
+          git config user.name "jotrip-weather-bot"
+          git config user.email "jotrip-weather-bot@users.noreply.github.com"
+          git add data/weather-groundtruth/local-now.json
+          if git diff --cached --quiet; then
+            echo "Local Now already current"
+            exit 0
+          fi
+          git commit -m "data: fast recompose PQ Local Now"
+          for attempt in 1 2 3; do
+            if git pull --rebase origin data-weather && git push origin HEAD:data-weather; then
+              echo "Fast Local Now persisted on attempt $attempt"
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+          exit 1
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: weather-local-now-fast
+          path: /tmp/local-now.json
+          retention-days: 3

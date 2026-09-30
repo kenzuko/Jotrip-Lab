@@ -150,9 +150,9 @@ def _vrain(current: Any, timing: Any, previous: dict | None, now: datetime) -> d
     start_epoch = timing.get("fr") if isinstance(timing, dict) else None
     end_epoch = timing.get("n") if isinstance(timing, dict) else None
     period_start = _iso_from_epoch(start_epoch)
-    period_end = _iso_from_epoch(end_epoch)
-    end_dt = _parse_iso(period_end)
-    age_min = max(0.0, (now - end_dt).total_seconds() / 60.0) if end_dt else None
+    source_reported_at = _iso_from_epoch(end_epoch)
+    source_reported_dt = _parse_iso(source_reported_at)
+    checked_at = now.isoformat()
 
     stations: dict[str, dict] = {}
     for r in rows:
@@ -165,6 +165,34 @@ def _vrain(current: Any, timing: Any, previous: dict | None, now: datetime) -> d
             continue
         key = _rain_key(name)
         accum = _finite(r.get("d"))
+        raw_hash = _sha(r)
+        prev = _previous_station(previous, key)
+        prev_hash = str((prev or {}).get("raw_payload_hash") or "")
+        same_payload = bool(prev and prev_hash and prev_hash == raw_hash)
+
+        # The VRain /time endpoint advances even when the station row itself has
+        # not changed. A fetch timestamp is therefore NOT a new observation.
+        # Preserve the last proven observation time until the station payload changes.
+        previous_observed_at = (prev or {}).get("observed_at") or (prev or {}).get("period_end")
+        observed_at = previous_observed_at if same_payload and previous_observed_at else source_reported_at
+        observed_dt = _parse_iso(observed_at)
+        age_min = max(0.0, (now - observed_dt).total_seconds() / 60.0) if observed_dt else None
+        effective_period_end = (prev or {}).get("period_end") if same_payload and (prev or {}).get("period_end") else source_reported_at
+
+        prev_accum = _finite((prev or {}).get("accumulation_mm"))
+        value_changed = bool(
+            not same_payload
+            and prev_accum is not None
+            and accum is not None
+            and abs(accum - prev_accum) > 0.0005
+        )
+        last_value_changed_at = (
+            source_reported_at if value_changed
+            else (prev or {}).get("last_value_changed_at")
+            or previous_observed_at
+            or observed_at
+        )
+
         item = {
             "station_id": f"VRAIN_{key.upper()}",
             "station_name": name,
@@ -174,15 +202,21 @@ def _vrain(current: Any, timing: Any, previous: dict | None, now: datetime) -> d
             "source": "VRAIN_PUBLIC",
             "source_channel": "current/all.json",
             "data_class": "ACTUAL",
-            "observed_at": period_end,
+            "observed_at": observed_at,
+            "source_reported_at": source_reported_at,
+            "fetched_at": checked_at,
+            "last_checked_at": checked_at,
+            "last_value_changed_at": last_value_changed_at,
+            "sample_state": "UNCHANGED_PAYLOAD" if same_payload else "NEW_SOURCE_PAYLOAD",
+            "value_changed": value_changed,
             "age_minutes": round(age_min, 1) if age_min is not None else None,
             "variable": "precipitation",
             "accumulation_mm": accum,
             "accumulation_label": r.get("l"),
             "period_start": period_start,
-            "period_end": period_end,
+            "period_end": effective_period_end,
             "statistic": "ACCUMULATION",
-            "timestamp_semantics": "END_OF_WINDOW",
+            "timestamp_semantics": "SOURCE_WINDOW_END_ONLY_WHEN_PAYLOAD_CHANGES",
             "increment_mm": None,
             "increment_window_minutes": None,
             "rain_observed": None,
@@ -190,19 +224,19 @@ def _vrain(current: Any, timing: Any, previous: dict | None, now: datetime) -> d
             "recent_change_mm": None,
             "recent_change_window_minutes": None,
             "rain_recently_observed": None,
-            "increment_qc": "NO_PREVIOUS_SAMPLE",
+            "increment_qc": "NO_NEW_SENSOR_SAMPLE" if same_payload else "NO_PREVIOUS_SAMPLE",
             "qc": "PASS" if accum is not None else "MISSING",
             "provenance_url": VRAIN_CURRENT_URL,
-            "raw_payload_hash": _sha(r),
+            "raw_payload_hash": raw_hash,
         }
 
-        prev = _previous_station(previous, key)
-        if prev and accum is not None:
-            prev_accum = _finite(prev.get("accumulation_mm"))
+        # Only compare two distinct station payloads. Re-querying an unchanged
+        # row must never create a fake 5/10-minute zero-rain observation.
+        if prev and not same_payload and accum is not None:
             prev_start = prev.get("period_start")
             prev_end_dt = _parse_iso(prev.get("period_end") or prev.get("observed_at"))
-            if prev_accum is not None and prev_start == period_start and prev_end_dt and end_dt and end_dt > prev_end_dt:
-                minutes = (end_dt - prev_end_dt).total_seconds() / 60.0
+            if prev_accum is not None and prev_start == period_start and prev_end_dt and source_reported_dt and source_reported_dt > prev_end_dt:
+                minutes = (source_reported_dt - prev_end_dt).total_seconds() / 60.0
                 delta = accum - prev_accum
                 if delta >= -0.05 and minutes >= 5:
                     recent_change = round(max(0.0, delta), 3)
@@ -224,11 +258,15 @@ def _vrain(current: Any, timing: Any, previous: dict | None, now: datetime) -> d
                     item["increment_qc"] = "WINDOW_TOO_OLD_FOR_CURRENT_RAIN"
         stations[key] = item
 
+    station_ages = [v.get("age_minutes") for v in stations.values() if _finite(v.get("age_minutes")) is not None]
+    freshest_age = min(station_ages) if station_ages else None
     return {
-        "status": "FRESH" if stations and age_min is not None and age_min <= 90 else ("STALE" if stations else "UNAVAILABLE"),
+        "status": "FRESH" if stations and freshest_age is not None and freshest_age <= 90 else ("STALE" if stations else "UNAVAILABLE"),
         "source": "VRAIN_PUBLIC",
         "period_start": period_start,
-        "period_end": period_end,
+        "period_end": source_reported_at,
+        "source_reported_at": source_reported_at,
+        "fetched_at": checked_at,
         "stations": stations,
         "provenance_url": VRAIN_CURRENT_URL,
     }
