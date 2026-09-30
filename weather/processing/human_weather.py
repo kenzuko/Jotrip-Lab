@@ -58,7 +58,7 @@ def rain_intensity_label(rate_mm_h:float|None)->str|None:
     r=_num(rate_mm_h)
     if r is None:return None
     if r<=0.05:return "không mưa đáng kể"
-    if r<2.5:return "mưa rào nhẹ"
+    if r<2.5:return "mưa nhẹ"
     if r<7.5:return "mưa vừa"
     return "mưa lớn"
 
@@ -138,7 +138,10 @@ def build_island_comfort(groundtruth:dict,generated_at:datetime)->dict:
                        "comfort_reason":_comfort_reason(t,td,rh,feels,wind) if status in {"ACTUAL","LAST_OBSERVED"} else None,
                        "data_class":"DERIVED_FROM_ACTUAL","method":"DEWPOINT_RH_PLUS_NOAA_HEAT_INDEX"}}
 
-def _showery_signal(nowcast_point:dict)->bool:
+def _showery_signal(nowcast_point:dict,generated_at:datetime,nowcast_sampled_at:Any=None)->bool:
+    sampled=_time(nowcast_sampled_at)
+    if not sampled or (generated_at-sampled).total_seconds()/60.0 > 30:
+        return False
     score=_num((nowcast_point or {}).get("convective_score"))
     if score is None:
         score=_num(((nowcast_point or {}).get("convective_signal") or {}).get("score"))
@@ -167,8 +170,8 @@ def build_point_interpretation(point_id:str,local_point:dict,groundtruth:dict,no
     duration=None
     if actual and actual["observation_status"]=="ACTUAL" and actual.get("rain_observed") is True:
         intensity=(actual.get("derived") or {}).get("intensity_label") or "mưa"
-        if intensity=="mưa rào nhẹ" and not _showery_signal(nowcast_point):
-            intensity="mưa nhẹ"
+        if intensity=="mưa nhẹ" and _showery_signal(nowcast_point,generated_at,nowcast_sampled_at):
+            intensity="mưa rào nhẹ"
         headline=f"{name} đang có {intensity}."
         duration=_exit_window(nowcast_point,generated_at,nowcast_sampled_at)
         detail=duration["text"] if duration else "Mưa đang được ghi nhận tại điểm quan trắc trong khu vực."
