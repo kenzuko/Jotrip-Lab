@@ -9,7 +9,8 @@ on:
       - ".github/workflows/weather-source-watch-schedule.yml"
 
 permissions:
-  contents: write
+  contents: read
+  actions: write
 
 concurrency:
   group: weather-source-change-watch
@@ -66,42 +67,44 @@ jobs:
       - name: Report source decision
         run: cat /tmp/source-watch.json
 
+      - name: Dispatch changed source processors without waiting
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GT_CHANGED: ${{ steps.change.outputs.groundtruth_changed }}
+          CLOUD_CHANGED: ${{ steps.change.outputs.himawari_changed }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          active_runs() {
+            local workflow="$1"
+            gh run list --repo "${GITHUB_REPOSITORY}" --workflow "$workflow" --limit 10 \
+              --json status --jq '[.[] | select(.status != "completed")] | length'
+          }
+
+          maybe_dispatch() {
+            local changed="$1"
+            local workflow="$2"
+            local label="$3"
+            if [[ "$changed" != "true" ]]; then
+              echo "$label source unchanged"
+              return 0
+            fi
+            local active
+            active="$(active_runs "$workflow")"
+            if [[ "${active:-0}" -gt 0 ]]; then
+              echo "$label processor already active; leaving the source change for the next watcher"
+              return 0
+            fi
+            gh workflow run "$workflow" --repo "${GITHUB_REPOSITORY}" --ref main
+            echo "Dispatched $label processor"
+          }
+
+          maybe_dispatch "$GT_CHANGED" "weather-live-groundtruth-schedule.yml" "Ground Truth"
+          maybe_dispatch "$CLOUD_CHANGED" "weather-live-himawari-schedule.yml" "Himawari"
+
       - uses: actions/upload-artifact@v4
         with:
           name: weather-source-watch
           path: /tmp/source-watch.json
           retention-days: 3
-
-  refresh-groundtruth:
-    needs: inspect
-    if: needs.inspect.outputs.groundtruth_changed == 'true'
-    uses: kenzuko/Jotrip-Lab/.github/workflows/weather-ground-truth.yml@feat/weather-lab-data-engine-v1
-    with:
-      target_ref: feat/weather-lab-data-engine-v1
-    secrets: inherit
-
-  refresh-nowcast:
-    needs: inspect
-    if: needs.inspect.outputs.himawari_changed == 'true'
-    uses: kenzuko/Jotrip-Lab/.github/workflows/weather-nowcast.yml@feat/weather-lab-data-engine-v1
-    with:
-      target_ref: feat/weather-lab-data-engine-v1
-    secrets: inherit
-
-  recompose-local-now:
-    needs: [inspect, refresh-groundtruth, refresh-nowcast]
-    if: >-
-      always() &&
-      (needs.inspect.outputs.groundtruth_changed == 'true' || needs.inspect.outputs.himawari_changed == 'true') &&
-      (needs.refresh-groundtruth.result == 'success' || needs.refresh-groundtruth.result == 'skipped') &&
-      (needs.refresh-nowcast.result == 'success' || needs.refresh-nowcast.result == 'skipped')
-    uses: kenzuko/Jotrip-Lab/.github/workflows/weather-local-now-fast.yml@feat/weather-lab-data-engine-v1
-    with:
-      target_ref: feat/weather-lab-data-engine-v1
-    secrets: inherit
-
-  publish:
-    needs: recompose-local-now
-    if: needs.recompose-local-now.result == 'success'
-    uses: kenzuko/Jotrip-Lab/.github/workflows/github-pages-weather.yml@main
-    secrets: inherit
