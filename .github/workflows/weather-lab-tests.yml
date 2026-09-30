@@ -275,10 +275,41 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Restore cached Copernicus normalized product
+        id: source_cache
+        shell: bash
+        run: |
+          git fetch origin data-weather --depth=1
+          if git show origin/data-weather:data/weather-model-cache/copernicus.json > /tmp/copernicus-cache.json 2>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from datetime import datetime, timezone
+          try:
+              p=json.load(open('/tmp/copernicus-cache.json'))
+              t=datetime.fromisoformat(str(p.get('target_time') or '').replace('Z','+00:00'))
+              if t.tzinfo is None:
+                  t=t.replace(tzinfo=timezone.utc)
+              age=max(0.0,(datetime.now(timezone.utc)-t.astimezone(timezone.utc)).total_seconds()/60)
+          except Exception:
+              age=99999.0
+          print(f"age_minutes={age:.1f}")
+          print("refresh="+("true" if age>180 else "false"))
+          PY
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "age_minutes=99999" >> "$GITHUB_OUTPUT"
+            echo "refresh=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Install official Toolbox and NetCDF reader
+        if: needs.cycle-watch.outputs.force_refresh_all == 'true' || steps.source_cache.outputs.refresh == 'true'
         run: python -m pip install --quiet copernicusmarine xarray netCDF4 numpy
       - name: Download Phu Quoc and Rach Gia wave and current subsets
+        if: needs.cycle-watch.outputs.force_refresh_all == 'true' || steps.source_cache.outputs.refresh == 'true'
         run: python -m weather.collectors.copernicus_live --output /tmp/copernicus-live.json
+      - name: Reuse last-known-good Copernicus product
+        if: needs.cycle-watch.outputs.force_refresh_all != 'true' && steps.source_cache.outputs.refresh != 'true' && steps.source_cache.outputs.exists == 'true'
+        run: cp /tmp/copernicus-cache.json /tmp/copernicus-live.json
       - name: Enforce credential, variable and point gates
         run: |
           python - <<'PY'
