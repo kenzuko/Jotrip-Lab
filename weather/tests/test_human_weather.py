@@ -31,6 +31,7 @@ class HumanWeatherTests(unittest.TestCase):
         self.assertEqual(item["headline"],"An Thới đang có mưa rào nhẹ.")
         self.assertEqual(item["detail"],"Dự kiến mưa sẽ giảm trong khoảng 30-45 phút.")
         self.assertEqual(item["evidence"],"ACTUAL")
+        self.assertEqual(item["intensity_code"],"light_shower")
         self.assertEqual(item["duration_min"],[30,45])
 
     def test_stale_nowcast_cannot_claim_shower_or_duration(self):
@@ -39,6 +40,7 @@ class HumanWeatherTests(unittest.TestCase):
             "exit_time":"2026-09-30T03:37:00Z"}}}}
         item=build_human_weather(self.local,self.ground,now,self.generated)["rain"]["an_thoi"]
         self.assertEqual(item["headline"],"An Thới đang có mưa nhẹ.")
+        self.assertEqual(item["intensity_code"],"light")
         self.assertNotIn("phút",item["detail"])
         self.assertNotIn("duration_min",item)
 
@@ -52,6 +54,8 @@ class HumanWeatherTests(unittest.TestCase):
         ref=result["reference"]
         self.assertEqual(ref["status"],"ACTUAL")
         self.assertAlmostEqual(ref["derived"]["humidity_pct"],79.3,places=1)
+        self.assertEqual(ref["derived"]["comfort_code"],"very_hot_humid")
+        self.assertIn("humidity_hotter",ref["derived"]["reason_codes"])
         self.assertEqual(ref["scope"],"REFERENCE_STATION_ACTUAL")
         self.assertEqual(ref["location"],"Sân bay Phú Quốc")
         self.assertEqual(ref["actual"]["temperature_c"],31.0)

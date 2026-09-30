@@ -62,33 +62,63 @@ def rain_intensity_label(rate_mm_h:float|None)->str|None:
     if r<7.5:return "mưa vừa"
     return "mưa lớn"
 
-def _comfort_label(t,td,feels)->str|None:
+COMFORT_LABELS_VI={
+    "very_hot_very_humid":"Rất nóng và rất oi",
+    "very_hot_humid":"Rất nóng và oi",
+    "hot_very_humid":"Nóng và rất oi",
+    "very_humid":"Rất oi",
+    "hot_quite_humid":"Nóng và khá oi",
+    "quite_humid":"Khá oi",
+    "warm_humid":"Ấm và ẩm",
+    "hot_slightly_humid":"Nóng và hơi oi",
+    "slightly_humid":"Hơi ẩm",
+    "hot":"Nóng",
+    "warm":"Ấm",
+    "comfortable":"Khá dễ chịu",
+}
+REASON_LABELS_VI={
+    "humidity_hotter":"Độ ẩm cao làm cơ thể cảm thấy nóng hơn nhiệt độ đo được",
+    "humid_air":"Không khí có nhiều hơi ẩm nên cảm giác khá oi",
+    "wind_relief":"Có gió nên cảm giác đỡ bí hơn một chút",
+    "weak_wind":"Gió yếu nên cảm giác oi rõ hơn",
+    "close_to_measured":"Cảm nhận ngoài trời hiện khá gần với nhiệt độ đo được",
+}
+
+def _comfort_code(t,td,feels)->str|None:
     t,td,feels=_num(t),_num(td),_num(feels)
     if t is None:return None
-    if feels is not None and feels>=43:return "Rất nóng và rất oi"
-    if feels is not None and feels>=38:return "Rất nóng và oi"
+    if feels is not None and feels>=43:return "very_hot_very_humid"
+    if feels is not None and feels>=38:return "very_hot_humid"
     if td is not None:
-        if td>=27:return "Nóng và rất oi" if t>=29 else "Rất oi"
-        if td>=25:return "Nóng và khá oi" if t>=29 else "Khá oi"
-        if td>=23:return "Ấm và ẩm" if t<29 else "Nóng và hơi oi"
-        if td>=20:return "Hơi ẩm"
-    if t>=32:return "Nóng"
-    if t>=29:return "Ấm"
-    return "Khá dễ chịu"
+        if td>=27:return "hot_very_humid" if t>=29 else "very_humid"
+        if td>=25:return "hot_quite_humid" if t>=29 else "quite_humid"
+        if td>=23:return "warm_humid" if t<29 else "hot_slightly_humid"
+        if td>=20:return "slightly_humid"
+    if t>=32:return "hot"
+    if t>=29:return "warm"
+    return "comfortable"
+
+def _comfort_label(t,td,feels)->str|None:
+    code=_comfort_code(t,td,feels)
+    return COMFORT_LABELS_VI.get(code) if code else None
+
+def _comfort_reason_codes(t,td,rh,feels,wind)->list[str]:
+    t,td,rh,feels,wind=map(_num,(t,td,rh,feels,wind))
+    if t is None:return []
+    codes=[]
+    if feels is not None and feels>=t+2 and (rh or 0)>=65:
+        codes.append("humidity_hotter")
+    elif td is not None and td>=25:
+        codes.append("humid_air")
+    if wind is not None:
+        if wind>=15:codes.append("wind_relief")
+        elif wind<5 and (td or 0)>=24:codes.append("weak_wind")
+    if not codes:codes.append("close_to_measured")
+    return codes
 
 def _comfort_reason(t,td,rh,feels,wind)->str|None:
-    t,td,rh,feels,wind=map(_num,(t,td,rh,feels,wind))
-    if t is None:return None
-    parts=[]
-    if feels is not None and feels>=t+2 and (rh or 0)>=65:
-        parts.append("Độ ẩm cao làm cơ thể cảm thấy nóng hơn nhiệt độ đo được")
-    elif td is not None and td>=25:
-        parts.append("Không khí có nhiều hơi ẩm nên cảm giác khá oi")
-    if wind is not None:
-        if wind>=15:parts.append("Có gió nên cảm giác đỡ bí hơn một chút")
-        elif wind<5 and (td or 0)>=24:parts.append("Gió yếu nên cảm giác oi rõ hơn")
-    if not parts:parts.append("Cảm nhận ngoài trời hiện khá gần với nhiệt độ đo được")
-    return ". ".join(parts)+"."
+    codes=_comfort_reason_codes(t,td,rh,feels,wind)
+    return ". ".join(REASON_LABELS_VI[x] for x in codes if x in REASON_LABELS_VI)+"." if codes else None
 
 def _actual_status(value_present:bool,observed_at:Any,generated_at:datetime,qc:Any)->tuple[str,float|None]:
     age=_age_minutes(observed_at,generated_at)
@@ -134,7 +164,10 @@ def build_island_comfort(groundtruth:dict,generated_at:datetime)->dict:
             "reference_location_id":v.get("location_id") or "phu_quoc_airport",
             "reference_location_name":"Sân bay Phú Quốc",
             "actual":{"temperature_c":t,"dewpoint_c":td,"wind_kmh":wind,"data_class":actual_class},
-            "derived":{"humidity_percent":rh,"feels_like_c":feels,"comfort_label":_comfort_label(t,td,feels),
+            "derived":{"humidity_percent":rh,"feels_like_c":feels,
+                       "comfort_code":_comfort_code(t,td,feels),
+                       "comfort_label":_comfort_label(t,td,feels),
+                       "reason_codes":_comfort_reason_codes(t,td,rh,feels,wind) if status in {"ACTUAL","LAST_OBSERVED"} else [],
                        "comfort_reason":_comfort_reason(t,td,rh,feels,wind) if status in {"ACTUAL","LAST_OBSERVED"} else None,
                        "data_class":"DERIVED_FROM_ACTUAL","method":"DEWPOINT_RH_PLUS_NOAA_HEAT_INDEX"}}
 
@@ -168,10 +201,16 @@ def build_point_interpretation(point_id:str,local_point:dict,groundtruth:dict,no
               "imminence_level":imm.get("level"),"imminence_score":_num(imm.get("score")),
               "data_class":str(lr.get("data_class") or "UNAVAILABLE")}
     duration=None
+    intensity_code=None
     if actual and actual["observation_status"]=="ACTUAL" and actual.get("rain_observed") is True:
         intensity=(actual.get("derived") or {}).get("intensity_label") or "mưa"
-        if intensity=="mưa nhẹ" and _showery_signal(nowcast_point,generated_at,nowcast_sampled_at):
-            intensity="mưa rào nhẹ"
+        rate=(actual.get("derived") or {}).get("rate_mm_h")
+        if intensity=="mưa nhẹ":
+            intensity_code="light_shower" if _showery_signal(nowcast_point,generated_at,nowcast_sampled_at) else "light"
+            if intensity_code=="light_shower":intensity="mưa rào nhẹ"
+        elif intensity=="mưa vừa":intensity_code="moderate"
+        elif intensity=="mưa lớn":intensity_code="heavy"
+        else:intensity_code="generic"
         headline=f"{name} đang có {intensity}."
         duration=_exit_window(nowcast_point,generated_at,nowcast_sampled_at)
         detail=duration["text"] if duration else "Mưa đang được ghi nhận tại điểm quan trắc trong khu vực."
@@ -189,6 +228,7 @@ def build_point_interpretation(point_id:str,local_point:dict,groundtruth:dict,no
         evidence="DERIVED" if er is not None else "UNAVAILABLE"
     return {"point_id":point_id,"name":name,"rain":{"actual":actual,"estimate":estimate},
             "interpretation":{"headline":headline,"detail":detail,"evidence_class":evidence,
+                              "intensity_code":intensity_code,
                               "data_class":"DERIVED_FROM_ACTUAL" if evidence=="ACTUAL" else "DERIVED",
                               "duration":duration}}
 
@@ -204,6 +244,8 @@ def _public_reference(island:dict)->dict:
         "derived":{
             "humidity_pct":derived.get("humidity_percent"),
             "feels_like_c":derived.get("feels_like_c"),
+            "comfort_code":derived.get("comfort_code"),
+            "reason_codes":derived.get("reason_codes") or [],
             "label":derived.get("comfort_label"),
             "reason":derived.get("comfort_reason"),
         },
@@ -225,6 +267,7 @@ def _public_rain(point:dict)->dict|None:
             "at":actual.get("observed_at"),
             "observed":True,
             "derived_rate_mm_h":derived.get("rate_mm_h"),
+            "intensity_code":message.get("intensity_code"),
             "headline":message.get("headline"),
             "detail":message.get("detail"),
         }
