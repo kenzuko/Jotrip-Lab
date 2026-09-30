@@ -4,22 +4,68 @@ on:
   push:
     paths:
       - ".github/workflows/weather-live-groundtruth-schedule.yml"
-  # 30-minute safety fallback. The 5-minute source watcher is authoritative.
+  # 30-minute safety fallback; legacy external dispatches are also change-gated.
   schedule:
     - cron: "4,34 * * * *"
   workflow_dispatch:
+    inputs:
+      force_refresh:
+        description: "Force recovery even without a new upstream observation"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
 
 jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      run_heavy: ${{ steps.gate.outputs.run_heavy }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/weather-lab-data-engine-v1
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Read last processed source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin data-weather --depth=1
+          git show origin/data-weather:data/weather-groundtruth/latest.json > /tmp/gt.json 2>/dev/null || printf '{}\n' > /tmp/gt.json
+      - name: Probe only VVPQ and VRain
+        id: gate
+        env:
+          FORCE_REFRESH: ${{ inputs.force_refresh || 'false' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m weather.collectors.source_watch \
+            --only groundtruth \
+            --previous-groundtruth /tmp/gt.json \
+            --output /tmp/gt-probe.json
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json,os
+          p=json.load(open('/tmp/gt-probe.json'))
+          force=str(os.getenv('FORCE_REFRESH','false')).lower()=='true'
+          changed=bool(p.get('groundtruth_changed'))
+          degraded=bool(p.get('errors'))
+          print('run_heavy='+str(force or changed or degraded).lower())
+          PY
+      - name: Report gate
+        run: cat /tmp/gt-probe.json
+
   refresh:
+    needs: inspect
+    if: needs.inspect.outputs.run_heavy == 'true'
     uses: kenzuko/Jotrip-Lab/.github/workflows/weather-ground-truth.yml@feat/weather-lab-data-engine-v1
     with:
       target_ref: feat/weather-lab-data-engine-v1
     secrets: inherit
 
-# manual-freshness-recovery-20260922-0800
-
-# manual-freshness-recovery-20260922-1524
-# fallback-groundtruth-refresh-after-cloudflare-auth-20260922
+# Manual recovery: workflow_dispatch(force_refresh=true).

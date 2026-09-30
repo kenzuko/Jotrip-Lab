@@ -16,8 +16,51 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  recompose:
+  detect:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      should_recompose: ${{ steps.change.outputs.should_recompose }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Compare source product times against last Local Now
+        id: change
+        shell: bash
+        env:
+          MANUAL: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          set -euo pipefail
+          git fetch origin data-weather --depth=1
+          git show origin/data-weather:data/weather-groundtruth/latest.json > /tmp/gt.json 2>/dev/null || printf '{}\n' > /tmp/gt.json
+          git show origin/data-weather:data/weather-nowcast/compact-latest.json > /tmp/cloud.json 2>/dev/null || printf '{}\n' > /tmp/cloud.json
+          git show origin/data-weather:data/weather-groundtruth/local-now.json > /tmp/local.json 2>/dev/null || printf '{}\n' > /tmp/local.json
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json,os
+          from datetime import datetime,timezone
+          def t(value):
+              try:
+                  x=datetime.fromisoformat(str(value).replace('Z','+00:00'))
+                  return x.replace(tzinfo=timezone.utc) if x.tzinfo is None else x.astimezone(timezone.utc)
+              except (TypeError,ValueError):
+                  return None
+          gt=json.load(open('/tmp/gt.json'))
+          cloud=json.load(open('/tmp/cloud.json'))
+          local=json.load(open('/tmp/local.json'))
+          local_t=t(local.get('generated_at'))
+          gt_t=t(gt.get('generated_at'))
+          cloud_t=t(cloud.get('generated_at'))
+          manual=os.environ.get('MANUAL','false').lower()=='true'
+          should=manual or local_t is None or any(v is not None and v>local_t for v in (gt_t,cloud_t))
+          print('should_recompose='+str(should).lower())
+          print(f'gt_generated={gt_t}; cloud_generated={cloud_t}; local_generated={local_t}',file=__import__('sys').stderr)
+          PY
+
+  recompose:
+    needs: detect
+    if: needs.detect.outputs.should_recompose == 'true'
     uses: kenzuko/Jotrip-Lab/.github/workflows/weather-local-now-fast.yml@feat/weather-lab-data-engine-v1
     with:
       target_ref: feat/weather-lab-data-engine-v1
