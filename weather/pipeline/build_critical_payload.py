@@ -181,17 +181,18 @@ def compact_ensemble(ensemble:dict,key:str)->dict:
             if lead_num <= 0 or lead_num > 72:
                 continue
             vars=row.get("variables") or {}
-            item={"lead_hours":lead,"valid_time":row.get("valid_time"),"members":row.get("member_count")}
+            item={"lead_hours":lead,"valid_time":row.get("valid_time")}
             for name in ("wind","rain","temperature"):
                 v=(vars.get(name) or {}).get("corrected") or (vars.get(name) or {}).get("raw") or {}
+                # critical.json is a first-paint contract. q95, thresholds and
+                # member counts remain in the full ensemble product and are not
+                # duplicated here because current consumers use q50/q90,
+                # spread and exceedance probability only.
                 item[name]={
                     "q50":num(v.get("q50")),
                     "q90":num(v.get("q90")),
-                    "q95":num(v.get("q95")),
                     "spread":num(v.get("spread")),
                     "prob":num(v.get("exceedance_probability")),
-                    "threshold":num(v.get("exceedance_threshold")),
-                    "members":v.get("member_count"),
                 }
             out.append(item)
     return {
