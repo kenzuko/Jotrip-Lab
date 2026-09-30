@@ -19,12 +19,15 @@ class CriticalHumanWeatherTests(unittest.TestCase):
                 "location_id":"rain_an_thoi","rain_observed":True,"rain_intensity_mm_h":1.8,
                 "increment_mm":0.45,"increment_window_minutes":15,
                 "observed_at":"2026-09-30T02:50:00+00:00","qc":"PASS"}}}}
-        nowcast={"status":"POINT_NUMERIC_READY","points":{"an_thoi":{"cloud_motion":{
-            "tracking_confidence":"MEDIUM_HIGH","exit_time":"2026-09-30T03:37:00+00:00"}}}}
+        nowcast={"status":"POINT_NUMERIC_READY","sampled_time":"2026-09-30T02:55:00+00:00",
+            "points":{"an_thoi":{"cloud_motion":{"tracking_confidence":"MEDIUM_HIGH",
+            "public_track_usable":True,"exit_time":"2026-09-30T03:37:00+00:00"}}}}
         payload=build(dashboard,local,ground,nowcast=nowcast)
         human=payload["human_weather"]
         self.assertEqual(human["schema_version"],"jotrip-human-weather-v1")
         self.assertEqual(human["island"]["actual"]["data_class"],"ACTUAL")
+        self.assertEqual(human["island"]["spatial_scope"],"REFERENCE_STATION_ACTUAL")
+        self.assertEqual(human["island"]["reference_location_name"],"Sân bay Phú Quốc")
         self.assertEqual(human["island"]["derived"]["data_class"],"DERIVED_FROM_ACTUAL")
         self.assertEqual(human["points"]["an_thoi"]["interpretation"]["headline"],
                          "An Thới đang có mưa rào nhẹ.")
