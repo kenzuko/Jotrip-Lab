@@ -28,7 +28,10 @@ class CriticalHumanWeatherTests(unittest.TestCase):
         self.assertEqual(human["reference"]["status"],"ACTUAL")
         self.assertEqual(human["reference"]["scope"],"REFERENCE_STATION_ACTUAL")
         self.assertEqual(human["reference"]["location"],"Sân bay Phú Quốc")
+        self.assertEqual(human["reference"]["derived"]["comfort_code"],"hot_very_humid")
+        self.assertIn("humidity_hotter",human["reference"]["derived"]["reason_codes"])
         self.assertEqual(human["rain"]["an_thoi"]["headline"],"An Thới đang có mưa rào nhẹ.")
+        self.assertEqual(human["rain"]["an_thoi"]["intensity_code"],"light_shower")
         self.assertEqual(human["rain"]["an_thoi"]["detail"],"Dự kiến mưa sẽ giảm trong khoảng 30-45 phút.")
         self.assertEqual(payload["actual"]["vvpq"]["dewpoint_c"],27.0)
 
