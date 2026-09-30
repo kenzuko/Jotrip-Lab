@@ -63,11 +63,10 @@ class HumanWeatherTests(unittest.TestCase):
         ref=build_human_weather(self.local,ground,{"points":{}},self.generated)["reference"]
         self.assertEqual(ref["status"],"LAST_OBSERVED")
 
-    def test_estimated_rain_is_never_relabeled_actual(self):
+    def test_estimated_rain_is_not_published_as_human_actual(self):
         ground={"atmosphere":{"vvpq":self.ground["atmosphere"]["vvpq"]},"rainfall":{"stations":{}}}
-        item=build_human_weather(self.local,ground,{"points":{}},self.generated)["rain"]["an_thoi"]
-        self.assertEqual(item["evidence"],"DERIVED")
-        self.assertEqual(item["estimated_rate_mm_h"],2.1)
+        result=build_human_weather(self.local,ground,{"points":{}},self.generated)
+        self.assertNotIn("an_thoi",result["rain"])
         actual=build_human_weather(self.local,self.ground,{"points":{}},self.generated)["rain"]["an_thoi"]
         self.assertEqual(actual["evidence"],"ACTUAL")
         self.assertEqual(actual["derived_rate_mm_h"],1.8)
