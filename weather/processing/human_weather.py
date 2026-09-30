@@ -105,9 +105,14 @@ def _rain_station_for_point(point_id:str,stations:dict)->dict|None:
     loc="rain_"+point_id
     return next((s for s in stations.values() if isinstance(s,dict) and s.get("location_id")==loc),None)
 
-def _exit_window(nowcast_point:dict,generated_at:datetime)->dict|None:
+def _exit_window(nowcast_point:dict,generated_at:datetime,nowcast_sampled_at:Any=None)->dict|None:
     motion=(nowcast_point or {}).get("cloud_motion") or {}
-    if str(motion.get("tracking_confidence") or "").upper() not in {"MEDIUM","MEDIUM_HIGH","HIGH"}:
+    sampled=_time(nowcast_sampled_at)
+    if not sampled or (generated_at-sampled).total_seconds()/60.0 > 30:
+        return None
+    if str(motion.get("tracking_confidence") or "").upper() not in {"MEDIUM_HIGH","HIGH"}:
+        return None
+    if motion.get("public_track_usable") is not True:
         return None
     exit_time=_time(motion.get("exit_time"))
     if not exit_time:return None
@@ -125,13 +130,23 @@ def build_island_comfort(groundtruth:dict,generated_at:datetime)->dict:
     status,age=_actual_status(t is not None,v.get("observed_at"),generated_at,v.get("qc"))
     actual_class="ACTUAL" if status=="ACTUAL" else ("ACTUAL_STALE" if t is not None else "UNAVAILABLE")
     return {"observation_status":status,"observed_at":v.get("observed_at"),"age_minutes":age,
-            "spatial_scope":"ISLAND_ACTUAL_ANCHOR",
+            "spatial_scope":"REFERENCE_STATION_ACTUAL",
+            "reference_location_id":v.get("location_id") or "phu_quoc_airport",
+            "reference_location_name":"Sân bay Phú Quốc",
             "actual":{"temperature_c":t,"dewpoint_c":td,"wind_kmh":wind,"data_class":actual_class},
             "derived":{"humidity_percent":rh,"feels_like_c":feels,"comfort_label":_comfort_label(t,td,feels),
                        "comfort_reason":_comfort_reason(t,td,rh,feels,wind) if status in {"ACTUAL","LAST_OBSERVED"} else None,
                        "data_class":"DERIVED_FROM_ACTUAL","method":"DEWPOINT_RH_PLUS_NOAA_HEAT_INDEX"}}
 
-def build_point_interpretation(point_id:str,local_point:dict,groundtruth:dict,nowcast_point:dict,generated_at:datetime)->dict:
+def _showery_signal(nowcast_point:dict)->bool:
+    score=_num((nowcast_point or {}).get("convective_score"))
+    if score is None:
+        score=_num(((nowcast_point or {}).get("convective_signal") or {}).get("score"))
+    motion=(nowcast_point or {}).get("cloud_motion") or {}
+    return bool((score is not None and score >= 35) or
+                (motion.get("public_track_usable") is True and motion.get("exit_time")))
+
+def build_point_interpretation(point_id:str,local_point:dict,groundtruth:dict,nowcast_point:dict,generated_at:datetime,nowcast_sampled_at:Any=None)->dict:
     name=POINT_NAMES.get(point_id,point_id)
     station=_rain_station_for_point(point_id,(groundtruth.get("rainfall") or {}).get("stations") or {})
     actual=None
@@ -151,8 +166,11 @@ def build_point_interpretation(point_id:str,local_point:dict,groundtruth:dict,no
               "data_class":str(lr.get("data_class") or "UNAVAILABLE")}
     duration=None
     if actual and actual["observation_status"]=="ACTUAL" and actual.get("rain_observed") is True:
-        headline=f"{name} đang có {(actual.get('derived') or {}).get('intensity_label') or 'mưa'}."
-        duration=_exit_window(nowcast_point,generated_at)
+        intensity=(actual.get("derived") or {}).get("intensity_label") or "mưa"
+        if intensity=="mưa rào nhẹ" and not _showery_signal(nowcast_point):
+            intensity="mưa nhẹ"
+        headline=f"{name} đang có {intensity}."
+        duration=_exit_window(nowcast_point,generated_at,nowcast_sampled_at)
         detail=duration["text"] if duration else "Mưa đang được ghi nhận tại điểm quan trắc trong khu vực."
         evidence="ACTUAL"
     elif actual and actual["observation_status"]=="ACTUAL" and actual.get("rain_observed") is False:
@@ -175,7 +193,8 @@ def build_human_weather(local:dict,groundtruth:dict,nowcast:dict,generated_at:da
     generated=_time(generated_at) if not isinstance(generated_at,datetime) else generated_at.astimezone(timezone.utc)
     generated=generated or _time(groundtruth.get("generated_at")) or datetime.now(timezone.utc)
     lp=local.get("points") or {};np=nowcast.get("points") or {}
-    points={pid:build_point_interpretation(pid,lp.get(pid) or {},groundtruth,np.get(pid) or {},generated)
+    nowcast_sampled_at=nowcast.get("sampled_time")
+    points={pid:build_point_interpretation(pid,lp.get(pid) or {},groundtruth,np.get(pid) or {},generated,nowcast_sampled_at)
             for pid in POINT_NAMES if pid!="rach_gia"}
     island=build_island_comfort(groundtruth,generated);comfort=island.get("derived") or {}
     actual=island.get("actual") or {}
