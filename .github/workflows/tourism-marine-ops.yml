@@ -12,11 +12,11 @@ on:
       - 'config/tourism_v2/marine-ops.v1.json'
       - '.github/workflows/tourism-marine-ops.yml'
   schedule:
-    # Asia/Ho_Chi_Minh morning 04:00-09:30.
+    # Asia/Ho_Chi_Minh service day 04:00-19:30, every 30 minutes.
+    # UTC spans 21:00-23:30 on the previous day and 00:00-12:30.
+    # This cadence stays comfortably inside the 90-minute Ops freshness SLA.
     - cron: '*/30 21-23 * * *'
-    - cron: '*/30 0-2 * * *'
-    # Evening refresh 16:00-19:30.
-    - cron: '*/30 9-12 * * *'
+    - cron: '*/30 0-12 * * *'
 
 concurrency:
   group: tourism-marine-ops-data-writer
