@@ -5,14 +5,16 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/github-pages-weather.yml"
+  # 30-minute fallback. Fast-source changes call this workflow directly.
   schedule:
-    - cron: "5,15,25,35,45,55 * * * *"
+    - cron: "5,35 * * * *"
   workflow_run:
     workflows:
       - "Weather Lab 30m scheduler"
       - "Weather GEFS Local scheduler"
     types: [completed]
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: write
