@@ -44,9 +44,12 @@ def load_observation_seed(path: Path) -> list[dict[str, Any]]:
                 str(record.get("station_id") or "") == "48917"
                 and "SYNOP" in str(record.get("source") or "").upper()
             ):
-                record["production_role"] = "IDENTITY_PENDING_ARCHIVE_ONLY"
-                record["independence_from_vvpq"] = "UNRESOLVED"
-                record["evidence_weight_for_independent_source_count"] = 0
+                record["production_role"] = "INDEPENDENT_GROUND_OBSERVATION_CROSSCHECK"
+                record["independence_from_vvpq"] = "CONFIRMED_INDEPENDENT_PHYSICAL_SITE"
+                record["station_epoch"] = "WMO_OSCAR_CURRENT_FROM_2016_04_28"
+                record["reference_lat"] = 10.2166666667
+                record["reference_lon"] = 103.9666666667
+                record["evidence_weight_for_independent_source_count"] = 1
             rows.append(record)
     return rows
 
