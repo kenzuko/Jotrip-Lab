@@ -25,6 +25,30 @@ ENDPOINTS = (
     "http://www.ogimet.com/cgi-bin/getsynop",
 )
 USER_AGENT = "JoTrip-WeatherLab/2.0 raw-SYNOP-groundtruth"
+IDENTITY_RESOLUTION = {
+    "resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
+    "status": "LOCKED",
+    "effective_at": "2026-10-01T06:35:33+00:00",
+    "decision": "INDEPENDENT_FROM_CURRENT_VVPQ",
+    "confidence": "HIGH",
+    "supersedes_legacy_ingest_assessments": [
+        "IDENTITY_PENDING_POST_2012",
+        "CONFLICTING_OPERATIONAL_AND_CLIMATE_METADATA",
+        "UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE",
+    ],
+    "evidence": [
+        "JMA/TCC current 2026 metadata: WMO 48917 PHU QUOC near 10.22N,103.97E",
+        "Vietnam KTTV BHV1/SHV1 station book: Hai van Phu Quoc uses station code 48917",
+        "Vietnam KTTV automated station list: Phu Quoc automated station is separately identified as 60018",
+        "Current VVPQ AIP coordinates are near 10.169722N,103.993056E",
+        "Same-timestamp 48917 SYNOP and VVPQ METAR coexist with distinct values; 48917 also carries SYNOP Section 222 marine groups",
+    ],
+    "raw_archive_semantics": (
+        "Immutable raw files preserve the identity assessment present when that observation was first archived. "
+        "Runtime identity is governed by this current versioned resolution; older embedded identity annotations "
+        "are provenance history and do not override the current gate."
+    ),
+}
 STREAM_IDENTITY = {
     "source_namespace": "WMO_INDEX",
     "identifier": "48917",
@@ -37,6 +61,7 @@ STREAM_IDENTITY = {
     "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
     "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
     "identity_confidence": "HIGH",
+    "identity_resolution_id": IDENTITY_RESOLUTION["resolution_id"],
     "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
     "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
 }
@@ -121,6 +146,7 @@ def collect(begin: datetime, end: datetime) -> dict[str, Any]:
         "schema_version": "weather-raw-synop-v3",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         **STREAM_IDENTITY,
+        "identity_resolution": IDENTITY_RESOLUTION,
         "source": SOURCE,
         "data_class": "ACTUAL",
         "observation_class": "RAW_OBS",
@@ -171,6 +197,12 @@ def compact_live(payload: dict[str, Any], now: datetime | None = None) -> dict[s
         "UNAVAILABLE" if not latest_numeric
         else ("FRESH" if numeric_age is not None and numeric_age <= 480 else "STALE")
     )
+    resolution = payload.get("identity_resolution") or {}
+    identity_locked = (
+        resolution.get("status") == "LOCKED"
+        and resolution.get("decision") == "INDEPENDENT_FROM_CURRENT_VVPQ"
+        and resolution.get("resolution_id") == payload.get("identity_resolution_id")
+    )
     return {
         "status": status,
         "numeric_status": numeric_status,
@@ -187,6 +219,8 @@ def compact_live(payload: dict[str, Any], now: datetime | None = None) -> dict[s
         "identity_status": payload.get("identity_status"),
         "identity_confidence": payload.get("identity_confidence"),
         "identity_policy": payload.get("identity_policy"),
+        "identity_resolution_id": payload.get("identity_resolution_id"),
+        "identity_resolution": resolution,
         "relocation_status": payload.get("relocation_status"),
         "provenance_url": payload.get("provenance_url"),
         "checked_at": payload.get("generated_at"),
@@ -199,7 +233,7 @@ def compact_live(payload: dict[str, Any], now: datetime | None = None) -> dict[s
         "recent_observations": rows[-8:],
         "recent_count": len(rows),
         "production_role": "ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION",
-        "runtime_eligible": bool(numeric_status == "FRESH" and payload.get("identity_status") == "INDEPENDENT_FROM_CURRENT_VVPQ"),
+        "runtime_eligible": bool(numeric_status == "FRESH" and identity_locked),
     }
 
 
