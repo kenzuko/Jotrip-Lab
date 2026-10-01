@@ -490,8 +490,11 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
             "corpus_record_count":int(corpus.get("record_count") or 0),
             "counts_by_class":corpus.get("counts_by_class") or {},
             "source_count":len(registry.get("sources") or []),
-            "registry_path":registry.get("canonical_path"),
-            "sources":[compact_source_state(s) for s in (registry.get("sources") or [])],
+            "registry_path":registry.get("canonical_path") or "data/weather-groundtruth/corpus/source-registry.json",
+            "tier_counts":{
+                tier:sum(1 for s in (registry.get("sources") or []) if s.get("tier")==tier)
+                for tier in ("ACTIVE_REALTIME","ACTIVE_NEAR_REALTIME","VALIDATION_HISTORICAL","HOLD_CANDIDATE","RETIRED")
+            },
             "policy":ground.get("actual_policy"),
         },
         "human_weather":human_weather,
