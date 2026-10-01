@@ -9,6 +9,9 @@ on:
       - "weather/processing/event_skill_v3.py"
       - "weather/tests/test_observation_mesh_v3.py"
       - "weather/tests/test_v3_event_skill.py"
+      - "weather/pipeline/run_v3_shadow_cycle.py"
+      - "weather/tests/test_v3_shadow_cycle.py"
+      - "weather/config/v3_runtime.json"
       - "WEATHER_ENGINE_V3_OBSERVATION_NOWCAST_MASTER.md"
       - ".github/workflows/weather-v3-shadow-safety.yml"
   workflow_dispatch:
@@ -25,7 +28,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Validate registry JSON
-        run: python -m json.tool weather/config/observation_sources_v3.json >/dev/null
+      - name: Validate V3 JSON configs
+        run: |
+          python -m json.tool weather/config/observation_sources_v3.json >/dev/null
+          python -m json.tool weather/config/v3_runtime.json >/dev/null
       - name: Run V3 observation and event safety tests
-        run: python -m unittest weather.tests.test_observation_mesh_v3 weather.tests.test_v3_event_skill -v
+        run: python -m unittest weather.tests.test_observation_mesh_v3 weather.tests.test_v3_event_skill weather.tests.test_v3_shadow_cycle -v
