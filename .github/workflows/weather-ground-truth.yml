@@ -4,11 +4,20 @@ on:
   push:
     paths:
       - "weather/collectors/phuquoc_ground_truth.py"
+      - "weather/collectors/phuquoc_synop_raw.py"
+      - "weather/processing/synop_actual.py"
+      - "weather/processing/groundtruth_corpus.py"
+      - "weather/groundtruth/corpus/**"
+      - "weather/config/groundtruth_sources.json"
+      - "weather/processing/evidence_bridge.py"
+      - "weather/pipeline/build_critical_payload.py"
       - "weather/processing/local_now.py"
       - "weather/processing/calibration_pipeline.py"
       - "weather/processing/source_skill.py"
       - "weather/pipeline/archive_public_snapshot.py"
       - "weather/tests/test_ground_truth_local_now.py"
+      - "weather/tests/test_synop_actual.py"
+      - "weather/tests/test_groundtruth_corpus.py"
       - "weather/tests/test_calibration_pipeline.py"
       - "weather/tests/test_source_skill.py"
       - ".github/workflows/weather-ground-truth.yml"
@@ -65,6 +74,8 @@ jobs:
       - name: Test ground truth, local analysis and calibration formulas
         run: |
           python -m unittest weather.tests.test_ground_truth_local_now -v
+          python -m unittest weather.tests.test_synop_actual -v
+          python -m unittest weather.tests.test_groundtruth_corpus -v
           python -m unittest weather.tests.test_calibration_pipeline -v
           python -m unittest weather.tests.test_source_skill -v
 
@@ -75,7 +86,11 @@ jobs:
           if [ -f "$DATA_ROOT/latest.json" ]; then
             PREVIOUS="--previous $DATA_ROOT/latest.json"
           fi
-          python -m weather.collectors.phuquoc_ground_truth --output /tmp/groundtruth.json $PREVIOUS
+          python -m weather.collectors.phuquoc_ground_truth \
+            --output /tmp/groundtruth.json \
+            --corpus-output /tmp/groundtruth-corpus.json \
+            --synop-output /tmp/synop-48917-raw.json \
+            $PREVIOUS
 
       - name: Restore provisional source-skill weights
         shell: bash
@@ -107,12 +122,23 @@ jobs:
           gt=json.load(open('/tmp/groundtruth.json'))
           ln=json.load(open('/tmp/local-now.json'))
           assert gt['status'] in {'READY','UNAVAILABLE'}
+          assert gt.get('schema_version') == '2.0'
           if gt['status']=='READY':
               if gt.get('atmosphere',{}).get('vvpq',{}).get('status') in {'FRESH','STALE'}:
                   assert gt['atmosphere']['vvpq']['data_class']=='ACTUAL'
+              synop=gt.get('atmosphere',{}).get('synop_48917',{})
+              assert synop.get('source_namespace') == 'WMO_INDEX'
+              assert synop.get('identifier') == '48917'
+              assert synop.get('production_role') == 'ACTUAL_VALIDATION_STREAM_NOT_SPATIAL_POINT_ANCHOR'
               for s in gt['rainfall'].get('stations',{}).values():
                   assert s['data_class']=='ACTUAL'
                   assert s['statistic']=='ACCUMULATION'
+          corpus=gt.get('historical_corpus') or {}
+          registry=gt.get('source_registry') or {}
+          assert corpus.get('record_count',0) >= 28
+          assert corpus.get('canonical_path') == 'data/weather-groundtruth/corpus/verified-latest.json'
+          assert registry.get('source_count',0) >= 15
+          assert registry.get('canonical_path') == 'data/weather-groundtruth/corpus/source-registry.json'
           assert ln['engine']=='PQ_LOCAL_NOW_V2'
           assert ln['data_class']=='ESTIMATED_NOW'
           for p in ln['points'].values():
@@ -349,6 +375,8 @@ jobs:
           root=Path('data/weather-groundtruth')
           gt=json.load(open('/tmp/groundtruth.json'))
           ln=json.load(open('/tmp/local-now.json'))
+          corpus=json.load(open('/tmp/groundtruth-corpus.json'))
+          synop_raw=json.load(open('/tmp/synop-48917-raw.json'))
           t=datetime.fromisoformat(gt['generated_at'].replace('Z','+00:00'))
           day=root/t.strftime('%Y')/t.strftime('%m')/t.strftime('%d')
           day.mkdir(parents=True,exist_ok=True)
@@ -362,6 +390,40 @@ jobs:
           root.mkdir(parents=True,exist_ok=True)
           (root/'latest.json').write_text(json.dumps(gt,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           (root/'local-now.json').write_text(json.dumps(ln,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+
+          # Canonical verified research corpus - stored once, not copied into
+          # every 10/30-minute snapshot.
+          corpus_dir=root/'corpus'
+          corpus_dir.mkdir(parents=True,exist_ok=True)
+          (corpus_dir/'verified-latest.json').write_text(
+              json.dumps(corpus,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          (corpus_dir/'source-registry.json').write_text(
+              json.dumps(corpus.get('source_registry') or {},ensure_ascii=False,indent=2)+'\n',
+              encoding='utf-8')
+
+          # Immutable raw SYNOP observation archive. A deterministic observation
+          # timestamp path prevents fetch cadence from creating duplicate truth.
+          synop_dir=root/'synop-48917'
+          (synop_dir/'raw').mkdir(parents=True,exist_ok=True)
+          for row in synop_raw.get('observations') or []:
+              obs=str(row.get('observed_at') or '')
+              try:
+                  ot=datetime.fromisoformat(obs.replace('Z','+00:00'))
+              except Exception:
+                  continue
+              target=synop_dir/'raw'/ot.strftime('%Y')/ot.strftime('%m')/ot.strftime('%d')/(ot.strftime('%H%M')+'.json')
+              target.parent.mkdir(parents=True,exist_ok=True)
+              if target.exists():
+                  try:
+                      existing=json.loads(target.read_text(encoding='utf-8'))
+                      if existing.get('raw_payload_hash') != row.get('raw_payload_hash'):
+                          raise RuntimeError('SYNOP immutable archive hash conflict: '+str(target))
+                  except json.JSONDecodeError:
+                      raise RuntimeError('SYNOP immutable archive unreadable: '+str(target))
+                  continue
+              target.write_text(json.dumps(row,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          (synop_dir/'latest.json').write_text(
+              json.dumps(synop_raw,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           vvpq=(gt.get('atmosphere') or {}).get('vvpq') or {}
           rain_stations=(gt.get('rainfall') or {}).get('stations') or {}
           training_usability={
@@ -389,14 +451,30 @@ jobs:
                   for k,v in rain_stations.items()
               },
           }
+          synop=(gt.get('atmosphere') or {}).get('synop_48917') or {}
+          gt_corpus=gt.get('historical_corpus') or {}
+          registry=gt.get('source_registry') or {}
           health={
               'module':'JoTrip Weather Ground Truth',
               'state':gt['status'],
               'generated_at':gt['generated_at'],
               'vvpq':vvpq.get('status'),
+              'synop_48917':{
+                  'status':synop.get('status'),
+                  'latest_observed_at':synop.get('latest_observed_at'),
+                  'age_minutes':synop.get('age_minutes'),
+                  'source_namespace':synop.get('source_namespace'),
+                  'role':synop.get('production_role'),
+              },
               'vrain':gt.get('rainfall',{}).get('status'),
               'rain_stations':list(rain_stations),
               'increment_ready':[k for k,v in rain_stations.items() if v.get('increment_qc')=='PASS'],
+              'groundtruth_corpus':{
+                  'record_count':gt_corpus.get('record_count',0),
+                  'counts_by_class':gt_corpus.get('counts_by_class') or {},
+                  'source_count':registry.get('source_count',0),
+                  'canonical_path':gt_corpus.get('canonical_path'),
+              },
               'training_usability':training_usability,
               'local_engine':ln['engine'],
               'actual_policy':gt['actual_policy'],
@@ -466,6 +544,8 @@ jobs:
           name: phu-quoc-ground-truth
           path: |
             /tmp/groundtruth.json
+            /tmp/groundtruth-corpus.json
+            /tmp/synop-48917-raw.json
             /tmp/local-now.json
             /tmp/weather-calibration.json
             /tmp/weather-analytics.json

@@ -258,6 +258,9 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
         }
 
     v=(ground.get("atmosphere") or {}).get("vvpq",{})
+    synop=(ground.get("atmosphere") or {}).get("synop_48917",{})
+    corpus=ground.get("historical_corpus") or {}
+    registry=ground.get("source_registry") or {}
     gauges=[]
     for s in ((ground.get("rainfall") or {}).get("stations") or {}).values():
         gauges.append({
@@ -301,11 +304,19 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
     }
     sources["VVPQ"]={
         "status":ready_status(v.get("status")),
-        "detail":"METAR sân bay Phú Quốc là một trong các mốc quan trắc thực tế để JoTrip kiểm tra nhiệt độ, gió, tầm nhìn và trạng thái thời tiết hiện tại."
+        "detail":"METAR/SPECI sân bay Phú Quốc là một mốc quan trắc thực tế độc lập cho gió, nhiệt độ, tầm nhìn, mây và hiện tượng thời tiết."
+    }
+    sources["SYNOP_48917"]={
+        "status":ready_status(synop.get("status"),partial_ok=True),
+        "detail":"WMO 48917 là dòng SYNOP quan trắc riêng của Phú Quốc, dùng để đối chiếu gió, nhiệt độ, áp suất, mưa và các nhóm quan trắc biển khi bản tin có báo. Không gộp nó với VVPQ chỉ vì cùng liên hệ mã 48917."
     }
     sources["VRAIN"]={
         "status":ready_status((ground.get("rainfall") or {}).get("status")),
-        "detail":f"Mưa đo thực tế tại {len(gauges)} trạm công khai trên đảo. JoTrip theo dõi mức tăng giữa các lần cập nhật để ước tính cường độ mưa gần hiện tại."
+        "detail":f"Mưa đo thực tế tại {len(gauges)} trạm công khai trên đảo. Chỉ mẫu cảm biến đủ mới mới được dùng để mô tả mưa hiện tại."
+    }
+    sources["GROUNDTRUTH_CORPUS"]={
+        "status":"PASS" if (corpus.get("record_count") or 0)>0 else "FAIL",
+        "detail":f"Bộ Ground Truth đã đưa {int(corpus.get('record_count') or 0)} quan trắc đã xác minh vào lớp kiểm chứng/backtest, đồng thời giữ riêng các nguồn live, lịch sử, báo cáo tổng hợp và nguồn đang chờ raw feed."
     }
     sources["HIMAWARI"]={
         "status":ready_status(nowcast.get("status")),
@@ -375,11 +386,39 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
                 "weather":v.get("weather"),
                 "convective_cloud":bool(v.get("convective_cloud")),
             },
+            "synop_48917":{
+                "status":synop.get("status"),
+                "source_namespace":synop.get("source_namespace"),
+                "identifier":synop.get("identifier"),
+                "latest_observed_at":synop.get("latest_observed_at"),
+                "age_minutes":num(synop.get("age_minutes")),
+                "reference_lat":num(synop.get("reference_lat")),
+                "reference_lon":num(synop.get("reference_lon")),
+                "station_epoch":synop.get("station_epoch"),
+                "production_role":synop.get("production_role"),
+                "latest":synop.get("latest"),
+            },
             "rain_gauges":gauges,
+        },
+        "groundtruth":{
+            "schema_version":ground.get("schema_version"),
+            "status":ground.get("status"),
+            "corpus_record_count":int(corpus.get("record_count") or 0),
+            "counts_by_class":corpus.get("counts_by_class") or {},
+            "source_count":len(registry.get("sources") or []),
+            "sources":[
+                {
+                    "id":s.get("id"),"class":s.get("class"),"status":s.get("status"),
+                    "role":s.get("role")
+                }
+                for s in (registry.get("sources") or [])
+            ],
+            "policy":ground.get("actual_policy"),
         },
         "human_weather":human_weather,
         "source_state":{
             "vvpq":v.get("status","UNAVAILABLE"),
+            "synop_48917":synop.get("status","UNAVAILABLE"),
             "vrain":(ground.get("rainfall") or {}).get("status","UNAVAILABLE"),
             "aqi":aqi.get("status","UNAVAILABLE"),
             "tide":tide.get("status","UNAVAILABLE"),
