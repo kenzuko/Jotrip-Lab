@@ -50,6 +50,8 @@ jobs:
           if p['status']=='SHADOW_POINT_OBSERVATIONS_READY':
               assert p['observed_at']
               assert len(p['points']) > 0
+              assert p.get('local_features') is not None
+              assert 'components_by_threshold' in p['local_features']
               for point in p['points'].values():
                   for ring in point['rings'].values():
                       for key in ('max_dbz','p90_dbz','median_dbz'):
