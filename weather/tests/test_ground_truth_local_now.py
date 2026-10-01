@@ -147,6 +147,34 @@ class GroundTruthTests(unittest.TestCase):
         self.assertEqual(out["points"]["duong_dong"]["rain"]["data_class"], "ESTIMATED_NOW")
         self.assertGreater(out["points"]["duong_dong"]["rain"]["gauge_anchor_count"], 0)
 
+    def test_old_vvpq_temperature_is_time_aligned_before_correcting_current_estimate(self):
+        gt = {
+            "generated_at":"2026-10-01T12:00:00+00:00",
+            "atmosphere":{"vvpq":{
+                "status":"FRESH","qc":"PASS","age_minutes":60,
+                "temperature_c":30.0,"wind_speed_kmh":8.0,"wind_direction_deg":180,
+                "observed_at":"2026-10-01T11:00:00+00:00",
+            }},
+            "rainfall":{"status":"UNAVAILABLE","stations":{}},
+        }
+        observed_row={"time_iso":"2026-10-01T18:00:00+07:00","temperature":29.5,"wind":8.0,
+                      "gust":12.0,"rain":0.0,"wave":0.2,"wave_max":0.4,"period":4.0,"current":0.2}
+        current_row={"time_iso":"2026-10-01T19:00:00+07:00","temperature":27.0,"wind":6.0,
+                     "gust":10.0,"rain":0.0,"wave":0.2,"wave_max":0.4,"period":4.0,"current":0.2}
+        dashboard={"generated_at":"2026-10-01T19:00:00+07:00",
+                   "points":{k:{**current_row,"hours":[observed_row,current_row]}
+                             for k in ("duong_dong","an_thoi","ganh_dau")}}
+        out=build(gt,dashboard,{"status":"POINT_NUMERIC_READY","points":{}})
+        dd=out["points"]["duong_dong"]
+        self.assertEqual(dd["temperature"]["data_class"],"ESTIMATED_NOW")
+        self.assertTrue(dd["temperature"]["anchor_time_aligned"])
+        self.assertEqual(dd["temperature"]["anchor_model_valid_time"],observed_row["time_iso"])
+        self.assertAlmostEqual(dd["temperature"]["anchor_model_proxy"],29.5,places=2)
+        # The one-hour-old 30C METAR may nudge the current 27C estimate, but it
+        # must not be compared directly with the 27C current model and preserve
+        # the old heat as if the airport were a continuous live sensor.
+        self.assertLess(dd["temperature_c"],27.3)
+
     def test_synop_48917_can_anchor_duong_dong_when_vvpq_is_unavailable(self):
         gt = {
             "generated_at":"2026-10-01T06:00:00+00:00",
@@ -168,10 +196,12 @@ class GroundTruthTests(unittest.TestCase):
             },
             "rainfall":{"status":"UNAVAILABLE","stations":{}},
         }
+        obs_row={"time_iso":"2026-10-01T10:00:00+07:00","temperature":28.5,"wind":9.0,
+                 "gust":13.0,"rain":0.0,"wave":0.4,"wave_max":0.7,"period":4.5,"current":0.3}
         row={"time_iso":"2026-10-01T13:00:00+07:00","temperature":28.0,"wind":8.0,
              "gust":14.0,"rain":0.0,"wave":0.4,"wave_max":0.7,"period":4.5,"current":0.3}
         dashboard={"generated_at":"2026-10-01T13:00:00+07:00",
-                   "points":{k:{**row,"hours":[row]} for k in ("duong_dong","an_thoi","ganh_dau")}}
+                   "points":{k:{**row,"hours":[obs_row,row]} for k in ("duong_dong","an_thoi","ganh_dau")}}
         nowcast={"status":"POINT_NUMERIC_READY","points":{}}
         out=build(gt,dashboard,nowcast)
         dd=out["points"]["duong_dong"]
@@ -202,10 +232,12 @@ class GroundTruthTests(unittest.TestCase):
             },
             "rainfall":{"status":"UNAVAILABLE","stations":{}},
         }
+        synop_row={"time_iso":"2026-10-01T10:00:00+07:00","temperature":29.0,"wind":10.0,
+                   "gust":18.0,"rain":0.0,"wave":0.4,"wave_max":0.7,"period":4.5,"current":0.3}
         row={"time_iso":"2026-10-01T13:00:00+07:00","temperature":29.0,"wind":10.0,
              "gust":18.0,"rain":0.0,"wave":0.4,"wave_max":0.7,"period":4.5,"current":0.3}
         dashboard={"generated_at":"2026-10-01T13:00:00+07:00",
-                   "points":{k:{**row,"hours":[row]} for k in ("duong_dong","an_thoi","ganh_dau")}}
+                   "points":{k:{**row,"hours":[synop_row,row]} for k in ("duong_dong","an_thoi","ganh_dau")}}
         out=build(base_gt,dashboard,{"status":"POINT_NUMERIC_READY","points":{}})
         dd=out["points"]["duong_dong"]
         self.assertEqual(dd["actual_anchors"]["ground_anchor_disagreement"]["status"],"DIVERGENT")

@@ -38,6 +38,12 @@ SYNOP_48917 = {"lat": 10.22, "lon": 103.97}
 WIND_DECAY_KM = 38.0
 TEMP_DECAY_KM = 45.0
 RAIN_DECAY_KM = 28.0
+# METAR/SPECI is a point-in-time airport observation, not a continuously
+# updating thermometer. Its residual may correct the current estimate, but its
+# authority must decay faster than the feed's broader "FRESH" status.
+VVPQ_TEMP_HALF_LIFE_MIN = 35.0
+VVPQ_WIND_HALF_LIFE_MIN = 60.0
+ANCHOR_MODEL_MAX_GAP_MIN = 120.0
 
 
 def _num(v: Any) -> float | None:
@@ -101,6 +107,29 @@ def _model_value(point: dict, row: dict, key: str) -> float | None:
     if v is not None:
         return v
     return _num(point.get(key))
+
+
+def _anchor_model_at(point: dict, observed_time: datetime | None, fallback_time: datetime | None) -> dict:
+    """Return model background nearest the observation time.
+
+    Observation residuals must be formed at the time the observation was made,
+    then transported onto the current model background. Comparing an old METAR
+    directly with the current model can falsely preserve afternoon heat after a
+    fast evening cool-down.
+    """
+    target = observed_time or fallback_time
+    row = _current_model_row(point, target)
+    row_time = _parse_time(row.get("time_iso")) if row else None
+    gap_min = abs((row_time - target).total_seconds()) / 60.0 if row_time and target else None
+    usable = gap_min is None or gap_min <= ANCHOR_MODEL_MAX_GAP_MIN
+    return {
+        "temperature": _model_value(point, row, "temperature") if usable else None,
+        "wind": _model_value(point, row, "wind") if usable else None,
+        "wind_direction_deg": None,
+        "valid_time": row.get("time_iso") if usable else None,
+        "gap_minutes": round(gap_min, 1) if gap_min is not None else None,
+        "time_aligned": bool(observed_time and usable),
+    }
 
 
 def _nearest_ensemble_row(ensemble: dict, point_id: str, analysis_time: datetime, max_gap_hours: float = 9.0) -> dict:
@@ -198,7 +227,8 @@ def _convective_wind_floor(model_wind: float | None, model_gust: float | None, s
 def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model: dict, vvpq: dict, nowcast_point: dict | None = None, ensemble_context: dict | None = None, source_skill: dict | None = None) -> dict:
     p = POINTS[point_id]
     distance = _haversine(p["lat"], p["lon"], VVPQ["lat"], VVPQ["lon"])
-    freshness = _freshness(vvpq.get("age_minutes"))
+    temp_freshness = _freshness(vvpq.get("age_minutes"), VVPQ_TEMP_HALF_LIFE_MIN)
+    wind_freshness = _freshness(vvpq.get("age_minutes"), VVPQ_WIND_HALF_LIFE_MIN)
     source_q = 0.96 if vvpq.get("qc") == "PASS" else 0.55
 
     result = {
@@ -210,7 +240,7 @@ def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model
     model_temp = _num(model_point.get("temperature"))
     anchor_model_temp = _num(anchor_model.get("temperature"))
     obs_temp = _num(vvpq.get("temperature_c"))
-    temp_alpha = math.exp(-distance / TEMP_DECAY_KM) * freshness * source_q
+    temp_alpha = math.exp(-distance / TEMP_DECAY_KM) * temp_freshness * source_q
     if model_temp is not None and anchor_model_temp is not None and obs_temp is not None:
         correction = obs_temp - anchor_model_temp
         result["temperature_c"] = round(model_temp + temp_alpha * correction, 1)
@@ -220,6 +250,9 @@ def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model
             "baseline_model": model_temp,
             "anchor_observed": obs_temp,
             "anchor_model_proxy": anchor_model_temp,
+            "anchor_model_valid_time": anchor_model.get("valid_time"),
+            "anchor_model_gap_minutes": anchor_model.get("gap_minutes"),
+            "anchor_time_aligned": bool(anchor_model.get("time_aligned")),
             "applied_residual_c": round(temp_alpha * correction, 2),
             "confidence": round(_clamp(0.35 + 0.55 * temp_alpha, 0.0, 0.92), 2),
         }
@@ -238,7 +271,7 @@ def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model
     obs_dir = _num(vvpq.get("wind_direction_deg"))
     anchor_dir = _num(anchor_model.get("wind_direction_deg"))
     point_dir = _num(model_point.get("wind_direction_deg"))
-    wind_alpha = math.exp(-distance / WIND_DECAY_KM) * freshness * source_q
+    wind_alpha = math.exp(-distance / WIND_DECAY_KM) * wind_freshness * source_q
     skill_multiplier = _num((((source_skill or {}).get("vvpq") or {}).get("wind") or {}).get("ensemble_gain_multiplier")) or 1.0
     ens_gain = _ensemble_gain(model_wind, ensemble_context or {}, distance, vvpq.get("age_minutes"), skill_multiplier)
     wind_alpha *= float(ens_gain.get("gain", 1.0))
@@ -285,6 +318,9 @@ def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model
             "baseline_model": model_wind,
             "anchor_observed_kmh": obs_wind,
             "anchor_model_proxy_kmh": anchor_model_wind,
+            "anchor_model_valid_time": anchor_model.get("valid_time"),
+            "anchor_model_gap_minutes": anchor_model.get("gap_minutes"),
+            "anchor_time_aligned": bool(anchor_model.get("time_aligned")),
             "model_gust_kmh": model_gust,
             "convective_score": conv_score,
             "convective_floor_kmh": round(conv_floor, 1) if conv_floor is not None else None,
@@ -756,15 +792,15 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | No
     dashboard_time = _parse_time(dashboard.get("generated_at"))
     points_model = dashboard.get("points", {})
     anchor_model_point = points_model.get("duong_dong", {})
-    anchor_row = _current_model_row(anchor_model_point, dashboard_time)
-    anchor_model = {
-        "temperature": _model_value(anchor_model_point, anchor_row, "temperature"),
-        "wind": _model_value(anchor_model_point, anchor_row, "wind"),
-        "wind_direction_deg": None,
-    }
 
     vvpq = groundtruth.get("atmosphere", {}).get("vvpq", {})
     synop_48917 = groundtruth.get("atmosphere", {}).get("synop_48917", {})
+    vvpq_anchor_model = _anchor_model_at(
+        anchor_model_point, _parse_time(vvpq.get("observed_at")), dashboard_time,
+    )
+    synop_anchor_model = _anchor_model_at(
+        anchor_model_point, _parse_time(synop_48917.get("latest_numeric_observed_at")), dashboard_time,
+    )
     gauges = groundtruth.get("rainfall", {}).get("stations", {})
     nowcast_points = nowcast.get("points", {}) if isinstance(nowcast, dict) else {}
 
@@ -785,11 +821,11 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | No
         }
         ens_context = _ensemble_context(ensemble or {}, point_id, generated)
         corrected = _vvpq_correction(
-            point_id, meta, model, anchor_model, vvpq,
+            point_id, meta, model, vvpq_anchor_model, vvpq,
             nowcast_points.get(point_id, {}), ens_context, source_skill,
         )
         corrected = _apply_synop_ground_anchor(
-            point_id, model, anchor_model, corrected, synop_48917, vvpq,
+            point_id, model, synop_anchor_model, corrected, synop_48917, vvpq,
         )
         rain = _rain_estimate(
             point_id, model["rain"], gauges, nowcast_points.get(point_id, {}), vvpq, ens_context, source_skill,
