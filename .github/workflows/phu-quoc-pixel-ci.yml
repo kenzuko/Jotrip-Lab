@@ -1,0 +1,76 @@
+name: Phu Quoc Pixel CI
+
+on:
+  pull_request:
+    paths:
+      - 'phu-quoc-pixel/**'
+      - '.github/workflows/phu-quoc-pixel-ci.yml'
+  push:
+    branches:
+      - 'feat/phu-quoc-pixel-architecture-v1'
+    paths:
+      - 'phu-quoc-pixel/**'
+      - '.github/workflows/phu-quoc-pixel-ci.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: phu-quoc-pixel
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'push' && github.ref_name || github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies reproducibly
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f package-lock.json ]; then
+            npm ci --no-audit --no-fund
+          else
+            npm install --no-audit --no-fund
+          fi
+
+      - name: Bootstrap dependency lock once
+        if: github.event_name == 'push'
+        shell: bash
+        working-directory: .
+        run: |
+          set -euo pipefail
+          if git ls-files --error-unmatch phu-quoc-pixel/package-lock.json >/dev/null 2>&1; then
+            echo 'package-lock.json already tracked'
+            exit 0
+          fi
+
+          git config user.name 'jotrip-pixel-bot'
+          git config user.email 'jotrip-pixel-bot@users.noreply.github.com'
+          git add phu-quoc-pixel/package-lock.json
+          git commit -m 'build(pixel): lock dependency graph'
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Bundle report
+        run: |
+          echo '--- dist size ---'
+          du -sh dist
+          echo '--- largest files ---'
+          find dist -type f -printf '%s %p\n' | sort -nr | head -20

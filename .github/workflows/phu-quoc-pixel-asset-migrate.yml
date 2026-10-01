@@ -1,0 +1,115 @@
+name: Phu Quoc Pixel - Asset Migration
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'feat/phu-quoc-pixel-architecture-v1'
+    paths:
+      - '.github/workflows/phu-quoc-pixel-asset-migrate.yml'
+      - 'scripts/extract-pixel-prototype-assets.mjs'
+      - 'preview/asset-*.js'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pixel-asset-migration
+  cancel-in-progress: true
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: feat/phu-quoc-pixel-architecture-v1
+          fetch-depth: 0
+
+      - name: Extract current embedded artwork losslessly
+        run: node scripts/extract-pixel-prototype-assets.mjs --out /tmp/pixel-assets
+
+      - name: Verify real source inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in map.webp bg.webp ride1.webp ride2.webp planter.webp coin.webp; do
+            test -s "/tmp/pixel-assets/$f" || { echo "Missing required source asset: $f"; exit 1; }
+          done
+
+          echo 'Current prototype does NOT contain these engine-referenced assets:'
+          for key in ride3 ride4 chair table menu tripod suitcase; do
+            if ls "/tmp/pixel-assets/$key."* >/dev/null 2>&1; then
+              echo "FOUND unexpectedly: $key"
+            else
+              echo "MISSING: $key"
+            fi
+          done
+
+      - name: Install semantic asset tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          root='phu-quoc-pixel/public/assets'
+          mkdir -p "$root/world" "$root/locations/sunset-town" "$root/games/no-brakes/player" "$root/games/no-brakes/props" "$root/games/no-brakes/collectibles"
+
+          cp /tmp/pixel-assets/map.webp "$root/world/island-map.webp"
+          cp /tmp/pixel-assets/bg.webp "$root/locations/sunset-town/background.webp"
+          cp /tmp/pixel-assets/ride1.webp "$root/games/no-brakes/player/ride-01.webp"
+          cp /tmp/pixel-assets/ride2.webp "$root/games/no-brakes/player/ride-02.webp"
+          cp /tmp/pixel-assets/planter.webp "$root/games/no-brakes/props/planter.webp"
+          cp /tmp/pixel-assets/coin.webp "$root/games/no-brakes/collectibles/jo-coin.webp"
+
+          node <<'NODE'
+          const fs = require('fs');
+          const src = JSON.parse(fs.readFileSync('/tmp/pixel-assets/manifest.json', 'utf8'));
+          const byKey = Object.fromEntries(src.assets.map(a => [a.key, a]));
+          const rows = [
+            ['island-map','map','world/island-map.webp'],
+            ['sunset-background','bg','locations/sunset-town/background.webp'],
+            ['no-brakes-ride-01','ride1','games/no-brakes/player/ride-01.webp'],
+            ['no-brakes-ride-02','ride2','games/no-brakes/player/ride-02.webp'],
+            ['no-brakes-planter','planter','games/no-brakes/props/planter.webp'],
+            ['jo-coin','coin','games/no-brakes/collectibles/jo-coin.webp']
+          ];
+          const manifest = {
+            schemaVersion: 1,
+            source: 'preview/asset-*.js embedded prototype artwork',
+            migration: 'lossless byte-for-byte extraction',
+            assets: rows.map(([id,key,path]) => ({
+              id, key, path,
+              mime: byKey[key].mime,
+              bytes: byKey[key].bytes,
+              width: byKey[key].width,
+              height: byKey[key].height,
+              sha256: byKey[key].sha256,
+              approval: 'inherited-current-artwork-candidate'
+            })),
+            missingLegacyReferences: ['ride3','ride4','chair','table','menu','tripod','suitcase']
+          };
+          fs.writeFileSync('phu-quoc-pixel/public/assets/asset-manifest.json', JSON.stringify(manifest, null, 2) + '\n');
+          NODE
+
+      - name: Commit migrated artwork if changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'jotrip-pixel-bot'
+          git config user.email 'jotrip-pixel-bot@users.noreply.github.com'
+          git add phu-quoc-pixel/public/assets
+          if git diff --cached --quiet; then
+            echo 'Migrated assets already current'
+            exit 0
+          fi
+          git commit -m 'assets(pixel): migrate existing artwork losslessly'
+          for attempt in 1 2 3; do
+            if git pull --rebase origin feat/phu-quoc-pixel-architecture-v1 && git push origin HEAD:feat/phu-quoc-pixel-architecture-v1; then
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 3))
+          done
+          exit 1

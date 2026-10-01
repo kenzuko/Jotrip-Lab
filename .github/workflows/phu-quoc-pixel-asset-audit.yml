@@ -1,0 +1,45 @@
+name: Phu Quoc Pixel - Asset Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'feat/phu-quoc-pixel-architecture-v1'
+    paths:
+      - 'scripts/extract-pixel-prototype-assets.mjs'
+      - 'preview/asset-*.js'
+      - '.github/workflows/phu-quoc-pixel-asset-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Extract prototype assets losslessly
+        run: node scripts/extract-pixel-prototype-assets.mjs --out /tmp/pixel-asset-audit
+
+      - name: Verify audit manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s /tmp/pixel-asset-audit/manifest.json
+          cat /tmp/pixel-asset-audit/manifest.json
+
+      - name: Upload asset audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: phu-quoc-pixel-asset-audit
+          path: /tmp/pixel-asset-audit
+          retention-days: 7
