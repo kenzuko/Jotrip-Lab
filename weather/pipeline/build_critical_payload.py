@@ -354,10 +354,24 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
 
     human_evidence=(human_weather.get("evidence_status") or {})
     operational_sources=registry.get("sources") or []
+    def compact_source_state(source:dict)->dict:
+        freshness=source.get("freshness") or {}
+        return {
+            "id":source.get("id"),
+            "tier":source.get("tier"),
+            "health":source.get("health"),
+            "status":source.get("status"),
+            "last_observation":source.get("last_observation"),
+            "freshness":{
+                "state":freshness.get("state"),
+                "age_minutes":num(freshness.get("age_minutes")),
+                "budget_minutes":num(freshness.get("budget_minutes")),
+            },
+        }
     evidence_layers={
         "ACTUAL_GROUND":{
             "data_class":"ACTUAL",
-            "sources":[s for s in operational_sources if s.get("tier") in {"ACTIVE_REALTIME","ACTIVE_NEAR_REALTIME"}],
+            "sources":[compact_source_state(s) for s in operational_sources if s.get("tier") in {"ACTIVE_REALTIME","ACTIVE_NEAR_REALTIME"}],
         },
         "OBSERVED_REMOTE":{
             "data_class":"OBSERVED_REMOTE",
@@ -476,21 +490,8 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
             "corpus_record_count":int(corpus.get("record_count") or 0),
             "counts_by_class":corpus.get("counts_by_class") or {},
             "source_count":len(registry.get("sources") or []),
-            "sources":[
-                {
-                    "id":s.get("id"),
-                    "class":s.get("class"),
-                    "status":s.get("status"),
-                    "role":s.get("role"),
-                    "tier":s.get("tier"),
-                    "provenance":s.get("provenance"),
-                    "freshness":s.get("freshness"),
-                    "health":s.get("health"),
-                    "last_observation":s.get("last_observation"),
-                    "status_reason":s.get("status_reason"),
-                }
-                for s in (registry.get("sources") or [])
-            ],
+            "registry_path":registry.get("canonical_path"),
+            "sources":[compact_source_state(s) for s in (registry.get("sources") or [])],
             "policy":ground.get("actual_policy"),
         },
         "human_weather":human_weather,
