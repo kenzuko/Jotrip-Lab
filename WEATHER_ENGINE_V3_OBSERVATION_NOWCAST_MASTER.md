@@ -345,3 +345,42 @@ Priority now:
 3. create Phu Quoc event records
 4. evaluate radar/nowcast against VRain actuals
 5. keep production Weather V2 authoritative until shadow skill is demonstrated
+
+
+## 19. First deterministic CMAX shadow decode - 2026-10-01
+
+The public iWeather COM/CMAX product is better than a screenshot-only source.
+
+Static inspection of the public map renderer plus an in-memory browser capture established:
+
+- public COM georeference: lon 97..115, lat 7.2..25.2
+- current rendered CMAX frame: 1980 x 1980 pixels
+- map code labels CMAX as dBZ
+- the normal image-overlay radar decoder reads the red channel as the scalar CMAX value
+- high red-channel sentinel/background values are excluded rather than coerced to zero
+- the source frame is discarded after decoding; only point/ring statistics are persisted
+
+A first shadow frame at source time 2026-10-01 15:40 Asia/Ho_Chi_Minh
+(08:40 UTC) was decoded at canonical Weather Lab points.
+
+The result is operationally important:
+- Rạch Giá had full valid raster coverage in the sampled neighborhoods
+- Phu Quoc coverage was patchy, with many island pixels resolving to source sentinel/background
+- several Phu Quoc point centres were not valid radar pixels in that frame
+- Bãi Thơm had materially better local valid coverage than the west/south island points
+
+This confirms the V3 safety rule empirically:
+**absence of a valid/positive radar value over Phu Quoc must not be interpreted as proof of no rain.**
+Radar should contribute strong positive evidence when echo is present, while negative evidence remains low-weight until multi-event coverage skill is measured.
+
+The deterministic decoder now makes Vision unnecessary for normal COM/CMAX frames.
+Vision remains a fallback only if the public rendering format changes or metadata becomes unavailable.
+
+Receipts:
+- `weather/research/v3-iweather-payload-shape.json`
+- `weather/research/v3-iweather-map-bundle-inspection.json`
+- `weather/research/v3-iweather-cmax-shadow-receipt.json`
+
+Implementation:
+- `weather/processing/iweather_cmax.py`
+- `weather/tools/build_iweather_cmax_shadow_receipt.py`
