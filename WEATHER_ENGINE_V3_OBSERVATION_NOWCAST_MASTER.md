@@ -293,3 +293,55 @@ Core Weather must continue operating with the existing source stack.
 
 New V3 sources increase evidence quality.
 They do not become mandatory for availability.
+
+
+## 18. Research closure update - 2026-10-01
+
+### iWeather public browser capture
+
+A one-shot unauthenticated browser-network capture confirmed that the public iWeather dashboard naturally requests:
+
+- `/map/?areaRadar=COM&productRadar=CMAX`
+- `/product/lastradar?...mode=intensity&area=COM&product=CMAX` - JSON response
+- `/product/radar?time=YYYYMMDDHHMM&mode=intensity&area=COM&product=CMAX...` - PNG response
+- `/product/warningstorm...` - JSON response
+
+The dashboard also attempted user/private routes that returned 401 and one map-tile config route that returned 401. These routes are explicitly out of scope. V3 does not retry, authenticate, copy tokens, or bypass those boundaries.
+
+Operational conclusion:
+- radar acquisition is technically confirmed through the ordinary public browser path
+- rights/reuse remain unresolved, therefore the source stays SHADOW only
+- while rights remain unresolved, use ephemeral rendered-frame interpretation and derived receipts, not image mirroring/redistribution
+- the public browser/session owns any transient token semantics
+- do not promote direct endpoint polling merely because the browser reveals a URL
+
+Research receipt:
+`weather/research/v3-iweather-network-probe.json`
+
+### 60018 timebox closed
+
+The one-shot public XLSX export for sid=33 returned:
+- 146 rows
+- 10-minute timestamps
+- wind/wave schema including H, TM02, Hmax and HM0
+- zero usable numeric measurement cells for the sampled day
+
+Per the V3 timebox rule:
+- 60018 remains HOLD
+- do not spend additional research time on it now
+- it does not block Observation Mesh or Nowcast work
+- it may be revisited only if the public feed later begins returning numeric measurements
+
+Research receipt:
+`weather/research/v3-public-source-probe.json`
+
+### Current technical focus
+
+The discovery phase is closed enough to build shadow acquisition.
+
+Priority now:
+1. ingest existing cleared observations into the V3 receipt envelope
+2. add ephemeral iWeather rendered-radar shadow interpretation
+3. create Phu Quoc event records
+4. evaluate radar/nowcast against VRain actuals
+5. keep production Weather V2 authoritative until shadow skill is demonstrated
