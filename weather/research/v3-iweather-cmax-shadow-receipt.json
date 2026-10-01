@@ -1,0 +1,345 @@
+{
+  "schema_version": "weather-v3-iweather-cmax-shadow-receipt-v1",
+  "generated_at": "2026-10-01T08:52:31.148593+00:00",
+  "status": "SHADOW_POINT_OBSERVATIONS_READY",
+  "mode": "PUBLIC_BROWSER_EPHEMERAL_RENDER_INTERPRETATION",
+  "source_id": "iweather_radar_cmax",
+  "source_class": "REMOTE_OBSERVED",
+  "rights_state": "UNRESOLVED",
+  "lifecycle": "SHADOW",
+  "production_eligible": false,
+  "independence_group": "VN_NATIONAL_RADAR_NETWORK",
+  "rules": {
+    "no_auth_bypass": true,
+    "no_login": true,
+    "no_token_archive": true,
+    "no_image_archive": true,
+    "no_raw_response_archive": true,
+    "no_manual_product_replay": true,
+    "negative_radar_is_not_dry_ground_truth": true
+  },
+  "source_time_raw": "202610011540",
+  "observed_at": "2026-10-01T08:40:00+00:00",
+  "config_epoch": "202308010000",
+  "decoder": {
+    "name": "IWEATHER_CMAX_RED_CHANNEL_V1",
+    "unit": "dBZ",
+    "image_width": 1980,
+    "image_height": 1980,
+    "bounds": {
+      "lon_min": 97.0,
+      "lon_max": 115.0,
+      "lat_min": 7.2,
+      "lat_max": 25.2
+    },
+    "sentinel_policy": "R>100_IS_NOT_METEOROLOGICAL_DBZ",
+    "negative_evidence_policy": "NO_ECHO_OR_ZERO_DBZ_MUST_NOT_BE_TREATED_AS_PROOF_OF_NO_RAIN_AT_PHU_QUOC"
+  },
+  "points": {
+    "duong_dong": {
+      "point_id": "duong_dong",
+      "name": "Dương Đông",
+      "lat": 10.2172,
+      "lon": 103.9593,
+      "pixel_x": 765.52,
+      "pixel_y": 1648.11,
+      "center_dbz": null,
+      "rings": {
+        "5km": {
+          "valid_pixel_count": 0,
+          "sampled_pixel_count": 80,
+          "rejected_sentinel_count": 80,
+          "valid_fraction": 0.0,
+          "max_dbz": null,
+          "p90_dbz": null,
+          "median_dbz": null
+        },
+        "15km": {
+          "valid_pixel_count": 137,
+          "sampled_pixel_count": 700,
+          "rejected_sentinel_count": 563,
+          "valid_fraction": 0.1957,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        },
+        "30km": {
+          "valid_pixel_count": 941,
+          "sampled_pixel_count": 2805,
+          "rejected_sentinel_count": 1864,
+          "valid_fraction": 0.3355,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        }
+      }
+    },
+    "an_thoi": {
+      "point_id": "an_thoi",
+      "name": "An Thới",
+      "lat": 10.0191,
+      "lon": 104.015,
+      "pixel_x": 771.65,
+      "pixel_y": 1669.9,
+      "center_dbz": null,
+      "rings": {
+        "5km": {
+          "valid_pixel_count": 0,
+          "sampled_pixel_count": 78,
+          "rejected_sentinel_count": 78,
+          "valid_fraction": 0.0,
+          "max_dbz": null,
+          "p90_dbz": null,
+          "median_dbz": null
+        },
+        "15km": {
+          "valid_pixel_count": 179,
+          "sampled_pixel_count": 699,
+          "rejected_sentinel_count": 520,
+          "valid_fraction": 0.2561,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        },
+        "30km": {
+          "valid_pixel_count": 1028,
+          "sampled_pixel_count": 2801,
+          "rejected_sentinel_count": 1773,
+          "valid_fraction": 0.367,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        }
+      }
+    },
+    "ganh_dau": {
+      "point_id": "ganh_dau",
+      "name": "Gành Dầu",
+      "lat": 10.3759,
+      "lon": 103.9,
+      "pixel_x": 759.0,
+      "pixel_y": 1630.65,
+      "center_dbz": null,
+      "rings": {
+        "5km": {
+          "valid_pixel_count": 0,
+          "sampled_pixel_count": 78,
+          "rejected_sentinel_count": 78,
+          "valid_fraction": 0.0,
+          "max_dbz": null,
+          "p90_dbz": null,
+          "median_dbz": null
+        },
+        "15km": {
+          "valid_pixel_count": 45,
+          "sampled_pixel_count": 702,
+          "rejected_sentinel_count": 657,
+          "valid_fraction": 0.0641,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        },
+        "30km": {
+          "valid_pixel_count": 714,
+          "sampled_pixel_count": 2803,
+          "rejected_sentinel_count": 2089,
+          "valid_fraction": 0.2547,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        }
+      }
+    },
+    "rach_gia": {
+      "point_id": "rach_gia",
+      "name": "Rạch Giá",
+      "lat": 10.00677,
+      "lon": 105.07845,
+      "pixel_x": 888.63,
+      "pixel_y": 1671.26,
+      "center_dbz": 0.0,
+      "rings": {
+        "5km": {
+          "valid_pixel_count": 79,
+          "sampled_pixel_count": 79,
+          "rejected_sentinel_count": 0,
+          "valid_fraction": 1.0,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        },
+        "15km": {
+          "valid_pixel_count": 704,
+          "sampled_pixel_count": 704,
+          "rejected_sentinel_count": 0,
+          "valid_fraction": 1.0,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        },
+        "30km": {
+          "valid_pixel_count": 2804,
+          "sampled_pixel_count": 2804,
+          "rejected_sentinel_count": 0,
+          "valid_fraction": 1.0,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        }
+      }
+    },
+    "cua_can": {
+      "point_id": "cua_can",
+      "name": "Cửa Cạn",
+      "lat": 10.292693,
+      "lon": 103.914799,
+      "pixel_x": 760.63,
+      "pixel_y": 1639.8,
+      "center_dbz": null,
+      "rings": {
+        "5km": {
+          "valid_pixel_count": 0,
+          "sampled_pixel_count": 79,
+          "rejected_sentinel_count": 79,
+          "valid_fraction": 0.0,
+          "max_dbz": null,
+          "p90_dbz": null,
+          "median_dbz": null
+        },
+        "15km": {
+          "valid_pixel_count": 54,
+          "sampled_pixel_count": 701,
+          "rejected_sentinel_count": 647,
+          "valid_fraction": 0.077,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        },
+        "30km": {
+          "valid_pixel_count": 741,
+          "sampled_pixel_count": 2807,
+          "rejected_sentinel_count": 2066,
+          "valid_fraction": 0.264,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        }
+      }
+    },
+    "bai_thom": {
+      "point_id": "bai_thom",
+      "name": "Bãi Thơm",
+      "lat": 10.411765,
+      "lon": 104.031055,
+      "pixel_x": 773.42,
+      "pixel_y": 1626.71,
+      "center_dbz": 0.0,
+      "rings": {
+        "5km": {
+          "valid_pixel_count": 68,
+          "sampled_pixel_count": 79,
+          "rejected_sentinel_count": 11,
+          "valid_fraction": 0.8608,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        },
+        "15km": {
+          "valid_pixel_count": 444,
+          "sampled_pixel_count": 707,
+          "rejected_sentinel_count": 263,
+          "valid_fraction": 0.628,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        },
+        "30km": {
+          "valid_pixel_count": 1565,
+          "sampled_pixel_count": 2808,
+          "rejected_sentinel_count": 1243,
+          "valid_fraction": 0.5573,
+          "max_dbz": 10.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        }
+      }
+    },
+    "ham_ninh": {
+      "point_id": "ham_ninh",
+      "name": "Hàm Ninh",
+      "lat": 10.18062,
+      "lon": 104.04463,
+      "pixel_x": 774.91,
+      "pixel_y": 1652.13,
+      "center_dbz": 0.0,
+      "rings": {
+        "5km": {
+          "valid_pixel_count": 47,
+          "sampled_pixel_count": 75,
+          "rejected_sentinel_count": 28,
+          "valid_fraction": 0.6267,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        },
+        "15km": {
+          "valid_pixel_count": 378,
+          "sampled_pixel_count": 698,
+          "rejected_sentinel_count": 320,
+          "valid_fraction": 0.5415,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        },
+        "30km": {
+          "valid_pixel_count": 1440,
+          "sampled_pixel_count": 2807,
+          "rejected_sentinel_count": 1367,
+          "valid_fraction": 0.513,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        }
+      }
+    },
+    "bai_sao": {
+      "point_id": "bai_sao",
+      "name": "Bãi Sao",
+      "lat": 10.0572576,
+      "lon": 104.0363948,
+      "pixel_x": 774.0,
+      "pixel_y": 1665.7,
+      "center_dbz": null,
+      "rings": {
+        "5km": {
+          "valid_pixel_count": 15,
+          "sampled_pixel_count": 78,
+          "rejected_sentinel_count": 63,
+          "valid_fraction": 0.1923,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        },
+        "15km": {
+          "valid_pixel_count": 272,
+          "sampled_pixel_count": 698,
+          "rejected_sentinel_count": 426,
+          "valid_fraction": 0.3897,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        },
+        "30km": {
+          "valid_pixel_count": 1220,
+          "sampled_pixel_count": 2800,
+          "rejected_sentinel_count": 1580,
+          "valid_fraction": 0.4357,
+          "max_dbz": 0.0,
+          "p90_dbz": 0.0,
+          "median_dbz": 0.0
+        }
+      }
+    }
+  },
+  "errors": []
+}
