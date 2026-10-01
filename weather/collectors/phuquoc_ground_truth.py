@@ -277,9 +277,10 @@ def _vrain(current: Any, timing: Any, previous: dict | None, now: datetime) -> d
     }
 
 
-def collect(previous: dict | None = None) -> dict:
+def collect(previous: dict | None = None, artifacts: dict | None = None) -> dict:
     now = datetime.now(timezone.utc)
     errors: list[dict] = []
+    artifacts = artifacts if artifacts is not None else {}
 
     try:
         awc = _fetch_json(AWC_URL)
@@ -302,6 +303,7 @@ def collect(previous: dict | None = None) -> dict:
     # independently resolved.
     try:
         synop_raw = collect_synop(now - timedelta(days=2), now)
+        artifacts["synop_raw"] = synop_raw
         synop_48917 = compact_synop_live(synop_raw, now)
     except Exception as exc:  # network boundary; VVPQ/VRain remain independent
         errors.append({"source": "WMO_48917_SYNOPTIC", "error": repr(exc)})
@@ -318,6 +320,7 @@ def collect(previous: dict | None = None) -> dict:
     # while each provenance class keeps its own allowed role.
     try:
         corpus_full = build_corpus(GROUNDTRUTH_SEED, GROUNDTRUTH_REGISTRY)
+        artifacts["corpus_full"] = corpus_full
         full_registry = corpus_full.get("source_registry") or {"sources": []}
         corpus = {
             "schema_version": corpus_full.get("schema_version"),
@@ -406,21 +409,26 @@ def main() -> None:
         except Exception:
             previous = None
 
-    payload = collect(previous)
+    artifacts: dict = {}
+    payload = collect(previous, artifacts=artifacts)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     if args.corpus_output:
-        corpus_payload = build_corpus(GROUNDTRUTH_SEED, GROUNDTRUTH_REGISTRY)
+        corpus_payload = artifacts.get("corpus_full") or build_corpus(GROUNDTRUTH_SEED, GROUNDTRUTH_REGISTRY)
         args.corpus_output.parent.mkdir(parents=True, exist_ok=True)
         args.corpus_output.write_text(
             json.dumps(corpus_payload, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
     if args.synop_output:
-        # Reuse the latest WMO stream already collected into the live payload.
+        synop_payload = artifacts.get("synop_raw") or {
+            "schema_version": "weather-raw-synop-v3",
+            "status": "UNAVAILABLE",
+            "observations": [],
+        }
         args.synop_output.parent.mkdir(parents=True, exist_ok=True)
         args.synop_output.write_text(
-            json.dumps(payload.get("atmosphere", {}).get("synop_48917") or {}, ensure_ascii=False, indent=2) + "\n",
+            json.dumps(synop_payload, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
     print(json.dumps({
