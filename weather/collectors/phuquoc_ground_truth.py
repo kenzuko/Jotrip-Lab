@@ -317,15 +317,53 @@ def collect(previous: dict | None = None) -> dict:
     # corpus and the complete source registry travel with the production payload,
     # while each provenance class keeps its own allowed role.
     try:
-        corpus = build_corpus(GROUNDTRUTH_SEED, GROUNDTRUTH_REGISTRY)
+        corpus_full = build_corpus(GROUNDTRUTH_SEED, GROUNDTRUTH_REGISTRY)
+        full_registry = corpus_full.get("source_registry") or {"sources": []}
+        corpus = {
+            "schema_version": corpus_full.get("schema_version"),
+            "record_count": corpus_full.get("record_count", 0),
+            "counts_by_class": corpus_full.get("counts_by_class") or {},
+            "counts_by_metric": corpus_full.get("counts_by_metric") or {},
+            "policy": corpus_full.get("policy") or {},
+            "canonical_path": "data/weather-groundtruth/corpus/verified-latest.json",
+        }
+        source_registry = {
+            "schema_version": full_registry.get("schema_version"),
+            "source_count": len(full_registry.get("sources") or []),
+            "canonical_path": "data/weather-groundtruth/corpus/source-registry.json",
+            "sources": [
+                {
+                    "id": s.get("id"),
+                    "namespace": s.get("namespace"),
+                    "identifier": s.get("identifier"),
+                    "class": s.get("class"),
+                    "status": s.get("status"),
+                    "role": s.get("role"),
+                }
+                for s in (full_registry.get("sources") or [])
+            ],
+        }
     except Exception as exc:
         errors.append({"source": "GROUNDTRUTH_CORPUS", "error": repr(exc)})
-        corpus = {
+        corpus_full = {
             "schema_version": "weather-groundtruth-corpus-v1",
             "record_count": 0,
             "records": [],
             "source_registry": {"sources": []},
-            "status": "UNAVAILABLE",
+        }
+        corpus = {
+            "schema_version": "weather-groundtruth-corpus-v1",
+            "record_count": 0,
+            "counts_by_class": {},
+            "counts_by_metric": {},
+            "policy": {},
+            "canonical_path": "data/weather-groundtruth/corpus/verified-latest.json",
+        }
+        source_registry = {
+            "schema_version": "groundtruth-source-registry-v2",
+            "source_count": 0,
+            "sources": [],
+            "canonical_path": "data/weather-groundtruth/corpus/source-registry.json",
         }
 
     live_ready = (
@@ -345,7 +383,7 @@ def collect(previous: dict | None = None) -> dict:
         "atmosphere": {"vvpq": vvpq, "synop_48917": synop_48917},
         "rainfall": rainfall,
         "historical_corpus": corpus,
-        "source_registry": corpus.get("source_registry") or {"sources": []},
+        "source_registry": source_registry,
         "station_status": KNOWN_STATIONS,
         "errors": errors,
     }
@@ -357,6 +395,8 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--previous", type=Path)
+    parser.add_argument("--corpus-output", type=Path)
+    parser.add_argument("--synop-output", type=Path)
     args = parser.parse_args()
 
     previous = None
@@ -369,6 +409,20 @@ def main() -> None:
     payload = collect(previous)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if args.corpus_output:
+        corpus_payload = build_corpus(GROUNDTRUTH_SEED, GROUNDTRUTH_REGISTRY)
+        args.corpus_output.parent.mkdir(parents=True, exist_ok=True)
+        args.corpus_output.write_text(
+            json.dumps(corpus_payload, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+    if args.synop_output:
+        # Reuse the latest WMO stream already collected into the live payload.
+        args.synop_output.parent.mkdir(parents=True, exist_ok=True)
+        args.synop_output.write_text(
+            json.dumps(payload.get("atmosphere", {}).get("synop_48917") or {}, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
     print(json.dumps({
         "status": payload["status"],
         "generated_at": payload["generated_at"],
