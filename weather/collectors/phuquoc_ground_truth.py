@@ -14,14 +14,19 @@ import hashlib
 import json
 import math
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+
+from weather.collectors.phuquoc_synop_raw import collect as collect_synop, compact_live as compact_synop_live
+from weather.processing.groundtruth_corpus import build_corpus
 
 AWC_URL = "https://aviationweather.gov/api/data/metar?ids=VVPQ&format=json&hours=24"
 VRAIN_CURRENT_URL = "https://data.vrain.vn/public/current/all.json"
 VRAIN_TIME_URL = "https://vrain.vn/api/public/v1/time"
-USER_AGENT = "JoTrip-WeatherLab/1.0 ground-truth collector (public data)"
+USER_AGENT = "JoTrip-WeatherLab/2.0 ground-truth collector (public data)"
+GROUNDTRUTH_SEED = Path("weather/groundtruth/corpus/observations_seed_v6.csv")
+GROUNDTRUTH_REGISTRY = Path("weather/config/groundtruth_sources.json")
 
 PHU_QUOC_RAIN_BOUNDS = (9.80, 10.55, 103.65, 104.25)
 
@@ -291,13 +296,56 @@ def collect(previous: dict | None = None) -> dict:
         errors.append({"source": "VRAIN", "error": repr(exc)})
         rainfall = {"status": "UNAVAILABLE", "stations": {}, "detail": repr(exc)}
 
+    # WMO 48917 is a separate observation stream from VVPQ. It is admitted to
+    # the production Ground Truth plane for validation, but is not silently used
+    # as a selected-point Local Now anchor until station epoch/site mapping is
+    # independently resolved.
+    try:
+        synop_raw = collect_synop(now - timedelta(days=2), now)
+        synop_48917 = compact_synop_live(synop_raw, now)
+    except Exception as exc:  # network boundary; VVPQ/VRain remain independent
+        errors.append({"source": "WMO_48917_SYNOPTIC", "error": repr(exc)})
+        synop_48917 = {
+            "status": "UNAVAILABLE",
+            "source_namespace": "WMO_INDEX",
+            "identifier": "48917",
+            "production_role": "ACTUAL_VALIDATION_STREAM_NOT_SPATIAL_POINT_ANCHOR",
+            "detail": repr(exc),
+        }
+
+    # Research discovery is no longer left outside the application. The verified
+    # corpus and the complete source registry travel with the production payload,
+    # while each provenance class keeps its own allowed role.
+    try:
+        corpus = build_corpus(GROUNDTRUTH_SEED, GROUNDTRUTH_REGISTRY)
+    except Exception as exc:
+        errors.append({"source": "GROUNDTRUTH_CORPUS", "error": repr(exc)})
+        corpus = {
+            "schema_version": "weather-groundtruth-corpus-v1",
+            "record_count": 0,
+            "records": [],
+            "source_registry": {"sources": []},
+            "status": "UNAVAILABLE",
+        }
+
+    live_ready = (
+        vvpq.get("status") in {"FRESH", "STALE"}
+        or bool(rainfall.get("stations"))
+        or synop_48917.get("status") in {"FRESH", "STALE"}
+    )
     payload = {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
         "generated_at": now.isoformat(),
-        "status": "READY" if vvpq.get("status") in {"FRESH", "STALE"} or rainfall.get("stations") else "UNAVAILABLE",
-        "actual_policy": "Only machine-readable numeric observations with timestamps are ACTUAL. Remote sensing and models are separate classes.",
-        "atmosphere": {"vvpq": vvpq},
+        "status": "READY" if live_ready else "UNAVAILABLE",
+        "actual_policy": (
+            "Current-time ACTUAL requires timestamped in-situ or raw coded observations. "
+            "Historical aggregate/published observations are verification-only; remote sensing, "
+            "models and fusion remain separate classes."
+        ),
+        "atmosphere": {"vvpq": vvpq, "synop_48917": synop_48917},
         "rainfall": rainfall,
+        "historical_corpus": corpus,
+        "source_registry": corpus.get("source_registry") or {"sources": []},
         "station_status": KNOWN_STATIONS,
         "errors": errors,
     }
@@ -325,6 +373,8 @@ def main() -> None:
         "status": payload["status"],
         "generated_at": payload["generated_at"],
         "vvpq": payload["atmosphere"]["vvpq"].get("status"),
+        "synop_48917": payload["atmosphere"]["synop_48917"].get("status"),
+        "groundtruth_corpus_records": payload.get("historical_corpus", {}).get("record_count", 0),
         "rain_stations": list(payload["rainfall"].get("stations", {})),
         "rain_increment_ready": [
             k for k, v in payload["rainfall"].get("stations", {}).items()
