@@ -24,12 +24,28 @@ def _compact_actual(current_bundle: dict[str, Any]) -> dict[str, Any]:
     atmosphere = gt.get("atmosphere") or {}
     rainfall = gt.get("rainfall") or {}
     vvpq = atmosphere.get("vvpq") or {}
+    synop = atmosphere.get("synop_48917") or {}
     stations = rainfall.get("stations") or {}
+    corpus = gt.get("historical_corpus") or {}
+    registry = gt.get("source_registry") or {}
     return {
         "status": gt.get("status", "UNAVAILABLE"),
         "generated_at": gt.get("generated_at"),
         "policy": gt.get("actual_policy"),
         "vvpq": vvpq if vvpq.get("data_class") == "ACTUAL" else {},
+        "synop_48917": synop if synop.get("source_namespace") == "WMO_INDEX" else {},
+        "verification_corpus": {
+            "schema_version": corpus.get("schema_version"),
+            "record_count": corpus.get("record_count", 0),
+            "counts_by_class": corpus.get("counts_by_class") or {},
+            "counts_by_metric": corpus.get("counts_by_metric") or {},
+            "policy": corpus.get("policy") or {},
+        },
+        "source_registry": {
+            "schema_version": registry.get("schema_version"),
+            "source_count": len(registry.get("sources") or []),
+            "sources": registry.get("sources") or [],
+        },
         "rainfall": {
             "status": rainfall.get("status"),
             "source": rainfall.get("source"),
