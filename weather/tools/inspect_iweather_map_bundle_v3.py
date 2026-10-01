@@ -62,33 +62,34 @@ def main() -> None:
             "no_token_replay": True,
             "context_only_output": True,
         },
-        "bundle": None,
+        "bundles": [],
         "contexts": {},
         "status": "NO_BUNDLE",
     }
 
     if candidates:
-        url = candidates[0]
-        req = Request(url, headers={"User-Agent": UA, "Accept": "application/javascript,*/*"})
-        with urlopen(req, timeout=30) as res:
-            raw = res.read()
-        text = raw.decode("utf-8", errors="replace")
-        payload["bundle"] = {
-            "url": url,
-            "bytes": len(raw),
-            "sha256": hashlib.sha256(raw).hexdigest(),
-        }
-        for token in TOKENS:
-            hits = contexts(text, token)
-            if hits:
-                payload["contexts"][token] = hits
+        for url in candidates:
+            req = Request(url, headers={"User-Agent": UA, "Accept": "application/javascript,*/*"})
+            with urlopen(req, timeout=30) as res:
+                raw = res.read()
+            text = raw.decode("utf-8", errors="replace")
+            payload["bundles"].append({
+                "url": url,
+                "bytes": len(raw),
+                "sha256": hashlib.sha256(raw).hexdigest(),
+            })
+            bundle_key = urlsplit(url).path.rsplit("/", 1)[-1]
+            for token in TOKENS:
+                hits = contexts(text, token)
+                if hits:
+                    payload["contexts"].setdefault(token, {})[bundle_key] = hits
         payload["status"] = "INSPECTED"
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({
         "status": payload["status"],
-        "bundle": payload["bundle"],
+        "bundles": payload["bundles"],
         "tokens_found": sorted(payload["contexts"]),
         "output": str(OUT),
     }, ensure_ascii=False, indent=2))
