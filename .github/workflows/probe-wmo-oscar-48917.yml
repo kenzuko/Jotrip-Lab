@@ -21,7 +21,7 @@ jobs:
         run: |
           set -euo pipefail
           python - <<'PY'
-          import urllib.request
+          import urllib.request, hashlib, xml.etree.ElementTree as ET, json
           urls=[
             "https://oscar.wmo.int/surface/rest/api/wmd/download/0-20000-0-48917",
             "https://oscar.wmo.int/surface/rest/api/stations/0-20000-0-48917",
@@ -37,11 +37,37 @@ jobs:
                       print("FINAL_URL",r.geturl())
                       print("BYTES",len(body))
                       text=body.decode("utf-8","replace")
-                      print("BODY_BEGIN")
-                      print(text[:120000])
-                      print("BODY_END")
+                      print("SHA256",hashlib.sha256(body).hexdigest())
+                      print("CONTAINS_VVPQ", "VVPQ" in text)
+                      print("CONTAINS_CURRENT_AIRPORT_COORDS", ("10.169" in text or "103.993" in text))
                       if len(body)>100:
                           open("/tmp/oscar-48917-response","wb").write(body)
+                          try:
+                              root=ET.fromstring(body)
+                              ns={
+                                "gml":"http://www.opengis.net/gml/3.2",
+                                "wmdr":"http://def.wmo.int/wmdr/2017",
+                                "gco":"http://www.isotc211.org/2005/gco",
+                                "gmd":"http://www.isotc211.org/2005/gmd",
+                              }
+                              def texts(xpath):
+                                  return [x.text.strip() for x in root.findall(xpath,ns) if x.text and x.text.strip()]
+                              summary={
+                                "wigos_identifiers":texts(".//gml:identifier"),
+                                "names":texts(".//gml:name"),
+                                "positions":sorted(set(texts(".//gml:pos"))),
+                                "date_established":texts(".//wmdr:dateEstablished"),
+                                "facility_types":[x.attrib.get("{http://www.w3.org/1999/xlink}href") for x in root.findall(".//wmdr:facilityType",ns)],
+                                "owners":texts(".//gmd:organisationName/gco:CharacterString"),
+                                "begin_positions":sorted(set(texts(".//gml:beginPosition"))),
+                                "end_positions":sorted(set(texts(".//gml:endPosition"))),
+                                "reporting_status_hrefs":sorted(set(x.attrib.get("{http://www.w3.org/1999/xlink}href") for x in root.findall(".//wmdr:reportingStatus/wmdr:ReportingStatus/wmdr:reportingStatus",ns))),
+                                "program_hrefs":sorted(set(x.attrib.get("{http://www.w3.org/1999/xlink}href") for x in root.findall(".//wmdr:programAffiliation/wmdr:ProgramAffiliation/wmdr:programAffiliation",ns))),
+                                "reporting_intervals":sorted(set(texts(".//wmdr:temporalReportingInterval"))),
+                              }
+                              print("PARSED_SUMMARY",json.dumps(summary,ensure_ascii=False))
+                          except Exception as pe:
+                              print("PARSE_ERROR",repr(pe))
                           break
               except Exception as e:
                   print("ERROR",repr(e))
