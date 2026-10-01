@@ -307,8 +307,8 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
         "detail":"METAR/SPECI sân bay Phú Quốc là một mốc quan trắc thực tế độc lập cho gió, nhiệt độ, tầm nhìn, mây và hiện tượng thời tiết."
     }
     sources["SYNOP_48917"]={
-        "status":"IDENTITY_PENDING" if synop.get("status") != "UNAVAILABLE" else "UNAVAILABLE",
-        "detail":"WMO/SYNOP 48917 đang được lưu raw để nghiên cứu, nhưng chưa được tính là nguồn quan trắc độc lập. Metadata hiện xung đột về vị trí và quan hệ với VVPQ, nên nguồn này có trọng số độc lập bằng 0 cho tới khi xác minh xong station identity."
+        "status":ready_status(synop.get("status"),partial_ok=True),
+        "detail":"WMO/SYNOP 48917 là trạm quan trắc mặt đất độc lập tại Dương Đông, đã đối chiếu station identity bằng WMO OSCAR. Nguồn này dùng để cross-check gió, nhiệt độ, áp suất, mưa và nhóm quan trắc biển khi có báo; VVPQ ở Dương Tơ vẫn là một hệ quan trắc riêng."
     }
     sources["VRAIN"]={
         "status":ready_status((ground.get("rainfall") or {}).get("status")),
