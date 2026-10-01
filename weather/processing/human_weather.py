@@ -284,6 +284,77 @@ def _public_rain(point:dict)->dict|None:
             out["duration_min"]=[lo,hi]
     return out
 
+
+def build_evidence_status(local:dict,groundtruth:dict,nowcast:dict,generated_at:datetime)->dict:
+    atmosphere=groundtruth.get("atmosphere") or {}
+    vvpq=atmosphere.get("vvpq") or {}
+    synop=atmosphere.get("synop_48917") or {}
+    rain=groundtruth.get("rainfall") or {}
+
+    ground_sources=[]
+    if str(vvpq.get("status") or "").upper()=="FRESH":
+        ground_sources.append("VVPQ")
+    if bool(synop.get("runtime_eligible")) and str(synop.get("numeric_status") or "").upper()=="FRESH":
+        ground_sources.append("WMO_48917")
+    if str(rain.get("status") or "").upper()=="FRESH":
+        ground_sources.append("VRAIN")
+    ground_fresh=bool(ground_sources)
+
+    satellite_time=nowcast.get("sampled_time")
+    satellite_age=_age_minutes(satellite_time,generated_at)
+    satellite_ready=str(nowcast.get("status") or "").upper() in {"POINT_NUMERIC_READY","READY","FRESH","PASS"}
+    satellite_fresh=bool(satellite_ready and satellite_age is not None and satellite_age<=60.0)
+    lightning=(nowcast.get("lightning_observed") or {}) if isinstance(nowcast.get("lightning_observed"),dict) else {}
+    lightning_status=str(lightning.get("status") or "NOT_CONNECTED")
+
+    if ground_fresh and satellite_fresh:
+        headline="Quan trắc mặt đất và ảnh mây đang cập nhật."
+        overall="CURRENT"
+    elif ground_fresh:
+        headline="Quan trắc mặt đất vẫn đang cập nhật. Đang chờ ảnh mây mới."
+        overall="GROUND_CURRENT_REMOTE_WAITING"
+    elif satellite_fresh:
+        headline="Ảnh mây vừa cập nhật. Quan trắc mặt đất đang chờ dữ liệu mới."
+        overall="REMOTE_CURRENT_GROUND_WAITING"
+    else:
+        headline="Chưa đủ dữ liệu mới để đánh giá điều kiện hiện tại."
+        overall="INSUFFICIENT_CURRENT_EVIDENCE"
+
+    return {
+        "status":overall,
+        "headline":headline,
+        "ground":{
+            "status":"FRESH" if ground_fresh else "WAITING",
+            "active_sources":ground_sources,
+            "source_status":{
+                "vvpq":vvpq.get("status") or "UNAVAILABLE",
+                "synop_48917":synop.get("numeric_status") or synop.get("status") or "UNAVAILABLE",
+                "vrain":rain.get("status") or "UNAVAILABLE",
+            },
+        },
+        "observed_remote":{
+            "himawari":{
+                "status":"FRESH" if satellite_fresh else ("STALE" if satellite_time else "UNAVAILABLE"),
+                "sampled_time":satellite_time,
+                "age_minutes":round(satellite_age,1) if satellite_age is not None else None,
+                "freshness_budget_minutes":60,
+                "data_class":"OBSERVED_REMOTE",
+            },
+            "lightning":{
+                "status":lightning_status,
+                "data_class":"OBSERVED_REMOTE",
+                "detail":lightning.get("detail"),
+                "absence_is_no_lightning":False,
+            },
+        },
+        "policy":{
+            "one_stale_source_makes_whole_system_stale":False,
+            "absence_is_negative_observation":False,
+            "actual_remote_derived_forecast_are_separate":True,
+        },
+    }
+
+
 def build_human_weather(local:dict,groundtruth:dict,nowcast:dict,generated_at:datetime|str|None=None)->dict:
     generated=_time(generated_at) if not isinstance(generated_at,datetime) else generated_at.astimezone(timezone.utc)
     generated=generated or _time(groundtruth.get("generated_at")) or datetime.now(timezone.utc)
@@ -298,8 +369,9 @@ def build_human_weather(local:dict,groundtruth:dict,nowcast:dict,generated_at:da
         if public is not None:
             rain[pid]=public
     return {
-        "schema_version":"jotrip-human-weather-v1",
+        "schema_version":"jotrip-human-weather-v2",
         "generated_at":generated.isoformat(),
         "reference":_public_reference(reference),
         "rain":rain,
+        "evidence_status":build_evidence_status(local,groundtruth,nowcast,generated),
     }
