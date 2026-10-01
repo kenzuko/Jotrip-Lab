@@ -37,7 +37,26 @@ class CriticalPayloadTests(unittest.TestCase):
             }}
         }
         gt={
-            "atmosphere":{"vvpq":{"status":"FRESH","temperature_c":27,"wind_speed_kmh":9.2}},
+            "atmosphere":{
+                "vvpq":{"status":"FRESH","temperature_c":27,"wind_speed_kmh":9.2},
+                "synop_48917":{
+                    "status":"FRESH",
+                    "numeric_status":"FRESH",
+                    "runtime_eligible":True,
+                    "source_namespace":"WMO_INDEX",
+                    "identifier":"48917",
+                    "identity_status":"INDEPENDENT_FROM_CURRENT_VVPQ",
+                    "identity_confidence":"HIGH",
+                    "identity_resolution_id":"WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
+                    "identity_resolution":{
+                        "resolution_id":"WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
+                        "status":"LOCKED",
+                        "effective_at":"2026-10-01T06:35:33+00:00",
+                        "decision":"INDEPENDENT_FROM_CURRENT_VVPQ",
+                    },
+                    "production_role":"ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION",
+                },
+            },
             "rainfall":{"status":"FRESH","stations":{"c":{"station_name":"Cửa Cạn","accumulation_mm":21,"qc":"PASS"}}}
         }
         aqi={"status":"POINT_NUMERIC_READY","points":{"duong_dong":{"aqi_us":58,"category":"MODERATE","aqi_source":"IQAIR_COMMUNITY_REALTIME","pm25_ugm3":4,"pm10_ugm3":6,"model_aqi_us":22}}}
@@ -58,6 +77,15 @@ class CriticalPayloadTests(unittest.TestCase):
         self.assertNotIn("outlook",p["points"]["duong_dong"])
         self.assertEqual(p["public_forecast"],"JOTRIP_ENSEMBLE_LOCAL")
         self.assertEqual(p["sources"]["ECMWF"]["status"],"PASS")
+        self.assertEqual(p["actual"]["synop_48917"]["identity_resolution_status"],"LOCKED")
+        self.assertEqual(
+            p["actual"]["synop_48917"]["identity_resolution_id"],
+            "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
+        )
+        self.assertEqual(
+            p["actual"]["synop_48917"]["identity_resolution_effective_at"],
+            "2026-10-01T06:35:33+00:00",
+        )
         self.assertLess(len(json.dumps(p,ensure_ascii=False).encode()),30000)
 
 if __name__=="__main__":
