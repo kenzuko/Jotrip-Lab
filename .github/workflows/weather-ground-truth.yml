@@ -397,8 +397,11 @@ jobs:
           corpus_dir.mkdir(parents=True,exist_ok=True)
           (corpus_dir/'verified-latest.json').write_text(
               json.dumps(corpus,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-          (corpus_dir/'source-registry.json').write_text(
+          (corpus_dir/'research-source-registry.json').write_text(
               json.dumps(corpus.get('source_registry') or {},ensure_ascii=False,indent=2)+'\n',
+              encoding='utf-8')
+          (corpus_dir/'source-registry.json').write_text(
+              json.dumps(gt.get('source_registry') or {},ensure_ascii=False,indent=2)+'\n',
               encoding='utf-8')
 
           # Immutable raw SYNOP observation archive. A deterministic observation
