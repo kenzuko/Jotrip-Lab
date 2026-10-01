@@ -1,8 +1,15 @@
 {
   "module": "JoTrip Weather Ground Truth",
   "state": "READY",
-  "generated_at": "2026-10-01T06:11:47.762557+00:00",
+  "generated_at": "2026-10-01T06:12:25.770994+00:00",
   "vvpq": "FRESH",
+  "synop_48917": {
+    "status": "FRESH",
+    "latest_observed_at": "2026-10-01T00:00:00+00:00",
+    "age_minutes": 372.4,
+    "source_namespace": "WMO_INDEX",
+    "role": "ACTUAL_VALIDATION_STREAM_NOT_SPATIAL_POINT_ANCHOR"
+  },
   "vrain": "STALE",
   "rain_stations": [
     "cua_can",
@@ -10,6 +17,16 @@
     "an_thoi"
   ],
   "increment_ready": [],
+  "groundtruth_corpus": {
+    "record_count": 28,
+    "counts_by_class": {
+      "OFFICIAL_AGGREGATE_OBS": 13,
+      "PUBLISHED_STATION_OBS": 2,
+      "RAW_OBS": 13
+    },
+    "source_count": 18,
+    "canonical_path": "data/weather-groundtruth/corpus/verified-latest.json"
+  },
   "training_usability": {
     "vvpq": {
       "usable_for_training": true,
