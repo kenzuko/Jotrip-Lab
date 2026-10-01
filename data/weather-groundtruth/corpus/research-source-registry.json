@@ -1,0 +1,296 @@
+{
+  "schema_version": "groundtruth-source-registry-v2",
+  "generated_from": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
+  "identity_key": "namespace+identifier+station_epoch+timestamp",
+  "live_actual_policy": "Only timestamped in-situ or raw coded observations are current-time ACTUAL. Historical, published, satellite, model and fusion layers remain separate.",
+  "sources": [
+    {
+      "id": "vvpq_metar_speci",
+      "namespace": "ICAO",
+      "identifier": "VVPQ",
+      "class": "RAW_OBS",
+      "status": "ACTIVE_LIVE",
+      "role": "CURRENT_ACTUAL_AND_VERIFICATION",
+      "variables": [
+        "wind",
+        "visibility",
+        "present_weather",
+        "cloud",
+        "temperature",
+        "dewpoint",
+        "pressure"
+      ],
+      "notes": "AWOS SUTRON physical system documented. Numeric rain/lightning sensor telemetry is not inferred from METAR codes."
+    },
+    {
+      "id": "wmo_48917_synop",
+      "namespace": "WMO_INDEX",
+      "identifier": "48917",
+      "class": "RAW_OBS",
+      "status": "ACTIVE_NEAR_REALTIME",
+      "role": "ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION",
+      "variables": [
+        "wind",
+        "temperature",
+        "dewpoint",
+        "station_pressure",
+        "sea_level_pressure",
+        "precipitation_when_reported",
+        "sst_when_section2_reported",
+        "visual_wind_wave_when_section2_reported"
+      ],
+      "notes": "Current raw 48917 SYNOP remains active by synoptic cadence. Treat as an independent near-real-time ground-observation stream from current VVPQ, with high identity confidence at station-program level. Exact sensor site remains station-metadata precision; never merge WMO_INDEX:48917 with ICAO:VVPQ or KTT identifiers solely by cross-id.",
+      "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
+      "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
+      "identity_confidence": "HIGH",
+      "coordinates": {
+        "lat": 10.22,
+        "lon": 103.97,
+        "precision": "STATION_METADATA_APPROX_0_01_DEG"
+      },
+      "location_context": "Duong Dong area, Phu Quoc",
+      "relation_to_vvpq": "Independent observation stream from current ICAO:VVPQ airport AWOS/METAR. Do not deduplicate by WMO/ICAO cross-id mapping alone.",
+      "current_vvpq_coordinates": {
+        "lat": 10.169722,
+        "lon": 103.993056
+      },
+      "relocation_history": {
+        "status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
+        "note": "Current JMA/TCC 2026 metadata remains near 10.22N,103.97E. Current VVPQ AIP ARP is 10.169722N,103.993056E. Exact sensor-level station history remains less precise than these station metadata records."
+      },
+      "identity_conflict": {
+        "status": "THIRD_PARTY_CROSS_ID_CONFLICT",
+        "note": "OGIMET associates VVPQ with synoptic indicator/WIGOS 48917. This is retained as a metadata cross-link, not accepted as proof of physical co-location."
+      },
+      "identity_evidence": [
+        {
+          "source": "JMA_TCC",
+          "role": "CURRENT_WMO_METADATA",
+          "fact": "48917 PHU QUOC at approximately 10.22N,103.97E, current 2026 station reporting"
+        },
+        {
+          "source": "VIETNAM_KTTV_OBSERVATION_BOOK",
+          "role": "NATIONAL_OPERATIONAL_METADATA",
+          "fact": "Hai van Phu Quoc BHV1/SHV1 uses station code 48917"
+        },
+        {
+          "source": "VIETNAM_AIP_VVPQ",
+          "role": "CURRENT_AIRPORT_METADATA",
+          "fact": "Current VVPQ ARP 10.169722N,103.993056E, 7 km south of Duong Dong"
+        },
+        {
+          "source": "LIVE_RAW_STREAM_COMPARISON_20261001",
+          "role": "STREAM_EVIDENCE",
+          "fact": "Current 48917 raw SYNOP and VVPQ METAR coexist at identical timestamps with distinct observations; 48917 also carries SYNOP Section 222 marine groups"
+        }
+      ]
+    },
+    {
+      "id": "vrain_phu_quoc",
+      "namespace": "VRAIN_PUBLIC",
+      "identifier": "PHU_QUOC_GAUGES",
+      "class": "RAW_OBS",
+      "status": "ACTIVE_LIVE",
+      "role": "CURRENT_RAIN_ACTUAL_WHEN_NEW_SAMPLE",
+      "variables": [
+        "precipitation_accumulation",
+        "short_increment_when_distinct_samples"
+      ],
+      "notes": "Fetch time is not observation time. Unchanged station payload must not create fake dry increments."
+    },
+    {
+      "id": "official_rainfall_reports",
+      "namespace": "OFFICIAL_REPORT",
+      "identifier": "PCTT_HYDROMET",
+      "class": "OFFICIAL_AGGREGATE_OBS",
+      "status": "ACTIVE_CORPUS",
+      "role": "WINDOWED_HISTORICAL_VERIFICATION",
+      "variables": [
+        "precipitation_accumulation"
+      ],
+      "notes": "Quantitative only when start/end accumulation window is explicit."
+    },
+    {
+      "id": "vvpq_awos_sensors",
+      "namespace": "AIP_AWOS",
+      "identifier": "VVPQ_SUTRON",
+      "class": "INSTRUMENT_CONFIRMED",
+      "status": "FEED_PENDING",
+      "role": "REGISTRY_ONLY_UNTIL_NUMERIC_FEED",
+      "variables": [
+        "rain_gauge",
+        "lightning",
+        "wind",
+        "visibility",
+        "temperature",
+        "humidity",
+        "pressure",
+        "present_weather"
+      ]
+    },
+    {
+      "id": "kttv_60018",
+      "namespace": "KTT_AUTOMATED_ID",
+      "identifier": "60018",
+      "class": "INSTRUMENT_CONFIRMED",
+      "status": "RAW_EXPORT_CONFIRMED_VALUE_PARSE_PENDING",
+      "role": "CANDIDATE_LIVE_MARINE_ACTUAL",
+      "variables": [
+        "wind_ff",
+        "wind_dd",
+        "gust_2m",
+        "gust_2s",
+        "water_level_H",
+        "TM02",
+        "Hmax",
+        "HM0"
+      ],
+      "notes": "Public XLSX export acquisition confirmed for sid=33. Do not promote until numeric rows/timestamps are parsed and retained."
+    },
+    {
+      "id": "field_observations",
+      "namespace": "JOTRIP_FIELD",
+      "identifier": "OPENPQ_VERIFIED_FIELD",
+      "class": "FIELD_OBS",
+      "status": "CHANNEL_ACTIVE",
+      "role": "MANUAL_VERIFICATION_ONLY",
+      "variables": [
+        "rain_state",
+        "wind_state",
+        "local_conditions"
+      ],
+      "notes": "Only operator/time/location verified records qualify."
+    },
+    {
+      "id": "hadisd_489170",
+      "namespace": "HADISD",
+      "identifier": "489170-99999",
+      "class": "QC_OBS_ARCHIVE",
+      "status": "ARCHIVE_AVAILABLE",
+      "role": "HISTORICAL_BACKTEST_QC",
+      "variables": [
+        "temperature",
+        "dewpoint",
+        "pressure",
+        "wind",
+        "related_station_fields"
+      ]
+    },
+    {
+      "id": "noaa_isd_489170",
+      "namespace": "NOAA_ISD",
+      "identifier": "489170-99999",
+      "class": "RAW_OBS_ARCHIVE",
+      "status": "ARCHIVE_AVAILABLE",
+      "role": "HISTORICAL_BACKTEST",
+      "variables": [
+        "atmospheric_fields",
+        "marine_fields_when_reported"
+      ],
+      "notes": "Prefer full legacy ISD for marine groups; ISD-Lite is atmospheric subset."
+    },
+    {
+      "id": "phu_quoc_tide_gauge",
+      "namespace": "NATIONAL_MARINE_STATION",
+      "identifier": "PHU_QUOC",
+      "class": "CANDIDATE_OBS",
+      "status": "TIME_SERIES_EXTRACTION_PENDING",
+      "role": "HISTORICAL_MARINE_GROUNDTRUTH",
+      "variables": [
+        "observed_water_level"
+      ],
+      "notes": "Keep datum/reference with every record. Do not substitute astronomical tide prediction."
+    },
+    {
+      "id": "phu_quoc_marine_sst",
+      "namespace": "NATIONAL_MARINE_STATION",
+      "identifier": "PHU_QUOC_SST",
+      "class": "IN_SITU_MARINE_OBS",
+      "status": "HISTORICAL_HOLDER_CONFIRMED_RAW_SERIES_PENDING",
+      "role": "HISTORICAL_MARINE_VERIFICATION",
+      "variables": [
+        "sea_surface_temperature"
+      ]
+    },
+    {
+      "id": "phu_quoc_awac_wave",
+      "namespace": "AWAC_CAMPAIGN",
+      "identifier": "PHU_QUOC_2022",
+      "class": "IN_SITU_MARINE_OBS",
+      "status": "RAW_SERIES_PENDING",
+      "role": "HISTORICAL_WAVE_VERIFICATION",
+      "variables": [
+        "Hsig",
+        "Tp"
+      ],
+      "notes": "Do not digitize figures and relabel as raw."
+    },
+    {
+      "id": "an_thoi_surface_station",
+      "namespace": "NATIONAL_SURFACE_STATION",
+      "identifier": "AN_THOI",
+      "class": "INSTRUMENT_CONFIRMED",
+      "status": "DIRECT_FEED_UNRESOLVED",
+      "role": "CANDIDATE_SOUTH_ISLAND_ACTUAL",
+      "variables": [
+        "temperature",
+        "humidity",
+        "rainfall",
+        "wind"
+      ]
+    },
+    {
+      "id": "bhv1_phu_quoc",
+      "namespace": "KTT_APP_BHV1_SID",
+      "identifier": "60",
+      "class": "OBSERVATION_BOOK_SURFACE_CONFIRMED",
+      "status": "VALUES_NOT_ACQUIRED",
+      "role": "MARINE_EXTRACTION_TARGET"
+    },
+    {
+      "id": "shv1_phu_quoc",
+      "namespace": "KTT_APP_SHV1_SID",
+      "identifier": "82",
+      "class": "OBSERVATION_BOOK_SURFACE_CONFIRMED",
+      "status": "VALUES_NOT_ACQUIRED",
+      "role": "MARINE_EXTRACTION_TARGET"
+    },
+    {
+      "id": "regional_sentinels",
+      "namespace": "REGIONAL_OBS",
+      "identifier": "THO_CHU_RACH_GIA_KHLONG_YAI",
+      "class": "REGIONAL_OBS",
+      "status": "AVAILABLE",
+      "role": "CROSSCHECK_ONLY_NOT_PHU_QUOC_GROUNDTRUTH"
+    },
+    {
+      "id": "smart_city_environment",
+      "namespace": "PHU_QUOC_SMART_CITY",
+      "identifier": "ENVIRONMENT_SENSORS",
+      "class": "CANDIDATE_OBS",
+      "status": "HISTORICAL_DATABASE_UNRESOLVED",
+      "role": "REGISTRY_ONLY"
+    },
+    {
+      "id": "gesla_psmsl",
+      "namespace": "INTERNATIONAL_TIDE_ARCHIVES",
+      "identifier": "PHU_QUOC",
+      "class": "EXCLUDED_DIRECT_SOURCE",
+      "status": "DIRECT_PHU_QUOC_NOT_FOUND",
+      "role": "REGIONAL_QA_ONLY"
+    }
+  ],
+  "excluded_from_groundtruth": [
+    "ECMWF",
+    "GEFS",
+    "ICON",
+    "ERA5",
+    "HYCOM",
+    "CAMS",
+    "satellite_derived_rainfall",
+    "radar_derived_rainfall_without_gauge_verification",
+    "astronomical_tide_prediction",
+    "fusion_analysis",
+    "interpolation"
+  ]
+}
