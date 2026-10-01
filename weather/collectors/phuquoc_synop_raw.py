@@ -29,10 +29,20 @@ STREAM_IDENTITY = {
     "source_namespace": "WMO_INDEX",
     "identifier": "48917",
     "station_name": "PHU QUOC",
-    "reference_lat": 10.22,
-    "reference_lon": 103.97,
-    "station_epoch": "CURRENT_METADATA_EPOCH_UNRESOLVED",
-    "identity_policy": "Do not merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 by identifier alone.",
+    # Do not publish one coordinate as "current" while authoritative/operational
+    # metadata disagree. Candidate coordinates stay in the registry.
+    "reference_lat": None,
+    "reference_lon": None,
+    "station_epoch": "IDENTITY_PENDING_POST_2012",
+    "station_identity_status": "CONFLICTING_OPERATIONAL_AND_CLIMATE_METADATA",
+    "independence_from_vvpq": "UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE",
+    "deduplication_group": "PHU_QUOC_48917_VVPQ_PENDING",
+    "evidence_weight_for_independent_source_count": 0,
+    "identity_policy": (
+        "Archive raw SYNOP, but do not count it as independent from ICAO:VVPQ, "
+        "do not use it as a Local Now spatial anchor, and do not train from it "
+        "until station identity/current coordinates/relocation history are resolved."
+    ),
 }
 
 
@@ -92,7 +102,7 @@ def _parse_rows(raw_csv: str) -> list[dict[str, Any]]:
             **STREAM_IDENTITY,
             "source": SOURCE,
             "source_channel": "SYNOP_AAXX_RAW",
-            "data_class": "ACTUAL",
+            "data_class": "RAW_OBS_IDENTITY_PENDING",
             "observation_class": "RAW_OBS",
             "observed_at": obs.isoformat(),
             "raw_observation": report,
@@ -116,7 +126,7 @@ def collect(begin: datetime, end: datetime) -> dict[str, Any]:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         **STREAM_IDENTITY,
         "source": SOURCE,
-        "data_class": "ACTUAL",
+        "data_class": "RAW_OBS_IDENTITY_PENDING",
         "observation_class": "RAW_OBS",
         "begin": begin.isoformat(),
         "end": end.isoformat(),
@@ -138,9 +148,11 @@ def compact_live(payload: dict[str, Any], now: datetime | None = None) -> dict[s
             age = max(0.0, (now - t).total_seconds() / 60.0)
         except Exception:
             age = None
-    status = "UNAVAILABLE" if not latest else ("FRESH" if age is not None and age <= 480 else "STALE")
+    feed_freshness = "UNAVAILABLE" if not latest else ("FRESH" if age is not None and age <= 480 else "STALE")
+    status = "UNAVAILABLE" if not latest else "IDENTITY_PENDING"
     return {
         "status": status,
+        "feed_freshness": feed_freshness,
         "source": payload.get("source"),
         "source_namespace": payload.get("source_namespace"),
         "identifier": payload.get("identifier"),
@@ -156,7 +168,11 @@ def compact_live(payload: dict[str, Any], now: datetime | None = None) -> dict[s
         "latest": latest,
         "recent_observations": rows[-8:],
         "recent_count": len(rows),
-        "production_role": "ACTUAL_VALIDATION_STREAM_NOT_SPATIAL_POINT_ANCHOR",
+        "station_identity_status": payload.get("station_identity_status"),
+        "independence_from_vvpq": payload.get("independence_from_vvpq"),
+        "deduplication_group": payload.get("deduplication_group"),
+        "evidence_weight_for_independent_source_count": 0,
+        "production_role": "RAW_OBS_ARCHIVE_ONLY_UNTIL_STATION_IDENTITY_RESOLVED",
     }
 
 
