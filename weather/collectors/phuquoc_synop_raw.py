@@ -133,36 +133,73 @@ def collect(begin: datetime, end: datetime) -> dict[str, Any]:
     }
 
 
+def _has_runtime_numeric(row: dict[str, Any]) -> bool:
+    decoded = row.get("decoded_actual") or {}
+    wind = decoded.get("wind") or {}
+    return any(
+        value is not None
+        for value in (
+            wind.get("speed_kmh"),
+            decoded.get("air_temperature_c"),
+            decoded.get("dewpoint_c"),
+            decoded.get("station_pressure_hpa"),
+            decoded.get("sea_level_pressure_hpa"),
+        )
+    )
+
+
 def compact_live(payload: dict[str, Any], now: datetime | None = None) -> dict[str, Any]:
     now = now or datetime.now(timezone.utc)
     rows = payload.get("observations") or []
     latest = rows[-1] if rows else None
-    age = None
-    if latest:
+    numeric_rows = [row for row in rows if _has_runtime_numeric(row)]
+    latest_numeric = numeric_rows[-1] if numeric_rows else None
+
+    def age_minutes(row: dict[str, Any] | None) -> float | None:
+        if not row:
+            return None
         try:
-            t = datetime.fromisoformat(str(latest["observed_at"]).replace("Z", "+00:00")).astimezone(timezone.utc)
-            age = max(0.0, (now - t).total_seconds() / 60.0)
+            t = datetime.fromisoformat(str(row["observed_at"]).replace("Z", "+00:00")).astimezone(timezone.utc)
+            return max(0.0, (now - t).total_seconds() / 60.0)
         except Exception:
-            age = None
-    status = "UNAVAILABLE" if not latest else ("FRESH" if age is not None and age <= 480 else "STALE")
+            return None
+
+    feed_age = age_minutes(latest)
+    numeric_age = age_minutes(latest_numeric)
+    status = "UNAVAILABLE" if not latest else ("FRESH" if feed_age is not None and feed_age <= 480 else "STALE")
+    numeric_status = (
+        "UNAVAILABLE" if not latest_numeric
+        else ("FRESH" if numeric_age is not None and numeric_age <= 480 else "STALE")
+    )
     return {
         "status": status,
+        "numeric_status": numeric_status,
         "source": payload.get("source"),
         "source_namespace": payload.get("source_namespace"),
         "identifier": payload.get("identifier"),
         "station_name": payload.get("station_name"),
         "reference_lat": payload.get("reference_lat"),
         "reference_lon": payload.get("reference_lon"),
+        "coordinate_precision": payload.get("coordinate_precision"),
+        "location_context": payload.get("location_context"),
         "station_epoch": payload.get("station_epoch"),
+        "physical_identity": payload.get("physical_identity"),
+        "identity_status": payload.get("identity_status"),
+        "identity_confidence": payload.get("identity_confidence"),
         "identity_policy": payload.get("identity_policy"),
+        "relocation_status": payload.get("relocation_status"),
         "provenance_url": payload.get("provenance_url"),
         "checked_at": payload.get("generated_at"),
         "latest_observed_at": latest.get("observed_at") if latest else None,
-        "age_minutes": round(age, 1) if age is not None else None,
+        "age_minutes": round(feed_age, 1) if feed_age is not None else None,
+        "latest_numeric_observed_at": latest_numeric.get("observed_at") if latest_numeric else None,
+        "numeric_age_minutes": round(numeric_age, 1) if numeric_age is not None else None,
         "latest": latest,
+        "latest_numeric": latest_numeric,
         "recent_observations": rows[-8:],
         "recent_count": len(rows),
         "production_role": "ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION",
+        "runtime_eligible": bool(numeric_status == "FRESH" and payload.get("identity_status") == "INDEPENDENT_FROM_CURRENT_VVPQ"),
     }
 
 
