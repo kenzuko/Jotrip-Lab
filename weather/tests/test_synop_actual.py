@@ -44,14 +44,16 @@ class SynopActualDecodeTests(unittest.TestCase):
             "source_namespace":"WMO_INDEX",
             "identifier":"48917",
             "station_name":"PHU QUOC",
-            "reference_lat":None,
-            "reference_lon":None,
-            "station_epoch":"IDENTITY_PENDING_POST_2012",
-            "station_identity_status":"CONFLICTING_OPERATIONAL_AND_CLIMATE_METADATA",
-            "independence_from_vvpq":"UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE",
-            "deduplication_group":"PHU_QUOC_48917_VVPQ_PENDING",
-            "evidence_weight_for_independent_source_count":0,
-            "identity_policy":"quarantine",
+            "reference_lat":10.2166666667,
+            "reference_lon":103.9666666667,
+            "reference_elevation_m":3.0,
+            "station_epoch":"WMO_OSCAR_CURRENT_FROM_2016_04_28",
+            "station_identity_status":"RESOLVED_WMO_OSCAR",
+            "independence_from_vvpq":"CONFIRMED_INDEPENDENT_PHYSICAL_SITE",
+            "deduplication_group":"WMO_48917_DUONG_DONG",
+            "evidence_weight_for_independent_source_count":1,
+            "identity_confidence":"HIGH",
+            "identity_policy":"resolved",
             "provenance_url":"https://example.test",
             "observations":[{
                 "observed_at":"2026-10-01T03:00:00+00:00",
@@ -62,13 +64,15 @@ class SynopActualDecodeTests(unittest.TestCase):
             }],
         }
         out=compact_live(payload,datetime(2026,10,1,6,0,tzinfo=timezone.utc))
-        self.assertEqual(out["status"],"IDENTITY_PENDING")
+        self.assertEqual(out["status"],"FRESH")
         self.assertEqual(out["feed_freshness"],"FRESH")
         self.assertEqual(out["source_namespace"],"WMO_INDEX")
         self.assertEqual(out["identifier"],"48917")
-        self.assertEqual(out["independence_from_vvpq"],"UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE")
-        self.assertEqual(out["evidence_weight_for_independent_source_count"],0)
-        self.assertIn("ARCHIVE_ONLY",out["production_role"])
+        self.assertEqual(out["independence_from_vvpq"],"CONFIRMED_INDEPENDENT_PHYSICAL_SITE")
+        self.assertEqual(out["evidence_weight_for_independent_source_count"],1)
+        self.assertEqual(out["reference_lat"],10.2166666667)
+        self.assertEqual(out["reference_lon"],103.9666666667)
+        self.assertEqual(out["production_role"],"INDEPENDENT_GROUND_OBSERVATION_CROSSCHECK")
 
 
 if __name__=="__main__":
