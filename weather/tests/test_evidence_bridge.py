@@ -40,17 +40,19 @@ class EvidenceBridgeTests(unittest.TestCase):
         self.assertEqual(out["local_now"]["data_class"], "ESTIMATED_NOW")
         self.assertEqual(out["local_now"]["points"]["an_thoi"]["status"], "AVAILABLE")
 
-    def test_identity_pending_synop_never_enters_actual_set(self):
+    def test_resolved_synop_enters_actual_as_independent_crosscheck(self):
         current = {
             "groundtruth": {
                 "status": "READY",
                 "atmosphere": {
                     "vvpq": {"data_class": "ACTUAL", "qc": "PASS"},
                     "synop_48917": {
-                        "status": "IDENTITY_PENDING",
+                        "status": "FRESH",
                         "source_namespace": "WMO_INDEX",
                         "identifier": "48917",
-                        "evidence_weight_for_independent_source_count": 0,
+                        "station_identity_status": "RESOLVED_WMO_OSCAR",
+                        "independence_from_vvpq": "CONFIRMED_INDEPENDENT_PHYSICAL_SITE",
+                        "evidence_weight_for_independent_source_count": 1,
                     },
                 },
                 "rainfall": {"status": "FRESH", "stations": {}},
@@ -60,14 +62,14 @@ class EvidenceBridgeTests(unittest.TestCase):
             current_bundle=current, nowcast={}, local_ensemble={}, tide={},
             point_authority=AUTH, cutoff_time="2026-09-22T06:00:00+07:00",
         )
-        self.assertNotIn("synop_48917", out["actual"])
+        self.assertEqual(out["actual"]["synop_48917"]["status"], "FRESH")
         self.assertEqual(
-            out["actual"]["identity_pending_sources"]["synop_48917"]["status"],
-            "IDENTITY_PENDING",
+            out["actual"]["synop_48917"]["independence_from_vvpq"],
+            "CONFIRMED_INDEPENDENT_PHYSICAL_SITE",
         )
         self.assertEqual(
-            out["actual"]["identity_pending_sources"]["synop_48917"]["evidence_weight_for_independent_source_count"],
-            0,
+            out["actual"]["synop_48917"]["evidence_weight_for_independent_source_count"],
+            1,
         )
 
     def test_local_now_rejects_old_an_thoi_reference(self):
