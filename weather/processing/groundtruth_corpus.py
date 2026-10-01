@@ -40,6 +40,13 @@ def load_observation_seed(path: Path) -> list[dict[str, Any]]:
                 "OFFICIAL_AGGREGATE_OBS": "WINDOWED_HISTORICAL_VERIFICATION",
                 "PUBLISHED_STATION_OBS": "HISTORICAL_CORROBORATION",
             }.get(cls, "REGISTRY_ONLY")
+            if (
+                str(record.get("station_id") or "") == "48917"
+                and "SYNOP" in str(record.get("source") or "").upper()
+            ):
+                record["production_role"] = "IDENTITY_PENDING_ARCHIVE_ONLY"
+                record["independence_from_vvpq"] = "UNRESOLVED"
+                record["evidence_weight_for_independent_source_count"] = 0
             rows.append(record)
     return rows
 
