@@ -37,16 +37,19 @@ class GroundTruthCorpusTests(unittest.TestCase):
         self.assertNotEqual(sources["wmo_48917_synop"]["namespace"],sources["vvpq_metar_speci"]["namespace"])
 
         wmo=sources["wmo_48917_synop"]
-        self.assertEqual(wmo["status"],"IDENTITY_PENDING")
-        self.assertEqual(wmo["independence_from_vvpq"],"UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE")
-        self.assertEqual(wmo["evidence_weight_for_independent_source_count"],0)
+        self.assertEqual(wmo["status"],"ACTIVE_NEAR_REALTIME")
+        self.assertEqual(wmo["station_identity_status"],"RESOLVED_WMO_OSCAR")
+        self.assertEqual(wmo["independence_from_vvpq"],"CONFIRMED_INDEPENDENT_PHYSICAL_SITE")
+        self.assertEqual(wmo["evidence_weight_for_independent_source_count"],1)
+        self.assertAlmostEqual(wmo["current_coordinates"]["lat"],10.2166666667)
+        self.assertAlmostEqual(wmo["current_coordinates"]["lon"],103.9666666667)
         synop_rows=[
             r for r in payload["records"]
             if str(r.get("station_id") or "")=="48917" and "SYNOP" in str(r.get("source") or "").upper()
         ]
         self.assertTrue(synop_rows)
-        self.assertTrue(all(r["production_role"]=="IDENTITY_PENDING_ARCHIVE_ONLY" for r in synop_rows))
-        self.assertTrue(all(r["evidence_weight_for_independent_source_count"]==0 for r in synop_rows))
+        self.assertTrue(all(r["production_role"]=="INDEPENDENT_GROUND_OBSERVATION_CROSSCHECK" for r in synop_rows))
+        self.assertTrue(all(r["evidence_weight_for_independent_source_count"]==1 for r in synop_rows))
 
 
 if __name__=="__main__":
