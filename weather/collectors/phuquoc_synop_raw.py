@@ -25,30 +25,50 @@ ENDPOINTS = (
     "http://www.ogimet.com/cgi-bin/getsynop",
 )
 USER_AGENT = "JoTrip-WeatherLab/2.0 raw-SYNOP-groundtruth"
-IDENTITY_RESOLUTION = {
-    "resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
-    "status": "LOCKED",
-    "effective_at": "2026-10-01T06:35:33+00:00",
-    "decision": "INDEPENDENT_FROM_CURRENT_VVPQ",
-    "confidence": "HIGH",
-    "supersedes_legacy_ingest_assessments": [
-        "IDENTITY_PENDING_POST_2012",
-        "CONFLICTING_OPERATIONAL_AND_CLIMATE_METADATA",
-        "UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE",
-    ],
-    "evidence": [
-        "JMA/TCC current 2026 metadata: WMO 48917 PHU QUOC near 10.22N,103.97E",
-        "Vietnam KTTV BHV1/SHV1 station book: Hai van Phu Quoc uses station code 48917",
-        "Vietnam KTTV automated station list: Phu Quoc automated station is separately identified as 60018",
-        "Current VVPQ AIP coordinates are near 10.169722N,103.993056E",
-        "Same-timestamp 48917 SYNOP and VVPQ METAR coexist with distinct values; 48917 also carries SYNOP Section 222 marine groups",
-    ],
-    "raw_archive_semantics": (
-        "Immutable raw files preserve the identity assessment present when that observation was first archived. "
-        "Runtime identity is governed by this current versioned resolution; older embedded identity annotations "
-        "are provenance history and do not override the current gate."
-    ),
-}
+def _load_identity_resolution() -> dict[str, Any]:
+    registry_path = Path(__file__).resolve().parents[1] / "config" / "groundtruth_sources.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    source = next(
+        (
+            row for row in registry.get("sources", [])
+            if row.get("id") == "wmo_48917_synop"
+        ),
+        None,
+    )
+    if not source:
+        raise RuntimeError("groundtruth registry is missing wmo_48917_synop")
+    resolution = dict(source.get("identity_resolution") or {})
+    required = {
+        "resolution_id",
+        "status",
+        "effective_at",
+        "decision",
+        "confidence",
+        "raw_archive_semantics",
+    }
+    missing = sorted(required - resolution.keys())
+    if missing:
+        raise RuntimeError(f"48917 identity resolution missing fields: {missing}")
+    if resolution.get("status") != "LOCKED":
+        raise RuntimeError("48917 identity resolution is not locked")
+    if resolution.get("decision") != source.get("identity_status"):
+        raise RuntimeError("48917 identity resolution disagrees with source registry status")
+    if resolution.get("confidence") != source.get("identity_confidence"):
+        raise RuntimeError("48917 identity resolution disagrees with source registry confidence")
+    resolution["registry_source_id"] = source.get("id")
+    resolution["evidence"] = [
+        {
+            "source": item.get("source"),
+            "role": item.get("role"),
+            "fact": item.get("fact"),
+        }
+        for item in source.get("identity_evidence", [])
+    ]
+    resolution["identity_conflict"] = source.get("identity_conflict")
+    return resolution
+
+
+IDENTITY_RESOLUTION = _load_identity_resolution()
 STREAM_IDENTITY = {
     "source_namespace": "WMO_INDEX",
     "identifier": "48917",
