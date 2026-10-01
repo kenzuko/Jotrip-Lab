@@ -80,6 +80,7 @@ def main() -> None:
         "config_epoch": None,
         "decoder": None,
         "points": {},
+        "local_features": null,
         "errors": [],
     }
 
@@ -167,6 +168,7 @@ def main() -> None:
                 "negative_evidence_policy": decoded["negative_evidence_policy"],
             }
             output["points"] = decoded["points"]
+            output["local_features"] = decoded.get("local_features")
             output["status"] = "SHADOW_POINT_OBSERVATIONS_READY"
         except Exception as exc:
             output["status"] = "DECODE_FAILED"
@@ -180,6 +182,10 @@ def main() -> None:
         "observed_at": output["observed_at"],
         "config_epoch": output["config_epoch"],
         "point_count": len(output["points"]),
+        "component_counts": {
+            key: len(value)
+            for key, value in ((output.get("local_features") or {}).get("components_by_threshold") or {}).items()
+        },
         "output": str(OUT),
     }, ensure_ascii=False, indent=2))
 
