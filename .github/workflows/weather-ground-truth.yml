@@ -135,6 +135,8 @@ jobs:
               assert resolution.get('status') == 'LOCKED'
               assert resolution.get('decision') == 'INDEPENDENT_FROM_CURRENT_VVPQ'
               assert resolution.get('resolution_id') == synop.get('identity_resolution_id')
+              assert resolution.get('registry_source_id') == 'wmo_48917_synop'
+              assert len(resolution.get('evidence') or []) >= 5
               if synop.get('runtime_eligible'):
                   assert synop.get('numeric_status') == 'FRESH'
                   assert synop.get('latest_numeric_observed_at')
