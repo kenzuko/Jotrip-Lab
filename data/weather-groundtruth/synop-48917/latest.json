@@ -1,6 +1,6 @@
 {
   "schema_version": "weather-raw-synop-v3",
-  "generated_at": "2026-10-01T08:45:01.290849+00:00",
+  "generated_at": "2026-10-01T08:48:36.328967+00:00",
   "source_namespace": "WMO_INDEX",
   "identifier": "48917",
   "station_name": "PHU QUOC",
@@ -26,21 +26,47 @@
       "CONFLICTING_OPERATIONAL_AND_CLIMATE_METADATA",
       "UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE"
     ],
+    "evidence_from": "identity_evidence",
+    "raw_archive_semantics": "Immutable raw files preserve the identity assessment present when that observation was first archived. Runtime identity is governed by this current versioned resolution; older embedded identity annotations are provenance history and do not override the current gate.",
+    "registry_source_id": "wmo_48917_synop",
     "evidence": [
-      "JMA/TCC current 2026 metadata: WMO 48917 PHU QUOC near 10.22N,103.97E",
-      "Vietnam KTTV BHV1/SHV1 station book: Hai van Phu Quoc uses station code 48917",
-      "Vietnam KTTV automated station list: Phu Quoc automated station is separately identified as 60018",
-      "Current VVPQ AIP coordinates are near 10.169722N,103.993056E",
-      "Same-timestamp 48917 SYNOP and VVPQ METAR coexist with distinct values; 48917 also carries SYNOP Section 222 marine groups"
+      {
+        "source": "JMA_TCC",
+        "role": "CURRENT_WMO_METADATA",
+        "fact": "48917 PHU QUOC at approximately 10.22N,103.97E, current 2026 station reporting"
+      },
+      {
+        "source": "VIETNAM_KTTV_OBSERVATION_BOOK",
+        "role": "NATIONAL_OPERATIONAL_METADATA",
+        "fact": "Hai van Phu Quoc BHV1/SHV1 uses station code 48917"
+      },
+      {
+        "source": "VIETNAM_KTTV_AUTOMATED_STATION_LIST",
+        "role": "NATIONAL_OPERATIONAL_METADATA",
+        "fact": "Phu Quoc automated station is separately identified as 60018"
+      },
+      {
+        "source": "VIETNAM_AIP_VVPQ",
+        "role": "CURRENT_AIRPORT_METADATA",
+        "fact": "Current VVPQ ARP 10.169722N,103.993056E, 7 km south of Duong Dong"
+      },
+      {
+        "source": "LIVE_RAW_STREAM_COMPARISON_20261001",
+        "role": "STREAM_EVIDENCE",
+        "fact": "Current 48917 raw SYNOP and VVPQ METAR coexist at identical timestamps with distinct observations; 48917 also carries SYNOP Section 222 marine groups"
+      }
     ],
-    "raw_archive_semantics": "Immutable raw files preserve the identity assessment present when that observation was first archived. Runtime identity is governed by this current versioned resolution; older embedded identity annotations are provenance history and do not override the current gate."
+    "identity_conflict": {
+      "status": "THIRD_PARTY_CROSS_ID_CONFLICT",
+      "note": "OGIMET associates VVPQ with synoptic indicator/WIGOS 48917. This is retained as a metadata cross-link, not accepted as proof of physical co-location."
+    }
   },
   "source": "OGIMET_GETSYNOP",
   "data_class": "ACTUAL",
   "observation_class": "RAW_OBS",
-  "begin": "2026-09-29T08:44:59.900559+00:00",
-  "end": "2026-10-01T08:44:59.900559+00:00",
-  "provenance_url": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202609290844&end=202610010844&lang=eng&header=yes",
+  "begin": "2026-09-29T08:48:33.813197+00:00",
+  "end": "2026-10-01T08:48:33.813197+00:00",
+  "provenance_url": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202609290848&end=202610010848&lang=eng&header=yes",
   "raw_response_hash": "001b29c5ec5916b0afe7a47824437485f79788df3c87b4ab9662b12156e1dc0d",
   "count": 11,
   "observations": [

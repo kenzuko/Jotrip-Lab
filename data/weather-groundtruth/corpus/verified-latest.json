@@ -1,6 +1,6 @@
 {
   "schema_version": "weather-groundtruth-corpus-v1",
-  "generated_at": "2026-10-01T08:45:01.291906+00:00",
+  "generated_at": "2026-10-01T08:48:36.329850+00:00",
   "record_count": 28,
   "counts_by_class": {
     "OFFICIAL_AGGREGATE_OBS": 13,
@@ -572,6 +572,20 @@
         "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
         "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
         "identity_confidence": "HIGH",
+        "identity_resolution": {
+          "resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
+          "status": "LOCKED",
+          "effective_at": "2026-10-01T06:35:33+00:00",
+          "decision": "INDEPENDENT_FROM_CURRENT_VVPQ",
+          "confidence": "HIGH",
+          "supersedes_legacy_ingest_assessments": [
+            "IDENTITY_PENDING_POST_2012",
+            "CONFLICTING_OPERATIONAL_AND_CLIMATE_METADATA",
+            "UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE"
+          ],
+          "evidence_from": "identity_evidence",
+          "raw_archive_semantics": "Immutable raw files preserve the identity assessment present when that observation was first archived. Runtime identity is governed by this current versioned resolution; older embedded identity annotations are provenance history and do not override the current gate."
+        },
         "coordinates": {
           "lat": 10.22,
           "lon": 103.97,
@@ -601,6 +615,11 @@
             "source": "VIETNAM_KTTV_OBSERVATION_BOOK",
             "role": "NATIONAL_OPERATIONAL_METADATA",
             "fact": "Hai van Phu Quoc BHV1/SHV1 uses station code 48917"
+          },
+          {
+            "source": "VIETNAM_KTTV_AUTOMATED_STATION_LIST",
+            "role": "NATIONAL_OPERATIONAL_METADATA",
+            "fact": "Phu Quoc automated station is separately identified as 60018"
           },
           {
             "source": "VIETNAM_AIP_VVPQ",

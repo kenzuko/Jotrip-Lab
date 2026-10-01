@@ -1,6 +1,6 @@
 {
   "schema_version": "groundtruth-operational-registry-v1",
-  "generated_at": "2026-10-01T08:45:01.292060+00:00",
+  "generated_at": "2026-10-01T08:48:36.329973+00:00",
   "source_count": 18,
   "tiers": [
     "ACTIVE_REALTIME",
@@ -35,7 +35,7 @@
       },
       "freshness": {
         "state": "FRESH",
-        "age_minutes": 15.0,
+        "age_minutes": 18.6,
         "budget_minutes": 90
       },
       "health": "HEALTHY",
@@ -63,6 +63,20 @@
       "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
       "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
       "identity_confidence": "HIGH",
+      "identity_resolution": {
+        "resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
+        "status": "LOCKED",
+        "effective_at": "2026-10-01T06:35:33+00:00",
+        "decision": "INDEPENDENT_FROM_CURRENT_VVPQ",
+        "confidence": "HIGH",
+        "supersedes_legacy_ingest_assessments": [
+          "IDENTITY_PENDING_POST_2012",
+          "CONFLICTING_OPERATIONAL_AND_CLIMATE_METADATA",
+          "UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE"
+        ],
+        "evidence_from": "identity_evidence",
+        "raw_archive_semantics": "Immutable raw files preserve the identity assessment present when that observation was first archived. Runtime identity is governed by this current versioned resolution; older embedded identity annotations are provenance history and do not override the current gate."
+      },
       "coordinates": {
         "lat": 10.22,
         "lon": 103.97,
@@ -94,6 +108,11 @@
           "fact": "Hai van Phu Quoc BHV1/SHV1 uses station code 48917"
         },
         {
+          "source": "VIETNAM_KTTV_AUTOMATED_STATION_LIST",
+          "role": "NATIONAL_OPERATIONAL_METADATA",
+          "fact": "Phu Quoc automated station is separately identified as 60018"
+        },
+        {
           "source": "VIETNAM_AIP_VVPQ",
           "role": "CURRENT_AIRPORT_METADATA",
           "fact": "Current VVPQ ARP 10.169722N,103.993056E, 7 km south of Duong Dong"
@@ -106,13 +125,13 @@
       ],
       "tier": "ACTIVE_NEAR_REALTIME",
       "provenance": {
-        "feed": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202609290844&end=202610010844&lang=eng&header=yes",
+        "feed": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202609290848&end=202610010848&lang=eng&header=yes",
         "observation_channel": "WMO FM-12 SYNOP AAXX raw",
         "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5"
       },
       "freshness": {
         "state": "FRESH",
-        "age_minutes": 165.0,
+        "age_minutes": 168.6,
         "budget_minutes": 480
       },
       "health": "HEALTHY",
@@ -139,7 +158,7 @@
       },
       "freshness": {
         "state": "STALE",
-        "age_minutes": 1525.3,
+        "age_minutes": 1528.8,
         "budget_minutes": 90
       },
       "health": "DEGRADED_STALE",
