@@ -44,10 +44,14 @@ class SynopActualDecodeTests(unittest.TestCase):
             "source_namespace":"WMO_INDEX",
             "identifier":"48917",
             "station_name":"PHU QUOC",
-            "reference_lat":10.22,
-            "reference_lon":103.97,
-            "station_epoch":"CURRENT_METADATA_EPOCH_UNRESOLVED",
-            "identity_policy":"separate",
+            "reference_lat":None,
+            "reference_lon":None,
+            "station_epoch":"IDENTITY_PENDING_POST_2012",
+            "station_identity_status":"CONFLICTING_OPERATIONAL_AND_CLIMATE_METADATA",
+            "independence_from_vvpq":"UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE",
+            "deduplication_group":"PHU_QUOC_48917_VVPQ_PENDING",
+            "evidence_weight_for_independent_source_count":0,
+            "identity_policy":"quarantine",
             "provenance_url":"https://example.test",
             "observations":[{
                 "observed_at":"2026-10-01T03:00:00+00:00",
@@ -58,10 +62,13 @@ class SynopActualDecodeTests(unittest.TestCase):
             }],
         }
         out=compact_live(payload,datetime(2026,10,1,6,0,tzinfo=timezone.utc))
-        self.assertEqual(out["status"],"FRESH")
+        self.assertEqual(out["status"],"IDENTITY_PENDING")
+        self.assertEqual(out["feed_freshness"],"FRESH")
         self.assertEqual(out["source_namespace"],"WMO_INDEX")
         self.assertEqual(out["identifier"],"48917")
-        self.assertIn("NOT_SPATIAL_POINT_ANCHOR",out["production_role"])
+        self.assertEqual(out["independence_from_vvpq"],"UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE")
+        self.assertEqual(out["evidence_weight_for_independent_source_count"],0)
+        self.assertIn("ARCHIVE_ONLY",out["production_role"])
 
 
 if __name__=="__main__":
