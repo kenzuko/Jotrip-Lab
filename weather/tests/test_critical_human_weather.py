@@ -24,7 +24,7 @@ class CriticalHumanWeatherTests(unittest.TestCase):
             "public_track_usable":True,"exit_time":"2026-09-30T03:37:00+00:00"}}}}
         payload=build(dashboard,local,ground,nowcast=nowcast)
         human=payload["human_weather"]
-        self.assertEqual(human["schema_version"],"jotrip-human-weather-v1")
+        self.assertEqual(human["schema_version"],"jotrip-human-weather-v2")
         self.assertEqual(human["reference"]["status"],"ACTUAL")
         self.assertEqual(human["reference"]["scope"],"REFERENCE_STATION_ACTUAL")
         self.assertEqual(human["reference"]["location"],"Sân bay Phú Quốc")
@@ -34,6 +34,8 @@ class CriticalHumanWeatherTests(unittest.TestCase):
         self.assertEqual(human["rain"]["an_thoi"]["intensity_code"],"light_shower")
         self.assertEqual(human["rain"]["an_thoi"]["detail"],"Dự kiến mưa sẽ giảm trong khoảng 30-45 phút.")
         self.assertEqual(payload["actual"]["vvpq"]["dewpoint_c"],27.0)
+        self.assertEqual(human["evidence_status"]["status"],"CURRENT")
+        self.assertEqual(human["evidence_status"]["observed_remote"]["himawari"]["data_class"],"OBSERVED_REMOTE")
 
     def test_critical_ensemble_stays_first_paint_compact(self):
         dashboard={"generated_at":"2026-09-30T03:00:00+00:00",
