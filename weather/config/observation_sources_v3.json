@@ -1,0 +1,329 @@
+{
+  "schema_version": "weather-observation-source-registry-v3",
+  "status": "SHADOW_ARCHITECTURE",
+  "generated_from": "Weather Engine V3 research 2026-10-01",
+  "policy": {
+    "no_source_removed_from_registry": true,
+    "new_sources_must_not_be_single_point_of_failure": true,
+    "browser_consumers_must_not_fetch_external_sources_directly": true,
+    "publicly_viewable_does_not_equal_reuse_cleared": true,
+    "null_is_never_zero": true,
+    "source_url_count_is_not_independent_evidence_count": true,
+    "rendered_observation_is_lower_confidence_than_direct_numeric_observation": true,
+    "existing_v2_runtime_remains_authority_until_v3_promotion": true
+  },
+  "evidence_classes": [
+    "GROUND_OBSERVED",
+    "MARINE_GROUND_OBSERVED",
+    "REMOTE_OBSERVED",
+    "REMOTE_RENDERED_OBSERVED",
+    "DERIVED_OBSERVATION",
+    "OFFICIAL_FORECAST",
+    "OFFICIAL_ALERT",
+    "MODEL_FORECAST",
+    "HISTORICAL_VALIDATION"
+  ],
+  "rights_states": [
+    "CLEARED",
+    "CONDITIONAL",
+    "UNRESOLVED",
+    "REJECTED"
+  ],
+  "lifecycle_states": [
+    "DISCOVERED",
+    "PROBE",
+    "ARCHIVE_ONLY",
+    "SHADOW",
+    "ACTIVE",
+    "HOLD",
+    "RETIRED"
+  ],
+  "sources": [
+    {
+      "id": "vvpq_metar_speci",
+      "provider": "Aviation Weather Center",
+      "endpoint_family": "METAR JSON",
+      "evidence_class": "GROUND_OBSERVED",
+      "acquisition_mode": "NUMERIC_API",
+      "rights_state": "CLEARED",
+      "lifecycle": "ACTIVE",
+      "independence_group": "VVPQ_AIRPORT",
+      "variables": [
+        "wind",
+        "visibility",
+        "present_weather",
+        "cloud",
+        "temperature",
+        "dewpoint",
+        "pressure"
+      ],
+      "production_dependency": true
+    },
+    {
+      "id": "vrain_phu_quoc",
+      "provider": "VRain",
+      "endpoint_family": "existing public feed",
+      "evidence_class": "GROUND_OBSERVED",
+      "acquisition_mode": "NUMERIC_API",
+      "rights_state": "CLEARED",
+      "lifecycle": "ACTIVE",
+      "independence_group": "VRAIN_PHU_QUOC",
+      "variables": [
+        "precipitation_accumulation",
+        "short_increment_when_distinct_samples"
+      ],
+      "production_dependency": true
+    },
+    {
+      "id": "wmo_48917_synop",
+      "provider": "WMO / NHMS Viet Nam",
+      "endpoint_family": "SYNOP AAXX",
+      "evidence_class": "GROUND_OBSERVED",
+      "acquisition_mode": "CODED_TEXT",
+      "rights_state": "CONDITIONAL",
+      "lifecycle": "SHADOW",
+      "independence_group": "WMO_48917_DUONG_DONG",
+      "variables": [
+        "wind",
+        "temperature",
+        "dewpoint",
+        "pressure",
+        "precipitation_when_reported",
+        "sst_when_reported",
+        "visual_wave_when_reported"
+      ],
+      "production_dependency": false,
+      "identity_ref": "weather/groundtruth/identity/wmo-48917-phu-quoc.json",
+      "note": "Identity is resolved on the parent branch as a separate physical site from VVPQ. Keep source-skill gating before it directly biases Local Now."
+    },
+    {
+      "id": "himawari_existing",
+      "provider": "JMA Himawari",
+      "endpoint_family": "existing Weather Lab collector",
+      "evidence_class": "REMOTE_OBSERVED",
+      "acquisition_mode": "NUMERIC_DERIVED_FROM_SATELLITE",
+      "rights_state": "CLEARED",
+      "lifecycle": "ACTIVE",
+      "independence_group": "HIMAWARI",
+      "variables": [
+        "cloud_top_temperature",
+        "cloud_top_height",
+        "cooling_proxy",
+        "convective_score"
+      ],
+      "production_dependency": true
+    },
+    {
+      "id": "iweather_radar_cmax",
+      "provider": "Vietnam iWeather",
+      "endpoint_family": "dashboard COM + CMAX",
+      "evidence_class": "REMOTE_OBSERVED",
+      "acquisition_mode": "PUBLIC_BROWSER_RENDERED_PRODUCT",
+      "preferred_order": [
+        "NUMERIC_GRID",
+        "GEOREFERENCED_RASTER",
+        "TILE_OR_WMS",
+        "RENDERED_INTERPRETATION"
+      ],
+      "rights_state": "UNRESOLVED",
+      "lifecycle": "SHADOW",
+      "independence_group": "VN_NATIONAL_RADAR_NETWORK",
+      "variables": [
+        "reflectivity_class",
+        "echo_geometry",
+        "motion",
+        "growth_decay"
+      ],
+      "production_dependency": false,
+      "negative_evidence_policy": "LOW_WEIGHT_AT_PHU_QUOC_UNTIL_COVERAGE_SKILL_IS_MEASURED",
+      "technical_status": "PUBLIC_BROWSER_ROUTES_CONFIRMED",
+      "discovered_routes": {
+        "latest_metadata": "/product/lastradar (JSON, naturally requested by public dashboard; session/token semantics must remain browser-managed)",
+        "rendered_radar": "/product/radar (PNG, timestamped, naturally requested by public dashboard; do not persist image while rights remain unresolved)",
+        "map_frame": "/map/?areaRadar=COM&productRadar=CMAX"
+      },
+      "interpretation_policy": "Use ephemeral browser-rendered frame for shadow interpretation only. Do not copy token, bypass auth, mirror imagery, or call protected routes."
+    },
+    {
+      "id": "iweather_lightning",
+      "provider": "Vietnam iWeather",
+      "endpoint_family": "dashboard lightning layer",
+      "evidence_class": "REMOTE_OBSERVED",
+      "acquisition_mode": "DISCOVER_BEST_AVAILABLE",
+      "preferred_order": [
+        "NUMERIC_POINTS",
+        "GEOREFERENCED_TILE",
+        "RENDERED_INTERPRETATION"
+      ],
+      "rights_state": "UNRESOLVED",
+      "lifecycle": "PROBE",
+      "independence_group": "VN_NATIONAL_LIGHTNING_NETWORK",
+      "variables": [
+        "activity_present",
+        "nearest_activity",
+        "activity_trend"
+      ],
+      "production_dependency": false,
+      "technical_status": "NOT_OBSERVED_IN_FIRST_NETWORK_CAPTURE",
+      "note": "Keep in PROBE. First unauthenticated COM+CMAX browser capture did not expose a distinct lightning route. Do not infer absence of the product."
+    },
+    {
+      "id": "iweather_radar_qpe",
+      "provider": "Vietnam iWeather",
+      "endpoint_family": "radar accumulated rainfall / QPE",
+      "evidence_class": "DERIVED_OBSERVATION",
+      "acquisition_mode": "DISCOVER_BEST_AVAILABLE",
+      "rights_state": "UNRESOLVED",
+      "lifecycle": "PROBE",
+      "independence_group": "VN_NATIONAL_RADAR_NETWORK",
+      "variables": [
+        "estimated_precipitation"
+      ],
+      "production_dependency": false,
+      "note": "Never relabel QPE as gauge actual. Compare against VRain before operational use."
+    },
+    {
+      "id": "hymetnet_radar",
+      "provider": "Vietnam Hymetnet",
+      "endpoint_family": "public radar viewer",
+      "evidence_class": "REMOTE_OBSERVED",
+      "acquisition_mode": "DISCOVER_BEST_AVAILABLE",
+      "preferred_order": [
+        "NUMERIC_GRID",
+        "GEOREFERENCED_RASTER",
+        "TILE_OR_WMS",
+        "RENDERED_INTERPRETATION"
+      ],
+      "rights_state": "UNRESOLVED",
+      "lifecycle": "HOLD",
+      "independence_group": "VN_NATIONAL_RADAR_NETWORK",
+      "variables": [
+        "reflectivity_class",
+        "echo_geometry"
+      ],
+      "production_dependency": false,
+      "note": "Retained in registry even if iWeather becomes the preferred frontend. Do not count Hymetnet and iWeather as independent radar evidence without backend lineage proof."
+    },
+    {
+      "id": "kttv_60018",
+      "provider": "Vietnam automatic hydrometeorological system",
+      "endpoint_family": "sid=33 / DG60018 / DS60018",
+      "evidence_class": "MARINE_GROUND_OBSERVED",
+      "acquisition_mode": "PUBLIC_EXPORT_OR_RENDERED_TABLE",
+      "rights_state": "UNRESOLVED",
+      "lifecycle": "HOLD",
+      "independence_group": "KTT_60018_DUONG_DONG",
+      "variables": [
+        "wind_ff",
+        "wind_dd",
+        "gust_2m",
+        "gust_2s",
+        "water_level_H",
+        "TM02",
+        "Hmax",
+        "HM0"
+      ],
+      "production_dependency": false,
+      "stop_condition": "One technical probe of public numeric export. If usable numeric rows are absent, remain HOLD and do not block V3.",
+      "technical_status": "TIMEBOX_COMPLETE_NO_USABLE_NUMERIC_MEASUREMENTS",
+      "probe_result": {
+        "date": "2026-10-01",
+        "export_rows": 146,
+        "schema_columns": [
+          "ff",
+          "dd",
+          "fxfx2m",
+          "dxdx2m",
+          "TGXH2m",
+          "fxfx2s",
+          "dxdx2s",
+          "TGXH2s",
+          "Ac",
+          "H",
+          "TM02",
+          "Hmax",
+          "HM0",
+          "Ac"
+        ],
+        "numeric_measurement_candidates": 0,
+        "decision": "HOLD_DO_NOT_BLOCK_V3"
+      },
+      "note": "Public XLSX export exists and exposes 10-minute timestamps/schema, but the one-shot timeboxed probe found no usable numeric measurement cells. Per V3 policy, stop digging and keep HOLD."
+    },
+    {
+      "id": "nchmf_public_products",
+      "provider": "NCHMF",
+      "endpoint_family": "public rain/wave products",
+      "evidence_class": "OFFICIAL_FORECAST",
+      "acquisition_mode": "REFERENCE_OR_CLEARED_PUBLIC_ROUTE",
+      "rights_state": "UNRESOLVED",
+      "lifecycle": "DISCOVERED",
+      "independence_group": "NCHMF_OFFICIAL_PRODUCTS",
+      "variables": [
+        "official_rain_forecast",
+        "official_wave_forecast"
+      ],
+      "production_dependency": false
+    },
+    {
+      "id": "nchmf_official_alerts",
+      "provider": "NCHMF",
+      "endpoint_family": "public hazard warnings",
+      "evidence_class": "OFFICIAL_ALERT",
+      "acquisition_mode": "REFERENCE_OR_CLEARED_PUBLIC_ROUTE",
+      "rights_state": "UNRESOLVED",
+      "lifecycle": "DISCOVERED",
+      "independence_group": "NCHMF_OFFICIAL_ALERTS",
+      "variables": [
+        "thunderstorm",
+        "lightning",
+        "heavy_rain",
+        "strong_wind",
+        "high_wave",
+        "tropical_cyclone"
+      ],
+      "production_dependency": false,
+      "note": " iWeather public dashboard also naturally requested /product/warningstorm with HTTP 200 in the first network capture; treat that as iWeather product lineage until provenance/rights are resolved."
+    },
+    {
+      "id": "vndms",
+      "provider": "Vietnam Disaster Monitoring System",
+      "endpoint_family": "public dashboard",
+      "evidence_class": "REMOTE_RENDERED_OBSERVED",
+      "acquisition_mode": "DISCOVERY_REFERENCE_ONLY",
+      "rights_state": "UNRESOLVED",
+      "lifecycle": "DISCOVERED",
+      "independence_group": "VNDMS_AGGREGATOR",
+      "variables": [
+        "station_discovery",
+        "provenance_discovery"
+      ],
+      "production_dependency": false,
+      "note": "Prefer original source when VNDMS identifies one. Do not double-count data already obtained from VRain or another owner source."
+    },
+    {
+      "id": "historical_synop_isd_hadisd",
+      "provider": "WMO / NOAA / HadISD archives",
+      "endpoint_family": "historical station archives",
+      "evidence_class": "HISTORICAL_VALIDATION",
+      "acquisition_mode": "ARCHIVE",
+      "rights_state": "CLEARED",
+      "lifecycle": "ACTIVE",
+      "independence_group": "HISTORICAL_48917_ARCHIVES",
+      "variables": [
+        "temperature",
+        "dewpoint",
+        "pressure",
+        "wind",
+        "precipitation",
+        "marine_when_reported"
+      ],
+      "production_dependency": false
+    }
+  ],
+  "last_research_update": "2026-10-01T08:36:04Z",
+  "research_receipts": {
+    "public_source_probe": "weather/research/v3-public-source-probe.json",
+    "iweather_network_probe": "weather/research/v3-iweather-network-probe.json"
+  }
+}

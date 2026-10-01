@@ -1,0 +1,93 @@
+name: Weather V3 shadow learning cycle
+
+# Intentionally manual-only while iWeather reuse rights are unresolved and
+# Weather V2 remains the public authority. Do not add a schedule until the
+# source-rights gate and V3 activation review are cleared.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: weather-v3-shadow-learning
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  shadow-cycle:
+    if: ${{ vars.WEATHER_V3_RADAR_SHADOW_CAPTURE_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ephemeral browser decoder dependencies
+        run: python -m pip install --disable-pip-version-check playwright==1.55.0 pillow==11.3.0
+
+      - name: Read current trusted V2 evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin data-weather --depth=1
+          git show origin/data-weather:data/weather-groundtruth/latest.json > /tmp/groundtruth.json
+          git show origin/data-weather:data/weather-nowcast/compact-latest.json > /tmp/nowcast.json
+
+      - name: Capture one ephemeral CMAX derived receipt
+        run: |
+          python -m weather.tools.build_iweather_cmax_shadow_receipt \
+            --output /tmp/current-radar.json
+
+      - name: Build one shadow learning cycle
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '{}' > /tmp/previous-radar.json
+          echo '{}' > /tmp/state-in.json
+          if git cat-file -e origin/data-weather:data/weather-v3/radar/latest.json 2>/dev/null; then
+            git show origin/data-weather:data/weather-v3/radar/latest.json > /tmp/previous-radar.json
+          fi
+          if git cat-file -e origin/data-weather:data/weather-v3/state/latest.json 2>/dev/null; then
+            git show origin/data-weather:data/weather-v3/state/latest.json > /tmp/state-in.json
+          fi
+          python -m weather.pipeline.run_v3_shadow_cycle \
+            --current-radar /tmp/current-radar.json \
+            --previous-radar /tmp/previous-radar.json \
+            --groundtruth /tmp/groundtruth.json \
+            --state-in /tmp/state-in.json \
+            --state-out /tmp/v3-state.json
+
+      - name: Build dormant UI preview from the same cycle
+        run: |
+          python -m weather.pipeline.build_v3_ui_preview \
+            --radar /tmp/current-radar.json \
+            --groundtruth /tmp/groundtruth.json \
+            --satellite /tmp/nowcast.json \
+            --events /tmp/v3-state.json \
+            --output /tmp/v3-ui-preview.json
+
+      - name: Enforce shadow and public gates
+        run: |
+          python - <<'PY'
+          import json
+          radar=json.load(open('/tmp/current-radar.json'))
+          state=json.load(open('/tmp/v3-state.json'))
+          ui=json.load(open('/tmp/v3-ui-preview.json'))
+          assert radar['production_eligible'] is False
+          assert radar['rules']['no_image_archive'] is True
+          assert state['status']=='SHADOW_ONLY'
+          assert state['production_authority']=='WEATHER_V2'
+          assert state['public_ui_enabled'] is False
+          assert ui['status']=='PREPARED_DISABLED'
+          assert ui['public_ui_enabled'] is False
+          print('radar observed_at:',radar.get('observed_at'))
+          print('tracks:',len(state.get('tracking',{}).get('tracks') or []))
+          print('eta candidates:',len(state.get('eta_candidates') or []))
+          print('verified events:',state.get('skill',{}).get('verified_event_count'))
+          PY
+
+      - name: Keep outputs ephemeral
+        run: echo "Shadow cycle validated. No raw image or recurring public archive is persisted."

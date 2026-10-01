@@ -1,0 +1,72 @@
+name: Weather V3 iWeather network probe
+
+on:
+  push:
+    branches:
+      - "feat/weather-v3-observation-mesh-shadow-20261001"
+    paths:
+      - "weather/tools/probe_iweather_network_v3.py"
+      - ".github/workflows/weather-v3-iweather-network-probe.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: weather-v3-iweather-network-probe
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/weather-v3-observation-mesh-shadow-20261001
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Playwright client only
+        run: python -m pip install --disable-pip-version-check playwright==1.55.0
+
+      - name: Confirm system Chrome
+        run: |
+          command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true
+          google-chrome --version 2>/dev/null || google-chrome-stable --version 2>/dev/null || chromium --version 2>/dev/null || true
+
+      - name: Capture public browser request metadata
+        run: python weather/tools/probe_iweather_network_v3.py
+
+      - name: Validate metadata-only result
+        run: |
+          python -m json.tool weather/research/v3-iweather-network-probe.json >/dev/null
+          python - <<'PY'
+          import json
+          p=json.load(open('weather/research/v3-iweather-network-probe.json'))
+          assert p['rules']['no_auth_bypass'] is True
+          assert p['rules']['no_login'] is True
+          assert p['rules']['no_response_body_archive'] is True
+          assert p['rules']['no_image_archive'] is True
+          print('status:',p.get('status'))
+          print('responses:',p.get('response_count'))
+          print('interesting:',len(p.get('interesting') or []))
+          print('blocked:',len(p.get('blocked_routes') or []))
+          PY
+
+      - name: Commit network metadata only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "jotrip-weather-v3-probe"
+          git config user.email "actions@users.noreply.github.com"
+          git add weather/research/v3-iweather-network-probe.json
+          if git diff --cached --quiet; then
+            echo "Network metadata unchanged"
+            exit 0
+          fi
+          git commit -m "data: capture iWeather browser network metadata [skip ci]"
+          git push origin HEAD:feat/weather-v3-observation-mesh-shadow-20261001

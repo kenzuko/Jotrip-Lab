@@ -1,0 +1,67 @@
+name: Weather V3 public source probe
+
+on:
+  push:
+    branches:
+      - "feat/weather-v3-observation-mesh-shadow-20261001"
+    paths:
+      - "weather/tools/probe_v3_public_sources.py"
+      - ".github/workflows/weather-v3-public-source-probe.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: weather-v3-public-source-probe
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/weather-v3-observation-mesh-shadow-20261001
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install parser dependency
+        run: python -m pip install --disable-pip-version-check openpyxl==3.1.5
+
+      - name: Run respectful one-shot probe
+        run: python weather/tools/probe_v3_public_sources.py
+
+      - name: Validate metadata-only result
+        run: |
+          python -m json.tool weather/research/v3-public-source-probe.json >/dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('weather/research/v3-public-source-probe.json').read_text())
+          assert p['mode']=='RESEARCH_METADATA_ONLY'
+          assert p['rules']['no_auth_bypass'] is True
+          assert p['rules']['no_radar_image_archive'] is True
+          assert p['rules']['no_discovered_endpoint_auto_fetch'] is True
+          print('iWeather:', p['iweather'].get('probe_result'))
+          print('60018:', p['kttv_60018'].get('parse_status'))
+          print('60018 numeric candidates:', p['kttv_60018'].get('numeric_measurement_candidate_count'))
+          PY
+
+      - name: Commit probe metadata only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "jotrip-weather-v3-probe"
+          git config user.email "actions@users.noreply.github.com"
+          git add weather/research/v3-public-source-probe.json
+          if git diff --cached --quiet; then
+            echo "Probe metadata unchanged"
+            exit 0
+          fi
+          git commit -m "data: capture Weather V3 public-source probe [skip ci]"
+          git push origin HEAD:feat/weather-v3-observation-mesh-shadow-20261001

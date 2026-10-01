@@ -1,0 +1,67 @@
+name: Weather V3 iWeather payload shape
+
+on:
+  push:
+    branches:
+      - "feat/weather-v3-observation-mesh-shadow-20261001"
+    paths:
+      - "weather/tools/probe_iweather_payload_shape_v3.py"
+      - ".github/workflows/weather-v3-iweather-payload-shape.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: weather-v3-iweather-payload-shape
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/weather-v3-observation-mesh-shadow-20261001
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install lightweight probe dependencies
+        run: python -m pip install --disable-pip-version-check playwright==1.55.0 pillow==11.3.0
+
+      - name: Probe public rendered product in memory
+        run: python weather/tools/probe_iweather_payload_shape_v3.py
+
+      - name: Validate no raw image archive
+        run: |
+          python -m json.tool weather/research/v3-iweather-payload-shape.json >/dev/null
+          python - <<'PY'
+          import json
+          p=json.load(open('weather/research/v3-iweather-payload-shape.json'))
+          assert p['rules']['no_auth_bypass'] is True
+          assert p['rules']['no_token_replay'] is True
+          assert p['rules']['no_raw_json_archive'] is True
+          assert p['rules']['no_image_archive'] is True
+          assert p['rules']['derived_metadata_only'] is True
+          print('status:', p.get('status'))
+          print('json products:', sorted((p.get('json_products') or {}).keys()))
+          print('radar image stats:', p.get('radar_image'))
+          PY
+
+      - name: Commit derived metadata only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "jotrip-weather-v3-probe"
+          git config user.email "actions@users.noreply.github.com"
+          git add weather/research/v3-iweather-payload-shape.json
+          if git diff --cached --quiet; then
+            echo "Payload-shape metadata unchanged"
+            exit 0
+          fi
+          git commit -m "data: capture iWeather payload shape [skip ci]"
+          git push origin HEAD:feat/weather-v3-observation-mesh-shadow-20261001

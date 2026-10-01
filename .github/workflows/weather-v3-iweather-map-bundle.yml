@@ -1,0 +1,61 @@
+name: Weather V3 iWeather map bundle inspection
+
+on:
+  push:
+    branches:
+      - "feat/weather-v3-observation-mesh-shadow-20261001"
+    paths:
+      - "weather/tools/inspect_iweather_map_bundle_v3.py"
+      - ".github/workflows/weather-v3-iweather-map-bundle.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: weather-v3-iweather-map-bundle
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/weather-v3-observation-mesh-shadow-20261001
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Inspect public map static bundle
+        run: python weather/tools/inspect_iweather_map_bundle_v3.py
+
+      - name: Validate inspection receipt
+        run: |
+          python -m json.tool weather/research/v3-iweather-map-bundle-inspection.json >/dev/null
+          python - <<'PY'
+          import json
+          p=json.load(open('weather/research/v3-iweather-map-bundle-inspection.json'))
+          assert p['rules']['public_static_asset_only'] is True
+          assert p['rules']['no_product_endpoint_calls'] is True
+          assert p['rules']['no_token_replay'] is True
+          print('status:',p.get('status'))
+          print('tokens:',sorted((p.get('contexts') or {}).keys()))
+          PY
+
+      - name: Commit context-only inspection
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "jotrip-weather-v3-probe"
+          git config user.email "actions@users.noreply.github.com"
+          git add weather/research/v3-iweather-map-bundle-inspection.json
+          if git diff --cached --quiet; then
+            echo "Inspection unchanged"
+            exit 0
+          fi
+          git commit -m "data: capture iWeather map bundle radar contexts [skip ci]"
+          git push origin HEAD:feat/weather-v3-observation-mesh-shadow-20261001

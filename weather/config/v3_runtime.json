@@ -1,0 +1,37 @@
+{
+  "schema_version": "weather-v3-runtime-v1",
+  "mode": "SHADOW",
+  "public_ui_enabled": false,
+  "public_ui_reason": "Wait for Weather V2 update set to finish, then rebase/verify the UI adapter before exposure.",
+  "production_decision_authority": "WEATHER_V2",
+  "v3_sources_may_improve_but_not_block_v2": true,
+  "radar": {
+    "enabled_in_shadow": true,
+    "public_display_enabled": false,
+    "source_id": "iweather_radar_cmax",
+    "rights_gate_required_before_public_promotion": true,
+    "negative_evidence_weight": "LOW_UNTIL_SKILL_MEASURED",
+    "component_thresholds_dbz": [10, 20, 35],
+    "tracking_threshold_dbz": 20,
+    "impact_radius_km": 15,
+    "max_track_speed_kmh": 120,
+    "max_nowcast_minutes": 120,
+    "minimum_frames_for_public_eta": 3,
+    "minimum_verified_events_for_public_eta": 30
+  },
+  "verification": {
+    "fresh_actual_required": true,
+    "max_actual_age_minutes": 30,
+    "anchors": {
+      "cua_can": "VRAIN_CUA_CAN",
+      "bai_thom": "VRAIN_BAI_THOM",
+      "vvpq": "VVPQ"
+    }
+  },
+  "ui_contract": {
+    "status": "PREPARED_DISABLED",
+    "consumer": "Jotrip-Weather / Open Phu Quoc Human Weather",
+    "display_modes": ["NOW", "0_30_MIN", "30_60_MIN", "60_120_MIN"],
+    "must_never_render_shadow_as_actual": true
+  }
+}
