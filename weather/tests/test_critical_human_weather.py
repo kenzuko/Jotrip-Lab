@@ -63,9 +63,14 @@ class CriticalHumanWeatherTests(unittest.TestCase):
         remote={s["id"]:s for s in payload["evidence_layers"]["OBSERVED_REMOTE"]["sources"]}
         self.assertEqual(remote["lightning_observation"]["health"],"UNAVAILABLE")
         self.assertEqual(remote["radar_observation"]["status"],"NOT_CONNECTED")
-        source={s["id"]:s for s in payload["groundtruth"]["sources"]}["wmo_48917_synop"]
-        for field in ("role","provenance","freshness","health","last_observation","status","status_reason","tier"):
-            self.assertIn(field,source)
+        active={s["id"]:s for s in payload["evidence_layers"]["ACTUAL_GROUND"]["sources"]}
+        self.assertIn("wmo_48917_synop",active)
+        for field in ("freshness","health","last_observation","tier"):
+            self.assertIn(field,active["wmo_48917_synop"])
+        self.assertEqual(payload["groundtruth"]["registry_path"],"data/weather-groundtruth/corpus/source-registry.json")
+        self.assertEqual(payload["groundtruth"]["source_count"],2)
+        self.assertEqual(payload["groundtruth"]["tier_counts"]["ACTIVE_REALTIME"],1)
+        self.assertEqual(payload["groundtruth"]["tier_counts"]["ACTIVE_NEAR_REALTIME"],1)
 
     def test_critical_ensemble_stays_first_paint_compact(self):
         dashboard={"generated_at":"2026-09-30T03:00:00+00:00",

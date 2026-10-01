@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: feat/weather-lab-data-engine-v1
+          ref: ${{ github.ref_name }}
       - uses: actions/checkout@v4
         with:
           ref: data-weather
