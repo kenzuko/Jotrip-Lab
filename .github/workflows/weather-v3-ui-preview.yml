@@ -1,0 +1,72 @@
+name: Weather V3 dormant UI preview
+
+on:
+  push:
+    branches:
+      - "feat/weather-v3-observation-mesh-shadow-20261001"
+    paths:
+      - "weather/pipeline/build_v3_ui_preview.py"
+      - "weather/config/v3_runtime.json"
+      - "weather/research/v3-iweather-cmax-shadow-receipt.json"
+      - ".github/workflows/weather-v3-ui-preview.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: weather-v3-ui-preview
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/weather-v3-observation-mesh-shadow-20261001
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Read latest trusted V2 evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin data-weather --depth=1
+          git show origin/data-weather:data/weather-groundtruth/latest.json > /tmp/groundtruth.json
+          git show origin/data-weather:data/weather-nowcast/compact-latest.json > /tmp/nowcast.json
+
+      - name: Build dormant UI contract
+        run: |
+          python -m weather.pipeline.build_v3_ui_preview             --radar weather/research/v3-iweather-cmax-shadow-receipt.json             --groundtruth /tmp/groundtruth.json             --satellite /tmp/nowcast.json             --output weather/research/v3-ui-preview.json
+
+      - name: Enforce dormant public gate
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('weather/research/v3-ui-preview.json'))
+          assert p['status']=='PREPARED_DISABLED'
+          assert p['public_ui_enabled'] is False
+          assert p['public_authority']=='WEATHER_V2'
+          assert p['display_contract']['never_label_remote_or_derived_as_actual'] is True
+          print('points:',len(p['points']))
+          print('public gate:',p['public_ui_enabled'])
+          PY
+
+      - name: Commit preview contract only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "jotrip-weather-v3-preview"
+          git config user.email "actions@users.noreply.github.com"
+          git add weather/research/v3-ui-preview.json
+          if git diff --cached --quiet; then
+            echo "UI preview unchanged"
+            exit 0
+          fi
+          git commit -m "data: prepare dormant Weather V3 UI preview [skip ci]"
+          git push origin HEAD:feat/weather-v3-observation-mesh-shadow-20261001
