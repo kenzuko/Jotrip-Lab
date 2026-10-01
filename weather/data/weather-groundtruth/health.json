@@ -1,8 +1,15 @@
 {
   "module": "JoTrip Weather Ground Truth",
   "state": "READY",
-  "generated_at": "2026-10-01T05:40:55.777093+00:00",
+  "generated_at": "2026-10-01T06:16:27.551952+00:00",
   "vvpq": "FRESH",
+  "synop_48917": {
+    "status": "FRESH",
+    "latest_observed_at": "2026-10-01T00:00:00+00:00",
+    "age_minutes": 376.5,
+    "source_namespace": "WMO_INDEX",
+    "role": "ACTUAL_VALIDATION_STREAM_NOT_SPATIAL_POINT_ANCHOR"
+  },
   "vrain": "STALE",
   "rain_stations": [
     "cua_can",
@@ -10,10 +17,20 @@
     "an_thoi"
   ],
   "increment_ready": [],
+  "groundtruth_corpus": {
+    "record_count": 28,
+    "counts_by_class": {
+      "OFFICIAL_AGGREGATE_OBS": 13,
+      "PUBLISHED_STATION_OBS": 2,
+      "RAW_OBS": 13
+    },
+    "source_count": 18,
+    "canonical_path": "data/weather-groundtruth/corpus/verified-latest.json"
+  },
   "training_usability": {
     "vvpq": {
       "usable_for_training": true,
-      "observed_at": "2026-10-01T05:30:00+00:00",
+      "observed_at": "2026-10-01T06:00:00+00:00",
       "qc": "PASS"
     },
     "rain": {
@@ -41,5 +58,5 @@
     }
   },
   "local_engine": "PQ_LOCAL_NOW_V2",
-  "actual_policy": "Only machine-readable numeric observations with timestamps are ACTUAL. Remote sensing and models are separate classes."
+  "actual_policy": "Current-time ACTUAL requires timestamped in-situ or raw coded observations. Historical aggregate/published observations are verification-only; remote sensing, models and fusion remain separate classes."
 }
