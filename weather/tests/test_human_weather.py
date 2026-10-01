@@ -61,6 +61,16 @@ class HumanWeatherTests(unittest.TestCase):
         self.assertEqual(ref["actual"]["temperature_c"],31.0)
         self.assertNotIn("INTERNAL_PROVIDER",str(result))
 
+    def test_evidence_status_keeps_fresh_ground_when_himawari_is_stale(self):
+        now={"status":"POINT_NUMERIC_READY","sampled_time":"2026-09-30T01:00:00Z",
+             "lightning_observed":{"status":"NOT_CONNECTED","detail":"no direct feed"},"points":{}}
+        evidence=build_human_weather(self.local,self.ground,now,self.generated)["evidence_status"]
+        self.assertEqual(evidence["status"],"GROUND_CURRENT_REMOTE_WAITING")
+        self.assertEqual(evidence["headline"],"Quan trắc mặt đất vẫn đang cập nhật. Đang chờ ảnh mây mới.")
+        self.assertIn("VVPQ",evidence["ground"]["active_sources"])
+        self.assertEqual(evidence["observed_remote"]["himawari"]["status"],"STALE")
+        self.assertFalse(evidence["observed_remote"]["lightning"]["absence_is_no_lightning"])
+
     def test_stale_observation_is_not_current_actual(self):
         ground={**self.ground,"atmosphere":{"vvpq":{**self.ground["atmosphere"]["vvpq"],
             "observed_at":"2026-09-29T23:00:00Z","qc":"STALE"}}}
