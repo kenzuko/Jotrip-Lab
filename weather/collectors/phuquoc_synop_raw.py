@@ -31,8 +31,14 @@ STREAM_IDENTITY = {
     "station_name": "PHU QUOC",
     "reference_lat": 10.22,
     "reference_lon": 103.97,
-    "station_epoch": "CURRENT_METADATA_EPOCH_UNRESOLVED",
-    "identity_policy": "Do not merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 by identifier alone.",
+    "coordinate_precision": "STATION_METADATA_APPROX_0_01_DEG",
+    "location_context": "DUONG_DONG_AREA",
+    "station_epoch": "CURRENT_2026_METADATA_DUONG_DONG",
+    "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
+    "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
+    "identity_confidence": "HIGH",
+    "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
+    "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
 }
 
 
@@ -156,7 +162,7 @@ def compact_live(payload: dict[str, Any], now: datetime | None = None) -> dict[s
         "latest": latest,
         "recent_observations": rows[-8:],
         "recent_count": len(rows),
-        "production_role": "ACTUAL_VALIDATION_STREAM_NOT_SPATIAL_POINT_ANCHOR",
+        "production_role": "ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION",
     }
 
 
