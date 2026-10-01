@@ -36,6 +36,18 @@ class GroundTruthCorpusTests(unittest.TestCase):
         self.assertEqual(sources["vvpq_metar_speci"]["namespace"],"ICAO")
         self.assertNotEqual(sources["wmo_48917_synop"]["namespace"],sources["vvpq_metar_speci"]["namespace"])
 
+        wmo=sources["wmo_48917_synop"]
+        self.assertEqual(wmo["status"],"IDENTITY_PENDING")
+        self.assertEqual(wmo["independence_from_vvpq"],"UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE")
+        self.assertEqual(wmo["evidence_weight_for_independent_source_count"],0)
+        synop_rows=[
+            r for r in payload["records"]
+            if str(r.get("station_id") or "")=="48917" and "SYNOP" in str(r.get("source") or "").upper()
+        ]
+        self.assertTrue(synop_rows)
+        self.assertTrue(all(r["production_role"]=="IDENTITY_PENDING_ARCHIVE_ONLY" for r in synop_rows))
+        self.assertTrue(all(r["evidence_weight_for_independent_source_count"]==0 for r in synop_rows))
+
 
 if __name__=="__main__":
     unittest.main()
