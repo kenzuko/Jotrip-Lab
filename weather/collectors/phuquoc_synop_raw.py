@@ -29,19 +29,20 @@ STREAM_IDENTITY = {
     "source_namespace": "WMO_INDEX",
     "identifier": "48917",
     "station_name": "PHU QUOC",
-    # Do not publish one coordinate as "current" while authoritative/operational
-    # metadata disagree. Candidate coordinates stay in the registry.
-    "reference_lat": None,
-    "reference_lon": None,
-    "station_epoch": "IDENTITY_PENDING_POST_2012",
-    "station_identity_status": "CONFLICTING_OPERATIONAL_AND_CLIMATE_METADATA",
-    "independence_from_vvpq": "UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE",
-    "deduplication_group": "PHU_QUOC_48917_VVPQ_PENDING",
-    "evidence_weight_for_independent_source_count": 0,
+    "reference_lat": 10.2166666667,
+    "reference_lon": 103.9666666667,
+    "reference_elevation_m": 3.0,
+    "station_epoch": "WMO_OSCAR_CURRENT_FROM_2016_04_28",
+    "station_identity_status": "RESOLVED_WMO_OSCAR",
+    "independence_from_vvpq": "CONFIRMED_INDEPENDENT_PHYSICAL_SITE",
+    "deduplication_group": "WMO_48917_DUONG_DONG",
+    "evidence_weight_for_independent_source_count": 1,
+    "identity_confidence": "HIGH",
+    "identity_source": "WMO_OSCAR_SURFACE",
     "identity_policy": (
-        "Archive raw SYNOP, but do not count it as independent from ICAO:VVPQ, "
-        "do not use it as a Local Now spatial anchor, and do not train from it "
-        "until station identity/current coordinates/relocation history are resolved."
+        "WMO OSCAR resolves 48917 as a land-fixed PHU QUOC facility at Duong Dong. "
+        "It is independent from ICAO:VVPQ at the current airport. Keep KTTV_AUTO:60018 "
+        "separate until sensor/equipment mapping is explicitly proven."
     ),
 }
 
@@ -102,7 +103,7 @@ def _parse_rows(raw_csv: str) -> list[dict[str, Any]]:
             **STREAM_IDENTITY,
             "source": SOURCE,
             "source_channel": "SYNOP_AAXX_RAW",
-            "data_class": "RAW_OBS_IDENTITY_PENDING",
+            "data_class": "ACTUAL",
             "observation_class": "RAW_OBS",
             "observed_at": obs.isoformat(),
             "raw_observation": report,
@@ -149,7 +150,7 @@ def compact_live(payload: dict[str, Any], now: datetime | None = None) -> dict[s
         except Exception:
             age = None
     feed_freshness = "UNAVAILABLE" if not latest else ("FRESH" if age is not None and age <= 480 else "STALE")
-    status = "UNAVAILABLE" if not latest else "IDENTITY_PENDING"
+    status = feed_freshness
     return {
         "status": status,
         "feed_freshness": feed_freshness,
@@ -171,8 +172,9 @@ def compact_live(payload: dict[str, Any], now: datetime | None = None) -> dict[s
         "station_identity_status": payload.get("station_identity_status"),
         "independence_from_vvpq": payload.get("independence_from_vvpq"),
         "deduplication_group": payload.get("deduplication_group"),
-        "evidence_weight_for_independent_source_count": 0,
-        "production_role": "RAW_OBS_ARCHIVE_ONLY_UNTIL_STATION_IDENTITY_RESOLVED",
+        "evidence_weight_for_independent_source_count": 1,
+        "identity_confidence": payload.get("identity_confidence"),
+        "production_role": "INDEPENDENT_GROUND_OBSERVATION_CROSSCHECK",
     }
 
 
