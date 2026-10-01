@@ -85,6 +85,38 @@ class AssetParser(HTMLParser):
             self.iframes.append(str(amap["src"]))
 
 
+def keyword_contexts(text: str) -> list[dict[str, str]]:
+    """Return short static-code contexts around iWeather-specific tokens.
+
+    This is static bundle inspection only. It does not execute or call any
+    discovered route.
+    """
+    tokens = (
+        "areaRadar", "productRadar", "CMAX", "lightning", "radar",
+        "wms", "wmts", "tileLayer", "GeoJSON", "geojson",
+        "axios", "baseURL", "fetch(", "/api/"
+    )
+    rows: list[dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    low=text.lower()
+    for token in tokens:
+        start=0
+        needle=token.lower()
+        while len(rows) < 120:
+            idx=low.find(needle,start)
+            if idx < 0:
+                break
+            left=max(0,idx-180)
+            right=min(len(text),idx+len(token)+320)
+            context=text[left:right].replace("\\n"," ").replace("\\r"," ")
+            key=(token,context)
+            if key not in seen:
+                rows.append({"token":token,"context":context[:700]})
+                seen.add(key)
+            start=idx+len(token)
+    return rows
+
+
 def route_hints(text: str) -> list[str]:
     hits: set[str] = set()
 
@@ -141,6 +173,7 @@ def probe_iweather() -> dict[str, Any]:
                 "url": url,
                 "meta": js_meta,
                 "route_hints": hints,
+                "keyword_contexts": keyword_contexts(js_text),
             })
             # Low-rate behavior.
             time.sleep(0.25)
