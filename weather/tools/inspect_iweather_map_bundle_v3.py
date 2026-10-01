@@ -48,7 +48,7 @@ def main() -> None:
     for row in net.get("responses") or []:
         url = row.get("url") or ""
         path = urlsplit(url).path
-        if re.search(r"/map/app\.[A-Za-z0-9_-]+\.js$", path):
+        if re.search(r"/map/(?:app|mc)\.[A-Za-z0-9_-]+\.js$", path):
             candidates.append(url)
     candidates = sorted(set(candidates))
 
