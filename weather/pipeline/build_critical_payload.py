@@ -308,7 +308,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
     }
     sources["SYNOP_48917"]={
         "status":ready_status(synop.get("status"),partial_ok=True),
-        "detail":"WMO 48917 là dòng SYNOP quan trắc riêng của Phú Quốc, dùng để đối chiếu gió, nhiệt độ, áp suất, mưa và các nhóm quan trắc biển khi bản tin có báo. Không gộp nó với VVPQ chỉ vì cùng liên hệ mã 48917."
+        "detail":"WMO 48917 là quan trắc SYNOP gần thời gian thực độc lập ở khu Dương Đông. JoTrip dùng nó cùng VVPQ như hai mốc mặt đất riêng, nhưng sẽ hạ độ tin cậy khi hai trạm lệch nhau rõ. Các nhóm mưa/biển chỉ dùng đúng ngữ nghĩa bản tin."
     }
     sources["VRAIN"]={
         "status":ready_status((ground.get("rainfall") or {}).get("status")),
@@ -352,8 +352,71 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
         else:
             gaps.append({"name":name or "Phần còn thiếu","detail":detail})
 
+    human_evidence=(human_weather.get("evidence_status") or {})
+    operational_sources=registry.get("sources") or []
+    evidence_layers={
+        "ACTUAL_GROUND":{
+            "data_class":"ACTUAL",
+            "sources":[s for s in operational_sources if s.get("tier") in {"ACTIVE_REALTIME","ACTIVE_NEAR_REALTIME"}],
+        },
+        "OBSERVED_REMOTE":{
+            "data_class":"OBSERVED_REMOTE",
+            "sources":[
+                {
+                    "id":"himawari_9",
+                    "role":"OBSERVED_REMOTE_CLOUD",
+                    "status":((human_evidence.get("observed_remote") or {}).get("himawari") or {}).get("status"),
+                    "health":"HEALTHY" if ((human_evidence.get("observed_remote") or {}).get("himawari") or {}).get("status")=="FRESH" else "DEGRADED_OR_UNAVAILABLE",
+                    "last_observation":nowcast.get("sampled_time"),
+                    "freshness":((human_evidence.get("observed_remote") or {}).get("himawari") or {}),
+                    "provenance":{"source":nowcast.get("source")},
+                    "status_reason":"Ảnh mây là quan sát từ xa, không phải ground truth mặt đất.",
+                },
+                {
+                    "id":"lightning_observation",
+                    "role":"OBSERVED_REMOTE_LIGHTNING",
+                    "status":((nowcast.get("lightning_observed") or {}).get("status") if isinstance(nowcast.get("lightning_observed"),dict) else "NOT_CONNECTED"),
+                    "health":"UNAVAILABLE" if ((nowcast.get("lightning_observed") or {}).get("status") if isinstance(nowcast.get("lightning_observed"),dict) else "NOT_CONNECTED") in {"NOT_CONNECTED","UNAVAILABLE",None} else "HEALTHY",
+                    "last_observation":None,
+                    "freshness":{"state":"NO_DIRECT_FEED","age_minutes":None,"budget_minutes":None},
+                    "provenance":{"source":"DIRECT_LIGHTNING_FEED_PENDING"},
+                    "status_reason":((nowcast.get("lightning_observed") or {}).get("detail") if isinstance(nowcast.get("lightning_observed"),dict) else "Chưa có feed sét trực tiếp ổn định. Không có dữ liệu không có nghĩa là không có sét."),
+                },
+                {
+                    "id":"radar_observation",
+                    "role":"OBSERVED_REMOTE_RADAR",
+                    "status":"NOT_CONNECTED",
+                    "health":"UNAVAILABLE",
+                    "last_observation":None,
+                    "freshness":{"state":"NO_STABLE_FEED","age_minutes":None,"budget_minutes":None},
+                    "provenance":{"source":"RADAR_FEED_PENDING"},
+                    "status_reason":"Chưa có feed radar quan trắc ổn định trong runtime. Không suy không mưa từ việc thiếu radar.",
+                },
+            ],
+        },
+        "DERIVED":{
+            "data_class":"DERIVED",
+            "sources":[{
+                "id":"pq_local_now",
+                "role":"OBSERVATION_ANCHORED_LOCAL_ANALYSIS",
+                "status":"READY" if local.get("points") else "UNAVAILABLE",
+                "last_observation":local.get("generated_at"),
+                "provenance":{"engine":local.get("engine")},
+                "status_reason":"Local Now là phân tích dẫn bởi quan trắc và mô hình nền, không phải phép đo tại trạm.",
+            }],
+        },
+        "FORECAST":{
+            "data_class":"FORECAST",
+            "sources":[
+                {"id":name.lower(),"role":"FORECAST_OR_MODEL_CONTEXT","status":payload.get("status"),"detail":payload.get("detail")}
+                for name,payload in sources.items()
+                if name in {"ECMWF","ICON","GEFS","COPERNICUS","TRIỀU"}
+            ],
+        },
+    }
+
     return {
-        "schema_version":"2.1",
+        "schema_version":"2.2",
         "generated_at":generated.isoformat(),
         "default_point":"duong_dong",
         "island_watch_order":[p for p in ISLAND_WATCH_ORDER if p in out],
@@ -371,6 +434,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
         "local_generated_at":local.get("generated_at"),
         "source_cycles":dashboard.get("source_cycles") or {},
         "sources":sources,
+        "evidence_layers":evidence_layers,
         "gaps":gaps,
         "points":out,
         "actual":{
@@ -388,15 +452,21 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
             },
             "synop_48917":{
                 "status":synop.get("status"),
+                "numeric_status":synop.get("numeric_status"),
+                "runtime_eligible":bool(synop.get("runtime_eligible")),
                 "source_namespace":synop.get("source_namespace"),
                 "identifier":synop.get("identifier"),
                 "latest_observed_at":synop.get("latest_observed_at"),
                 "age_minutes":num(synop.get("age_minutes")),
+                "latest_numeric_observed_at":synop.get("latest_numeric_observed_at"),
+                "numeric_age_minutes":num(synop.get("numeric_age_minutes")),
                 "reference_lat":num(synop.get("reference_lat")),
                 "reference_lon":num(synop.get("reference_lon")),
                 "station_epoch":synop.get("station_epoch"),
+                "identity_status":synop.get("identity_status"),
+                "identity_confidence":synop.get("identity_confidence"),
                 "production_role":synop.get("production_role"),
-                "latest":synop.get("latest"),
+                "latest_numeric":synop.get("latest_numeric"),
             },
             "rain_gauges":gauges,
         },
@@ -408,8 +478,16 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
             "source_count":len(registry.get("sources") or []),
             "sources":[
                 {
-                    "id":s.get("id"),"class":s.get("class"),"status":s.get("status"),
-                    "role":s.get("role")
+                    "id":s.get("id"),
+                    "class":s.get("class"),
+                    "status":s.get("status"),
+                    "role":s.get("role"),
+                    "tier":s.get("tier"),
+                    "provenance":s.get("provenance"),
+                    "freshness":s.get("freshness"),
+                    "health":s.get("health"),
+                    "last_observation":s.get("last_observation"),
+                    "status_reason":s.get("status_reason"),
                 }
                 for s in (registry.get("sources") or [])
             ],
@@ -418,7 +496,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
         "human_weather":human_weather,
         "source_state":{
             "vvpq":v.get("status","UNAVAILABLE"),
-            "synop_48917":synop.get("status","UNAVAILABLE"),
+            "synop_48917":synop.get("numeric_status") or synop.get("status","UNAVAILABLE"),
             "vrain":(ground.get("rainfall") or {}).get("status","UNAVAILABLE"),
             "aqi":aqi.get("status","UNAVAILABLE"),
             "tide":tide.get("status","UNAVAILABLE"),
