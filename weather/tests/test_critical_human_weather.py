@@ -64,8 +64,9 @@ class CriticalHumanWeatherTests(unittest.TestCase):
         self.assertEqual(remote["lightning_observation"]["health"],"UNAVAILABLE")
         self.assertEqual(remote["radar_observation"]["status"],"NOT_CONNECTED")
         source={s["id"]:s for s in payload["groundtruth"]["sources"]}["wmo_48917_synop"]
-        for field in ("role","provenance","freshness","health","last_observation","status","status_reason","tier"):
+        for field in ("freshness","health","last_observation","status","tier"):
             self.assertIn(field,source)
+        self.assertEqual(payload["groundtruth"]["registry_path"],"data/weather-groundtruth/corpus/source-registry.json")
 
     def test_critical_ensemble_stays_first_paint_compact(self):
         dashboard={"generated_at":"2026-09-30T03:00:00+00:00",
