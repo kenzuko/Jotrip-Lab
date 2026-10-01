@@ -1,0 +1,75 @@
+name: Weather V3 iWeather CMAX shadow receipt
+
+on:
+  push:
+    branches:
+      - "feat/weather-v3-observation-mesh-shadow-20261001"
+    paths:
+      - "weather/processing/iweather_cmax.py"
+      - "weather/tools/build_iweather_cmax_shadow_receipt.py"
+      - ".github/workflows/weather-v3-iweather-cmax-shadow.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: weather-v3-iweather-cmax-shadow
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/weather-v3-observation-mesh-shadow-20261001
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install shadow decoder dependencies
+        run: python -m pip install --disable-pip-version-check playwright==1.55.0 pillow==11.3.0
+
+      - name: Derive current CMAX point observations in memory
+        run: python weather/tools/build_iweather_cmax_shadow_receipt.py
+
+      - name: Validate shadow-only receipt
+        run: |
+          python -m json.tool weather/research/v3-iweather-cmax-shadow-receipt.json >/dev/null
+          python - <<'PY'
+          import json
+          p=json.load(open('weather/research/v3-iweather-cmax-shadow-receipt.json'))
+          assert p['rules']['no_auth_bypass'] is True
+          assert p['rules']['no_image_archive'] is True
+          assert p['rules']['no_token_archive'] is True
+          assert p['production_eligible'] is False
+          if p['status']=='SHADOW_POINT_OBSERVATIONS_READY':
+              assert p['observed_at']
+              assert len(p['points']) > 0
+              for point in p['points'].values():
+                  for ring in point['rings'].values():
+                      for key in ('max_dbz','p90_dbz','median_dbz'):
+                          value=ring[key]
+                          assert value is None or 0 <= value <= 100
+          print('status:',p['status'])
+          print('observed_at:',p.get('observed_at'))
+          print('points:',len(p.get('points') or {}))
+          PY
+
+      - name: Commit derived receipt only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "jotrip-weather-v3-shadow"
+          git config user.email "actions@users.noreply.github.com"
+          git add weather/research/v3-iweather-cmax-shadow-receipt.json
+          if git diff --cached --quiet; then
+            echo "CMAX shadow receipt unchanged"
+            exit 0
+          fi
+          git commit -m "data: capture iWeather CMAX shadow point observations [skip ci]"
+          git push origin HEAD:feat/weather-v3-observation-mesh-shadow-20261001
