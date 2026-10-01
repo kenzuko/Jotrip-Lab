@@ -312,11 +312,11 @@ def collect(previous: dict | None = None, artifacts: dict | None = None) -> dict
             "feed_freshness": "UNAVAILABLE",
             "source_namespace": "WMO_INDEX",
             "identifier": "48917",
-            "station_identity_status": "CONFLICTING_OPERATIONAL_AND_CLIMATE_METADATA",
-            "independence_from_vvpq": "UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE",
-            "deduplication_group": "PHU_QUOC_48917_VVPQ_PENDING",
-            "evidence_weight_for_independent_source_count": 0,
-            "production_role": "RAW_OBS_ARCHIVE_ONLY_UNTIL_STATION_IDENTITY_RESOLVED",
+            "station_identity_status": "RESOLVED_WMO_OSCAR",
+            "independence_from_vvpq": "CONFIRMED_INDEPENDENT_PHYSICAL_SITE",
+            "deduplication_group": "WMO_48917_DUONG_DONG",
+            "evidence_weight_for_independent_source_count": 1,
+            "production_role": "INDEPENDENT_GROUND_OBSERVATION_CROSSCHECK",
             "detail": repr(exc),
         }
 
@@ -377,6 +377,7 @@ def collect(previous: dict | None = None, artifacts: dict | None = None) -> dict
     live_ready = (
         vvpq.get("status") in {"FRESH", "STALE"}
         or bool(rainfall.get("stations"))
+        or synop_48917.get("status") in {"FRESH", "STALE"}
     )
     payload = {
         "schema_version": "2.0",
@@ -384,9 +385,9 @@ def collect(previous: dict | None = None, artifacts: dict | None = None) -> dict
         "status": "READY" if live_ready else "UNAVAILABLE",
         "actual_policy": (
             "Current-time ACTUAL requires timestamped in-situ observations with resolved source identity. "
-            "WMO/SYNOP 48917 is archived but zero-weight while its relationship to VVPQ remains unresolved. "
-            "Historical aggregate/published observations are verification-only; remote sensing, "
-            "models and fusion remain separate classes."
+            "WMO/SYNOP 48917 is an independent Duong Dong ground-observation stream resolved by WMO OSCAR; "
+            "ICAO:VVPQ remains a separate airport observation system. Historical aggregate/published observations "
+            "are verification-only; remote sensing, models and fusion remain separate classes."
         ),
         "atmosphere": {"vvpq": vvpq, "synop_48917": synop_48917},
         "rainfall": rainfall,
