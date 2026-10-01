@@ -25,6 +25,50 @@ ENDPOINTS = (
     "http://www.ogimet.com/cgi-bin/getsynop",
 )
 USER_AGENT = "JoTrip-WeatherLab/2.0 raw-SYNOP-groundtruth"
+def _load_identity_resolution() -> dict[str, Any]:
+    registry_path = Path(__file__).resolve().parents[1] / "config" / "groundtruth_sources.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    source = next(
+        (
+            row for row in registry.get("sources", [])
+            if row.get("id") == "wmo_48917_synop"
+        ),
+        None,
+    )
+    if not source:
+        raise RuntimeError("groundtruth registry is missing wmo_48917_synop")
+    resolution = dict(source.get("identity_resolution") or {})
+    required = {
+        "resolution_id",
+        "status",
+        "effective_at",
+        "decision",
+        "confidence",
+        "raw_archive_semantics",
+    }
+    missing = sorted(required - resolution.keys())
+    if missing:
+        raise RuntimeError(f"48917 identity resolution missing fields: {missing}")
+    if resolution.get("status") != "LOCKED":
+        raise RuntimeError("48917 identity resolution is not locked")
+    if resolution.get("decision") != source.get("identity_status"):
+        raise RuntimeError("48917 identity resolution disagrees with source registry status")
+    if resolution.get("confidence") != source.get("identity_confidence"):
+        raise RuntimeError("48917 identity resolution disagrees with source registry confidence")
+    resolution["registry_source_id"] = source.get("id")
+    resolution["evidence"] = [
+        {
+            "source": item.get("source"),
+            "role": item.get("role"),
+            "fact": item.get("fact"),
+        }
+        for item in source.get("identity_evidence", [])
+    ]
+    resolution["identity_conflict"] = source.get("identity_conflict")
+    return resolution
+
+
+IDENTITY_RESOLUTION = _load_identity_resolution()
 STREAM_IDENTITY = {
     "source_namespace": "WMO_INDEX",
     "identifier": "48917",
@@ -37,6 +81,7 @@ STREAM_IDENTITY = {
     "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
     "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
     "identity_confidence": "HIGH",
+    "identity_resolution_id": IDENTITY_RESOLUTION["resolution_id"],
     "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
     "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
 }
@@ -121,6 +166,7 @@ def collect(begin: datetime, end: datetime) -> dict[str, Any]:
         "schema_version": "weather-raw-synop-v3",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         **STREAM_IDENTITY,
+        "identity_resolution": IDENTITY_RESOLUTION,
         "source": SOURCE,
         "data_class": "ACTUAL",
         "observation_class": "RAW_OBS",
@@ -171,6 +217,12 @@ def compact_live(payload: dict[str, Any], now: datetime | None = None) -> dict[s
         "UNAVAILABLE" if not latest_numeric
         else ("FRESH" if numeric_age is not None and numeric_age <= 480 else "STALE")
     )
+    resolution = payload.get("identity_resolution") or {}
+    identity_locked = (
+        resolution.get("status") == "LOCKED"
+        and resolution.get("decision") == "INDEPENDENT_FROM_CURRENT_VVPQ"
+        and resolution.get("resolution_id") == payload.get("identity_resolution_id")
+    )
     return {
         "status": status,
         "numeric_status": numeric_status,
@@ -187,6 +239,8 @@ def compact_live(payload: dict[str, Any], now: datetime | None = None) -> dict[s
         "identity_status": payload.get("identity_status"),
         "identity_confidence": payload.get("identity_confidence"),
         "identity_policy": payload.get("identity_policy"),
+        "identity_resolution_id": payload.get("identity_resolution_id"),
+        "identity_resolution": resolution,
         "relocation_status": payload.get("relocation_status"),
         "provenance_url": payload.get("provenance_url"),
         "checked_at": payload.get("generated_at"),
@@ -199,7 +253,7 @@ def compact_live(payload: dict[str, Any], now: datetime | None = None) -> dict[s
         "recent_observations": rows[-8:],
         "recent_count": len(rows),
         "production_role": "ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION",
-        "runtime_eligible": bool(numeric_status == "FRESH" and payload.get("identity_status") == "INDEPENDENT_FROM_CURRENT_VVPQ"),
+        "runtime_eligible": bool(numeric_status == "FRESH" and identity_locked),
     }
 
 

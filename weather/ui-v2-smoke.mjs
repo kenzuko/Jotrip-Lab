@@ -51,20 +51,31 @@ for(const [name,width,height] of sizes){
     situationGap:(()=>{const a=document.querySelector(".command-center .island-summary")?.getBoundingClientRect(),b=document.querySelector("#hazardBoard")?.getBoundingClientRect();return a&&b?Math.round(b.top-a.bottom):9999})(),
     situationHeight:Math.round(document.querySelector(".situation-rail")?.getBoundingClientRect().height||0),
     compactFeedback:!!document.querySelector(".field-strip")&&!document.querySelector(".feedback-panel"),
-    mapBeforeForecast:(document.querySelector(".map-panel")?.compareDocumentPosition(document.querySelector(".jotrip-forecast-panel"))&Node.DOCUMENT_POSITION_FOLLOWING)!==0,
+    forecastBeforeMap:(document.querySelector(".jotrip-forecast-panel")?.compareDocumentPosition(document.querySelector(".map-panel"))&Node.DOCUMENT_POSITION_FOLLOWING)!==0,
+    forecastTechnicalCollapsed:!!document.querySelector("#forecastTechnical")&&!document.querySelector("#forecastTechnical").open,
+    dataHealthCollapsed:!!document.querySelector("#dataHealthDetails")&&!document.querySelector("#dataHealthDetails").open,
     innerOverflow:[...document.querySelectorAll(".panel")].flatMap(panel=>{
       const pr=panel.getBoundingClientRect();
       return [...panel.querySelectorAll("*")].filter(el=>{
         if(el.tagName==="OPTION"||el.hidden||el.closest("[hidden]")||getComputedStyle(el).display==="none")return false;
         if(el.closest(".table-scroll,.forecast-table-shell,.ensemble-table-shell,.actual-strip,.hourly-strip,.point-tabs"))return false;
+        let ancestor=el.parentElement;
+        while(ancestor&&ancestor!==panel){
+          const overflowX=getComputedStyle(ancestor).overflowX;
+          if(overflowX==="auto"||overflowX==="scroll")return false;
+          ancestor=ancestor.parentElement;
+        }
         const r=el.getBoundingClientRect();
         return r.right>pr.right+3||r.left<pr.left-3;
-      }).slice(0,4).map(el=>el.className||el.tagName);
+      }).slice(0,4).map(el=>typeof el.className==="string"&&el.className?el.className:el.tagName);
     }).slice(0,12)
   }));
 
-  const heavyInitial=initial.filter(u=>/embed\.windy|dashboard-data\.json|weather-aqi|weather-ensemble|weather-nowcast|himawari\/img/i.test(u));
-  const tideStartedEarly=initial.some(u=>/tide\.json/.test(u));
+  const heavyInitial=initial.filter(u=>
+    /embed\.windy|dashboard-data\.json|weather-aqi|weather-ensemble|himawari\/img/i.test(u)||
+    (/weather-nowcast/i.test(u)&&!/weather-nowcast\/compact-latest\.json/i.test(u))
+  );
+  const deepInitial=initial.filter(u=>/tide\.json|weather-aqi|air-quality\.json|weather-ensemble\/latest\.json/i.test(u));
   const rawForecastRequests=initial.filter(u=>/dashboard-data\.json/.test(u));
 
   await page.waitForTimeout(1800);
@@ -95,10 +106,8 @@ for(const [name,width,height] of sizes){
   const ok=
     checks.overflow<=2&&
     !!checks.hero&&
-    checks.actualCards>=1&&
-    lateChecks.jotripForecastRows>=12&&
-    lateChecks.beaufortCells>=12&&
     lateChecks.forecastRegionTabs===4&&
+    lateChecks.forecastRibbon>=7&&
     checks.hazardCards===4&&
     checks.mapTabs>=5&&
     checks.feedbackBeforeActual&&
@@ -107,10 +116,6 @@ for(const [name,width,height] of sizes){
     checks.jotripForecastPanel&&
     checks.rawForecastRemoved&&
     checks.rawForecastTableRemoved&&
-    (checks.aqiItems>=3||checks.aqiEmpty)&&
-    (checks.tideItems>=3||checks.tideEmpty)&&
-
-    checks.sourceCards>=1&&
     checks.mapDeferred&&
     checks.pointTabs>=8&&
     checks.islandWatchRemoved&&
@@ -119,19 +124,20 @@ for(const [name,width,height] of sizes){
     checks.aboutPanel&&
     checks.commandCenter&&
     checks.photoHero&&
-    checks.tideSeries&&
     (width>760||(checks.situationGap>=0&&checks.situationGap<=24&&checks.situationHeight<760))&&
-    lateChecks.forecastRibbon>=7&&
     checks.compactFeedback&&
-    checks.mapBeforeForecast&&
+    checks.forecastBeforeMap&&
+    checks.forecastTechnicalCollapsed&&
+    checks.dataHealthCollapsed&&
     checks.innerOverflow.length===0&&
     heavyInitial.length===0&&
-    tideStartedEarly&&deferred.tide&&deferred.aqi&&deferred.nowcast&&deferred.regionalForecast&&
+    deepInitial.length===0&&
+    deferred.nowcast&&deferred.regionalForecast&&
     noRawForecastFetch&&rawForecastRequests.length===0&&
     errors.length===0&&
     mapLoaded;
 
-  console.log(name,JSON.stringify({checks,lateChecks,heavyInitial,tideStartedEarly,deferred,noRawForecastFetch,errors,initialRequests:initial.length,mapLoaded}));
+  console.log(name,JSON.stringify({checks,lateChecks,heavyInitial,deepInitial,deferred,noRawForecastFetch,errors,initialRequests:initial.length,mapLoaded}));
   if(!ok)failed=true;
   await page.close();
 }

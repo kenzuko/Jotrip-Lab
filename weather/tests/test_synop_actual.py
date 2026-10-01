@@ -2,7 +2,7 @@ import unittest
 from datetime import datetime, timezone
 
 from weather.processing.synop_actual import decode_synop_actual
-from weather.collectors.phuquoc_synop_raw import compact_live
+from weather.collectors.phuquoc_synop_raw import IDENTITY_RESOLUTION, compact_live
 
 
 class SynopActualDecodeTests(unittest.TestCase):
@@ -52,6 +52,8 @@ class SynopActualDecodeTests(unittest.TestCase):
             "physical_identity":"PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
             "identity_status":"INDEPENDENT_FROM_CURRENT_VVPQ",
             "identity_confidence":"HIGH",
+            "identity_resolution_id":IDENTITY_RESOLUTION["resolution_id"],
+            "identity_resolution":IDENTITY_RESOLUTION,
             "identity_policy":"separate",
             "relocation_status":"NO_VERIFIED_POST_2012_RELOCATION_FOUND",
             "provenance_url":"https://example.test",
@@ -81,6 +83,8 @@ class SynopActualDecodeTests(unittest.TestCase):
             "source_namespace":"WMO_INDEX","identifier":"48917","station_name":"PHU QUOC",
             "reference_lat":10.22,"reference_lon":103.97,
             "identity_status":"INDEPENDENT_FROM_CURRENT_VVPQ","identity_confidence":"HIGH",
+            "identity_resolution_id":IDENTITY_RESOLUTION["resolution_id"],
+            "identity_resolution":IDENTITY_RESOLUTION,
             "observations":[
                 {"observed_at":"2026-10-01T00:00:00+00:00","decoded_actual":{"wind":{"speed_kmh":7.2},"air_temperature_c":27.0},"raw_observation":"AAXX numeric"},
                 {"observed_at":"2026-10-01T03:00:00+00:00","decoded_actual":{"wind":None,"air_temperature_c":None,"dewpoint_c":None,"station_pressure_hpa":None,"sea_level_pressure_hpa":None},"raw_observation":"AAXX 01031 48917 NIL="},
@@ -91,6 +95,58 @@ class SynopActualDecodeTests(unittest.TestCase):
         self.assertEqual(out["latest_numeric_observed_at"],"2026-10-01T00:00:00+00:00")
         self.assertEqual(out["numeric_age_minutes"],360.0)
         self.assertTrue(out["runtime_eligible"])
+
+    
+    def test_runtime_gate_uses_versioned_resolution_not_legacy_raw_annotation(self):
+        payload={
+            "generated_at":"2026-10-01T06:00:00+00:00",
+            "source":"OGIMET_GETSYNOP",
+            "source_namespace":"WMO_INDEX",
+            "identifier":"48917",
+            "station_name":"PHU QUOC",
+            "reference_lat":10.22,
+            "reference_lon":103.97,
+            "identity_status":"INDEPENDENT_FROM_CURRENT_VVPQ",
+            "identity_confidence":"HIGH",
+            "identity_resolution_id":IDENTITY_RESOLUTION["resolution_id"],
+            "identity_resolution":IDENTITY_RESOLUTION,
+            "observations":[{
+                "observed_at":"2026-10-01T03:00:00+00:00",
+                "station_identity_status":"CONFLICTING_OPERATIONAL_AND_CLIMATE_METADATA",
+                "independence_from_vvpq":"UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE",
+                "evidence_weight_for_independent_source_count":0,
+                "decoded_actual":{"air_temperature_c":29.0,"wind":{"speed_kmh":10.0}},
+            }],
+        }
+        out=compact_live(payload,datetime(2026,10,1,6,0,tzinfo=timezone.utc))
+        self.assertTrue(out["runtime_eligible"])
+        self.assertEqual(out["identity_resolution"]["status"],"LOCKED")
+        self.assertEqual(out["identity_resolution"]["decision"],"INDEPENDENT_FROM_CURRENT_VVPQ")
+        self.assertEqual(out["latest"]["independence_from_vvpq"],"UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE")
+
+    def test_independent_label_without_locked_resolution_is_not_runtime_eligible(self):
+        payload={
+            "generated_at":"2026-10-01T06:00:00+00:00",
+            "source":"OGIMET_GETSYNOP",
+            "source_namespace":"WMO_INDEX",
+            "identifier":"48917",
+            "station_name":"PHU QUOC",
+            "identity_status":"INDEPENDENT_FROM_CURRENT_VVPQ",
+            "identity_confidence":"HIGH",
+            "identity_resolution_id":"unlocked-test",
+            "identity_resolution":{
+                "resolution_id":"unlocked-test",
+                "status":"REVIEW",
+                "decision":"INDEPENDENT_FROM_CURRENT_VVPQ",
+            },
+            "observations":[{
+                "observed_at":"2026-10-01T03:00:00+00:00",
+                "decoded_actual":{"air_temperature_c":29.0,"wind":{"speed_kmh":10.0}},
+            }],
+        }
+        out=compact_live(payload,datetime(2026,10,1,6,0,tzinfo=timezone.utc))
+        self.assertFalse(out["runtime_eligible"])
+
 
 if __name__=="__main__":
     unittest.main()

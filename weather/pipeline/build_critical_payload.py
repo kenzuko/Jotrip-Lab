@@ -259,6 +259,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
 
     v=(ground.get("atmosphere") or {}).get("vvpq",{})
     synop=(ground.get("atmosphere") or {}).get("synop_48917",{})
+    synop_resolution=synop.get("identity_resolution") or {}
     corpus=ground.get("historical_corpus") or {}
     registry=ground.get("source_registry") or {}
     gauges=[]
@@ -479,6 +480,9 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
                 "station_epoch":synop.get("station_epoch"),
                 "identity_status":synop.get("identity_status"),
                 "identity_confidence":synop.get("identity_confidence"),
+                "identity_resolution_id":synop.get("identity_resolution_id"),
+                "identity_resolution_status":synop_resolution.get("status"),
+                "identity_resolution_effective_at":synop_resolution.get("effective_at"),
                 "production_role":synop.get("production_role"),
                 "latest_numeric":synop.get("latest_numeric"),
             },
