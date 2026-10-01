@@ -23,11 +23,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Fetch raw Phu Quoc SYNOP observations
+      - name: Fetch current raw Phu Quoc SYNOP observations
         run: |
           python -m weather.collectors.phuquoc_synop_raw \
-            --begin 202609210000 \
-            --end 202609291030 \
+            --days 3 \
             --output /tmp/phuquoc-synop-48917.json
 
       - name: Validate observation provenance
@@ -48,19 +47,96 @@ jobs:
           print('RAW SYNOP validation OK:', p['count'], 'observations')
           PY
 
-      - name: Print 22 Sep raw reports for inspection
+      - name: Compare current SYNOP stream with current VVPQ METAR without deduplicating
         run: |
           python - <<'PY'
-          import json
-          p=json.load(open('/tmp/phuquoc-synop-48917.json'))
-          rows=[r for r in p['observations'] if r['observed_at'].startswith('2026-09-22')]
-          print('2026-09-22 rows:', len(rows))
-          for r in rows:
-              print(r['observed_at'], r['raw_observation'])
+          import json, urllib.request
+          from datetime import datetime, timezone
+
+          synop=json.load(open('/tmp/phuquoc-synop-48917.json'))
+          req=urllib.request.Request(
+              'https://aviationweather.gov/api/data/metar?ids=VVPQ&format=json&hours=72',
+              headers={'User-Agent':'JoTrip-WeatherLab/1.0 station-identity-gate','Accept':'application/json'}
+          )
+          with urllib.request.urlopen(req,timeout=25) as res:
+              metars=json.loads(res.read().decode('utf-8'))
+
+          def dt(v):
+              return datetime.fromisoformat(str(v).replace('Z','+00:00')).astimezone(timezone.utc)
+
+          syn_rows=synop.get('observations') or []
+          met_rows=[r for r in metars if str(r.get('icaoId') or '').upper()=='VVPQ' and r.get('obsTime')]
+          met_rows.sort(key=lambda r:int(r.get('obsTime') or 0))
+
+          latest_syn=syn_rows[-1] if syn_rows else None
+          latest_met=met_rows[-1] if met_rows else None
+          matched=[]
+          for s in syn_rows:
+              st=dt(s['observed_at'])
+              candidates=[]
+              for m in met_rows:
+                  mt=datetime.fromtimestamp(float(m['obsTime']),timezone.utc)
+                  gap=abs((mt-st).total_seconds())/60
+                  if gap<=45:
+                      candidates.append((gap,m))
+              if not candidates:
+                  continue
+              gap,m=min(candidates,key=lambda x:x[0])
+              sw=((s.get('decoded_actual') or {}).get('wind') or {})
+              matched.append({
+                  'synop_observed_at':s['observed_at'],
+                  'metar_observed_at':datetime.fromtimestamp(float(m['obsTime']),timezone.utc).isoformat(),
+                  'gap_minutes':round(gap,1),
+                  'synop_wind_ms':sw.get('speed_ms'),
+                  'synop_wind_dir_deg':sw.get('direction_deg'),
+                  'metar_wind_kt':m.get('wspd'),
+                  'metar_wind_dir_deg':m.get('wdir'),
+                  'synop_raw':s.get('raw_observation'),
+                  'metar_raw':m.get('rawOb'),
+              })
+
+          now=datetime.now(timezone.utc)
+          latest_syn_age=None
+          if latest_syn:
+              latest_syn_age=round((now-dt(latest_syn['observed_at'])).total_seconds()/60,1)
+          latest_met_age=None
+          if latest_met:
+              mt=datetime.fromtimestamp(float(latest_met['obsTime']),timezone.utc)
+              latest_met_age=round((now-mt).total_seconds()/60,1)
+
+          report={
+              'generated_at':now.isoformat(),
+              'identity_gate':'OBSERVE_ONLY_NO_RUNTIME_PROMOTION',
+              'synop':{
+                  'station_namespace':'WMO_INDEX',
+                  'station_id':'48917',
+                  'metadata_coordinates':[10.22,103.97],
+                  'latest_observed_at':latest_syn.get('observed_at') if latest_syn else None,
+                  'latest_age_minutes':latest_syn_age,
+                  'raw_count_72h':len(syn_rows),
+              },
+              'vvpq':{
+                  'station_namespace':'ICAO',
+                  'station_id':'VVPQ',
+                  'official_aip_arp_coordinates':[10.169722,103.993056],
+                  'latest_observed_at':datetime.fromtimestamp(float(latest_met['obsTime']),timezone.utc).isoformat() if latest_met else None,
+                  'latest_age_minutes':latest_met_age,
+                  'raw_count_72h':len(met_rows),
+              },
+              'nearest_time_pairs':matched[-12:],
+              'decision_policy':'Do not infer physical co-location or independence from identifier mapping alone. Station identity must be locked by authoritative metadata plus stream evidence.',
+          }
+          open('/tmp/phuquoc-48917-vvpq-identity.json','w').write(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps(report,ensure_ascii=False,indent=2))
+          assert syn_rows, 'No current raw 48917 SYNOP reports in 72h'
+          assert latest_syn_age is not None and latest_syn_age <= 12*60, f'48917 feed not near-real-time enough: {latest_syn_age} min'
+          assert met_rows, 'No current VVPQ METAR reports in 72h'
           PY
 
       - uses: actions/upload-artifact@v4
         with:
           name: phuquoc-synop-48917-raw
-          path: /tmp/phuquoc-synop-48917.json
+          path: |
+            /tmp/phuquoc-synop-48917.json
+            /tmp/phuquoc-48917-vvpq-identity.json
           retention-days: 7
