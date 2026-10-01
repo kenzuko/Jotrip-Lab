@@ -292,11 +292,25 @@ def build_evidence_status(local:dict,groundtruth:dict,nowcast:dict,generated_at:
     rain=groundtruth.get("rainfall") or {}
 
     ground_sources=[]
-    if str(vvpq.get("status") or "").upper()=="FRESH":
+    vvpq_actual_status,_=_actual_status(
+        _num(vvpq.get("temperature_c")) is not None or _num(vvpq.get("wind_speed_kmh")) is not None,
+        vvpq.get("observed_at"),generated_at,vvpq.get("qc")
+    )
+    if str(vvpq.get("status") or "").upper()=="FRESH" or vvpq_actual_status=="ACTUAL":
         ground_sources.append("VVPQ")
     if bool(synop.get("runtime_eligible")) and str(synop.get("numeric_status") or "").upper()=="FRESH":
         ground_sources.append("WMO_48917")
-    if str(rain.get("status") or "").upper()=="FRESH":
+    rain_fresh=str(rain.get("status") or "").upper()=="FRESH"
+    if not rain_fresh:
+        for station in (rain.get("stations") or {}).values():
+            station_status,_=_actual_status(
+                station.get("rain_observed") is not None or _num(station.get("rain_intensity_mm_h")) is not None or _num(station.get("accumulation_mm")) is not None,
+                station.get("observed_at"),generated_at,station.get("qc")
+            )
+            if station_status=="ACTUAL":
+                rain_fresh=True
+                break
+    if rain_fresh:
         ground_sources.append("VRAIN")
     ground_fresh=bool(ground_sources)
 
