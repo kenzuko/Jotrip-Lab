@@ -1,3 +1,4 @@
+import json
 import unittest
 from pathlib import Path
 
@@ -35,6 +36,38 @@ class GroundTruthCorpusTests(unittest.TestCase):
         self.assertEqual(sources["wmo_48917_synop"]["namespace"],"WMO_INDEX")
         self.assertEqual(sources["vvpq_metar_speci"]["namespace"],"ICAO")
         self.assertNotEqual(sources["wmo_48917_synop"]["namespace"],sources["vvpq_metar_speci"]["namespace"])
+
+        wmo=sources["wmo_48917_synop"]
+        self.assertEqual(wmo["status"],"ACTIVE_NEAR_REALTIME")
+        self.assertEqual(wmo["station_identity_status"],"RESOLVED_WMO_OSCAR")
+        self.assertEqual(wmo["independence_from_vvpq"],"CONFIRMED_INDEPENDENT_PHYSICAL_SITE")
+        self.assertEqual(wmo["evidence_weight_for_independent_source_count"],1)
+        self.assertAlmostEqual(wmo["current_coordinates"]["lat"],10.2166666667)
+        self.assertAlmostEqual(wmo["current_coordinates"]["lon"],103.9666666667)
+        synop_rows=[
+            r for r in payload["records"]
+            if str(r.get("station_id") or "")=="48917" and "SYNOP" in str(r.get("source") or "").upper()
+        ]
+        self.assertTrue(synop_rows)
+        self.assertTrue(all(r["production_role"]=="INDEPENDENT_GROUND_OBSERVATION_CROSSCHECK" for r in synop_rows))
+        self.assertTrue(all(r["evidence_weight_for_independent_source_count"]==1 for r in synop_rows))
+
+
+    def test_wmo_48917_identity_record_matches_registry(self):
+        root=Path(__file__).resolve().parents[1]
+        identity=json.loads((root/"groundtruth/identity/wmo-48917-phu-quoc.json").read_text(encoding="utf-8"))
+        registry=json.loads((root/"config/groundtruth_sources.json").read_text(encoding="utf-8"))
+        wmo=next(s for s in registry["sources"] if s["id"]=="wmo_48917_synop")
+        self.assertEqual(identity["resolution"],"INDEPENDENT_PHYSICAL_STATION_FROM_VVPQ")
+        self.assertEqual(identity["confidence"],"HIGH")
+        self.assertEqual(identity["canonical"]["wigos_id"],"0-20000-0-48917")
+        self.assertAlmostEqual(identity["canonical"]["latitude"],10.2166666667)
+        self.assertAlmostEqual(identity["canonical"]["longitude"],103.9666666667)
+        self.assertEqual(wmo["station_identity_status"],"RESOLVED_WMO_OSCAR")
+        self.assertEqual(wmo["current_coordinates"]["lat"],identity["canonical"]["latitude"])
+        self.assertEqual(wmo["current_coordinates"]["lon"],identity["canonical"]["longitude"])
+        self.assertEqual(wmo["vvpq_relationship"]["result"],"INDEPENDENT_PHYSICAL_SITE")
+        self.assertEqual(registry["identity_resolution_lock"]["state"],"RESOLVED")
 
 
 if __name__=="__main__":

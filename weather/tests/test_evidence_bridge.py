@@ -40,6 +40,38 @@ class EvidenceBridgeTests(unittest.TestCase):
         self.assertEqual(out["local_now"]["data_class"], "ESTIMATED_NOW")
         self.assertEqual(out["local_now"]["points"]["an_thoi"]["status"], "AVAILABLE")
 
+    def test_resolved_synop_enters_actual_as_independent_crosscheck(self):
+        current = {
+            "groundtruth": {
+                "status": "READY",
+                "atmosphere": {
+                    "vvpq": {"data_class": "ACTUAL", "qc": "PASS"},
+                    "synop_48917": {
+                        "status": "FRESH",
+                        "source_namespace": "WMO_INDEX",
+                        "identifier": "48917",
+                        "station_identity_status": "RESOLVED_WMO_OSCAR",
+                        "independence_from_vvpq": "CONFIRMED_INDEPENDENT_PHYSICAL_SITE",
+                        "evidence_weight_for_independent_source_count": 1,
+                    },
+                },
+                "rainfall": {"status": "FRESH", "stations": {}},
+            }
+        }
+        out = build_evidence_bridge(
+            current_bundle=current, nowcast={}, local_ensemble={}, tide={},
+            point_authority=AUTH, cutoff_time="2026-09-22T06:00:00+07:00",
+        )
+        self.assertEqual(out["actual"]["synop_48917"]["status"], "FRESH")
+        self.assertEqual(
+            out["actual"]["synop_48917"]["independence_from_vvpq"],
+            "CONFIRMED_INDEPENDENT_PHYSICAL_SITE",
+        )
+        self.assertEqual(
+            out["actual"]["synop_48917"]["evidence_weight_for_independent_source_count"],
+            1,
+        )
+
     def test_local_now_rejects_old_an_thoi_reference(self):
         current = {"local_now": {"points": {
             "an_thoi": {"lat": 9.905, "lon": 104.005, "wind_kmh": 30}

@@ -1,0 +1,80 @@
+{
+  "schema_version": "weather-station-identity-v1",
+  "subject": "WMO_INDEX:48917",
+  "resolved_at": "2026-10-01",
+  "resolution": "INDEPENDENT_PHYSICAL_STATION_FROM_VVPQ",
+  "confidence": "HIGH",
+  "canonical": {
+    "wigos_id": "0-20000-0-48917",
+    "wmo_index": "48917",
+    "name": "PHU QUOC",
+    "local_station_family_name": "Hải văn Phú Quốc",
+    "facility_type": "landFixed",
+    "owner": "National Hydro-Meteorological Service of Viet Nam",
+    "latitude": 10.2166666667,
+    "longitude": 103.9666666667,
+    "elevation_m": 3,
+    "geolocation_valid_from": "2016-04-28T00:00:00Z",
+    "date_established": "1960-01-01",
+    "reporting_interval": "PT3H"
+  },
+  "current_network_status": {
+    "RBON": {
+      "status": "operational",
+      "valid_from": "2022-06-07T00:00:00Z"
+    },
+    "GBON": {
+      "status": "operational",
+      "valid_from": "2022-09-08T00:00:00Z"
+    },
+    "CLIMAT": {
+      "status": "closed",
+      "valid_from": "2022-06-07T00:00:00Z"
+    },
+    "RBSN": {
+      "status": "closed",
+      "valid_from": "2022-06-07T00:00:00Z"
+    }
+  },
+  "vvpq_comparison": {
+    "icao": "VVPQ",
+    "latitude": 10.169722,
+    "longitude": 103.993056,
+    "location": "Phu Quoc International Airport, Duong To",
+    "result": "SEPARATE_PHYSICAL_SITE",
+    "third_party_conflict": "OGIMET maps VVPQ to synoptic indicator/WIGOS 48917. This conflicts with WMO OSCAR and is treated as a third-party conflation rather than authoritative identity."
+  },
+  "relocation_history": {
+    "old_airport_closed": "2012-12-01T23:59:00+07:00",
+    "new_airport_opened": "2012-12-02T00:00:00+07:00",
+    "wmo_current_location_valid_from": "2016-04-28T00:00:00Z",
+    "conclusion": "No relocation of WMO 48917 to current VVPQ is present in the current OSCAR record. Current OSCAR geolocation remains Duong Dong. Pre-2016 coordinate-history detail is not supplied by this export, so do not invent an exact historical relocation timeline."
+  },
+  "sensor_identity_lock": {
+    "vvpq": "SEPARATE",
+    "ktt_auto_60018": "SEPARATE_UNTIL_EQUIPMENT_MAPPING_PROVEN",
+    "bhv1_shv1_48917": "SAME_STATION_FAMILY_STRONGLY_SUPPORTED_SENSOR_LEVEL_MAPPING_NOT_ASSUMED"
+  },
+  "evidence": [
+    {
+      "source": "WMO OSCAR Surface",
+      "url": "https://oscar.wmo.int/surface/rest/api/wmd/download/0-20000-0-48917",
+      "fetched_via": "GitHub Actions run 36824944119",
+      "response_sha256": "53051551e93c97d4b47818a6aa9cf12a9464f6b587aa97926c339fbf01d8da37",
+      "contains_vvpq": false,
+      "contains_current_airport_coordinates": false
+    },
+    {
+      "source": "JMA climate/TCC current metadata",
+      "finding": "48917 PHU QUOC continues at approximately 10.22N, 103.97E in 2026."
+    },
+    {
+      "source": "Vietnam hydrometeorological observation-book system",
+      "finding": "Hải văn Phú Quốc (BHV1/SHV1) uses station code 48917."
+    },
+    {
+      "source": "Vietnam AIP",
+      "finding": "VVPQ current airport and MET station are at approximately 10.169722N,103.993056E."
+    }
+  ]
+}

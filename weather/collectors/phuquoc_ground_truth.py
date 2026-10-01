@@ -309,9 +309,14 @@ def collect(previous: dict | None = None, artifacts: dict | None = None) -> dict
         errors.append({"source": "WMO_48917_SYNOPTIC", "error": repr(exc)})
         synop_48917 = {
             "status": "UNAVAILABLE",
+            "feed_freshness": "UNAVAILABLE",
             "source_namespace": "WMO_INDEX",
             "identifier": "48917",
-            "production_role": "ACTUAL_VALIDATION_STREAM_NOT_SPATIAL_POINT_ANCHOR",
+            "station_identity_status": "RESOLVED_WMO_OSCAR",
+            "independence_from_vvpq": "CONFIRMED_INDEPENDENT_PHYSICAL_SITE",
+            "deduplication_group": "WMO_48917_DUONG_DONG",
+            "evidence_weight_for_independent_source_count": 1,
+            "production_role": "INDEPENDENT_GROUND_OBSERVATION_CROSSCHECK",
             "detail": repr(exc),
         }
 
@@ -379,9 +384,10 @@ def collect(previous: dict | None = None, artifacts: dict | None = None) -> dict
         "generated_at": now.isoformat(),
         "status": "READY" if live_ready else "UNAVAILABLE",
         "actual_policy": (
-            "Current-time ACTUAL requires timestamped in-situ or raw coded observations. "
-            "Historical aggregate/published observations are verification-only; remote sensing, "
-            "models and fusion remain separate classes."
+            "Current-time ACTUAL requires timestamped in-situ observations with resolved source identity. "
+            "WMO/SYNOP 48917 is an independent Duong Dong ground-observation stream resolved by WMO OSCAR; "
+            "ICAO:VVPQ remains a separate airport observation system. Historical aggregate/published observations "
+            "are verification-only; remote sensing, models and fusion remain separate classes."
         ),
         "atmosphere": {"vvpq": vvpq, "synop_48917": synop_48917},
         "rainfall": rainfall,

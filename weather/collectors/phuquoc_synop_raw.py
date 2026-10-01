@@ -29,10 +29,21 @@ STREAM_IDENTITY = {
     "source_namespace": "WMO_INDEX",
     "identifier": "48917",
     "station_name": "PHU QUOC",
-    "reference_lat": 10.22,
-    "reference_lon": 103.97,
-    "station_epoch": "CURRENT_METADATA_EPOCH_UNRESOLVED",
-    "identity_policy": "Do not merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 by identifier alone.",
+    "reference_lat": 10.2166666667,
+    "reference_lon": 103.9666666667,
+    "reference_elevation_m": 3.0,
+    "station_epoch": "WMO_OSCAR_CURRENT_FROM_2016_04_28",
+    "station_identity_status": "RESOLVED_WMO_OSCAR",
+    "independence_from_vvpq": "CONFIRMED_INDEPENDENT_PHYSICAL_SITE",
+    "deduplication_group": "WMO_48917_DUONG_DONG",
+    "evidence_weight_for_independent_source_count": 1,
+    "identity_confidence": "HIGH",
+    "identity_source": "WMO_OSCAR_SURFACE",
+    "identity_policy": (
+        "WMO OSCAR resolves 48917 as a land-fixed PHU QUOC facility at Duong Dong. "
+        "It is independent from ICAO:VVPQ at the current airport. Keep KTTV_AUTO:60018 "
+        "separate until sensor/equipment mapping is explicitly proven."
+    ),
 }
 
 
@@ -116,7 +127,7 @@ def collect(begin: datetime, end: datetime) -> dict[str, Any]:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         **STREAM_IDENTITY,
         "source": SOURCE,
-        "data_class": "ACTUAL",
+        "data_class": "RAW_OBS_IDENTITY_PENDING",
         "observation_class": "RAW_OBS",
         "begin": begin.isoformat(),
         "end": end.isoformat(),
@@ -138,9 +149,11 @@ def compact_live(payload: dict[str, Any], now: datetime | None = None) -> dict[s
             age = max(0.0, (now - t).total_seconds() / 60.0)
         except Exception:
             age = None
-    status = "UNAVAILABLE" if not latest else ("FRESH" if age is not None and age <= 480 else "STALE")
+    feed_freshness = "UNAVAILABLE" if not latest else ("FRESH" if age is not None and age <= 480 else "STALE")
+    status = feed_freshness
     return {
         "status": status,
+        "feed_freshness": feed_freshness,
         "source": payload.get("source"),
         "source_namespace": payload.get("source_namespace"),
         "identifier": payload.get("identifier"),
@@ -156,7 +169,12 @@ def compact_live(payload: dict[str, Any], now: datetime | None = None) -> dict[s
         "latest": latest,
         "recent_observations": rows[-8:],
         "recent_count": len(rows),
-        "production_role": "ACTUAL_VALIDATION_STREAM_NOT_SPATIAL_POINT_ANCHOR",
+        "station_identity_status": payload.get("station_identity_status"),
+        "independence_from_vvpq": payload.get("independence_from_vvpq"),
+        "deduplication_group": payload.get("deduplication_group"),
+        "evidence_weight_for_independent_source_count": 1,
+        "identity_confidence": payload.get("identity_confidence"),
+        "production_role": "INDEPENDENT_GROUND_OBSERVATION_CROSSCHECK",
     }
 
 

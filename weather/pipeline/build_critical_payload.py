@@ -308,7 +308,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
     }
     sources["SYNOP_48917"]={
         "status":ready_status(synop.get("status"),partial_ok=True),
-        "detail":"WMO 48917 là dòng SYNOP quan trắc riêng của Phú Quốc, dùng để đối chiếu gió, nhiệt độ, áp suất, mưa và các nhóm quan trắc biển khi bản tin có báo. Không gộp nó với VVPQ chỉ vì cùng liên hệ mã 48917."
+        "detail":"WMO/SYNOP 48917 là trạm quan trắc mặt đất độc lập tại Dương Đông, đã đối chiếu station identity bằng WMO OSCAR. Nguồn này dùng để cross-check gió, nhiệt độ, áp suất, mưa và nhóm quan trắc biển khi có báo; VVPQ ở Dương Tơ vẫn là một hệ quan trắc riêng."
     }
     sources["VRAIN"]={
         "status":ready_status((ground.get("rainfall") or {}).get("status")),
@@ -395,6 +395,11 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
                 "reference_lat":num(synop.get("reference_lat")),
                 "reference_lon":num(synop.get("reference_lon")),
                 "station_epoch":synop.get("station_epoch"),
+                "station_identity_status":synop.get("station_identity_status"),
+                "independence_from_vvpq":synop.get("independence_from_vvpq"),
+                "deduplication_group":synop.get("deduplication_group"),
+                "evidence_weight_for_independent_source_count":num(synop.get("evidence_weight_for_independent_source_count")),
+                "feed_freshness":synop.get("feed_freshness"),
                 "production_role":synop.get("production_role"),
                 "latest":synop.get("latest"),
             },
@@ -419,6 +424,7 @@ def build(dashboard:dict, local:dict, ground:dict, aqi:dict|None=None, tide:dict
         "source_state":{
             "vvpq":v.get("status","UNAVAILABLE"),
             "synop_48917":synop.get("status","UNAVAILABLE"),
+            "synop_48917_feed_freshness":synop.get("feed_freshness","UNAVAILABLE"),
             "vrain":(ground.get("rainfall") or {}).get("status","UNAVAILABLE"),
             "aqi":aqi.get("status","UNAVAILABLE"),
             "tide":tide.get("status","UNAVAILABLE"),
