@@ -40,6 +40,36 @@ class EvidenceBridgeTests(unittest.TestCase):
         self.assertEqual(out["local_now"]["data_class"], "ESTIMATED_NOW")
         self.assertEqual(out["local_now"]["points"]["an_thoi"]["status"], "AVAILABLE")
 
+    def test_identity_pending_synop_never_enters_actual_set(self):
+        current = {
+            "groundtruth": {
+                "status": "READY",
+                "atmosphere": {
+                    "vvpq": {"data_class": "ACTUAL", "qc": "PASS"},
+                    "synop_48917": {
+                        "status": "IDENTITY_PENDING",
+                        "source_namespace": "WMO_INDEX",
+                        "identifier": "48917",
+                        "evidence_weight_for_independent_source_count": 0,
+                    },
+                },
+                "rainfall": {"status": "FRESH", "stations": {}},
+            }
+        }
+        out = build_evidence_bridge(
+            current_bundle=current, nowcast={}, local_ensemble={}, tide={},
+            point_authority=AUTH, cutoff_time="2026-09-22T06:00:00+07:00",
+        )
+        self.assertNotIn("synop_48917", out["actual"])
+        self.assertEqual(
+            out["actual"]["identity_pending_sources"]["synop_48917"]["status"],
+            "IDENTITY_PENDING",
+        )
+        self.assertEqual(
+            out["actual"]["identity_pending_sources"]["synop_48917"]["evidence_weight_for_independent_source_count"],
+            0,
+        )
+
     def test_local_now_rejects_old_an_thoi_reference(self):
         current = {"local_now": {"points": {
             "an_thoi": {"lat": 9.905, "lon": 104.005, "wind_kmh": 30}
