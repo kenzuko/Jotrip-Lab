@@ -33,7 +33,12 @@ def _compact_actual(current_bundle: dict[str, Any]) -> dict[str, Any]:
         "generated_at": gt.get("generated_at"),
         "policy": gt.get("actual_policy"),
         "vvpq": vvpq if vvpq.get("data_class") == "ACTUAL" else {},
-        "synop_48917": synop if synop.get("source_namespace") == "WMO_INDEX" else {},
+        "identity_pending_sources": {
+            "synop_48917": synop if (
+                synop.get("source_namespace") == "WMO_INDEX"
+                and synop.get("status") == "IDENTITY_PENDING"
+            ) else {}
+        },
         "verification_corpus": {
             "schema_version": corpus.get("schema_version"),
             "record_count": corpus.get("record_count", 0),
