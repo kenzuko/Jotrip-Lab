@@ -1,8 +1,14 @@
 {
-  "schema_version": "groundtruth-source-registry-v2",
-  "generated_from": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
-  "identity_key": "namespace+identifier+station_epoch+timestamp",
-  "live_actual_policy": "Only timestamped in-situ or raw coded observations are current-time ACTUAL. Historical, published, satellite, model and fusion layers remain separate.",
+  "schema_version": "groundtruth-operational-registry-v1",
+  "generated_at": "2026-10-01T09:11:00.096370+00:00",
+  "source_count": 18,
+  "tiers": [
+    "ACTIVE_REALTIME",
+    "ACTIVE_NEAR_REALTIME",
+    "VALIDATION_HISTORICAL",
+    "HOLD_CANDIDATE",
+    "RETIRED"
+  ],
   "sources": [
     {
       "id": "vvpq_metar_speci",
@@ -20,15 +26,29 @@
         "dewpoint",
         "pressure"
       ],
-      "notes": "AWOS SUTRON physical system documented. Numeric rain/lightning sensor telemetry is not inferred from METAR codes."
+      "notes": "AWOS SUTRON physical system documented. Numeric rain/lightning sensor telemetry is not inferred from METAR codes.",
+      "tier": "ACTIVE_REALTIME",
+      "provenance": {
+        "feed": "https://aviationweather.gov/api/data/metar?ids=VVPQ&format=json&hours=24",
+        "observation_channel": "METAR/SPECI",
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5"
+      },
+      "freshness": {
+        "state": "FRESH",
+        "age_minutes": 11.0,
+        "budget_minutes": 90
+      },
+      "health": "HEALTHY",
+      "last_observation": "2026-10-01T09:00:00+00:00",
+      "status_reason": "Current METAR/SPECI observation is usable."
     },
     {
       "id": "wmo_48917_synop",
       "namespace": "WMO_INDEX",
       "identifier": "48917",
       "class": "RAW_OBS",
-      "status": "ACTIVE_LIVE_INGEST",
-      "role": "ACTUAL_VALIDATION_STREAM",
+      "status": "ACTIVE_NEAR_REALTIME",
+      "role": "ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION",
       "variables": [
         "wind",
         "temperature",
@@ -39,7 +59,84 @@
         "sst_when_section2_reported",
         "visual_wind_wave_when_section2_reported"
       ],
-      "notes": "Keep separate from VVPQ and KTT book station code until physical site/epoch mapping is proven."
+      "notes": "Current raw 48917 SYNOP remains active by synoptic cadence. Treat as an independent near-real-time ground-observation stream from current VVPQ, with high identity confidence at station-program level. Exact sensor site remains station-metadata precision; never merge WMO_INDEX:48917 with ICAO:VVPQ or KTT identifiers solely by cross-id.",
+      "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
+      "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
+      "identity_confidence": "HIGH",
+      "identity_resolution": {
+        "resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
+        "status": "LOCKED",
+        "effective_at": "2026-10-01T06:35:33+00:00",
+        "decision": "INDEPENDENT_FROM_CURRENT_VVPQ",
+        "confidence": "HIGH",
+        "supersedes_legacy_ingest_assessments": [
+          "IDENTITY_PENDING_POST_2012",
+          "CONFLICTING_OPERATIONAL_AND_CLIMATE_METADATA",
+          "UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE"
+        ],
+        "evidence_from": "identity_evidence",
+        "raw_archive_semantics": "Immutable raw files preserve the identity assessment present when that observation was first archived. Runtime identity is governed by this current versioned resolution; older embedded identity annotations are provenance history and do not override the current gate."
+      },
+      "coordinates": {
+        "lat": 10.22,
+        "lon": 103.97,
+        "precision": "STATION_METADATA_APPROX_0_01_DEG"
+      },
+      "location_context": "Duong Dong area, Phu Quoc",
+      "relation_to_vvpq": "Independent observation stream from current ICAO:VVPQ airport AWOS/METAR. Do not deduplicate by WMO/ICAO cross-id mapping alone.",
+      "current_vvpq_coordinates": {
+        "lat": 10.169722,
+        "lon": 103.993056
+      },
+      "relocation_history": {
+        "status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
+        "note": "Current JMA/TCC 2026 metadata remains near 10.22N,103.97E. Current VVPQ AIP ARP is 10.169722N,103.993056E. Exact sensor-level station history remains less precise than these station metadata records."
+      },
+      "identity_conflict": {
+        "status": "THIRD_PARTY_CROSS_ID_CONFLICT",
+        "note": "OGIMET associates VVPQ with synoptic indicator/WIGOS 48917. This is retained as a metadata cross-link, not accepted as proof of physical co-location."
+      },
+      "identity_evidence": [
+        {
+          "source": "JMA_TCC",
+          "role": "CURRENT_WMO_METADATA",
+          "fact": "48917 PHU QUOC at approximately 10.22N,103.97E, current 2026 station reporting"
+        },
+        {
+          "source": "VIETNAM_KTTV_OBSERVATION_BOOK",
+          "role": "NATIONAL_OPERATIONAL_METADATA",
+          "fact": "Hai van Phu Quoc BHV1/SHV1 uses station code 48917"
+        },
+        {
+          "source": "VIETNAM_KTTV_AUTOMATED_STATION_LIST",
+          "role": "NATIONAL_OPERATIONAL_METADATA",
+          "fact": "Phu Quoc automated station is separately identified as 60018"
+        },
+        {
+          "source": "VIETNAM_AIP_VVPQ",
+          "role": "CURRENT_AIRPORT_METADATA",
+          "fact": "Current VVPQ ARP 10.169722N,103.993056E, 7 km south of Duong Dong"
+        },
+        {
+          "source": "LIVE_RAW_STREAM_COMPARISON_20261001",
+          "role": "STREAM_EVIDENCE",
+          "fact": "Current 48917 raw SYNOP and VVPQ METAR coexist at identical timestamps with distinct observations; 48917 also carries SYNOP Section 222 marine groups"
+        }
+      ],
+      "tier": "ACTIVE_NEAR_REALTIME",
+      "provenance": {
+        "feed": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202609290910&end=202610010910&lang=eng&header=yes",
+        "observation_channel": "WMO FM-12 SYNOP AAXX raw",
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5"
+      },
+      "freshness": {
+        "state": "FRESH",
+        "age_minutes": 191.0,
+        "budget_minutes": 480
+      },
+      "health": "HEALTHY",
+      "last_observation": "2026-10-01T06:00:00+00:00",
+      "status_reason": "Raw current SYNOP is available within the synoptic freshness budget."
     },
     {
       "id": "vrain_phu_quoc",
@@ -52,7 +149,21 @@
         "precipitation_accumulation",
         "short_increment_when_distinct_samples"
       ],
-      "notes": "Fetch time is not observation time. Unchanged station payload must not create fake dry increments."
+      "notes": "Fetch time is not observation time. Unchanged station payload must not create fake dry increments.",
+      "tier": "ACTIVE_REALTIME",
+      "provenance": {
+        "feed": "https://data.vrain.vn/public/current/all.json",
+        "timing_feed": "https://vrain.vn/api/public/v1/time",
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5"
+      },
+      "freshness": {
+        "state": "STALE",
+        "age_minutes": 1551.2,
+        "budget_minutes": 90
+      },
+      "health": "DEGRADED_STALE",
+      "last_observation": "2026-09-30T07:19:43+00:00",
+      "status_reason": "No sufficiently fresh gauge sample; absence is not evidence of no rain."
     },
     {
       "id": "official_rainfall_reports",
@@ -64,7 +175,21 @@
       "variables": [
         "precipitation_accumulation"
       ],
-      "notes": "Quantitative only when start/end accumulation window is explicit."
+      "notes": "Quantitative only when start/end accumulation window is explicit.",
+      "tier": "VALIDATION_HISTORICAL",
+      "provenance": {
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
+        "namespace": "OFFICIAL_REPORT",
+        "identifier": "PCTT_HYDROMET"
+      },
+      "freshness": {
+        "state": "HISTORICAL_WINDOWED_OBSERVATION",
+        "age_minutes": null,
+        "budget_minutes": null
+      },
+      "health": "AVAILABLE_FOR_ROLE",
+      "last_observation": "2026-09-24T19:00:00+07:00",
+      "status_reason": "Verified measured accumulation windows are retained for validation/backtest, never current weather."
     },
     {
       "id": "vvpq_awos_sensors",
@@ -82,7 +207,21 @@
         "humidity",
         "pressure",
         "present_weather"
-      ]
+      ],
+      "tier": "HOLD_CANDIDATE",
+      "provenance": {
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
+        "namespace": "AIP_AWOS",
+        "identifier": "VVPQ_SUTRON"
+      },
+      "freshness": {
+        "state": "NO_STABLE_RUNTIME_FEED",
+        "age_minutes": null,
+        "budget_minutes": null
+      },
+      "health": "HOLD",
+      "last_observation": null,
+      "status_reason": "Source is retained in the registry but has no stable timestamped numeric feed eligible for runtime."
     },
     {
       "id": "kttv_60018",
@@ -101,7 +240,21 @@
         "Hmax",
         "HM0"
       ],
-      "notes": "Public XLSX export acquisition confirmed for sid=33. Do not promote until numeric rows/timestamps are parsed and retained."
+      "notes": "Public XLSX export acquisition confirmed for sid=33. Do not promote until numeric rows/timestamps are parsed and retained.",
+      "tier": "HOLD_CANDIDATE",
+      "provenance": {
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
+        "namespace": "KTT_AUTOMATED_ID",
+        "identifier": "60018"
+      },
+      "freshness": {
+        "state": "NO_STABLE_RUNTIME_FEED",
+        "age_minutes": null,
+        "budget_minutes": null
+      },
+      "health": "HOLD",
+      "last_observation": null,
+      "status_reason": "Public XLSX export acquisition confirmed for sid=33. Do not promote until numeric rows/timestamps are parsed and retained."
     },
     {
       "id": "field_observations",
@@ -115,7 +268,21 @@
         "wind_state",
         "local_conditions"
       ],
-      "notes": "Only operator/time/location verified records qualify."
+      "notes": "Only operator/time/location verified records qualify.",
+      "tier": "VALIDATION_HISTORICAL",
+      "provenance": {
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
+        "namespace": "JOTRIP_FIELD",
+        "identifier": "OPENPQ_VERIFIED_FIELD"
+      },
+      "freshness": {
+        "state": "HISTORICAL_NOT_CURRENT",
+        "age_minutes": null,
+        "budget_minutes": null
+      },
+      "health": "AVAILABLE_FOR_ROLE",
+      "last_observation": null,
+      "status_reason": "Only operator/time/location verified records qualify."
     },
     {
       "id": "hadisd_489170",
@@ -130,7 +297,21 @@
         "pressure",
         "wind",
         "related_station_fields"
-      ]
+      ],
+      "tier": "VALIDATION_HISTORICAL",
+      "provenance": {
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
+        "namespace": "HADISD",
+        "identifier": "489170-99999"
+      },
+      "freshness": {
+        "state": "HISTORICAL_NOT_CURRENT",
+        "age_minutes": null,
+        "budget_minutes": null
+      },
+      "health": "AVAILABLE_FOR_ROLE",
+      "last_observation": null,
+      "status_reason": "Observation/archive source is retained for validation, backtest, drift or corroboration, not current Local Now."
     },
     {
       "id": "noaa_isd_489170",
@@ -143,7 +324,21 @@
         "atmospheric_fields",
         "marine_fields_when_reported"
       ],
-      "notes": "Prefer full legacy ISD for marine groups; ISD-Lite is atmospheric subset."
+      "notes": "Prefer full legacy ISD for marine groups; ISD-Lite is atmospheric subset.",
+      "tier": "VALIDATION_HISTORICAL",
+      "provenance": {
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
+        "namespace": "NOAA_ISD",
+        "identifier": "489170-99999"
+      },
+      "freshness": {
+        "state": "HISTORICAL_NOT_CURRENT",
+        "age_minutes": null,
+        "budget_minutes": null
+      },
+      "health": "AVAILABLE_FOR_ROLE",
+      "last_observation": null,
+      "status_reason": "Prefer full legacy ISD for marine groups; ISD-Lite is atmospheric subset."
     },
     {
       "id": "phu_quoc_tide_gauge",
@@ -155,7 +350,21 @@
       "variables": [
         "observed_water_level"
       ],
-      "notes": "Keep datum/reference with every record. Do not substitute astronomical tide prediction."
+      "notes": "Keep datum/reference with every record. Do not substitute astronomical tide prediction.",
+      "tier": "VALIDATION_HISTORICAL",
+      "provenance": {
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
+        "namespace": "NATIONAL_MARINE_STATION",
+        "identifier": "PHU_QUOC"
+      },
+      "freshness": {
+        "state": "HISTORICAL_NOT_CURRENT",
+        "age_minutes": null,
+        "budget_minutes": null
+      },
+      "health": "AVAILABLE_FOR_ROLE",
+      "last_observation": null,
+      "status_reason": "Keep datum/reference with every record. Do not substitute astronomical tide prediction."
     },
     {
       "id": "phu_quoc_marine_sst",
@@ -166,7 +375,21 @@
       "role": "HISTORICAL_MARINE_VERIFICATION",
       "variables": [
         "sea_surface_temperature"
-      ]
+      ],
+      "tier": "VALIDATION_HISTORICAL",
+      "provenance": {
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
+        "namespace": "NATIONAL_MARINE_STATION",
+        "identifier": "PHU_QUOC_SST"
+      },
+      "freshness": {
+        "state": "HISTORICAL_NOT_CURRENT",
+        "age_minutes": null,
+        "budget_minutes": null
+      },
+      "health": "AVAILABLE_FOR_ROLE",
+      "last_observation": null,
+      "status_reason": "Observation/archive source is retained for validation, backtest, drift or corroboration, not current Local Now."
     },
     {
       "id": "phu_quoc_awac_wave",
@@ -179,7 +402,21 @@
         "Hsig",
         "Tp"
       ],
-      "notes": "Do not digitize figures and relabel as raw."
+      "notes": "Do not digitize figures and relabel as raw.",
+      "tier": "VALIDATION_HISTORICAL",
+      "provenance": {
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
+        "namespace": "AWAC_CAMPAIGN",
+        "identifier": "PHU_QUOC_2022"
+      },
+      "freshness": {
+        "state": "HISTORICAL_NOT_CURRENT",
+        "age_minutes": null,
+        "budget_minutes": null
+      },
+      "health": "AVAILABLE_FOR_ROLE",
+      "last_observation": null,
+      "status_reason": "Do not digitize figures and relabel as raw."
     },
     {
       "id": "an_thoi_surface_station",
@@ -193,7 +430,21 @@
         "humidity",
         "rainfall",
         "wind"
-      ]
+      ],
+      "tier": "HOLD_CANDIDATE",
+      "provenance": {
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
+        "namespace": "NATIONAL_SURFACE_STATION",
+        "identifier": "AN_THOI"
+      },
+      "freshness": {
+        "state": "NO_STABLE_RUNTIME_FEED",
+        "age_minutes": null,
+        "budget_minutes": null
+      },
+      "health": "HOLD",
+      "last_observation": null,
+      "status_reason": "Source is retained in the registry but has no stable timestamped numeric feed eligible for runtime."
     },
     {
       "id": "bhv1_phu_quoc",
@@ -201,7 +452,21 @@
       "identifier": "60",
       "class": "OBSERVATION_BOOK_SURFACE_CONFIRMED",
       "status": "VALUES_NOT_ACQUIRED",
-      "role": "MARINE_EXTRACTION_TARGET"
+      "role": "MARINE_EXTRACTION_TARGET",
+      "tier": "HOLD_CANDIDATE",
+      "provenance": {
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
+        "namespace": "KTT_APP_BHV1_SID",
+        "identifier": "60"
+      },
+      "freshness": {
+        "state": "NO_STABLE_RUNTIME_FEED",
+        "age_minutes": null,
+        "budget_minutes": null
+      },
+      "health": "HOLD",
+      "last_observation": null,
+      "status_reason": "Source is retained in the registry but has no stable timestamped numeric feed eligible for runtime."
     },
     {
       "id": "shv1_phu_quoc",
@@ -209,7 +474,21 @@
       "identifier": "82",
       "class": "OBSERVATION_BOOK_SURFACE_CONFIRMED",
       "status": "VALUES_NOT_ACQUIRED",
-      "role": "MARINE_EXTRACTION_TARGET"
+      "role": "MARINE_EXTRACTION_TARGET",
+      "tier": "HOLD_CANDIDATE",
+      "provenance": {
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
+        "namespace": "KTT_APP_SHV1_SID",
+        "identifier": "82"
+      },
+      "freshness": {
+        "state": "NO_STABLE_RUNTIME_FEED",
+        "age_minutes": null,
+        "budget_minutes": null
+      },
+      "health": "HOLD",
+      "last_observation": null,
+      "status_reason": "Source is retained in the registry but has no stable timestamped numeric feed eligible for runtime."
     },
     {
       "id": "regional_sentinels",
@@ -217,7 +496,21 @@
       "identifier": "THO_CHU_RACH_GIA_KHLONG_YAI",
       "class": "REGIONAL_OBS",
       "status": "AVAILABLE",
-      "role": "CROSSCHECK_ONLY_NOT_PHU_QUOC_GROUNDTRUTH"
+      "role": "CROSSCHECK_ONLY_NOT_PHU_QUOC_GROUNDTRUTH",
+      "tier": "VALIDATION_HISTORICAL",
+      "provenance": {
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
+        "namespace": "REGIONAL_OBS",
+        "identifier": "THO_CHU_RACH_GIA_KHLONG_YAI"
+      },
+      "freshness": {
+        "state": "HISTORICAL_NOT_CURRENT",
+        "age_minutes": null,
+        "budget_minutes": null
+      },
+      "health": "AVAILABLE_FOR_ROLE",
+      "last_observation": null,
+      "status_reason": "Observation/archive source is retained for validation, backtest, drift or corroboration, not current Local Now."
     },
     {
       "id": "smart_city_environment",
@@ -225,7 +518,21 @@
       "identifier": "ENVIRONMENT_SENSORS",
       "class": "CANDIDATE_OBS",
       "status": "HISTORICAL_DATABASE_UNRESOLVED",
-      "role": "REGISTRY_ONLY"
+      "role": "REGISTRY_ONLY",
+      "tier": "HOLD_CANDIDATE",
+      "provenance": {
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
+        "namespace": "PHU_QUOC_SMART_CITY",
+        "identifier": "ENVIRONMENT_SENSORS"
+      },
+      "freshness": {
+        "state": "NO_STABLE_RUNTIME_FEED",
+        "age_minutes": null,
+        "budget_minutes": null
+      },
+      "health": "HOLD",
+      "last_observation": null,
+      "status_reason": "Source is retained in the registry but has no stable timestamped numeric feed eligible for runtime."
     },
     {
       "id": "gesla_psmsl",
@@ -233,20 +540,28 @@
       "identifier": "PHU_QUOC",
       "class": "EXCLUDED_DIRECT_SOURCE",
       "status": "DIRECT_PHU_QUOC_NOT_FOUND",
-      "role": "REGIONAL_QA_ONLY"
+      "role": "REGIONAL_QA_ONLY",
+      "tier": "VALIDATION_HISTORICAL",
+      "provenance": {
+        "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5",
+        "namespace": "INTERNATIONAL_TIDE_ARCHIVES",
+        "identifier": "PHU_QUOC"
+      },
+      "freshness": {
+        "state": "HISTORICAL_NOT_CURRENT",
+        "age_minutes": null,
+        "budget_minutes": null
+      },
+      "health": "AVAILABLE_FOR_ROLE",
+      "last_observation": null,
+      "status_reason": "Observation/archive source is retained for validation, backtest, drift or corroboration, not current Local Now."
     }
   ],
-  "excluded_from_groundtruth": [
-    "ECMWF",
-    "GEFS",
-    "ICON",
-    "ERA5",
-    "HYCOM",
-    "CAMS",
-    "satellite_derived_rainfall",
-    "radar_derived_rainfall_without_gauge_verification",
-    "astronomical_tide_prediction",
-    "fusion_analysis",
-    "interpolation"
-  ]
+  "policy": {
+    "absence_is_negative_observation": false,
+    "null_means_no_phenomenon": false,
+    "live_actual_requires_timestamped_observation": true,
+    "remote_observation_is_groundtruth": false
+  },
+  "canonical_path": "data/weather-groundtruth/corpus/source-registry.json"
 }

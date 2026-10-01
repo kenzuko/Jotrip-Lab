@@ -1,0 +1,46 @@
+{
+  "resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
+  "status": "LOCKED",
+  "effective_at": "2026-10-01T06:35:33+00:00",
+  "decision": "INDEPENDENT_FROM_CURRENT_VVPQ",
+  "confidence": "HIGH",
+  "supersedes_legacy_ingest_assessments": [
+    "IDENTITY_PENDING_POST_2012",
+    "CONFLICTING_OPERATIONAL_AND_CLIMATE_METADATA",
+    "UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE"
+  ],
+  "evidence_from": "identity_evidence",
+  "raw_archive_semantics": "Immutable raw files preserve the identity assessment present when that observation was first archived. Runtime identity is governed by this current versioned resolution; older embedded identity annotations are provenance history and do not override the current gate.",
+  "registry_source_id": "wmo_48917_synop",
+  "evidence": [
+    {
+      "source": "JMA_TCC",
+      "role": "CURRENT_WMO_METADATA",
+      "fact": "48917 PHU QUOC at approximately 10.22N,103.97E, current 2026 station reporting"
+    },
+    {
+      "source": "VIETNAM_KTTV_OBSERVATION_BOOK",
+      "role": "NATIONAL_OPERATIONAL_METADATA",
+      "fact": "Hai van Phu Quoc BHV1/SHV1 uses station code 48917"
+    },
+    {
+      "source": "VIETNAM_KTTV_AUTOMATED_STATION_LIST",
+      "role": "NATIONAL_OPERATIONAL_METADATA",
+      "fact": "Phu Quoc automated station is separately identified as 60018"
+    },
+    {
+      "source": "VIETNAM_AIP_VVPQ",
+      "role": "CURRENT_AIRPORT_METADATA",
+      "fact": "Current VVPQ ARP 10.169722N,103.993056E, 7 km south of Duong Dong"
+    },
+    {
+      "source": "LIVE_RAW_STREAM_COMPARISON_20261001",
+      "role": "STREAM_EVIDENCE",
+      "fact": "Current 48917 raw SYNOP and VVPQ METAR coexist at identical timestamps with distinct observations; 48917 also carries SYNOP Section 222 marine groups"
+    }
+  ],
+  "identity_conflict": {
+    "status": "THIRD_PARTY_CROSS_ID_CONFLICT",
+    "note": "OGIMET associates VVPQ with synoptic indicator/WIGOS 48917. This is retained as a metadata cross-link, not accepted as proof of physical co-location."
+  }
+}

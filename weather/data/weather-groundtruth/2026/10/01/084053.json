@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "generated_at": "2026-10-01T09:10:57.385678+00:00",
+  "generated_at": "2026-10-01T08:40:53.707399+00:00",
   "status": "READY",
   "actual_policy": "Current-time ACTUAL requires timestamped in-situ or raw coded observations. Historical aggregate/published observations are verification-only; remote sensing, models and fusion remain separate classes.",
   "atmosphere": {
@@ -14,34 +14,30 @@
       "source": "AVIATION_WEATHER_CENTER_METAR",
       "source_channel": "METAR",
       "data_class": "ACTUAL",
-      "observed_at": "2026-10-01T09:00:00+00:00",
-      "age_minutes": 11.0,
-      "temperature_c": 31.0,
+      "observed_at": "2026-10-01T08:30:00+00:00",
+      "age_minutes": 10.9,
+      "temperature_c": 32.0,
       "dewpoint_c": 27.0,
-      "wind_direction_deg": 250.0,
+      "wind_direction_deg": 230.0,
       "wind_speed_kt": 7.0,
       "wind_speed_ms": 3.601,
       "wind_speed_kmh": 12.96,
       "pressure_hpa": 1010.0,
       "visibility_sm": null,
       "visibility_m": null,
-      "weather": "VCTS",
-      "convective_cloud": true,
+      "weather": null,
+      "convective_cloud": false,
       "clouds": [
         {
           "cover": "SCT",
-          "base": 1500
-        },
-        {
-          "cover": "FEW",
           "base": 1700
         }
       ],
       "flight_category": "VFR",
-      "raw_observation": "METAR VVPQ 010900Z 25007KT 9999 VCTS SCT015 FEW017CB 31/27 Q1010 NOSIG",
+      "raw_observation": "METAR VVPQ 010830Z 23007KT 9999 SCT017 32/27 Q1010 NOSIG",
       "qc": "PASS",
       "provenance_url": "https://aviationweather.gov/api/data/metar?ids=VVPQ&format=json&hours=24",
-      "raw_payload_hash": "b99359ea95c45d35f7dd07d17abf300b3ada8270c4bd59ff67d6538627b172a3"
+      "raw_payload_hash": "84fb89bc0e2b6db1458f0dc01378eeec5701456ccd3caf9666d2623f18e3eadd"
     },
     "synop_48917": {
       "status": "FRESH",
@@ -59,60 +55,13 @@
       "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
       "identity_confidence": "HIGH",
       "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
-      "identity_resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
-      "identity_resolution": {
-        "resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
-        "status": "LOCKED",
-        "effective_at": "2026-10-01T06:35:33+00:00",
-        "decision": "INDEPENDENT_FROM_CURRENT_VVPQ",
-        "confidence": "HIGH",
-        "supersedes_legacy_ingest_assessments": [
-          "IDENTITY_PENDING_POST_2012",
-          "CONFLICTING_OPERATIONAL_AND_CLIMATE_METADATA",
-          "UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE"
-        ],
-        "evidence_from": "identity_evidence",
-        "raw_archive_semantics": "Immutable raw files preserve the identity assessment present when that observation was first archived. Runtime identity is governed by this current versioned resolution; older embedded identity annotations are provenance history and do not override the current gate.",
-        "registry_source_id": "wmo_48917_synop",
-        "evidence": [
-          {
-            "source": "JMA_TCC",
-            "role": "CURRENT_WMO_METADATA",
-            "fact": "48917 PHU QUOC at approximately 10.22N,103.97E, current 2026 station reporting"
-          },
-          {
-            "source": "VIETNAM_KTTV_OBSERVATION_BOOK",
-            "role": "NATIONAL_OPERATIONAL_METADATA",
-            "fact": "Hai van Phu Quoc BHV1/SHV1 uses station code 48917"
-          },
-          {
-            "source": "VIETNAM_KTTV_AUTOMATED_STATION_LIST",
-            "role": "NATIONAL_OPERATIONAL_METADATA",
-            "fact": "Phu Quoc automated station is separately identified as 60018"
-          },
-          {
-            "source": "VIETNAM_AIP_VVPQ",
-            "role": "CURRENT_AIRPORT_METADATA",
-            "fact": "Current VVPQ ARP 10.169722N,103.993056E, 7 km south of Duong Dong"
-          },
-          {
-            "source": "LIVE_RAW_STREAM_COMPARISON_20261001",
-            "role": "STREAM_EVIDENCE",
-            "fact": "Current 48917 raw SYNOP and VVPQ METAR coexist at identical timestamps with distinct observations; 48917 also carries SYNOP Section 222 marine groups"
-          }
-        ],
-        "identity_conflict": {
-          "status": "THIRD_PARTY_CROSS_ID_CONFLICT",
-          "note": "OGIMET associates VVPQ with synoptic indicator/WIGOS 48917. This is retained as a metadata cross-link, not accepted as proof of physical co-location."
-        }
-      },
       "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
-      "provenance_url": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202609290910&end=202610010910&lang=eng&header=yes",
-      "checked_at": "2026-10-01T09:11:00.095201+00:00",
+      "provenance_url": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202609290840&end=202610010840&lang=eng&header=yes",
+      "checked_at": "2026-10-01T08:40:57.327392+00:00",
       "latest_observed_at": "2026-10-01T06:00:00+00:00",
-      "age_minutes": 191.0,
+      "age_minutes": 160.9,
       "latest_numeric_observed_at": "2026-10-01T06:00:00+00:00",
-      "numeric_age_minutes": 191.0,
+      "numeric_age_minutes": 160.9,
       "latest": {
         "source_namespace": "WMO_INDEX",
         "identifier": "48917",
@@ -125,7 +74,6 @@
         "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
         "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
         "identity_confidence": "HIGH",
-        "identity_resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
         "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
         "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
         "source": "OGIMET_GETSYNOP",
@@ -209,7 +157,6 @@
         "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
         "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
         "identity_confidence": "HIGH",
-        "identity_resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
         "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
         "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
         "source": "OGIMET_GETSYNOP",
@@ -294,7 +241,6 @@
           "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
           "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
           "identity_confidence": "HIGH",
-          "identity_resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
           "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
           "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
           "source": "OGIMET_GETSYNOP",
@@ -338,7 +284,6 @@
           "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
           "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
           "identity_confidence": "HIGH",
-          "identity_resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
           "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
           "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
           "source": "OGIMET_GETSYNOP",
@@ -401,7 +346,6 @@
           "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
           "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
           "identity_confidence": "HIGH",
-          "identity_resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
           "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
           "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
           "source": "OGIMET_GETSYNOP",
@@ -445,7 +389,6 @@
           "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
           "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
           "identity_confidence": "HIGH",
-          "identity_resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
           "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
           "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
           "source": "OGIMET_GETSYNOP",
@@ -481,7 +424,6 @@
           "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
           "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
           "identity_confidence": "HIGH",
-          "identity_resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
           "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
           "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
           "source": "OGIMET_GETSYNOP",
@@ -531,7 +473,6 @@
           "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
           "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
           "identity_confidence": "HIGH",
-          "identity_resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
           "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
           "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
           "source": "OGIMET_GETSYNOP",
@@ -567,7 +508,6 @@
           "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
           "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
           "identity_confidence": "HIGH",
-          "identity_resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
           "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
           "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
           "source": "OGIMET_GETSYNOP",
@@ -630,7 +570,6 @@
           "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
           "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
           "identity_confidence": "HIGH",
-          "identity_resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
           "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
           "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
           "source": "OGIMET_GETSYNOP",
@@ -703,7 +642,7 @@
           "qc": "PASS_RAW_WITH_TESTED_SUBSET_DECODE"
         }
       ],
-      "recent_count": 10,
+      "recent_count": 11,
       "production_role": "ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION",
       "runtime_eligible": true
     }
@@ -712,9 +651,9 @@
     "status": "STALE",
     "source": "VRAIN_PUBLIC",
     "period_start": "2026-09-30T12:00:00+00:00",
-    "period_end": "2026-10-01T09:10:59+00:00",
-    "source_reported_at": "2026-10-01T09:10:59+00:00",
-    "fetched_at": "2026-10-01T09:10:57.385678+00:00",
+    "period_end": "2026-10-01T08:40:56+00:00",
+    "source_reported_at": "2026-10-01T08:40:56+00:00",
+    "fetched_at": "2026-10-01T08:40:53.707399+00:00",
     "stations": {
       "cua_can": {
         "station_id": "VRAIN_CUA_CAN",
@@ -726,13 +665,13 @@
         "source_channel": "current/all.json",
         "data_class": "ACTUAL",
         "observed_at": "2026-09-30T07:19:43+00:00",
-        "source_reported_at": "2026-10-01T09:10:59+00:00",
-        "fetched_at": "2026-10-01T09:10:57.385678+00:00",
-        "last_checked_at": "2026-10-01T09:10:57.385678+00:00",
+        "source_reported_at": "2026-10-01T08:40:56+00:00",
+        "fetched_at": "2026-10-01T08:40:53.707399+00:00",
+        "last_checked_at": "2026-10-01T08:40:53.707399+00:00",
         "last_value_changed_at": "2026-09-30T07:19:43+00:00",
         "sample_state": "UNCHANGED_PAYLOAD",
         "value_changed": false,
-        "age_minutes": 1551.2,
+        "age_minutes": 1521.2,
         "variable": "precipitation",
         "accumulation_mm": 0.0,
         "accumulation_label": "Không mưa",
@@ -762,13 +701,13 @@
         "source_channel": "current/all.json",
         "data_class": "ACTUAL",
         "observed_at": "2026-09-30T07:19:43+00:00",
-        "source_reported_at": "2026-10-01T09:10:59+00:00",
-        "fetched_at": "2026-10-01T09:10:57.385678+00:00",
-        "last_checked_at": "2026-10-01T09:10:57.385678+00:00",
+        "source_reported_at": "2026-10-01T08:40:56+00:00",
+        "fetched_at": "2026-10-01T08:40:53.707399+00:00",
+        "last_checked_at": "2026-10-01T08:40:53.707399+00:00",
         "last_value_changed_at": "2026-09-30T07:19:43+00:00",
         "sample_state": "UNCHANGED_PAYLOAD",
         "value_changed": false,
-        "age_minutes": 1551.2,
+        "age_minutes": 1521.2,
         "variable": "precipitation",
         "accumulation_mm": 0.0,
         "accumulation_label": "Không mưa",
@@ -798,13 +737,13 @@
         "source_channel": "current/all.json",
         "data_class": "ACTUAL",
         "observed_at": "2026-09-30T07:19:43+00:00",
-        "source_reported_at": "2026-10-01T09:10:59+00:00",
-        "fetched_at": "2026-10-01T09:10:57.385678+00:00",
-        "last_checked_at": "2026-10-01T09:10:57.385678+00:00",
+        "source_reported_at": "2026-10-01T08:40:56+00:00",
+        "fetched_at": "2026-10-01T08:40:53.707399+00:00",
+        "last_checked_at": "2026-10-01T08:40:53.707399+00:00",
         "last_value_changed_at": "2026-09-30T07:19:43+00:00",
         "sample_state": "UNCHANGED_PAYLOAD",
         "value_changed": false,
-        "age_minutes": 1551.2,
+        "age_minutes": 1521.2,
         "variable": "precipitation",
         "accumulation_mm": 0.0,
         "accumulation_label": "Không mưa",
@@ -860,7 +799,7 @@
   },
   "source_registry": {
     "schema_version": "groundtruth-operational-registry-v1",
-    "generated_at": "2026-10-01T09:11:00.096370+00:00",
+    "generated_at": "2026-10-01T08:40:57.328585+00:00",
     "source_count": 18,
     "tiers": [
       "ACTIVE_REALTIME",
@@ -895,11 +834,11 @@
         },
         "freshness": {
           "state": "FRESH",
-          "age_minutes": 11.0,
+          "age_minutes": 10.9,
           "budget_minutes": 90
         },
         "health": "HEALTHY",
-        "last_observation": "2026-10-01T09:00:00+00:00",
+        "last_observation": "2026-10-01T08:30:00+00:00",
         "status_reason": "Current METAR/SPECI observation is usable."
       },
       {
@@ -923,20 +862,6 @@
         "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
         "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
         "identity_confidence": "HIGH",
-        "identity_resolution": {
-          "resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
-          "status": "LOCKED",
-          "effective_at": "2026-10-01T06:35:33+00:00",
-          "decision": "INDEPENDENT_FROM_CURRENT_VVPQ",
-          "confidence": "HIGH",
-          "supersedes_legacy_ingest_assessments": [
-            "IDENTITY_PENDING_POST_2012",
-            "CONFLICTING_OPERATIONAL_AND_CLIMATE_METADATA",
-            "UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE"
-          ],
-          "evidence_from": "identity_evidence",
-          "raw_archive_semantics": "Immutable raw files preserve the identity assessment present when that observation was first archived. Runtime identity is governed by this current versioned resolution; older embedded identity annotations are provenance history and do not override the current gate."
-        },
         "coordinates": {
           "lat": 10.22,
           "lon": 103.97,
@@ -968,11 +893,6 @@
             "fact": "Hai van Phu Quoc BHV1/SHV1 uses station code 48917"
           },
           {
-            "source": "VIETNAM_KTTV_AUTOMATED_STATION_LIST",
-            "role": "NATIONAL_OPERATIONAL_METADATA",
-            "fact": "Phu Quoc automated station is separately identified as 60018"
-          },
-          {
             "source": "VIETNAM_AIP_VVPQ",
             "role": "CURRENT_AIRPORT_METADATA",
             "fact": "Current VVPQ ARP 10.169722N,103.993056E, 7 km south of Duong Dong"
@@ -985,13 +905,13 @@
         ],
         "tier": "ACTIVE_NEAR_REALTIME",
         "provenance": {
-          "feed": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202609290910&end=202610010910&lang=eng&header=yes",
+          "feed": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202609290840&end=202610010840&lang=eng&header=yes",
           "observation_channel": "WMO FM-12 SYNOP AAXX raw",
           "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5"
         },
         "freshness": {
           "state": "FRESH",
-          "age_minutes": 191.0,
+          "age_minutes": 160.9,
           "budget_minutes": 480
         },
         "health": "HEALTHY",
@@ -1018,7 +938,7 @@
         },
         "freshness": {
           "state": "STALE",
-          "age_minutes": 1551.2,
+          "age_minutes": 1521.2,
           "budget_minutes": 90
         },
         "health": "DEGRADED_STALE",
@@ -1437,5 +1357,5 @@
     }
   },
   "errors": [],
-  "payload_hash": "3295380b3edbe645c594cea053685ef66ad61e831e15ac2d8d13e41ba0f33e23"
+  "payload_hash": "f18f4065dbbcfcf5d098f2c1d34f6cc114d569bf084d8ac9db2cf3a75ad28f2d"
 }
