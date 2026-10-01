@@ -129,7 +129,10 @@ jobs:
               synop=gt.get('atmosphere',{}).get('synop_48917',{})
               assert synop.get('source_namespace') == 'WMO_INDEX'
               assert synop.get('identifier') == '48917'
-              assert synop.get('production_role') == 'ACTUAL_VALIDATION_STREAM_NOT_SPATIAL_POINT_ANCHOR'
+              assert synop.get('status') in {'IDENTITY_PENDING','UNAVAILABLE'}
+              assert synop.get('production_role') == 'RAW_OBS_ARCHIVE_ONLY_UNTIL_STATION_IDENTITY_RESOLVED'
+              assert synop.get('independence_from_vvpq') == 'UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE'
+              assert synop.get('evidence_weight_for_independent_source_count') == 0
               for s in gt['rainfall'].get('stations',{}).values():
                   assert s['data_class']=='ACTUAL'
                   assert s['statistic']=='ACCUMULATION'
@@ -461,9 +464,13 @@ jobs:
               'vvpq':vvpq.get('status'),
               'synop_48917':{
                   'status':synop.get('status'),
+                  'feed_freshness':synop.get('feed_freshness'),
                   'latest_observed_at':synop.get('latest_observed_at'),
                   'age_minutes':synop.get('age_minutes'),
                   'source_namespace':synop.get('source_namespace'),
+                  'station_identity_status':synop.get('station_identity_status'),
+                  'independence_from_vvpq':synop.get('independence_from_vvpq'),
+                  'evidence_weight_for_independent_source_count':synop.get('evidence_weight_for_independent_source_count'),
                   'role':synop.get('production_role'),
               },
               'vrain':gt.get('rainfall',{}).get('status'),
