@@ -59,7 +59,7 @@ class V3ShadowCycleTests(unittest.TestCase):
         self.assertEqual(len(out["tracking"]["tracks"]),1)
         self.assertEqual(len(out["eta_candidates"]),1)
         self.assertEqual(len(out["events"]),1)
-        self.assertEqual(out["events"][0]["verification"]["status"],"PENDING")
+        self.assertEqual(out["events"][0]["verification"]["status"],"INSUFFICIENT_ACTUAL_COVERAGE")
         self.assertEqual(out["verifier_observations"],[])
         self.assertFalse(out["skill"]["promotion_ready"])
 
