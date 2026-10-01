@@ -277,6 +277,194 @@ def _vrain(current: Any, timing: Any, previous: dict | None, now: datetime) -> d
     }
 
 
+
+def _operational_tier(source: dict) -> str:
+    source_id = str(source.get("id") or "")
+    if source_id in {"vvpq_metar_speci", "vrain_phu_quoc"}:
+        return "ACTIVE_REALTIME"
+    if source_id == "wmo_48917_synop":
+        return "ACTIVE_NEAR_REALTIME"
+    role = str(source.get("role") or "").upper()
+    status = str(source.get("status") or "").upper()
+    if any(x in role for x in {"HISTORICAL", "BACKTEST", "VERIFICATION", "CROSSCHECK", "REGIONAL_QA"}):
+        return "VALIDATION_HISTORICAL"
+    if any(x in status for x in {"PENDING", "UNRESOLVED", "NOT_ACQUIRED", "VALUES_NOT", "FEED_PENDING"}) or "CANDIDATE" in role or "EXTRACTION" in role or "REGISTRY_ONLY" in role:
+        return "HOLD_CANDIDATE"
+    if "RETIRED" in status:
+        return "RETIRED"
+    return "VALIDATION_HISTORICAL"
+
+
+def _health_from_live_status(status: Any) -> str:
+    state = str(status or "").upper()
+    if state == "FRESH":
+        return "HEALTHY"
+    if state == "STALE":
+        return "DEGRADED_STALE"
+    if state in {"READY", "PASS"}:
+        return "HEALTHY"
+    return "UNAVAILABLE"
+
+
+def _latest_rain_observation(rainfall: dict) -> tuple[str | None, float | None]:
+    rows = []
+    for station in (rainfall.get("stations") or {}).values():
+        observed = station.get("observed_at")
+        parsed = _parse_iso(observed)
+        if parsed is not None:
+            rows.append((parsed, observed, _finite(station.get("age_minutes"))))
+    if not rows:
+        return None, None
+    _, observed, age = max(rows, key=lambda row: row[0])
+    return observed, age
+
+
+def _operational_source_registry(full_registry: dict, *, vvpq: dict, rainfall: dict,
+                                 synop_48917: dict, corpus_full: dict) -> dict:
+    """Attach operational role/health/freshness to every researched source.
+
+    Static research identity is never discarded. Live sources receive dynamic
+    observation health. Historical and candidate sources retain explicit
+    non-live states so absence cannot be misread as calm/dry/no-lightning.
+    """
+    sources = []
+    rain_last, rain_age = _latest_rain_observation(rainfall)
+    generated_from = full_registry.get("generated_from") or (
+        "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5"
+    )
+
+    official_rows = [
+        r for r in (corpus_full.get("records") or [])
+        if str(r.get("source_class") or "").upper() == "OFFICIAL_AGGREGATE_OBS"
+    ]
+    official_last = None
+    for row in official_rows:
+        candidate = row.get("period_end_local") or row.get("obs_time_utc")
+        parsed = _parse_iso(candidate)
+        if parsed is not None and (official_last is None or parsed > official_last[0]):
+            official_last = (parsed, candidate)
+
+    for source in (full_registry.get("sources") or []):
+        source_id = str(source.get("id") or "")
+        tier = _operational_tier(source)
+        entry = {
+            **source,
+            "tier": tier,
+            "provenance": source.get("provenance") or {
+                "registry": generated_from,
+                "namespace": source.get("namespace"),
+                "identifier": source.get("identifier"),
+            },
+            "freshness": {
+                "state": "NOT_APPLICABLE",
+                "age_minutes": None,
+                "budget_minutes": None,
+            },
+            "health": "AVAILABLE_FOR_ROLE" if tier == "VALIDATION_HISTORICAL" else (
+                "HOLD" if tier == "HOLD_CANDIDATE" else "UNKNOWN"
+            ),
+            "last_observation": None,
+            "status_reason": source.get("notes") or str(source.get("status") or "NO_RUNTIME_OBSERVATION"),
+        }
+
+        if source_id == "vvpq_metar_speci":
+            entry["health"] = _health_from_live_status(vvpq.get("status"))
+            entry["last_observation"] = vvpq.get("observed_at")
+            entry["freshness"] = {
+                "state": vvpq.get("status") or "UNAVAILABLE",
+                "age_minutes": _finite(vvpq.get("age_minutes")),
+                "budget_minutes": 90,
+            }
+            entry["status_reason"] = (
+                "Current METAR/SPECI observation is usable."
+                if vvpq.get("status") == "FRESH"
+                else "Current VVPQ feed is not fresh enough; do not infer local calm/dry conditions from its absence."
+            )
+            entry["provenance"] = {
+                "feed": AWC_URL,
+                "observation_channel": "METAR/SPECI",
+                "registry": generated_from,
+            }
+        elif source_id == "vrain_phu_quoc":
+            entry["health"] = _health_from_live_status(rainfall.get("status"))
+            entry["last_observation"] = rain_last
+            entry["freshness"] = {
+                "state": rainfall.get("status") or "UNAVAILABLE",
+                "age_minutes": rain_age,
+                "budget_minutes": 90,
+            }
+            entry["status_reason"] = (
+                "At least one gauge has a recent sensor observation."
+                if rainfall.get("status") == "FRESH"
+                else "No sufficiently fresh gauge sample; absence is not evidence of no rain."
+            )
+            entry["provenance"] = {
+                "feed": VRAIN_CURRENT_URL,
+                "timing_feed": VRAIN_TIME_URL,
+                "registry": generated_from,
+            }
+        elif source_id == "wmo_48917_synop":
+            entry["health"] = _health_from_live_status(synop_48917.get("status"))
+            entry["last_observation"] = synop_48917.get("latest_observed_at")
+            entry["freshness"] = {
+                "state": synop_48917.get("status") or "UNAVAILABLE",
+                "age_minutes": _finite(synop_48917.get("age_minutes")),
+                "budget_minutes": 480,
+            }
+            entry["status_reason"] = (
+                "Raw current SYNOP is available within the synoptic freshness budget."
+                if synop_48917.get("status") == "FRESH"
+                else "SYNOP is outside the near-real-time freshness budget or unavailable; keep historical verification but do not use as current evidence."
+            )
+            entry["provenance"] = {
+                "feed": synop_48917.get("provenance_url"),
+                "observation_channel": "WMO FM-12 SYNOP AAXX raw",
+                "registry": generated_from,
+            }
+            entry["identity_status"] = synop_48917.get("identity_status") or source.get("identity_status")
+            entry["identity_confidence"] = synop_48917.get("identity_confidence") or source.get("identity_confidence")
+        elif source_id == "official_rainfall_reports" and official_last:
+            entry["last_observation"] = official_last[1]
+            entry["freshness"] = {
+                "state": "HISTORICAL_WINDOWED_OBSERVATION",
+                "age_minutes": None,
+                "budget_minutes": None,
+            }
+            entry["status_reason"] = "Verified measured accumulation windows are retained for validation/backtest, never current weather."
+        elif tier == "HOLD_CANDIDATE":
+            entry["freshness"]["state"] = "NO_STABLE_RUNTIME_FEED"
+            entry["status_reason"] = source.get("notes") or (
+                "Source is retained in the registry but has no stable timestamped numeric feed eligible for runtime."
+            )
+        elif tier == "VALIDATION_HISTORICAL":
+            entry["freshness"]["state"] = "HISTORICAL_NOT_CURRENT"
+            entry["status_reason"] = source.get("notes") or (
+                "Observation/archive source is retained for validation, backtest, drift or corroboration, not current Local Now."
+            )
+
+        sources.append(entry)
+
+    return {
+        "schema_version": "groundtruth-operational-registry-v1",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "source_count": len(sources),
+        "tiers": [
+            "ACTIVE_REALTIME",
+            "ACTIVE_NEAR_REALTIME",
+            "VALIDATION_HISTORICAL",
+            "HOLD_CANDIDATE",
+            "RETIRED",
+        ],
+        "sources": sources,
+        "policy": {
+            "absence_is_negative_observation": False,
+            "null_means_no_phenomenon": False,
+            "live_actual_requires_timestamped_observation": True,
+            "remote_observation_is_groundtruth": False,
+        },
+    }
+
+
 def collect(previous: dict | None = None, artifacts: dict | None = None) -> dict:
     now = datetime.now(timezone.utc)
     errors: list[dict] = []
@@ -297,10 +485,10 @@ def collect(previous: dict | None = None, artifacts: dict | None = None) -> dict
         errors.append({"source": "VRAIN", "error": repr(exc)})
         rainfall = {"status": "UNAVAILABLE", "stations": {}, "detail": repr(exc)}
 
-    # WMO 48917 is a separate observation stream from VVPQ. It is admitted to
-    # the production Ground Truth plane for validation, but is not silently used
-    # as a selected-point Local Now anchor until station epoch/site mapping is
-    # independently resolved.
+    # WMO 48917 is a current near-real-time observation stream independent from
+    # current VVPQ at the station-program level. Identity was locked before Local
+    # Now promotion; raw SYNOP remains separately archived and never deduplicated
+    # with VVPQ merely because third-party metadata cross-links the identifiers.
     try:
         synop_raw = collect_synop(now - timedelta(days=2), now)
         artifacts["synop_raw"] = synop_raw
@@ -311,7 +499,7 @@ def collect(previous: dict | None = None, artifacts: dict | None = None) -> dict
             "status": "UNAVAILABLE",
             "source_namespace": "WMO_INDEX",
             "identifier": "48917",
-            "production_role": "ACTUAL_VALIDATION_STREAM_NOT_SPATIAL_POINT_ANCHOR",
+            "production_role": "ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION",
             "detail": repr(exc),
         }
 
@@ -330,22 +518,14 @@ def collect(previous: dict | None = None, artifacts: dict | None = None) -> dict
             "policy": corpus_full.get("policy") or {},
             "canonical_path": "data/weather-groundtruth/corpus/verified-latest.json",
         }
-        source_registry = {
-            "schema_version": full_registry.get("schema_version"),
-            "source_count": len(full_registry.get("sources") or []),
-            "canonical_path": "data/weather-groundtruth/corpus/source-registry.json",
-            "sources": [
-                {
-                    "id": s.get("id"),
-                    "namespace": s.get("namespace"),
-                    "identifier": s.get("identifier"),
-                    "class": s.get("class"),
-                    "status": s.get("status"),
-                    "role": s.get("role"),
-                }
-                for s in (full_registry.get("sources") or [])
-            ],
-        }
+        source_registry = _operational_source_registry(
+            full_registry,
+            vvpq=vvpq,
+            rainfall=rainfall,
+            synop_48917=synop_48917,
+            corpus_full=corpus_full,
+        )
+        source_registry["canonical_path"] = "data/weather-groundtruth/corpus/source-registry.json"
     except Exception as exc:
         errors.append({"source": "GROUNDTRUTH_CORPUS", "error": repr(exc)})
         corpus_full = {

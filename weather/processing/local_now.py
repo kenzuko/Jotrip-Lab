@@ -34,6 +34,7 @@ POINTS = {
 }
 
 VVPQ = {"lat": 10.169, "lon": 103.995}
+SYNOP_48917 = {"lat": 10.22, "lon": 103.97}
 WIND_DECAY_KM = 38.0
 TEMP_DECAY_KM = 45.0
 RAIN_DECAY_KM = 28.0
@@ -321,6 +322,138 @@ def _vvpq_correction(point_id: str, point: dict, model_point: dict, anchor_model
         else:
             result["wind"] = {"data_class": "MODEL_ONLY", "method": "MODEL_FALLBACK", "confidence": 0.30}
     return result
+
+
+
+def _ground_anchor_disagreement(vvpq: dict, synop: dict) -> dict:
+    """Compare independent current ground streams without assuming either is truth for the other site."""
+    if vvpq.get("status") != "FRESH" or not synop.get("runtime_eligible"):
+        return {
+            "status": "NOT_COMPARABLE",
+            "confidence_factor": 1.0,
+            "reason": "BOTH_INDEPENDENT_FRESH_STREAMS_REQUIRED",
+        }
+    decoded = ((synop.get("latest_numeric") or {}).get("decoded_actual") or {})
+    sw = decoded.get("wind") or {}
+    vw = _num(vvpq.get("wind_speed_kmh"))
+    st = _num(decoded.get("air_temperature_c"))
+    vt = _num(vvpq.get("temperature_c"))
+    wind_delta = abs(vw - _num(sw.get("speed_kmh"))) if vw is not None and _num(sw.get("speed_kmh")) is not None else None
+    temp_delta = abs(vt - st) if vt is not None and st is not None else None
+    if (wind_delta is not None and wind_delta >= 12.0) or (temp_delta is not None and temp_delta >= 3.5):
+        status, factor = "DIVERGENT", 0.72
+    elif (wind_delta is not None and wind_delta >= 7.0) or (temp_delta is not None and temp_delta >= 2.0):
+        status, factor = "WATCH", 0.88
+    else:
+        status, factor = "CONSISTENT_WITH_LOCAL_VARIATION", 1.0
+    return {
+        "status": status,
+        "confidence_factor": factor,
+        "wind_speed_delta_kmh": round(wind_delta, 1) if wind_delta is not None else None,
+        "temperature_delta_c": round(temp_delta, 1) if temp_delta is not None else None,
+        "reason": "Independent stations ~6 km apart; disagreement widens confidence and is never resolved by double-counting.",
+    }
+
+
+def _apply_synop_ground_anchor(point_id: str, model_point: dict, anchor_model: dict,
+                               corrected: dict, synop: dict, vvpq: dict) -> dict:
+    """Blend an independently verified near-real-time 48917 residual into Local Now.
+
+    48917 is deliberately lower-weight than a fresh airport anchor because its
+    cadence is synoptic and coordinates are station-metadata precision. It can
+    still anchor Dương Đông and nearby island points when numeric observations
+    are fresh, and can carry Local Now when VVPQ is temporarily unavailable.
+    """
+    out = dict(corrected)
+    if not synop.get("runtime_eligible"):
+        out["ground_anchor_disagreement"] = _ground_anchor_disagreement(vvpq, synop)
+        return out
+
+    latest = synop.get("latest_numeric") or {}
+    decoded = latest.get("decoded_actual") or {}
+    swind = decoded.get("wind") or {}
+    obs_temp = _num(decoded.get("air_temperature_c"))
+    obs_wind = _num(swind.get("speed_kmh"))
+    obs_dir = _num(swind.get("direction_deg"))
+    numeric_age = _num(synop.get("numeric_age_minutes"))
+    p = POINTS[point_id]
+    distance = _haversine(p["lat"], p["lon"], SYNOP_48917["lat"], SYNOP_48917["lon"])
+    freshness = _freshness(numeric_age, 360.0)
+    source_q = 0.78
+    disagreement = _ground_anchor_disagreement(vvpq, synop)
+    disagreement_factor = float(disagreement.get("confidence_factor", 1.0))
+
+    model_temp = _num(model_point.get("temperature"))
+    anchor_model_temp = _num(anchor_model.get("temperature"))
+    synop_temp_alpha = math.exp(-distance / TEMP_DECAY_KM) * freshness * source_q
+    if model_temp is not None and anchor_model_temp is not None and obs_temp is not None:
+        synop_candidate = model_temp + synop_temp_alpha * (obs_temp - anchor_model_temp)
+        existing = _num(out.get("temperature_c"))
+        existing_meta = out.get("temperature") or {}
+        if existing is not None and existing_meta.get("data_class") == "ESTIMATED_NOW":
+            existing_w = max(0.20, _num(existing_meta.get("confidence")) or 0.35)
+            synop_w = max(0.08, min(0.55, 0.55 * synop_temp_alpha))
+            final_temp = (existing * existing_w + synop_candidate * synop_w) / (existing_w + synop_w)
+            method = "PQ_LOCAL_NOW_V3_MULTI_GROUND_ANCHOR"
+        else:
+            final_temp = synop_candidate
+            method = "PQ_LOCAL_NOW_V3_SYNOP_GROUND_ANCHORED"
+        base_conf = max(_num(existing_meta.get("confidence")) or 0.0, 0.30 + 0.45 * synop_temp_alpha)
+        out["temperature_c"] = round(final_temp, 1)
+        out["temperature"] = {
+            **existing_meta,
+            "data_class": "ESTIMATED_NOW",
+            "method": method,
+            "confidence": round(_clamp(base_conf * disagreement_factor, 0.20, 0.93), 2),
+            "synop_48917": {
+                "observed_at": synop.get("latest_numeric_observed_at"),
+                "age_minutes": numeric_age,
+                "distance_km": round(distance, 1),
+                "observed_c": obs_temp,
+                "model_proxy_c": anchor_model_temp,
+                "applied_alpha": round(synop_temp_alpha, 3),
+            },
+        }
+
+    model_wind = _num(model_point.get("wind"))
+    anchor_model_wind = _num(anchor_model.get("wind"))
+    synop_wind_alpha = math.exp(-distance / WIND_DECAY_KM) * freshness * source_q
+    if model_wind is not None and anchor_model_wind is not None and obs_wind is not None:
+        synop_candidate = max(0.0, model_wind + synop_wind_alpha * (obs_wind - anchor_model_wind))
+        existing = _num(out.get("wind_kmh"))
+        existing_meta = out.get("wind") or {}
+        if existing is not None and existing_meta.get("data_class") == "ESTIMATED_NOW":
+            existing_w = max(0.20, _num(existing_meta.get("confidence")) or 0.35)
+            synop_w = max(0.08, min(0.50, 0.50 * synop_wind_alpha))
+            final_wind = (existing * existing_w + synop_candidate * synop_w) / (existing_w + synop_w)
+            method = "PQ_LOCAL_NOW_V3_MULTI_GROUND_ANCHOR"
+        else:
+            final_wind = synop_candidate
+            method = "PQ_LOCAL_NOW_V3_SYNOP_GROUND_ANCHORED"
+        conv_floor = _num(existing_meta.get("convective_floor_kmh"))
+        if conv_floor is not None:
+            final_wind = max(final_wind, conv_floor)
+        base_conf = max(_num(existing_meta.get("confidence")) or 0.0, 0.28 + 0.46 * synop_wind_alpha)
+        out["wind_kmh"] = round(final_wind, 1)
+        out["wind"] = {
+            **existing_meta,
+            "data_class": "ESTIMATED_NOW",
+            "method": method,
+            "confidence": round(_clamp(base_conf * disagreement_factor, 0.18, 0.92), 2),
+            "synop_48917": {
+                "observed_at": synop.get("latest_numeric_observed_at"),
+                "age_minutes": numeric_age,
+                "distance_km": round(distance, 1),
+                "observed_kmh": obs_wind,
+                "observed_direction_deg": obs_dir,
+                "model_proxy_kmh": anchor_model_wind,
+                "applied_alpha": round(synop_wind_alpha, 3),
+            },
+        }
+
+    out["distance_to_synop_48917_km"] = round(distance, 1)
+    out["ground_anchor_disagreement"] = disagreement
+    return out
 
 
 def _gauge_rate(station: dict) -> tuple[float | None, str | None]:
@@ -631,6 +764,7 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | No
     }
 
     vvpq = groundtruth.get("atmosphere", {}).get("vvpq", {})
+    synop_48917 = groundtruth.get("atmosphere", {}).get("synop_48917", {})
     gauges = groundtruth.get("rainfall", {}).get("stations", {})
     nowcast_points = nowcast.get("points", {}) if isinstance(nowcast, dict) else {}
 
@@ -653,6 +787,9 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | No
         corrected = _vvpq_correction(
             point_id, meta, model, anchor_model, vvpq,
             nowcast_points.get(point_id, {}), ens_context, source_skill,
+        )
+        corrected = _apply_synop_ground_anchor(
+            point_id, model, anchor_model, corrected, synop_48917, vvpq,
         )
         rain = _rain_estimate(
             point_id, model["rain"], gauges, nowcast_points.get(point_id, {}), vvpq, ens_context, source_skill,
@@ -682,6 +819,16 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | No
                     "observed_at": vvpq.get("observed_at"),
                     "distance_km": corrected.get("distance_to_vvpq_km"),
                 },
+                "synop_48917": {
+                    "status": synop_48917.get("status"),
+                    "numeric_status": synop_48917.get("numeric_status"),
+                    "runtime_eligible": bool(synop_48917.get("runtime_eligible")),
+                    "observed_at": synop_48917.get("latest_numeric_observed_at"),
+                    "distance_km": corrected.get("distance_to_synop_48917_km"),
+                    "identity_status": synop_48917.get("identity_status"),
+                    "identity_confidence": synop_48917.get("identity_confidence"),
+                },
+                "ground_anchor_disagreement": corrected.get("ground_anchor_disagreement"),
                 "rain_gauges": [
                     {
                         "station": s.get("station_name"),
@@ -783,7 +930,7 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | No
         "data_class": "ESTIMATED_NOW",
         "title": "PQ Local Now",
         "policy": {
-            "actual": "VVPQ METAR + VRain gauges only when fresh numeric observations exist.",
+            "actual": "VVPQ METAR/SPECI + independent WMO 48917 SYNOP + VRain gauges, each only when its own timestamped observation is fresh and eligible.",
             "estimated_now": "Observation-anchored local analysis. Ensemble spread/disagreement modulates background uncertainty; ensemble is not treated as an observation.",
             "marine": "MODEL_ONLY until a usable in-situ marine feed is available.",
             "feedback": "Field feedback calibrates categorical/event errors and later numeric coefficients; it never rewrites raw observations.",
@@ -791,6 +938,7 @@ def build(groundtruth: dict, dashboard: dict, nowcast: dict, ensemble: dict | No
         "points": output_points,
         "source_status": {
             "vvpq": vvpq.get("status"),
+            "synop_48917": synop_48917.get("numeric_status") or synop_48917.get("status"),
             "vrain": groundtruth.get("rainfall", {}).get("status"),
             "himawari": nowcast.get("status") if isinstance(nowcast, dict) else "UNAVAILABLE",
             "ensemble": (ensemble or {}).get("status", "UNAVAILABLE"),

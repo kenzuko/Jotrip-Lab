@@ -129,7 +129,11 @@ jobs:
               synop=gt.get('atmosphere',{}).get('synop_48917',{})
               assert synop.get('source_namespace') == 'WMO_INDEX'
               assert synop.get('identifier') == '48917'
-              assert synop.get('production_role') == 'ACTUAL_VALIDATION_STREAM_NOT_SPATIAL_POINT_ANCHOR'
+              assert synop.get('production_role') == 'ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION'
+              assert synop.get('identity_status') == 'INDEPENDENT_FROM_CURRENT_VVPQ'
+              if synop.get('runtime_eligible'):
+                  assert synop.get('numeric_status') == 'FRESH'
+                  assert synop.get('latest_numeric_observed_at')
               for s in gt['rainfall'].get('stations',{}).values():
                   assert s['data_class']=='ACTUAL'
                   assert s['statistic']=='ACCUMULATION'
@@ -141,6 +145,7 @@ jobs:
           assert registry.get('canonical_path') == 'data/weather-groundtruth/corpus/source-registry.json'
           assert ln['engine']=='PQ_LOCAL_NOW_V2'
           assert ln['data_class']=='ESTIMATED_NOW'
+          assert 'synop_48917' in ln.get('source_status',{})
           for p in ln['points'].values():
               assert p['marine']['data_class']=='MODEL_ONLY'
               assert p['temperature']['data_class'] in {'ESTIMATED_NOW','MODEL_ONLY'}
@@ -397,8 +402,11 @@ jobs:
           corpus_dir.mkdir(parents=True,exist_ok=True)
           (corpus_dir/'verified-latest.json').write_text(
               json.dumps(corpus,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-          (corpus_dir/'source-registry.json').write_text(
+          (corpus_dir/'research-source-registry.json').write_text(
               json.dumps(corpus.get('source_registry') or {},ensure_ascii=False,indent=2)+'\n',
+              encoding='utf-8')
+          (corpus_dir/'source-registry.json').write_text(
+              json.dumps(gt.get('source_registry') or {},ensure_ascii=False,indent=2)+'\n',
               encoding='utf-8')
 
           # Immutable raw SYNOP observation archive. A deterministic observation

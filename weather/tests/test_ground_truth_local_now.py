@@ -1,6 +1,6 @@
 import unittest
 
-from weather.collectors.phuquoc_ground_truth import _latest_vvpq, _vrain
+from weather.collectors.phuquoc_ground_truth import _latest_vvpq, _vrain, _operational_source_registry
 from weather.processing.local_now import build
 from datetime import datetime, timezone
 
@@ -79,6 +79,38 @@ class GroundTruthTests(unittest.TestCase):
         self.assertAlmostEqual(out["wind_speed_kmh"], 9.26, places=2)
         self.assertTrue(out["convective_cloud"])
 
+    def test_operational_registry_keeps_every_source_and_never_turns_missing_into_negative_weather(self):
+        registry={
+            "generated_from":"registry-test",
+            "sources":[
+                {"id":"vvpq_metar_speci","namespace":"ICAO","identifier":"VVPQ","status":"ACTIVE_LIVE","role":"CURRENT_ACTUAL_AND_VERIFICATION"},
+                {"id":"vrain_phu_quoc","namespace":"VRAIN_PUBLIC","identifier":"PHU_QUOC_GAUGES","status":"ACTIVE_LIVE","role":"CURRENT_RAIN_ACTUAL_WHEN_NEW_SAMPLE"},
+                {"id":"wmo_48917_synop","namespace":"WMO_INDEX","identifier":"48917","status":"ACTIVE_NEAR_REALTIME","role":"ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION","identity_status":"INDEPENDENT_FROM_CURRENT_VVPQ","identity_confidence":"HIGH"},
+                {"id":"kttv_60018","namespace":"KTT_AUTOMATED_ID","identifier":"60018","status":"RAW_EXPORT_CONFIRMED_VALUE_PARSE_PENDING","role":"CANDIDATE_LIVE_MARINE_ACTUAL","notes":"numeric timestamped rows not yet promoted"},
+                {"id":"hadisd_489170","namespace":"HADISD","identifier":"489170-99999","status":"ARCHIVE_AVAILABLE","role":"HISTORICAL_BACKTEST_QC"},
+            ],
+        }
+        vvpq={"status":"FRESH","observed_at":"2026-10-01T06:00:00+00:00","age_minutes":10}
+        rainfall={"status":"STALE","stations":{"an_thoi":{"observed_at":"2026-09-30T23:00:00+00:00","age_minutes":430}}}
+        synop={"status":"FRESH","latest_observed_at":"2026-10-01T00:00:00+00:00","age_minutes":370,
+               "identity_status":"INDEPENDENT_FROM_CURRENT_VVPQ","identity_confidence":"HIGH",
+               "provenance_url":"https://example.test/synop"}
+        corpus={"records":[]}
+        out=_operational_source_registry(registry,vvpq=vvpq,rainfall=rainfall,synop_48917=synop,corpus_full=corpus)
+        self.assertEqual(out["source_count"],5)
+        by_id={s["id"]:s for s in out["sources"]}
+        self.assertEqual(by_id["vvpq_metar_speci"]["tier"],"ACTIVE_REALTIME")
+        self.assertEqual(by_id["wmo_48917_synop"]["tier"],"ACTIVE_NEAR_REALTIME")
+        self.assertEqual(by_id["wmo_48917_synop"]["health"],"HEALTHY")
+        self.assertEqual(by_id["kttv_60018"]["tier"],"HOLD_CANDIDATE")
+        self.assertEqual(by_id["kttv_60018"]["health"],"HOLD")
+        self.assertEqual(by_id["hadisd_489170"]["tier"],"VALIDATION_HISTORICAL")
+        self.assertEqual(by_id["vrain_phu_quoc"]["health"],"DEGRADED_STALE")
+        self.assertFalse(out["policy"]["absence_is_negative_observation"])
+        for source in out["sources"]:
+            for field in ("role","provenance","freshness","health","last_observation","status","status_reason"):
+                self.assertIn(field,source)
+
     def test_local_now_never_calls_marine_actual(self):
         gt = {
             "generated_at": "2026-09-18T00:10:00+00:00",
@@ -114,6 +146,96 @@ class GroundTruthTests(unittest.TestCase):
         self.assertEqual(out["points"]["duong_dong"]["temperature"]["data_class"], "ESTIMATED_NOW")
         self.assertEqual(out["points"]["duong_dong"]["rain"]["data_class"], "ESTIMATED_NOW")
         self.assertGreater(out["points"]["duong_dong"]["rain"]["gauge_anchor_count"], 0)
+
+    def test_synop_48917_can_anchor_duong_dong_when_vvpq_is_unavailable(self):
+        gt = {
+            "generated_at":"2026-10-01T06:00:00+00:00",
+            "atmosphere":{
+                "vvpq":{"status":"UNAVAILABLE","qc":"STALE"},
+                "synop_48917":{
+                    "status":"FRESH","numeric_status":"FRESH","runtime_eligible":True,
+                    "latest_numeric_observed_at":"2026-10-01T03:00:00+00:00",
+                    "numeric_age_minutes":180,
+                    "identity_status":"INDEPENDENT_FROM_CURRENT_VVPQ",
+                    "identity_confidence":"HIGH",
+                    "latest_numeric":{
+                        "decoded_actual":{
+                            "air_temperature_c":30.0,
+                            "wind":{"speed_kmh":14.4,"direction_deg":90},
+                        }
+                    },
+                },
+            },
+            "rainfall":{"status":"UNAVAILABLE","stations":{}},
+        }
+        row={"time_iso":"2026-10-01T13:00:00+07:00","temperature":28.0,"wind":8.0,
+             "gust":14.0,"rain":0.0,"wave":0.4,"wave_max":0.7,"period":4.5,"current":0.3}
+        dashboard={"generated_at":"2026-10-01T13:00:00+07:00",
+                   "points":{k:{**row,"hours":[row]} for k in ("duong_dong","an_thoi","ganh_dau")}}
+        nowcast={"status":"POINT_NUMERIC_READY","points":{}}
+        out=build(gt,dashboard,nowcast)
+        dd=out["points"]["duong_dong"]
+        self.assertEqual(dd["temperature"]["data_class"],"ESTIMATED_NOW")
+        self.assertEqual(dd["temperature"]["method"],"PQ_LOCAL_NOW_V3_SYNOP_GROUND_ANCHORED")
+        self.assertEqual(dd["wind"]["data_class"],"ESTIMATED_NOW")
+        self.assertEqual(dd["wind"]["method"],"PQ_LOCAL_NOW_V3_SYNOP_GROUND_ANCHORED")
+        self.assertTrue(dd["actual_anchors"]["synop_48917"]["runtime_eligible"])
+        self.assertEqual(out["source_status"]["synop_48917"],"FRESH")
+
+    def test_independent_ground_stream_disagreement_reduces_confidence_without_double_counting(self):
+        base_gt = {
+            "generated_at":"2026-10-01T06:00:00+00:00",
+            "atmosphere":{
+                "vvpq":{"status":"FRESH","qc":"PASS","age_minutes":10,
+                        "temperature_c":28.0,"wind_speed_kmh":7.0,"wind_direction_deg":180,
+                        "observed_at":"2026-10-01T05:50:00+00:00"},
+                "synop_48917":{
+                    "status":"FRESH","numeric_status":"FRESH","runtime_eligible":True,
+                    "latest_numeric_observed_at":"2026-10-01T03:00:00+00:00",
+                    "numeric_age_minutes":180,
+                    "identity_status":"INDEPENDENT_FROM_CURRENT_VVPQ","identity_confidence":"HIGH",
+                    "latest_numeric":{"decoded_actual":{
+                        "air_temperature_c":32.0,
+                        "wind":{"speed_kmh":22.0,"direction_deg":90},
+                    }},
+                },
+            },
+            "rainfall":{"status":"UNAVAILABLE","stations":{}},
+        }
+        row={"time_iso":"2026-10-01T13:00:00+07:00","temperature":29.0,"wind":10.0,
+             "gust":18.0,"rain":0.0,"wave":0.4,"wave_max":0.7,"period":4.5,"current":0.3}
+        dashboard={"generated_at":"2026-10-01T13:00:00+07:00",
+                   "points":{k:{**row,"hours":[row]} for k in ("duong_dong","an_thoi","ganh_dau")}}
+        out=build(base_gt,dashboard,{"status":"POINT_NUMERIC_READY","points":{}})
+        dd=out["points"]["duong_dong"]
+        self.assertEqual(dd["actual_anchors"]["ground_anchor_disagreement"]["status"],"DIVERGENT")
+        self.assertEqual(dd["temperature"]["method"],"PQ_LOCAL_NOW_V3_MULTI_GROUND_ANCHOR")
+        self.assertEqual(dd["wind"]["method"],"PQ_LOCAL_NOW_V3_MULTI_GROUND_ANCHOR")
+        self.assertLess(dd["wind"]["confidence"],0.9)
+
+    def test_synop_is_ignored_when_identity_gate_is_not_runtime_eligible(self):
+        gt={
+            "generated_at":"2026-10-01T06:00:00+00:00",
+            "atmosphere":{
+                "vvpq":{"status":"UNAVAILABLE","qc":"STALE"},
+                "synop_48917":{
+                    "status":"FRESH","numeric_status":"FRESH","runtime_eligible":False,
+                    "latest_numeric_observed_at":"2026-10-01T03:00:00+00:00",
+                    "numeric_age_minutes":180,
+                    "identity_status":"UNRESOLVED",
+                    "latest_numeric":{"decoded_actual":{"air_temperature_c":35.0,"wind":{"speed_kmh":30.0}}},
+                },
+            },
+            "rainfall":{"status":"UNAVAILABLE","stations":{}},
+        }
+        row={"time_iso":"2026-10-01T13:00:00+07:00","temperature":28.0,"wind":8.0,
+             "gust":10.0,"rain":0.0,"wave":0.4,"wave_max":0.7,"period":4.5,"current":0.3}
+        dashboard={"generated_at":"2026-10-01T13:00:00+07:00",
+                   "points":{k:{**row,"hours":[row]} for k in ("duong_dong","an_thoi","ganh_dau")}}
+        out=build(gt,dashboard,{"status":"POINT_NUMERIC_READY","points":{}})
+        dd=out["points"]["duong_dong"]
+        self.assertEqual(dd["temperature"]["data_class"],"MODEL_ONLY")
+        self.assertEqual(dd["wind"]["data_class"],"MODEL_ONLY")
 
     def test_convective_background_prevents_false_calm_when_vvpq_unavailable(self):
         gt = {

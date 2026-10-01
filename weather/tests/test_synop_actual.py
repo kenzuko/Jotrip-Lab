@@ -46,23 +46,51 @@ class SynopActualDecodeTests(unittest.TestCase):
             "station_name":"PHU QUOC",
             "reference_lat":10.22,
             "reference_lon":103.97,
-            "station_epoch":"CURRENT_METADATA_EPOCH_UNRESOLVED",
+            "coordinate_precision":"STATION_METADATA_APPROX_0_01_DEG",
+            "location_context":"DUONG_DONG_AREA",
+            "station_epoch":"CURRENT_2026_METADATA_DUONG_DONG",
+            "physical_identity":"PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
+            "identity_status":"INDEPENDENT_FROM_CURRENT_VVPQ",
+            "identity_confidence":"HIGH",
             "identity_policy":"separate",
+            "relocation_status":"NO_VERIFIED_POST_2012_RELOCATION_FOUND",
             "provenance_url":"https://example.test",
             "observations":[{
                 "observed_at":"2026-10-01T03:00:00+00:00",
                 "source_namespace":"WMO_INDEX",
                 "identifier":"48917",
                 "raw_observation":"AAXX ...",
-                "decoded_actual":{},
+                "decoded_actual":{"wind":{"speed_kmh":7.2,"direction_deg":90},"air_temperature_c":28.0},
             }],
         }
         out=compact_live(payload,datetime(2026,10,1,6,0,tzinfo=timezone.utc))
         self.assertEqual(out["status"],"FRESH")
         self.assertEqual(out["source_namespace"],"WMO_INDEX")
         self.assertEqual(out["identifier"],"48917")
-        self.assertIn("NOT_SPATIAL_POINT_ANCHOR",out["production_role"])
+        self.assertEqual(out["production_role"],"ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION")
+        self.assertTrue(out["runtime_eligible"])
+        self.assertEqual(out["numeric_status"],"FRESH")
+        self.assertEqual(out["latest_numeric_observed_at"],"2026-10-01T03:00:00+00:00")
+        self.assertEqual(out["identity_status"],"INDEPENDENT_FROM_CURRENT_VVPQ")
 
+
+    def test_compact_live_does_not_use_nil_as_numeric_current_observation(self):
+        payload={
+            "generated_at":"2026-10-01T06:00:00+00:00",
+            "source":"OGIMET_GETSYNOP",
+            "source_namespace":"WMO_INDEX","identifier":"48917","station_name":"PHU QUOC",
+            "reference_lat":10.22,"reference_lon":103.97,
+            "identity_status":"INDEPENDENT_FROM_CURRENT_VVPQ","identity_confidence":"HIGH",
+            "observations":[
+                {"observed_at":"2026-10-01T00:00:00+00:00","decoded_actual":{"wind":{"speed_kmh":7.2},"air_temperature_c":27.0},"raw_observation":"AAXX numeric"},
+                {"observed_at":"2026-10-01T03:00:00+00:00","decoded_actual":{"wind":None,"air_temperature_c":None,"dewpoint_c":None,"station_pressure_hpa":None,"sea_level_pressure_hpa":None},"raw_observation":"AAXX 01031 48917 NIL="},
+            ],
+        }
+        out=compact_live(payload,datetime(2026,10,1,6,0,tzinfo=timezone.utc))
+        self.assertEqual(out["latest_observed_at"],"2026-10-01T03:00:00+00:00")
+        self.assertEqual(out["latest_numeric_observed_at"],"2026-10-01T00:00:00+00:00")
+        self.assertEqual(out["numeric_age_minutes"],360.0)
+        self.assertTrue(out["runtime_eligible"])
 
 if __name__=="__main__":
     unittest.main()

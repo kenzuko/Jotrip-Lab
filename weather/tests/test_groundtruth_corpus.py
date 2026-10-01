@@ -35,6 +35,17 @@ class GroundTruthCorpusTests(unittest.TestCase):
         self.assertEqual(sources["wmo_48917_synop"]["namespace"],"WMO_INDEX")
         self.assertEqual(sources["vvpq_metar_speci"]["namespace"],"ICAO")
         self.assertNotEqual(sources["wmo_48917_synop"]["namespace"],sources["vvpq_metar_speci"]["namespace"])
+        synop=sources["wmo_48917_synop"]
+        self.assertEqual(synop["identity_status"],"INDEPENDENT_FROM_CURRENT_VVPQ")
+        self.assertEqual(synop["identity_confidence"],"HIGH")
+        self.assertEqual(synop["status"],"ACTIVE_NEAR_REALTIME")
+        self.assertEqual(synop["role"],"ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION")
+        self.assertEqual(synop["coordinates"]["lat"],10.22)
+        self.assertEqual(synop["coordinates"]["lon"],103.97)
+        self.assertEqual(synop["current_vvpq_coordinates"]["lat"],10.169722)
+        self.assertEqual(synop["current_vvpq_coordinates"]["lon"],103.993056)
+        self.assertEqual(synop["relocation_history"]["status"],"NO_VERIFIED_POST_2012_RELOCATION_FOUND")
+        self.assertEqual(synop["identity_conflict"]["status"],"THIRD_PARTY_CROSS_ID_CONFLICT")
 
 
 if __name__=="__main__":
