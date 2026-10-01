@@ -309,9 +309,14 @@ def collect(previous: dict | None = None, artifacts: dict | None = None) -> dict
         errors.append({"source": "WMO_48917_SYNOPTIC", "error": repr(exc)})
         synop_48917 = {
             "status": "UNAVAILABLE",
+            "feed_freshness": "UNAVAILABLE",
             "source_namespace": "WMO_INDEX",
             "identifier": "48917",
-            "production_role": "ACTUAL_VALIDATION_STREAM_NOT_SPATIAL_POINT_ANCHOR",
+            "station_identity_status": "CONFLICTING_OPERATIONAL_AND_CLIMATE_METADATA",
+            "independence_from_vvpq": "UNRESOLVED_DO_NOT_COUNT_AS_INDEPENDENT_EVIDENCE",
+            "deduplication_group": "PHU_QUOC_48917_VVPQ_PENDING",
+            "evidence_weight_for_independent_source_count": 0,
+            "production_role": "RAW_OBS_ARCHIVE_ONLY_UNTIL_STATION_IDENTITY_RESOLVED",
             "detail": repr(exc),
         }
 
@@ -372,14 +377,14 @@ def collect(previous: dict | None = None, artifacts: dict | None = None) -> dict
     live_ready = (
         vvpq.get("status") in {"FRESH", "STALE"}
         or bool(rainfall.get("stations"))
-        or synop_48917.get("status") in {"FRESH", "STALE"}
     )
     payload = {
         "schema_version": "2.0",
         "generated_at": now.isoformat(),
         "status": "READY" if live_ready else "UNAVAILABLE",
         "actual_policy": (
-            "Current-time ACTUAL requires timestamped in-situ or raw coded observations. "
+            "Current-time ACTUAL requires timestamped in-situ observations with resolved source identity. "
+            "WMO/SYNOP 48917 is archived but zero-weight while its relationship to VVPQ remains unresolved. "
             "Historical aggregate/published observations are verification-only; remote sensing, "
             "models and fusion remain separate classes."
         ),
