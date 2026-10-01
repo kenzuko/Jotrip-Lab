@@ -1,18 +1,14 @@
 {
   "module": "JoTrip Weather Ground Truth",
   "state": "READY",
-  "generated_at": "2026-10-01T06:32:17.555658+00:00",
+  "generated_at": "2026-10-01T06:33:22.335473+00:00",
   "vvpq": "FRESH",
   "synop_48917": {
     "status": "FRESH",
-    "feed_freshness": "FRESH",
     "latest_observed_at": "2026-10-01T06:00:00+00:00",
-    "age_minutes": 32.3,
+    "age_minutes": 33.4,
     "source_namespace": "WMO_INDEX",
-    "station_identity_status": "RESOLVED_WMO_OSCAR",
-    "independence_from_vvpq": "CONFIRMED_INDEPENDENT_PHYSICAL_SITE",
-    "evidence_weight_for_independent_source_count": 1,
-    "role": "INDEPENDENT_GROUND_OBSERVATION_CROSSCHECK"
+    "role": "ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION"
   },
   "vrain": "STALE",
   "rain_stations": [
@@ -62,5 +58,5 @@
     }
   },
   "local_engine": "PQ_LOCAL_NOW_V2",
-  "actual_policy": "Current-time ACTUAL requires timestamped in-situ observations with resolved source identity. WMO/SYNOP 48917 is an independent Duong Dong ground-observation stream resolved by WMO OSCAR; ICAO:VVPQ remains a separate airport observation system. Historical aggregate/published observations are verification-only; remote sensing, models and fusion remain separate classes."
+  "actual_policy": "Current-time ACTUAL requires timestamped in-situ or raw coded observations. Historical aggregate/published observations are verification-only; remote sensing, models and fusion remain separate classes."
 }
