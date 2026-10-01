@@ -7,6 +7,7 @@ the public dashboard makes naturally.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import shutil
 from datetime import datetime, timezone
@@ -54,6 +55,10 @@ def _select_config(config: dict, source_time: str | None) -> tuple[str | None, d
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output", type=Path, default=OUT)
+    args = parser.parse_args()
+    out_path = args.output
     browser_path = _browser()
     output = {
         "schema_version": "weather-v3-iweather-cmax-shadow-receipt-v1",
@@ -80,14 +85,14 @@ def main() -> None:
         "config_epoch": None,
         "decoder": None,
         "points": {},
-        "local_features": null,
+        "local_features": None,
         "errors": [],
     }
 
     if not browser_path:
         output["status"] = "NO_BROWSER"
-        OUT.parent.mkdir(parents=True, exist_ok=True)
-        OUT.write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         return
 
     state: dict[str, object] = {"config": None, "time": None, "png": None}
@@ -174,8 +179,8 @@ def main() -> None:
             output["status"] = "DECODE_FAILED"
             output["errors"].append({"type": "decode", "message": repr(exc)[:1000]})
 
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({
         "status": output["status"],
         "source_time_raw": output["source_time_raw"],
@@ -186,7 +191,7 @@ def main() -> None:
             key: len(value)
             for key, value in ((output.get("local_features") or {}).get("components_by_threshold") or {}).items()
         },
-        "output": str(OUT),
+        "output": str(out_path),
     }, ensure_ascii=False, indent=2))
 
 
