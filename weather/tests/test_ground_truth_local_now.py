@@ -1,6 +1,6 @@
 import unittest
 
-from weather.collectors.phuquoc_ground_truth import _latest_vvpq, _vrain
+from weather.collectors.phuquoc_ground_truth import _latest_vvpq, _vrain, _operational_source_registry
 from weather.processing.local_now import build
 from datetime import datetime, timezone
 
@@ -78,6 +78,38 @@ class GroundTruthTests(unittest.TestCase):
         self.assertEqual(out["status"], "FRESH")
         self.assertAlmostEqual(out["wind_speed_kmh"], 9.26, places=2)
         self.assertTrue(out["convective_cloud"])
+
+    def test_operational_registry_keeps_every_source_and_never_turns_missing_into_negative_weather(self):
+        registry={
+            "generated_from":"registry-test",
+            "sources":[
+                {"id":"vvpq_metar_speci","namespace":"ICAO","identifier":"VVPQ","status":"ACTIVE_LIVE","role":"CURRENT_ACTUAL_AND_VERIFICATION"},
+                {"id":"vrain_phu_quoc","namespace":"VRAIN_PUBLIC","identifier":"PHU_QUOC_GAUGES","status":"ACTIVE_LIVE","role":"CURRENT_RAIN_ACTUAL_WHEN_NEW_SAMPLE"},
+                {"id":"wmo_48917_synop","namespace":"WMO_INDEX","identifier":"48917","status":"ACTIVE_NEAR_REALTIME","role":"ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION","identity_status":"INDEPENDENT_FROM_CURRENT_VVPQ","identity_confidence":"HIGH"},
+                {"id":"kttv_60018","namespace":"KTT_AUTOMATED_ID","identifier":"60018","status":"RAW_EXPORT_CONFIRMED_VALUE_PARSE_PENDING","role":"CANDIDATE_LIVE_MARINE_ACTUAL","notes":"numeric timestamped rows not yet promoted"},
+                {"id":"hadisd_489170","namespace":"HADISD","identifier":"489170-99999","status":"ARCHIVE_AVAILABLE","role":"HISTORICAL_BACKTEST_QC"},
+            ],
+        }
+        vvpq={"status":"FRESH","observed_at":"2026-10-01T06:00:00+00:00","age_minutes":10}
+        rainfall={"status":"STALE","stations":{"an_thoi":{"observed_at":"2026-09-30T23:00:00+00:00","age_minutes":430}}}
+        synop={"status":"FRESH","latest_observed_at":"2026-10-01T00:00:00+00:00","age_minutes":370,
+               "identity_status":"INDEPENDENT_FROM_CURRENT_VVPQ","identity_confidence":"HIGH",
+               "provenance_url":"https://example.test/synop"}
+        corpus={"records":[]}
+        out=_operational_source_registry(registry,vvpq=vvpq,rainfall=rainfall,synop_48917=synop,corpus_full=corpus)
+        self.assertEqual(out["source_count"],5)
+        by_id={s["id"]:s for s in out["sources"]}
+        self.assertEqual(by_id["vvpq_metar_speci"]["tier"],"ACTIVE_REALTIME")
+        self.assertEqual(by_id["wmo_48917_synop"]["tier"],"ACTIVE_NEAR_REALTIME")
+        self.assertEqual(by_id["wmo_48917_synop"]["health"],"HEALTHY")
+        self.assertEqual(by_id["kttv_60018"]["tier"],"HOLD_CANDIDATE")
+        self.assertEqual(by_id["kttv_60018"]["health"],"HOLD")
+        self.assertEqual(by_id["hadisd_489170"]["tier"],"VALIDATION_HISTORICAL")
+        self.assertEqual(by_id["vrain_phu_quoc"]["health"],"DEGRADED_STALE")
+        self.assertFalse(out["policy"]["absence_is_negative_observation"])
+        for source in out["sources"]:
+            for field in ("role","provenance","freshness","health","last_observation","status","status_reason"):
+                self.assertIn(field,source)
 
     def test_local_now_never_calls_marine_actual(self):
         gt = {
