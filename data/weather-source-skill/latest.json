@@ -1,6 +1,6 @@
 {
   "schema_version": "weather-source-skill-v1",
-  "generated_at": "2026-10-02T12:40:47.248078+00:00",
+  "generated_at": "2026-10-02T13:10:48.012895+00:00",
   "policy": {
     "actual_only": true,
     "early_weight_adjustment_only": true,
@@ -10,47 +10,47 @@
     "note": "Rain gauges are not scored against distant gauges; local rain variability is real. VRain early factors reflect QC/freshness only until forecast verification matures."
   },
   "vvpq": {
-    "unique_actual_samples": 521,
+    "unique_actual_samples": 522,
     "wind": {
       "deterministic_background": {
-        "sample_count": 520,
-        "mae": 5.309,
-        "rmse": 6.715,
+        "sample_count": 521,
+        "mae": 5.3,
+        "rmse": 6.709,
         "mean_error": 0.634,
-        "median_error": 0.49
+        "median_error": 0.47
       },
       "ensemble_q50": {
-        "sample_count": 500,
-        "mae": 7.837,
-        "rmse": 9.569,
-        "mean_error": -0.244,
+        "sample_count": 501,
+        "mae": 7.831,
+        "rmse": 9.562,
+        "mean_error": -0.233,
         "median_error": 0.139
       },
-      "ensemble_gain_multiplier": 0.9542,
+      "ensemble_gain_multiplier": 0.9541,
       "status": "PROVISIONAL"
     },
     "temperature": {
       "deterministic_background": {
-        "sample_count": 521,
-        "mae": 1.33,
-        "rmse": 1.721,
-        "mean_error": 1.049,
+        "sample_count": 522,
+        "mae": 1.332,
+        "rmse": 1.723,
+        "mean_error": 1.052,
         "median_error": 0.9
       }
     }
   },
   "vrain": {
     "an_thoi": {
-      "sample_count": 1153,
+      "sample_count": 1154,
       "qc_pass_ratio": 1.0,
-      "increment_pass_ratio": 0.907,
+      "increment_pass_ratio": 0.906,
       "fresh_ratio": 0.998,
       "quality_factor": 0.995,
       "wet_samples": 47,
       "dry_samples": 993
     },
     "bai_thom": {
-      "sample_count": 1153,
+      "sample_count": 1154,
       "qc_pass_ratio": 1.0,
       "increment_pass_ratio": 0.906,
       "fresh_ratio": 0.999,
