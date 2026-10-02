@@ -1,6 +1,6 @@
 {
   "schema_version": "weather-raw-synop-v3",
-  "generated_at": "2026-10-02T00:11:09.385466+00:00",
+  "generated_at": "2026-10-02T00:41:09.767930+00:00",
   "source_namespace": "WMO_INDEX",
   "identifier": "48917",
   "station_name": "PHU QUOC",
@@ -64,11 +64,11 @@
   "source": "OGIMET_GETSYNOP",
   "data_class": "ACTUAL",
   "observation_class": "RAW_OBS",
-  "begin": "2026-09-30T00:11:06.090003+00:00",
-  "end": "2026-10-02T00:11:06.090003+00:00",
-  "provenance_url": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202609300011&end=202610020011&lang=eng&header=yes",
-  "raw_response_hash": "ab02ffb8151c4766b26ffc7c0b919faccc032f96d74c6f79dcdf32553e2c81cc",
-  "count": 8,
+  "begin": "2026-09-30T00:41:08.212257+00:00",
+  "end": "2026-10-02T00:41:08.212257+00:00",
+  "provenance_url": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202609300041&end=202610020041&lang=eng&header=yes",
+  "raw_response_hash": "260469d61cd324b80942544b38a6afda078d8804012d7f2876f347a10cb65120",
+  "count": 9,
   "observations": [
     {
       "source_namespace": "WMO_INDEX",
@@ -459,6 +459,69 @@
         "marine": {
           "sea_surface_temperature": null,
           "wind_wave": null
+        }
+      },
+      "qc": "PASS_RAW_WITH_TESTED_SUBSET_DECODE"
+    },
+    {
+      "source_namespace": "WMO_INDEX",
+      "identifier": "48917",
+      "station_name": "PHU QUOC",
+      "reference_lat": 10.22,
+      "reference_lon": 103.97,
+      "coordinate_precision": "STATION_METADATA_APPROX_0_01_DEG",
+      "location_context": "DUONG_DONG_AREA",
+      "station_epoch": "CURRENT_2026_METADATA_DUONG_DONG",
+      "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
+      "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
+      "identity_confidence": "HIGH",
+      "identity_resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
+      "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
+      "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
+      "source": "OGIMET_GETSYNOP",
+      "source_channel": "SYNOP_AAXX_RAW",
+      "data_class": "ACTUAL",
+      "observation_class": "RAW_OBS",
+      "observed_at": "2026-10-02T00:00:00+00:00",
+      "raw_observation": "AAXX 02001 48917 32598 71102 10278 20246 30120 40126 52013 82208 222// 00282 2//00 333 01027 20274 3/026 59001 82895 87299=",
+      "raw_payload_hash": "29a1d436acbd82f71760926ba5e131eab175a528314f6d74e252336df57e5a75",
+      "decoded_actual": {
+        "wind": {
+          "direction_deg": 110,
+          "direction_class": "DIRECTIONAL",
+          "speed_ms": 2.0,
+          "speed_kmh": 7.2,
+          "measurement_origin": "ANEMOMETER",
+          "iw": 1,
+          "raw_group": "71102"
+        },
+        "air_temperature_c": 27.8,
+        "dewpoint_c": 24.6,
+        "station_pressure_hpa": 1012.0,
+        "sea_level_pressure_hpa": 1012.6,
+        "precipitation": [],
+        "marine": {
+          "sea_surface_temperature": {
+            "temperature_c": 28.2,
+            "ss": 0,
+            "raw_group": "00282",
+            "data_class": "ACTUAL",
+            "observation_type": "SYNOP_SECTION2_SST"
+          },
+          "wind_wave": {
+            "period_s": null,
+            "period_code": "//",
+            "height_code": 0,
+            "height_nominal_m": 0.0,
+            "height_bin_m": [
+              0.0,
+              0.25
+            ],
+            "raw_group": "2//00",
+            "data_class": "ACTUAL",
+            "observation_type": "VISUAL_WIND_WAVE_CODE",
+            "instrument_hs": false
+          }
         }
       },
       "qc": "PASS_RAW_WITH_TESTED_SUBSET_DECODE"
