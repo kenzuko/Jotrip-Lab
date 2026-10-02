@@ -1,6 +1,6 @@
 {
   "schema_version": "weather-raw-synop-v3",
-  "generated_at": "2026-10-02T16:10:44.672561+00:00",
+  "generated_at": "2026-10-02T16:30:52.040931+00:00",
   "source_namespace": "WMO_INDEX",
   "identifier": "48917",
   "station_name": "PHU QUOC",
@@ -64,11 +64,11 @@
   "source": "OGIMET_GETSYNOP",
   "data_class": "ACTUAL",
   "observation_class": "RAW_OBS",
-  "begin": "2026-09-30T16:10:38.654750+00:00",
-  "end": "2026-10-02T16:10:38.654750+00:00",
-  "provenance_url": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202609301610&end=202610021610&lang=eng&header=yes",
-  "raw_response_hash": "fd04be7aef6a320e48e0762f4c2de824bf34aacbfb804a96c125256e1eb94dcb",
-  "count": 8,
+  "begin": "2026-09-30T16:30:50.141280+00:00",
+  "end": "2026-10-02T16:30:50.141280+00:00",
+  "provenance_url": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202609301630&end=202610021630&lang=eng&header=yes",
+  "raw_response_hash": "c581fb566f193eaeff44760bdfdfbd3ddcaeafd430b4ea4b90a9eb4b94a4faaa",
+  "count": 9,
   "observations": [
     {
       "source_namespace": "WMO_INDEX",
@@ -482,6 +482,42 @@
         "dewpoint_c": 26.0,
         "station_pressure_hpa": 1010.0,
         "sea_level_pressure_hpa": 1010.6,
+        "precipitation": [],
+        "marine": {
+          "sea_surface_temperature": null,
+          "wind_wave": null
+        }
+      },
+      "qc": "PASS_RAW_WITH_TESTED_SUBSET_DECODE"
+    },
+    {
+      "source_namespace": "WMO_INDEX",
+      "identifier": "48917",
+      "station_name": "PHU QUOC",
+      "reference_lat": 10.22,
+      "reference_lon": 103.97,
+      "coordinate_precision": "STATION_METADATA_APPROX_0_01_DEG",
+      "location_context": "DUONG_DONG_AREA",
+      "station_epoch": "CURRENT_2026_METADATA_DUONG_DONG",
+      "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
+      "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
+      "identity_confidence": "HIGH",
+      "identity_resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
+      "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
+      "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
+      "source": "OGIMET_GETSYNOP",
+      "source_channel": "SYNOP_AAXX_RAW",
+      "data_class": "ACTUAL",
+      "observation_class": "RAW_OBS",
+      "observed_at": "2026-10-02T15:00:00+00:00",
+      "raw_observation": "AAXX 02151 48917 NIL=",
+      "raw_payload_hash": "dede1762b41ea5dd5a30bb410f1a581471b01c6590cb9115380304a25c7e637b",
+      "decoded_actual": {
+        "wind": null,
+        "air_temperature_c": null,
+        "dewpoint_c": null,
+        "station_pressure_hpa": null,
+        "sea_level_pressure_hpa": null,
         "precipitation": [],
         "marine": {
           "sea_surface_temperature": null,
