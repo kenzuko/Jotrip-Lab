@@ -1,16 +1,16 @@
 {
   "module": "JoTrip Weather Ground Truth",
   "state": "READY",
-  "generated_at": "2026-10-03T20:41:23.470917+00:00",
+  "generated_at": "2026-10-03T21:11:18.770276+00:00",
   "vvpq": "FRESH",
   "synop_48917": {
     "status": "FRESH",
     "latest_observed_at": "2026-10-03T18:00:00+00:00",
-    "age_minutes": 161.4,
+    "age_minutes": 191.3,
     "source_namespace": "WMO_INDEX",
     "role": "ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION"
   },
-  "vrain": "STALE",
+  "vrain": "FRESH",
   "rain_stations": [
     "cua_can",
     "bai_thom",
@@ -30,14 +30,14 @@
   "training_usability": {
     "vvpq": {
       "usable_for_training": true,
-      "observed_at": "2026-10-03T20:30:00+00:00",
+      "observed_at": "2026-10-03T21:00:00+00:00",
       "qc": "PASS"
     },
     "rain": {
       "cua_can": {
         "actual": true,
         "qc": "PASS",
-        "increment_qc": "NO_NEW_SENSOR_SAMPLE",
+        "increment_qc": "WINDOW_TOO_OLD_FOR_CURRENT_RAIN",
         "usable_for_short_increment_training": false,
         "cumulative_counter_available": true
       },
