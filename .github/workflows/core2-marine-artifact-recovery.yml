@@ -1,0 +1,79 @@
+name: Publish completed original marine artifact independently
+on:
+  push:
+    branches: ['recovery/core2-marine-publication-20261004']
+    paths: ['.github/workflows/core2-marine-artifact-recovery.yml']
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/weather-lab-data-engine-v1
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: copernicus-live-phu-quoc-subset
+          run-id: 37180599382
+          github-token: ${{ github.token }}
+          path: /tmp/weather-artifacts/copernicus
+      - name: Require real fresh source and preserve original engine files
+        run: |
+          python - <<'PY'
+          import json,datetime,hashlib,pathlib
+          source=json.load(open('/tmp/weather-artifacts/copernicus/copernicus-live.json'))
+          now=datetime.datetime.now(datetime.timezone.utc)
+          assert source['status']=='POINT_NUMERIC_READY'
+          age=(now-datetime.datetime.fromisoformat(source['target_time'])).total_seconds()
+          assert 0<=age<1800
+          prior=json.load(open('weather/spatial-marine.json'))
+          assert datetime.datetime.fromisoformat(source['target_time'])>=datetime.datetime.fromisoformat(prior['generated_at'])
+          protected={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in pathlib.Path('weather').rglob('*.py')}
+          pathlib.Path('/tmp/marine-protected.json').write_text(json.dumps(protected))
+          PY
+      - name: Publish compact Copernicus marine spatial field for V5
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          source=json.load(open('/tmp/weather-artifacts/copernicus/copernicus-live.json'))
+          current=source.get('spatial_current') or {}
+          wave=source.get('spatial_wave') or {}
+          assert current.get('status') == 'READY', current
+          assert wave.get('status') == 'READY', wave
+          payload={
+              'schema_version':'weather-spatial-v1',
+              'product':'JOTRIP_COPERNICUS_MARINE_SPATIAL',
+              'generated_at':source.get('target_time'),
+              'source':'COPERNICUS_MARINE',
+              'current_dataset':source.get('current_dataset'),
+              'wave_dataset':source.get('wave_dataset'),
+              'current':current,
+              'wave':wave,
+          }
+          target=Path('weather/spatial-marine.json')
+          target.write_text(json.dumps(payload,ensure_ascii=False,separators=(',',':'))+'\n',encoding='utf-8')
+          assert target.stat().st_size < 1500000, target.stat().st_size
+          PY
+      - name: Publish only original marine data with provenance
+        run: |
+          python - <<'PY'
+          import json,hashlib,pathlib
+          protected=json.load(open('/tmp/marine-protected.json'))
+          assert all(hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()==h for p,h in protected.items())
+          p=json.load(open('weather/spatial-marine.json'))
+          print(json.dumps({'status':'ORIGINAL_MARINE_ARTIFACT_PUBLISHED','source_run':37180599382,'source_artifact':11294502816,'generated_at':p['generated_at'],'wave_sampled_time':p['wave']['sampled_time'],'engine_files_unchanged':True}))
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add weather/spatial-marine.json
+          if git diff --cached --quiet; then exit 0; fi
+          test "$(git diff --cached --name-only)" = "weather/spatial-marine.json"
+          git commit -m "data: publish completed original marine artifact without waiting for ECMWF [skip ci]"
+          git pull --rebase origin feat/weather-lab-data-engine-v1
+          git push origin HEAD:feat/weather-lab-data-engine-v1
