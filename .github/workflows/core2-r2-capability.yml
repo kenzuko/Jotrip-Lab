@@ -1,0 +1,27 @@
+name: Core2 existing R2 capability - GET only
+on:
+  push:
+    branches: [cloud/core2-r2-capability-20261004]
+    paths: [.github/workflows/core2-r2-capability.yml, scripts/core2-r2-capability.mjs]
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Read production R2 capability using existing deploy credential
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: node scripts/core2-r2-capability.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: core2-r2-capability
+          path: .core2-r2-capability/
+          include-hidden-files: true
+          retention-days: 14
