@@ -80,13 +80,18 @@ jobs:
         if: always()
         working-directory: core2
         run: rm -f .fact-serving-production/issuer.private.json
-      - name: Bootstrap deadline-driven Durable Object alarm
+      - name: Bootstrap deadline-driven Durable Object alarm after secret propagation
         if: github.event_name != 'schedule'
         shell: bash
         run: |
           base='https://openpq-intelligence-fact-serving-issuer.kenzuko.workers.dev'
-          curl -fsS --max-time 30 -X POST -H "Authorization: Bearer $FACT_BOOTSTRAP_TOKEN" "$base/bootstrap" -o /tmp/fact-bootstrap.json
-          test -s /tmp/fact-bootstrap.json
+          ok=0
+          for i in $(seq 1 20); do
+            code="$(curl -sS --max-time 30 -o /tmp/fact-bootstrap.json -w '%{http_code}' -X POST -H "Authorization: Bearer $FACT_BOOTSTRAP_TOKEN" "$base/bootstrap" || true)"
+            if [ "$code" = '200' ] && [ -s /tmp/fact-bootstrap.json ]; then ok=1; break; fi
+            sleep 2
+          done
+          test "$ok" = 1
       - name: Revoke one-time bootstrap capability
         if: always() && github.event_name != 'schedule'
         working-directory: core2
