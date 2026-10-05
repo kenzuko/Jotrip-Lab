@@ -1,14 +1,14 @@
 {
   "schema_version": "1.0",
   "product": "JOTRIP_WEATHER_ANALYTICS",
-  "generated_at": "2026-10-05T14:40:47.896787+00:00",
+  "generated_at": "2026-10-05T15:09:48.857857+00:00",
   "learning_status": "READY",
   "minimum_samples": 30,
   "ready_groups": 25,
   "total_groups": 25,
-  "matched_cases": 5284,
-  "forecast_archive_files": 58,
-  "groundtruth_archive_files": 1534,
+  "matched_cases": 5286,
+  "forecast_archive_files": 59,
+  "groundtruth_archive_files": 1535,
   "groups": [
     {
       "target": "vrain_an_thoi",
@@ -434,15 +434,15 @@
       "target": "vvpq",
       "variable": "temperature",
       "lead_bucket": "D0_24",
-      "sample_count": 222,
+      "sample_count": 223,
       "status": "READY",
-      "mae": 1.5723,
-      "rmse": 1.8488,
-      "mean_error": -0.9661,
-      "median_error": -1.3433,
-      "applied_bias": -1.183414,
+      "mae": 1.5659,
+      "rmse": 1.8447,
+      "mean_error": -0.9624,
+      "median_error": -1.3366,
+      "applied_bias": -1.17815,
       "applied_factor": null,
-      "shrinkage": 0.881,
+      "shrinkage": 0.8814,
       "readiness_reason": null
     },
     {
@@ -509,15 +509,15 @@
       "target": "vvpq",
       "variable": "wind",
       "lead_bucket": "D0_24",
-      "sample_count": 222,
+      "sample_count": 223,
       "status": "READY",
-      "mae": 10.4586,
-      "rmse": 13.0401,
-      "mean_error": -9.5822,
-      "median_error": -8.5402,
-      "applied_bias": -7.523483,
+      "mae": 10.4559,
+      "rmse": 13.0276,
+      "mean_error": -9.5834,
+      "median_error": -8.551,
+      "applied_bias": -7.537079,
       "applied_factor": null,
-      "shrinkage": 0.881,
+      "shrinkage": 0.8814,
       "readiness_reason": null
     },
     {
@@ -583,7 +583,7 @@
   ],
   "latest_actual": {
     "vvpq": {
-      "observed_at": "2026-10-05T14:30:00+00:00",
+      "observed_at": "2026-10-05T15:00:00+00:00",
       "temperature_c": 27.0,
       "wind_kmh": 3.7
     },
@@ -1629,6 +1629,32 @@
     {
       "target": "vvpq",
       "variable": "temperature",
+      "lead_bucket": "D0_24",
+      "lead_hours": 6.0,
+      "run_time": "2026-10-05T06:00:00+00:00",
+      "valid_time": "2026-10-05T12:00:00+00:00",
+      "forecast": 29.142012,
+      "observed": 29.0,
+      "observation_class": "ACTUAL",
+      "error": -0.14201200000000114,
+      "source_file": "data/weather-forecast-archive/2026/10/05/20261005T060000Z.json"
+    },
+    {
+      "target": "vvpq",
+      "variable": "wind",
+      "lead_bucket": "D0_24",
+      "lead_hours": 6.0,
+      "run_time": "2026-10-05T06:00:00+00:00",
+      "valid_time": "2026-10-05T12:00:00+00:00",
+      "forecast": 17.265051,
+      "observed": 7.41,
+      "observation_class": "ACTUAL",
+      "error": -9.855051,
+      "source_file": "data/weather-forecast-archive/2026/10/05/20261005T060000Z.json"
+    },
+    {
+      "target": "vvpq",
+      "variable": "temperature",
       "lead_bucket": "D6_10",
       "lead_hours": 240.0,
       "run_time": "2026-09-25T06:00:00+00:00",
@@ -2145,32 +2171,6 @@
       "observation_class": "ACTUAL",
       "error": -1.961780000000001,
       "source_file": "data/weather-forecast-archive/2026/09/30/20260930T000000Z.json"
-    },
-    {
-      "target": "vvpq",
-      "variable": "temperature",
-      "lead_bucket": "D3_5",
-      "lead_hours": 120.0,
-      "run_time": "2026-09-30T06:00:00+00:00",
-      "valid_time": "2026-10-05T06:00:00+00:00",
-      "forecast": 28.926587,
-      "observed": 31.0,
-      "observation_class": "ACTUAL",
-      "error": 2.0734129999999986,
-      "source_file": "data/weather-forecast-archive/2026/09/30/20260930T060000Z.json"
-    },
-    {
-      "target": "vvpq",
-      "variable": "wind",
-      "lead_bucket": "D3_5",
-      "lead_hours": 120.0,
-      "run_time": "2026-09-30T06:00:00+00:00",
-      "valid_time": "2026-10-05T06:00:00+00:00",
-      "forecast": 16.200219,
-      "observed": 14.82,
-      "observation_class": "ACTUAL",
-      "error": -1.3802190000000003,
-      "source_file": "data/weather-forecast-archive/2026/09/30/20260930T060000Z.json"
     }
   ],
   "policy": {
