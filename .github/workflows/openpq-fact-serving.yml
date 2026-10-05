@@ -1,0 +1,100 @@
+name: OpenPQ FACT-serving issuer
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'openpq-fact-serving/**'
+      - '.github/workflows/openpq-fact-serving.yml'
+  schedule:
+    - cron: '17 0 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openpq-fact-serving-production
+  cancel-in-progress: false
+
+jobs:
+  deploy-or-renew:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pin exact tested Core commit
+        id: pin
+        shell: bash
+        run: |
+          ref="$(tr -d '\r\n' < openpq-fact-serving/CORE_REF)"
+          if ! [[ "$ref" =~ ^[0-9a-f]{40}$ ]]; then
+            echo 'Invalid or pending Core pin' >&2
+            exit 1
+          fi
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+      - name: Pin production Cloudflare account
+        shell: bash
+        run: test "$CLOUDFLARE_ACCOUNT_ID" = '1a64a0a081ea758f72be8254030bdf11'
+      - uses: actions/checkout@v4
+        with:
+          repository: kenzuko/openpq-intelligence
+          ref: ${{ steps.pin.outputs.ref }}
+          path: core2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: core2/package-lock.json
+      - name: Install exact Core dependencies
+        working-directory: core2
+        run: npm ci --ignore-scripts
+      - name: Verify pinned activation boundary
+        if: github.event_name != 'schedule'
+        working-directory: core2
+        run: |
+          node scripts/check-fact-serving-production.js
+          npx --no-install wrangler deploy --config .fact-serving-production/issuer.json --dry-run
+      - name: Deploy issuer code without public cutover
+        if: github.event_name != 'schedule'
+        working-directory: core2
+        run: npx --no-install wrangler deploy --config .fact-serving-production/issuer.json
+      - name: Mint bounded R2 object-read-only capability
+        working-directory: core2
+        run: node scripts/cloud/fact-serving-r2-renew.js
+      - name: Install or renew read-only storage secret
+        working-directory: core2
+        run: npx --no-install wrangler secret bulk .fact-serving-production/issuer.private.json --config .fact-serving-production/issuer.json
+      - name: Remove local secret material immediately
+        if: always()
+        working-directory: core2
+        run: rm -f .fact-serving-production/issuer.private.json
+      - name: Wait for background issuer health
+        if: github.event_name != 'schedule'
+        shell: bash
+        run: |
+          base='https://openpq-intelligence-fact-serving-issuer.kenzuko.workers.dev'
+          ok=0
+          for i in $(seq 1 20); do
+            body="$(curl -fsS --max-time 10 "$base/health" || true)"
+            if echo "$body" | grep -q '"status":"HEALTHY"'; then ok=1; break; fi
+            sleep 5
+          done
+          test "$ok" = 1
+          curl -fsS --max-time 10 "$base/trust" > core2/.fact-serving-production/PUBLIC_TRUST.json
+          curl -fsS --max-time 10 "$base/vector" > core2/.fact-serving-production/FIRST_VECTOR.json
+      - name: Upload only public deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openpq-fact-serving-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            core2/.fact-serving-production/R2_READ_PROOF.json
+            core2/.fact-serving-production/PUBLIC_TRUST.json
+            core2/.fact-serving-production/FIRST_VECTOR.json
+          if-no-files-found: ignore
+          retention-days: 14
