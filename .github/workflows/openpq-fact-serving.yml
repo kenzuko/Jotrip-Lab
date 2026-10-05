@@ -59,10 +59,17 @@ jobs:
         run: |
           node scripts/check-fact-serving-production.js
           npx --no-install wrangler deploy --config .fact-serving-production/issuer.json --dry-run
-      - name: Deploy issuer code without public cutover
+      - name: Deploy cron-free issuer code without public cutover
         if: github.event_name != 'schedule'
         working-directory: core2
         run: npx --no-install wrangler deploy --config .fact-serving-production/issuer.json
+      - name: Create one-time bootstrap capability
+        if: github.event_name != 'schedule'
+        shell: bash
+        run: |
+          token="$(openssl rand -hex 32)"
+          echo "::add-mask::$token"
+          echo "FACT_BOOTSTRAP_TOKEN=$token" >> "$GITHUB_ENV"
       - name: Mint bounded R2 object-read-only capability
         working-directory: core2
         run: node scripts/cloud/fact-serving-r2-renew.js
@@ -73,7 +80,25 @@ jobs:
         if: always()
         working-directory: core2
         run: rm -f .fact-serving-production/issuer.private.json
-      - name: Wait for background issuer health
+      - name: Bootstrap deadline-driven Durable Object alarm
+        if: github.event_name != 'schedule'
+        shell: bash
+        run: |
+          base='https://openpq-intelligence-fact-serving-issuer.kenzuko.workers.dev'
+          curl -fsS --max-time 30 -X POST -H "Authorization: Bearer $FACT_BOOTSTRAP_TOKEN" "$base/bootstrap" -o /tmp/fact-bootstrap.json
+          test -s /tmp/fact-bootstrap.json
+      - name: Revoke one-time bootstrap capability
+        if: always() && github.event_name != 'schedule'
+        working-directory: core2
+        run: npx --no-install wrangler secret delete FACT_BOOTSTRAP_TOKEN --config .fact-serving-production/issuer.json || true
+      - name: Prove bootstrap control is closed
+        if: github.event_name != 'schedule'
+        shell: bash
+        run: |
+          base='https://openpq-intelligence-fact-serving-issuer.kenzuko.workers.dev'
+          code="$(curl -sS --max-time 10 -o /tmp/fact-bootstrap-closed.json -w '%{http_code}' -X POST "$base/bootstrap")"
+          test "$code" = '403'
+      - name: Wait for all-nine issuer health
         if: github.event_name != 'schedule'
         shell: bash
         run: |
@@ -81,7 +106,7 @@ jobs:
           ok=0
           for i in $(seq 1 20); do
             body="$(curl -fsS --max-time 10 "$base/health" || true)"
-            if echo "$body" | grep -q '"status":"HEALTHY"'; then ok=1; break; fi
+            if echo "$body" | grep -q '"status":"HEALTHY"' && echo "$body" | grep -q '"all_nine_valid":true'; then ok=1; break; fi
             sleep 5
           done
           test "$ok" = 1
