@@ -54,64 +54,79 @@ jobs:
         working-directory: core2
         run: npm ci --ignore-scripts
       - name: Verify pinned activation boundary
-        if: github.event_name != 'schedule'
         working-directory: core2
         run: |
           node scripts/check-fact-serving-production.js
           npx --no-install wrangler deploy --config .fact-serving-production/issuer.json --dry-run
+          npx --no-install wrangler deploy --config .fact-serving-production/bootstrap.json --dry-run
       - name: Deploy cron-free issuer code without public cutover
         if: github.event_name != 'schedule'
         working-directory: core2
         run: npx --no-install wrangler deploy --config .fact-serving-production/issuer.json
-      - name: Create one-time bootstrap capability
-        if: github.event_name != 'schedule'
-        shell: bash
-        run: |
-          token="$(openssl rand -hex 32)"
-          echo "::add-mask::$token"
-          echo "FACT_BOOTSTRAP_TOKEN=$token" >> "$GITHUB_ENV"
       - name: Mint bounded R2 object-read-only capability
         working-directory: core2
         run: node scripts/cloud/fact-serving-r2-renew.js
       - name: Install or renew read-only storage secret
         working-directory: core2
         run: npx --no-install wrangler secret bulk .fact-serving-production/issuer.private.json --config .fact-serving-production/issuer.json
-      - name: Remove local secret material immediately
+      - name: Remove issuer secret material immediately
         if: always()
         working-directory: core2
         run: rm -f .fact-serving-production/issuer.private.json
-      - name: Bootstrap deadline-driven Durable Object alarm after secret propagation
-        if: github.event_name != 'schedule'
+      - name: Create one-time bootstrap capability
         shell: bash
         run: |
-          base='https://openpq-intelligence-fact-serving-issuer.kenzuko.workers.dev'
+          token="$(openssl rand -hex 32)"
+          echo "::add-mask::$token"
+          echo "FACT_BOOTSTRAP_TOKEN=$token" >> "$GITHUB_ENV"
+          printf '{"BOOTSTRAP_TOKEN":"%s"}\n' "$token" > core2/.fact-serving-production/bootstrap.private.json
+          chmod 600 core2/.fact-serving-production/bootstrap.private.json
+      - name: Deploy ephemeral FACT watchdog bootstrap
+        id: bootstrap_deploy
+        working-directory: core2
+        run: npx --no-install wrangler deploy --config .fact-serving-production/bootstrap.json
+      - name: Install ephemeral bootstrap secret
+        working-directory: core2
+        run: npx --no-install wrangler secret bulk .fact-serving-production/bootstrap.private.json --config .fact-serving-production/bootstrap.json
+      - name: Run internal FACT watchdog through ephemeral bootstrap
+        shell: bash
+        run: |
+          base='https://openpq-intelligence-fact-serving-bootstrap.kenzuko.workers.dev'
           ok=0
           for i in $(seq 1 20); do
             code="$(curl -sS --max-time 30 -o /tmp/fact-bootstrap.json -w '%{http_code}' -X POST -H "Authorization: Bearer $FACT_BOOTSTRAP_TOKEN" "$base/bootstrap" || true)"
-            if [ "$code" = '200' ] && [ -s /tmp/fact-bootstrap.json ]; then ok=1; break; fi
+            if [ "$code" = '200' ] && [ -s /tmp/fact-bootstrap.json ]; then
+              ok=1
+              break
+            fi
             sleep 2
           done
           test "$ok" = 1
-      - name: Revoke one-time bootstrap capability
-        if: always() && github.event_name != 'schedule'
+      - name: Delete ephemeral bootstrap Worker
+        if: always() && steps.bootstrap_deploy.outcome == 'success'
         working-directory: core2
-        run: npx --no-install wrangler secret delete FACT_BOOTSTRAP_TOKEN --config .fact-serving-production/issuer.json || true
-      - name: Prove bootstrap control is closed
-        if: github.event_name != 'schedule'
+        run: npx --no-install wrangler delete openpq-intelligence-fact-serving-bootstrap --force --config .fact-serving-production/bootstrap.json
+      - name: Remove bootstrap secret material immediately
+        if: always()
+        run: rm -f core2/.fact-serving-production/bootstrap.private.json /tmp/fact-bootstrap.json
+      - name: Prove bootstrap Worker is gone
+        if: steps.bootstrap_deploy.outcome == 'success'
         shell: bash
         run: |
-          base='https://openpq-intelligence-fact-serving-issuer.kenzuko.workers.dev'
-          code="$(curl -sS --max-time 10 -o /tmp/fact-bootstrap-closed.json -w '%{http_code}' -X POST "$base/bootstrap")"
-          test "$code" = '403'
+          base='https://openpq-intelligence-fact-serving-bootstrap.kenzuko.workers.dev'
+          code="$(curl -sS --max-time 10 -o /tmp/fact-bootstrap-gone.json -w '%{http_code}' -X POST "$base/bootstrap" || true)"
+          test "$code" = '404'
       - name: Wait for all-nine issuer health
-        if: github.event_name != 'schedule'
         shell: bash
         run: |
           base='https://openpq-intelligence-fact-serving-issuer.kenzuko.workers.dev'
           ok=0
           for i in $(seq 1 20); do
             body="$(curl -fsS --max-time 10 "$base/health" || true)"
-            if echo "$body" | grep -q '"status":"HEALTHY"' && echo "$body" | grep -q '"all_nine_valid":true'; then ok=1; break; fi
+            if echo "$body" | grep -q '"status":"HEALTHY"' && echo "$body" | grep -q '"all_nine_valid":true'; then
+              ok=1
+              break
+            fi
             sleep 5
           done
           test "$ok" = 1
