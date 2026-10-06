@@ -1,14 +1,14 @@
 {
   "schema_version": "1.0",
   "product": "JOTRIP_WEATHER_ANALYTICS",
-  "generated_at": "2026-10-06T02:11:30.882373+00:00",
+  "generated_at": "2026-10-06T02:41:22.737443+00:00",
   "learning_status": "READY",
   "minimum_samples": 30,
   "ready_groups": 25,
   "total_groups": 25,
-  "matched_cases": 5444,
-  "forecast_archive_files": 60,
-  "groundtruth_archive_files": 1556,
+  "matched_cases": 5446,
+  "forecast_archive_files": 61,
+  "groundtruth_archive_files": 1557,
   "groups": [
     {
       "target": "vrain_an_thoi",
@@ -434,15 +434,15 @@
       "target": "vvpq",
       "variable": "temperature",
       "lead_bucket": "D0_24",
-      "sample_count": 230,
+      "sample_count": 231,
       "status": "READY",
-      "mae": 1.5737,
-      "rmse": 1.8443,
-      "mean_error": -0.9885,
-      "median_error": -1.3633,
-      "applied_bias": -1.205969,
+      "mae": 1.5759,
+      "rmse": 1.8454,
+      "mean_error": -0.9933,
+      "median_error": -1.3687,
+      "applied_bias": -1.211336,
       "applied_factor": null,
-      "shrinkage": 0.8846,
+      "shrinkage": 0.8851,
       "readiness_reason": null
     },
     {
@@ -509,15 +509,15 @@
       "target": "vvpq",
       "variable": "wind",
       "lead_bucket": "D0_24",
-      "sample_count": 230,
+      "sample_count": 231,
       "status": "READY",
-      "mae": 10.3735,
-      "rmse": 12.9024,
-      "mean_error": -9.5275,
-      "median_error": -8.5402,
-      "applied_bias": -7.554766,
+      "mae": 10.3665,
+      "rmse": 12.8874,
+      "mean_error": -9.5242,
+      "median_error": -8.551,
+      "applied_bias": -7.568158,
       "applied_factor": null,
-      "shrinkage": 0.8846,
+      "shrinkage": 0.8851,
       "readiness_reason": null
     },
     {
@@ -583,9 +583,9 @@
   ],
   "latest_actual": {
     "vvpq": {
-      "observed_at": "2026-10-06T02:00:00+00:00",
-      "temperature_c": 32.0,
-      "wind_kmh": 1.85
+      "observed_at": "2026-10-06T02:30:00+00:00",
+      "temperature_c": 31.0,
+      "wind_kmh": 9.26
     },
     "rain": {
       "vrain_cua_can": {
@@ -1629,6 +1629,32 @@
     {
       "target": "vvpq",
       "variable": "temperature",
+      "lead_bucket": "D0_24",
+      "lead_hours": 6.0,
+      "run_time": "2026-10-05T18:00:00+00:00",
+      "valid_time": "2026-10-06T00:00:00+00:00",
+      "forecast": 29.089531,
+      "observed": 27.0,
+      "observation_class": "ACTUAL",
+      "error": -2.089531000000001,
+      "source_file": "data/weather-forecast-archive/2026/10/05/20261005T180000Z.json"
+    },
+    {
+      "target": "vvpq",
+      "variable": "wind",
+      "lead_bucket": "D0_24",
+      "lead_hours": 6.0,
+      "run_time": "2026-10-05T18:00:00+00:00",
+      "valid_time": "2026-10-06T00:00:00+00:00",
+      "forecast": 12.460007,
+      "observed": 3.7,
+      "observation_class": "ACTUAL",
+      "error": -8.760006999999998,
+      "source_file": "data/weather-forecast-archive/2026/10/05/20261005T180000Z.json"
+    },
+    {
+      "target": "vvpq",
+      "variable": "temperature",
       "lead_bucket": "D6_10",
       "lead_hours": 240.0,
       "run_time": "2026-09-25T18:00:00+00:00",
@@ -2145,32 +2171,6 @@
       "observation_class": "ACTUAL",
       "error": -9.445172,
       "source_file": "data/weather-forecast-archive/2026/09/30/20260930T120000Z.json"
-    },
-    {
-      "target": "vvpq",
-      "variable": "temperature",
-      "lead_bucket": "D3_5",
-      "lead_hours": 120.0,
-      "run_time": "2026-09-30T18:00:00+00:00",
-      "valid_time": "2026-10-05T18:00:00+00:00",
-      "forecast": 28.550586,
-      "observed": 27.0,
-      "observation_class": "ACTUAL",
-      "error": -1.5505859999999991,
-      "source_file": "data/weather-forecast-archive/2026/09/30/20260930T180000Z.json"
-    },
-    {
-      "target": "vvpq",
-      "variable": "wind",
-      "lead_bucket": "D3_5",
-      "lead_hours": 120.0,
-      "run_time": "2026-09-30T18:00:00+00:00",
-      "valid_time": "2026-10-05T18:00:00+00:00",
-      "forecast": 14.456039,
-      "observed": 5.56,
-      "observation_class": "ACTUAL",
-      "error": -8.896039000000002,
-      "source_file": "data/weather-forecast-archive/2026/09/30/20260930T180000Z.json"
     }
   ],
   "policy": {
