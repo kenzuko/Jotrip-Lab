@@ -114,9 +114,18 @@ jobs:
         shell: bash
         run: |
           base='https://openpq-intelligence-fact-serving-bootstrap.kenzuko.workers.dev'
-          code="$(curl -sS --max-time 10 -o /tmp/fact-bootstrap-gone.json -w '%{http_code}' -X POST "$base/bootstrap" || true)"
-          test "$code" = '404'
+          gone=0
+          for i in $(seq 1 20); do
+            code="$(curl -sS --max-time 10 -o /tmp/fact-bootstrap-gone.json -w '%{http_code}' -X POST "$base/bootstrap" || true)"
+            if [ "$code" = '404' ]; then
+              gone=1
+              break
+            fi
+            sleep 2
+          done
+          test "$gone" = 1
       - name: Wait for all-nine issuer health
+        if: always() && steps.bootstrap_deploy.outcome == 'success'
         shell: bash
         run: |
           base='https://openpq-intelligence-fact-serving-issuer.kenzuko.workers.dev'
