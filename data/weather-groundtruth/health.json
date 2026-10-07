@@ -1,19 +1,19 @@
 {
   "module": "JoTrip Weather Ground Truth",
   "state": "READY",
-  "generated_at": "2026-10-07T12:43:04.219565+00:00",
+  "generated_at": "2026-10-07T13:11:46.105480+00:00",
   "vvpq": "FRESH",
   "synop_48917": {
     "status": "FRESH",
     "latest_observed_at": "2026-10-07T09:00:00+00:00",
-    "age_minutes": 223.1,
+    "age_minutes": 251.8,
     "source_namespace": "WMO_INDEX",
     "role": "ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION"
   },
-  "vrain": "STALE",
+  "vrain": "FRESH",
   "rain_stations": [
-    "bai_thom",
     "cua_can",
+    "bai_thom",
     "an_thoi"
   ],
   "increment_ready": [],
@@ -30,21 +30,21 @@
   "training_usability": {
     "vvpq": {
       "usable_for_training": true,
-      "observed_at": "2026-10-07T12:30:00+00:00",
+      "observed_at": "2026-10-07T13:00:00+00:00",
       "qc": "PASS"
     },
     "rain": {
-      "bai_thom": {
-        "actual": true,
-        "qc": "PASS",
-        "increment_qc": "NO_NEW_SENSOR_SAMPLE",
-        "usable_for_short_increment_training": false,
-        "cumulative_counter_available": true
-      },
       "cua_can": {
         "actual": true,
         "qc": "PASS",
-        "increment_qc": "NO_NEW_SENSOR_SAMPLE",
+        "increment_qc": "NO_PREVIOUS_SAMPLE",
+        "usable_for_short_increment_training": false,
+        "cumulative_counter_available": true
+      },
+      "bai_thom": {
+        "actual": true,
+        "qc": "PASS",
+        "increment_qc": "NO_PREVIOUS_SAMPLE",
         "usable_for_short_increment_training": false,
         "cumulative_counter_available": true
       },
