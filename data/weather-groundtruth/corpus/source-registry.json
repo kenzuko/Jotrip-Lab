@@ -1,6 +1,6 @@
 {
   "schema_version": "groundtruth-operational-registry-v1",
-  "generated_at": "2026-10-07T04:41:22.522961+00:00",
+  "generated_at": "2026-10-07T05:11:22.132752+00:00",
   "source_count": 18,
   "tiers": [
     "ACTIVE_REALTIME",
@@ -39,7 +39,7 @@
         "budget_minutes": 90
       },
       "health": "HEALTHY",
-      "last_observation": "2026-10-07T04:30:00+00:00",
+      "last_observation": "2026-10-07T05:00:00+00:00",
       "status_reason": "Current METAR/SPECI observation is usable."
     },
     {
@@ -125,13 +125,13 @@
       ],
       "tier": "ACTIVE_NEAR_REALTIME",
       "provenance": {
-        "feed": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202610050441&end=202610070441&lang=eng&header=yes",
+        "feed": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202610050511&end=202610070511&lang=eng&header=yes",
         "observation_channel": "WMO FM-12 SYNOP AAXX raw",
         "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5"
       },
       "freshness": {
         "state": "FRESH",
-        "age_minutes": 101.3,
+        "age_minutes": 131.3,
         "budget_minutes": 480
       },
       "health": "HEALTHY",
@@ -157,13 +157,13 @@
         "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5"
       },
       "freshness": {
-        "state": "FRESH",
-        "age_minutes": 90.0,
+        "state": "STALE",
+        "age_minutes": 120.0,
         "budget_minutes": 90
       },
-      "health": "HEALTHY",
+      "health": "DEGRADED_STALE",
       "last_observation": "2026-10-07T03:11:18+00:00",
-      "status_reason": "At least one gauge has a recent sensor observation."
+      "status_reason": "No sufficiently fresh gauge sample; absence is not evidence of no rain."
     },
     {
       "id": "official_rainfall_reports",
