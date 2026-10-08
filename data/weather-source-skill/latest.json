@@ -1,6 +1,6 @@
 {
   "schema_version": "weather-source-skill-v1",
-  "generated_at": "2026-10-08T03:11:40.829081+00:00",
+  "generated_at": "2026-10-08T04:27:46.695291+00:00",
   "policy": {
     "actual_only": true,
     "early_weight_adjustment_only": true,
@@ -10,28 +10,28 @@
     "note": "Rain gauges are not scored against distant gauges; local rain variability is real. VRain early factors reflect QC/freshness only until forecast verification matures."
   },
   "vvpq": {
-    "unique_actual_samples": 772,
+    "unique_actual_samples": 773,
     "wind": {
       "deterministic_background": {
-        "sample_count": 771,
-        "mae": 4.832,
-        "rmse": 6.126,
-        "mean_error": 1.282,
+        "sample_count": 772,
+        "mae": 4.839,
+        "rmse": 6.133,
+        "mean_error": 1.294,
         "median_error": 1.96
       },
       "ensemble_q50": {
-        "sample_count": 751,
-        "mae": 6.73,
-        "rmse": 8.46,
-        "mean_error": 0.804,
-        "median_error": 1.788
+        "sample_count": 752,
+        "mae": 6.729,
+        "rmse": 8.457,
+        "mean_error": 0.811,
+        "median_error": 1.802
       },
-      "ensemble_gain_multiplier": 0.9617,
+      "ensemble_gain_multiplier": 0.962,
       "status": "PROVISIONAL"
     },
     "temperature": {
       "deterministic_background": {
-        "sample_count": 772,
+        "sample_count": 773,
         "mae": 1.507,
         "rmse": 1.871,
         "mean_error": 1.298,
@@ -41,9 +41,9 @@
   },
   "vrain": {
     "an_thoi": {
-      "sample_count": 1144,
+      "sample_count": 1145,
       "qc_pass_ratio": 1.0,
-      "increment_pass_ratio": 0.903,
+      "increment_pass_ratio": 0.902,
       "fresh_ratio": 0.995,
       "quality_factor": 0.995,
       "wet_samples": 47,
@@ -59,7 +59,7 @@
       "dry_samples": 967
     },
     "cua_can": {
-      "sample_count": 1146,
+      "sample_count": 1147,
       "qc_pass_ratio": 1.0,
       "increment_pass_ratio": 0.901,
       "fresh_ratio": 0.995,
