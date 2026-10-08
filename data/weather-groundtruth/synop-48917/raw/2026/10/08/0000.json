@@ -1,0 +1,63 @@
+{
+  "source_namespace": "WMO_INDEX",
+  "identifier": "48917",
+  "station_name": "PHU QUOC",
+  "reference_lat": 10.22,
+  "reference_lon": 103.97,
+  "coordinate_precision": "STATION_METADATA_APPROX_0_01_DEG",
+  "location_context": "DUONG_DONG_AREA",
+  "station_epoch": "CURRENT_2026_METADATA_DUONG_DONG",
+  "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
+  "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
+  "identity_confidence": "HIGH",
+  "identity_resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
+  "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
+  "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
+  "source": "OGIMET_GETSYNOP",
+  "source_channel": "SYNOP_AAXX_RAW",
+  "data_class": "ACTUAL",
+  "observation_class": "RAW_OBS",
+  "observed_at": "2026-10-08T00:00:00+00:00",
+  "raw_observation": "AAXX 08001 48917 32598 60901 10276 20256 30123 40129 53007 82208 222// 00282 2//00 333 00027 20270 3/026 59007 82895 86299=",
+  "raw_payload_hash": "f98a319800ac141dc98f4e38c3772e0ff18ad2e3434ce82a10d68212e9d2ccee",
+  "decoded_actual": {
+    "wind": {
+      "direction_deg": 90,
+      "direction_class": "DIRECTIONAL",
+      "speed_ms": 1.0,
+      "speed_kmh": 3.6,
+      "measurement_origin": "ANEMOMETER",
+      "iw": 1,
+      "raw_group": "60901"
+    },
+    "air_temperature_c": 27.6,
+    "dewpoint_c": 25.6,
+    "station_pressure_hpa": 1012.3,
+    "sea_level_pressure_hpa": 1012.9,
+    "precipitation": [],
+    "marine": {
+      "sea_surface_temperature": {
+        "temperature_c": 28.2,
+        "ss": 0,
+        "raw_group": "00282",
+        "data_class": "ACTUAL",
+        "observation_type": "SYNOP_SECTION2_SST"
+      },
+      "wind_wave": {
+        "period_s": null,
+        "period_code": "//",
+        "height_code": 0,
+        "height_nominal_m": 0.0,
+        "height_bin_m": [
+          0.0,
+          0.25
+        ],
+        "raw_group": "2//00",
+        "data_class": "ACTUAL",
+        "observation_type": "VISUAL_WIND_WAVE_CODE",
+        "instrument_hs": false
+      }
+    }
+  },
+  "qc": "PASS_RAW_WITH_TESTED_SUBSET_DECODE"
+}
