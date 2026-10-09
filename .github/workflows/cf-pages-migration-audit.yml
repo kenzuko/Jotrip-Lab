@@ -30,7 +30,7 @@ jobs:
               try {
                 const response=await fetch('https://api.cloudflare.com/client/v4'+path,{headers:{Authorization:'Bearer '+token,Accept:'application/json'}});
                 const body=await response.json();
-                const codes=(body.errors||[]).map(x=>x.code);
+                const codes=(body.errors||[]).map(x=>String(x.code)+':'+String(x.message||'').slice(0,120));
                 console.log('API '+path.split('?')[0]+' http='+response.status+' success='+!!body.success+' errors='+codes.join(','));
                 return response.ok&&body.success?body.result:null;
               }catch(e){console.log('API_NETWORK_ERROR '+path.split('?')[0]+' '+e.name);return null;}
