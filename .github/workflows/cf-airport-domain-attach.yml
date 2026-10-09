@@ -1,0 +1,44 @@
+name: Attach Airport production hostname to Cloudflare Pages
+on:
+  push:
+    branches: [ops/cf-pages-migration-20261009]
+    paths: [.github/workflows/cf-airport-domain-attach.yml]
+permissions:
+  contents: read
+jobs:
+  attach:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Verify candidate still serves expected Airport assets
+        run: |
+          set -euo pipefail
+          test "$(curl -sSLo /dev/null -w '%{http_code}' https://openpq-airport-web.pages.dev/)" = 200
+          test "$(curl -sSLo /dev/null -w '%{http_code}' https://openpq-airport-web.pages.dev/app.js)" = 200
+          curl -fsS https://openpq-airport-web.pages.dev/live-config.js | grep -q JOTRIP_LIVE_API_URL
+      - name: Attach existing Airport domain without changing Worker or application data
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const account=process.env.CLOUDFLARE_ACCOUNT_ID;
+          const token=process.env.CLOUDFLARE_API_TOKEN;
+          if(!account||!token)throw Error('Missing scoped Pages credentials');
+          const base='https://api.cloudflare.com/client/v4/accounts/'+account+'/pages/projects/openpq-airport-web/domains';
+          const headers={Authorization:'Bearer '+token,Accept:'application/json'};
+          const list=await fetch(base,{headers});
+          const data=await list.json();
+          if(!list.ok||!data.success)throw Error('Cannot inspect Pages domains HTTP='+list.status+' codes='+(data.errors||[]).map(x=>x.code).join(','));
+          let existing=(data.result||[]).find(x=>x.name==='airport.openphuquoc.com');
+          if(existing){
+            console.log('DOMAIN_ALREADY_ATTACHED=true status='+existing.status);
+          }else{
+            const r=await fetch(base,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({name:'airport.openphuquoc.com'})});
+            const j=await r.json();
+            console.log('ATTACH_HTTP='+r.status+' success='+!!j.success+' codes='+(j.errors||[]).map(x=>x.code+':'+x.message).join(','));
+            if(!r.ok||!j.success)process.exitCode=2;
+            else console.log('DOMAIN_ATTACHED='+j.result?.name+' status='+j.result?.status);
+          }
+          NODE
