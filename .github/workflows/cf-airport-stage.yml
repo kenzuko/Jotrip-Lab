@@ -29,7 +29,7 @@ jobs:
           set -euo pipefail
           git clone --quiet --depth 1 --branch main https://github.com/kenzuko/Jotrip-Airport.git source-airport
           mkdir -p candidate
-          find source-airport -maxdepth 1 -type f \\( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.json' -o -name '*.png' -o -name '*.svg' -o -name '*.ico' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.webp' -o -name '*.woff*' -o -name '*.webmanifest' \\) -exec cp {} candidate/ \\;
+          for f in source-airport/*; do test -f "$f" || continue; case "$f" in *.html|*.js|*.css|*.json|*.png|*.svg|*.ico|*.jpg|*.jpeg|*.webp|*.woff|*.woff2|*.webmanifest) cp "$f" candidate/;; esac; done
           test -s candidate/index.html
           test -s candidate/app.js
           test -s candidate/live-config.js
@@ -59,11 +59,11 @@ jobs:
             console.log('PROJECT_EXISTS=false');
             process.stdout.write('');
             const fs=await import('node:fs');
-            fs.appendFileSync(process.env.GITHUB_OUTPUT,'exists=false\\n');
+            fs.appendFileSync(process.env.GITHUB_OUTPUT,'exists=false'+String.fromCharCode(10));
           } else if(r.ok&&data.success) {
             console.log('PROJECT_EXISTS=true');
             const fs=await import('node:fs');
-            fs.appendFileSync(process.env.GITHUB_OUTPUT,'exists=true\\n');
+            fs.appendFileSync(process.env.GITHUB_OUTPUT,'exists=true'+String.fromCharCode(10));
           } else {
             console.error('Pages project check rejected http='+r.status+' error_codes='+(data.errors||[]).map(e=>e.code).join(','));
             process.exitCode=2;
