@@ -1,6 +1,6 @@
 {
   "schema_version": "groundtruth-operational-registry-v1",
-  "generated_at": "2026-10-09T13:51:42.005343+00:00",
+  "generated_at": "2026-10-09T14:18:25.039148+00:00",
   "source_count": 18,
   "tiers": [
     "ACTIVE_REALTIME",
@@ -35,11 +35,11 @@
       },
       "freshness": {
         "state": "FRESH",
-        "age_minutes": 21.7,
+        "age_minutes": 18.4,
         "budget_minutes": 90
       },
       "health": "HEALTHY",
-      "last_observation": "2026-10-09T13:30:00+00:00",
+      "last_observation": "2026-10-09T14:00:00+00:00",
       "status_reason": "Current METAR/SPECI observation is usable."
     },
     {
@@ -125,18 +125,18 @@
       ],
       "tier": "ACTIVE_NEAR_REALTIME",
       "provenance": {
-        "feed": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202610071351&end=202610091351&lang=eng&header=yes",
+        "feed": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202610071418&end=202610091418&lang=eng&header=yes",
         "observation_channel": "WMO FM-12 SYNOP AAXX raw",
         "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5"
       },
       "freshness": {
-        "state": "FRESH",
-        "age_minutes": 471.7,
+        "state": "STALE",
+        "age_minutes": 498.4,
         "budget_minutes": 480
       },
-      "health": "HEALTHY",
+      "health": "DEGRADED_STALE",
       "last_observation": "2026-10-09T06:00:00+00:00",
-      "status_reason": "Raw current SYNOP is available within the synoptic freshness budget."
+      "status_reason": "SYNOP is outside the near-real-time freshness budget or unavailable; keep historical verification but do not use as current evidence."
     },
     {
       "id": "vrain_phu_quoc",
@@ -158,7 +158,7 @@
       },
       "freshness": {
         "state": "STALE",
-        "age_minutes": 1463.1,
+        "age_minutes": 1489.8,
         "budget_minutes": 90
       },
       "health": "DEGRADED_STALE",
