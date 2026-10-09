@@ -1,0 +1,92 @@
+name: Stage Airport static website on Cloudflare Pages
+on:
+  push:
+    branches: [ops/cf-pages-migration-20261009]
+    paths: [.github/workflows/cf-airport-stage.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cf-airport-stage-only
+  cancel-in-progress: false
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      WRANGLER_SEND_METRICS: 'false'
+      CF_PROJECT_NAME: openpq-airport-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Clone current Airport static frontend (no production mutation)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch main https://github.com/kenzuko/Jotrip-Airport.git source-airport
+          mkdir -p candidate
+          find source-airport -maxdepth 1 -type f \\( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.json' -o -name '*.png' -o -name '*.svg' -o -name '*.ico' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.webp' -o -name '*.woff*' -o -name '*.webmanifest' \\) -exec cp {} candidate/ \\;
+          test -s candidate/index.html
+          test -s candidate/app.js
+          test -s candidate/live-config.js
+          test -s candidate/fids-board.js
+          node --check candidate/app.js
+          node --check candidate/fids-board.js
+          node --check candidate/live-source.js
+          echo "AIRPORT_CANDIDATE_FILES=$(find candidate -type f | wc -l)"
+          echo "AIRPORT_SOURCE_SHA=$(git -C source-airport rev-parse HEAD)"
+          if find candidate -type f | grep -E '/(CNAME|README|\\.env|\\.git)' ; then
+            echo 'Unexpected non-runtime file in candidate' >&2
+            exit 1
+          fi
+      - name: Verify Cloudflare project access
+        id: existing
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const account=process.env.CLOUDFLARE_ACCOUNT_ID;
+          const token=process.env.CLOUDFLARE_API_TOKEN;
+          if(!account||!token)throw Error('Cloudflare deployment secrets unavailable');
+          const name=process.env.CF_PROJECT_NAME;
+          const url='https://api.cloudflare.com/client/v4/accounts/'+account+'/pages/projects/'+name;
+          const r=await fetch(url,{headers:{Authorization:'Bearer '+token,Accept:'application/json'}});
+          const data=await r.json();
+          if(r.status===404) {
+            console.log('PROJECT_EXISTS=false');
+            process.stdout.write('');
+            const fs=await import('node:fs');
+            fs.appendFileSync(process.env.GITHUB_OUTPUT,'exists=false\\n');
+          } else if(r.ok&&data.success) {
+            console.log('PROJECT_EXISTS=true');
+            const fs=await import('node:fs');
+            fs.appendFileSync(process.env.GITHUB_OUTPUT,'exists=true\\n');
+          } else {
+            console.error('Pages project check rejected http='+r.status+' error_codes='+(data.errors||[]).map(e=>e.code).join(','));
+            process.exitCode=2;
+          }
+          NODE
+      - name: Create isolated Cloudflare Pages project
+        if: steps.existing.outputs.exists == 'false'
+        run: npx --yes wrangler@4 pages project create "$CF_PROJECT_NAME" --production-branch main
+      - name: Upload verified Airport static build - no custom domain change
+        run: npx --yes wrangler@4 pages deploy candidate --project-name "$CF_PROJECT_NAME" --branch main
+      - name: Smoke test standalone Pages hostname
+        shell: bash
+        run: |
+          set -euo pipefail
+          origin="https://$CF_PROJECT_NAME.pages.dev"
+          for path in / /app.js /history.html /fids-board.js; do
+            passed=0
+            for i in $(seq 1 12); do
+              code="$(curl -sS -L --max-time 15 -o /dev/null -w '%{http_code}' "$origin$path?stage_check=$i" || true)"
+              if [ "$code" = "200" ]; then passed=1;break;fi
+              sleep 3
+            done
+            echo "STAGE_PATH=$path HTTP=$code"
+            test "$passed" = 1
+          done
+          echo "STAGING_OK=$origin"
