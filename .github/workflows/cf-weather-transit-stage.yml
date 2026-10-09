@@ -56,8 +56,13 @@ jobs:
             X-Robots-Tag: noindex, nofollow, noarchive
           HEADERS
           test -s candidate/index.html
-          test -s candidate/app.js
-          node --check candidate/app.js
+          if [ "$REPO" = 'Jotrip-Weather' ]; then
+            test -s candidate/weather.js || test -s candidate/weather-live-config.js
+            for f in candidate/weather*.js; do test -f "$f" && node --check "$f" || :; done
+          else
+            test -s candidate/app.js
+            node --check candidate/app.js
+          fi
           test -d candidate/data
           echo "SOURCE_REPO=$REPO SOURCE_SHA=$(git -C source-site rev-parse HEAD) FILES=$(find candidate -type f | wc -l)"
           du -sh candidate
@@ -81,7 +86,8 @@ jobs:
         run: |
           set -euo pipefail
           base="https://$CF_PROJECT_NAME.pages.dev"
-          for path in / /app.js; do
+          if [ "${{ matrix.repo }}" = 'Jotrip-Weather' ]; then paths='/ /index.html'; else paths='/ /app.js /data/network.json'; fi
+          for path in $paths; do
             code="$(curl -sSL --max-time 20 -o /dev/null -w '%{http_code}' "$base$path")"
             echo "$base$path HTTP=$code"
             test "$code" = 200
