@@ -30,6 +30,10 @@ jobs:
           git clone --quiet --depth 1 --branch main https://github.com/kenzuko/Jotrip-Airport.git source-airport
           mkdir -p candidate
           for f in source-airport/*; do test -f "$f" || continue; case "$f" in *.html|*.js|*.css|*.json|*.png|*.svg|*.ico|*.jpg|*.jpeg|*.webp|*.woff|*.woff2|*.webmanifest) cp "$f" candidate/;; esac; done
+          cat > candidate/_headers <<'HEADERS'
+          /*
+            X-Robots-Tag: noindex, nofollow, noarchive
+          HEADERS
           test -s candidate/index.html
           test -s candidate/app.js
           test -s candidate/live-config.js
