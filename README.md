@@ -1,22 +1,25 @@
-# LivingPQ R17G - Ảnh WebGL Apollo Café (10/10/2026)
+# LivingPQ Apollo - WebGL evidence (R17G, not an R18 3D scan)
 
-**Bộ ảnh bằng chứng nghiên cứu, không phải trang web triển khai.** Đây là các ảnh chụp trực tiếp Microsoft Edge từ PlayCanvas WebGL trên PHUQUOCLUX.
+**R18 is a source-research pass and has NO reconstructed multi-view 3D asset.** This branch contains the most recent actual 3D WebGL proof, **R17G**, recorded on PHUQUOCLUX for viewing on mobile.
 
-### 1. Góc chính diện
-![R17G Apollo Café, góc chính diện WebGL](R17G_SMALL_FRONT.jpg)
+## Six-second 3D camera-motion video
 
-### 2. Dịch camera sang trái
-![R17G Apollo Café, góc camera trái WebGL](R17G_SMALL_LEFT.jpg)
+[**Watch the R17G WebGL motion video (MP4, H.264, 960×540)**](LIVINGPQ_R17G_REAL_WEBGL_3D_MOTION_NOT_R18.mp4)
 
-### 3. Lệch camera 80 cm (hiện lỗi)
-![R17G Apollo Café, góc 80 cm lộ vùng khuất](R17G_SMALL_DETAIL.jpg)
+This is **an actual WebGL recording** with the camera moving from approximately -38 cm to +38 cm along X. It is not an AI illustration or a reconstructed multi-camera scan. The footage exposes current limitations of predicted hidden surfaces.
 
-**Về dữ liệu:** 221.184 Gaussian tạo từ **một ảnh thật** cộng chiều sâu dự đoán bằng Depth Anything V2 Small; nén thành SOG và render bằng PlayCanvas. Đây **không phải** dữ liệu quét đa góc, không phải 100 m² đi lại tự do. Góc lệch 80 cm có lỗi rách/mặt khuất.
+## Still screenshots
+- [Front view](R17G_SMALL_FRONT.jpg)
+- [Camera left](R17G_SMALL_LEFT.jpg)
+- [Lateral 80 cm - failure/holes](R17G_SMALL_DETAIL.jpg)
 
-**Ảnh gốc / ghi công:** [Vivu Vietnam, Apollo Cafe daytime street view Sunset Town Phu Quoc Vietnam](https://commons.wikimedia.org/wiki/File%3AApollo_Cafe_daytime_street_view_Sunset_Town_Phu_Quoc_Vietnam.jpg), Wikimedia Commons, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). **Các thay đổi:** suy luận độ sâu, chuyển điểm ảnh thành Gaussian, nén SOG, render WebGL và thu nhỏ JPEG. Hình phái sinh được chia sẻ theo CC BY-SA 4.0; không xóa ghi công khi tái sử dụng.
+## What this is / isn't
+- Actual Apollo Café source photograph: **Vivu Vietnam**, Wikimedia Commons, CC BY-SA 4.0. [Original and credit](https://commons.wikimedia.org/wiki/File:Apollo_Cafe_daytime_street_view_Sunset_Town_Phu_Quoc_Vietnam.jpg).
+- Derived single-image predicted inverse depth: Depth Anything V2 Small (Apache 2.0).
+- 221,184 gaussians generated and compressed to SOG, rendered by PlayCanvas (MIT) in Edge.
+- **NOT measured real-world geometry, NOT geolocated 100 m² freewalking, NOT full multiview reconstruction.** R18 photo matching did not pass the geometric acceptance gate.
+- Transformation made: source photo -> monocular estimated depth -> image-derived gaussians -> real 3D WebGL -> H.264 screen recording.
 
-**Mô hình / phần mềm:** Depth Anything V2 Small (Apache-2.0), PlayCanvas (MIT), SplatTransform (MIT).
+Only an isolated documentation branch, no .github/workflows, no merge, no production deployment and no paid AI API.
 
-**Bảo vệ hệ thống:** Đây là nhánh ảnh độc lập, không chứa workflows, không có code ứng dụng, không merge vào `main`, không deploy, không động tới OpenPQ Core V1.2 hay production.
-
-**Trạng thái visual:** mới đủ làm preview near-original-camera. Chưa đạt bài kiểm tra di chuyển 1-2 m trong không gian 3D.
+License of derivative screenshots/video: original photo attribution and CC BY-SA 4.0 conditions apply.
