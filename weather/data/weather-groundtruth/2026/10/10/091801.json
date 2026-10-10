@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "generated_at": "2026-10-10T11:21:36.380105+00:00",
+  "generated_at": "2026-10-10T09:18:01.825735+00:00",
   "status": "READY",
   "actual_policy": "Current-time ACTUAL requires timestamped in-situ or raw coded observations. Historical aggregate/published observations are verification-only; remote sensing, models and fusion remain separate classes.",
   "atmosphere": {
@@ -14,15 +14,15 @@
       "source": "AVIATION_WEATHER_CENTER_METAR",
       "source_channel": "METAR",
       "data_class": "ACTUAL",
-      "observed_at": "2026-10-10T11:00:00+00:00",
-      "age_minutes": 21.6,
-      "temperature_c": 29.0,
-      "dewpoint_c": 25.0,
-      "wind_direction_deg": 120.0,
-      "wind_speed_kt": 5.0,
-      "wind_speed_ms": 2.572,
-      "wind_speed_kmh": 9.26,
-      "pressure_hpa": 1007.0,
+      "observed_at": "2026-10-10T09:00:00+00:00",
+      "age_minutes": 18.0,
+      "temperature_c": 31.0,
+      "dewpoint_c": 26.0,
+      "wind_direction_deg": 110.0,
+      "wind_speed_kt": 7.0,
+      "wind_speed_ms": 3.601,
+      "wind_speed_kmh": 12.96,
+      "pressure_hpa": 1006.0,
       "visibility_sm": null,
       "visibility_m": null,
       "weather": null,
@@ -34,10 +34,10 @@
         }
       ],
       "flight_category": "VFR",
-      "raw_observation": "METAR VVPQ 101100Z 12005KT 9999 FEW015 29/25 Q1007 NOSIG",
+      "raw_observation": "METAR VVPQ 100900Z 11007KT 9999 FEW015 31/26 Q1006 NOSIG",
       "qc": "PASS",
       "provenance_url": "https://aviationweather.gov/api/data/metar?ids=VVPQ&format=json&hours=24",
-      "raw_payload_hash": "86c17b01f127524ea64d0546693187fc91b072f410cf5910bdf6a52c66c47192"
+      "raw_payload_hash": "be20b1d68cb9a2d51f66eceef80549f13e51abc0be209fcaf7d197e0c2e44304"
     },
     "synop_48917": {
       "status": "FRESH",
@@ -103,12 +103,12 @@
         }
       },
       "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
-      "provenance_url": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202610081121&end=202610101121&lang=eng&header=yes",
-      "checked_at": "2026-10-10T11:21:39.329621+00:00",
-      "latest_observed_at": "2026-10-10T09:00:00+00:00",
-      "age_minutes": 141.6,
+      "provenance_url": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202610080918&end=202610100918&lang=eng&header=yes",
+      "checked_at": "2026-10-10T09:18:02.964764+00:00",
+      "latest_observed_at": "2026-10-10T06:00:00+00:00",
+      "age_minutes": 198.0,
       "latest_numeric_observed_at": "2026-10-10T06:00:00+00:00",
-      "numeric_age_minutes": 321.6,
+      "numeric_age_minutes": 198.0,
       "latest": {
         "source_namespace": "WMO_INDEX",
         "identifier": "48917",
@@ -128,19 +128,46 @@
         "source_channel": "SYNOP_AAXX_RAW",
         "data_class": "ACTUAL",
         "observation_class": "RAW_OBS",
-        "observed_at": "2026-10-10T09:00:00+00:00",
-        "raw_observation": "AAXX 10091 48917 NIL=",
-        "raw_payload_hash": "f2d5d89721f4f625b7ca4d8260ceb860fe60611bb79244f6399ee98ded26604c",
+        "observed_at": "2026-10-10T06:00:00+00:00",
+        "raw_observation": "AAXX 10061 48917 32598 60902 10313 20252 30077 40083 57014 83208 222// 00291 2//00 333 59011 83895 86299=",
+        "raw_payload_hash": "0f17416aa61b0a49c37a71138eb1b9a096291f696611849f9b93b4cbad929c31",
         "decoded_actual": {
-          "wind": null,
-          "air_temperature_c": null,
-          "dewpoint_c": null,
-          "station_pressure_hpa": null,
-          "sea_level_pressure_hpa": null,
+          "wind": {
+            "direction_deg": 90,
+            "direction_class": "DIRECTIONAL",
+            "speed_ms": 2.0,
+            "speed_kmh": 7.2,
+            "measurement_origin": "ANEMOMETER",
+            "iw": 1,
+            "raw_group": "60902"
+          },
+          "air_temperature_c": 31.3,
+          "dewpoint_c": 25.2,
+          "station_pressure_hpa": 1007.7,
+          "sea_level_pressure_hpa": 1008.3,
           "precipitation": [],
           "marine": {
-            "sea_surface_temperature": null,
-            "wind_wave": null
+            "sea_surface_temperature": {
+              "temperature_c": 29.1,
+              "ss": 0,
+              "raw_group": "00291",
+              "data_class": "ACTUAL",
+              "observation_type": "SYNOP_SECTION2_SST"
+            },
+            "wind_wave": {
+              "period_s": null,
+              "period_code": "//",
+              "height_code": 0,
+              "height_nominal_m": 0.0,
+              "height_bin_m": [
+                0.0,
+                0.25
+              ],
+              "raw_group": "2//00",
+              "data_class": "ACTUAL",
+              "observation_type": "VISUAL_WIND_WAVE_CODE",
+              "instrument_hs": false
+            }
           }
         },
         "qc": "PASS_RAW_WITH_TESTED_SUBSET_DECODE"
@@ -209,6 +236,50 @@
         "qc": "PASS_RAW_WITH_TESTED_SUBSET_DECODE"
       },
       "recent_observations": [
+        {
+          "source_namespace": "WMO_INDEX",
+          "identifier": "48917",
+          "station_name": "PHU QUOC",
+          "reference_lat": 10.22,
+          "reference_lon": 103.97,
+          "coordinate_precision": "STATION_METADATA_APPROX_0_01_DEG",
+          "location_context": "DUONG_DONG_AREA",
+          "station_epoch": "CURRENT_2026_METADATA_DUONG_DONG",
+          "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
+          "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
+          "identity_confidence": "HIGH",
+          "identity_resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
+          "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
+          "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
+          "source": "OGIMET_GETSYNOP",
+          "source_channel": "SYNOP_AAXX_RAW",
+          "data_class": "ACTUAL",
+          "observation_class": "RAW_OBS",
+          "observed_at": "2026-10-08T21:00:00+00:00",
+          "raw_observation": "AAXX 08211 48917 32598 60901 10251 20235 30096 40102 57012 82208 333 59020 82895 86299=",
+          "raw_payload_hash": "36c9c5e1c59b1fd1921c292e0dc9ca564ca3d58e79a3074215dedbe09127d03e",
+          "decoded_actual": {
+            "wind": {
+              "direction_deg": 90,
+              "direction_class": "DIRECTIONAL",
+              "speed_ms": 1.0,
+              "speed_kmh": 3.6,
+              "measurement_origin": "ANEMOMETER",
+              "iw": 1,
+              "raw_group": "60901"
+            },
+            "air_temperature_c": 25.1,
+            "dewpoint_c": 23.5,
+            "station_pressure_hpa": 1009.6,
+            "sea_level_pressure_hpa": 1010.2,
+            "precipitation": [],
+            "marine": {
+              "sea_surface_temperature": null,
+              "wind_wave": null
+            }
+          },
+          "qc": "PASS_RAW_WITH_TESTED_SUBSET_DECODE"
+        },
         {
           "source_namespace": "WMO_INDEX",
           "identifier": "48917",
@@ -563,93 +634,21 @@
             }
           },
           "qc": "PASS_RAW_WITH_TESTED_SUBSET_DECODE"
-        },
-        {
-          "source_namespace": "WMO_INDEX",
-          "identifier": "48917",
-          "station_name": "PHU QUOC",
-          "reference_lat": 10.22,
-          "reference_lon": 103.97,
-          "coordinate_precision": "STATION_METADATA_APPROX_0_01_DEG",
-          "location_context": "DUONG_DONG_AREA",
-          "station_epoch": "CURRENT_2026_METADATA_DUONG_DONG",
-          "physical_identity": "PHU_QUOC_MARINE_SYNOPTIC_OBSERVATION_PROGRAM",
-          "identity_status": "INDEPENDENT_FROM_CURRENT_VVPQ",
-          "identity_confidence": "HIGH",
-          "identity_resolution_id": "WMO_INDEX:48917:CURRENT_2026_DUONG_DONG:v1",
-          "identity_policy": "Independent from current ICAO:VVPQ for operational evidence. Never merge with ICAO:VVPQ, KTT_BOOK_STATION_CODE:48917 or KTTV_AUTO:60018 solely by identifier/cross-id.",
-          "relocation_status": "NO_VERIFIED_POST_2012_RELOCATION_FOUND",
-          "source": "OGIMET_GETSYNOP",
-          "source_channel": "SYNOP_AAXX_RAW",
-          "data_class": "ACTUAL",
-          "observation_class": "RAW_OBS",
-          "observed_at": "2026-10-10T09:00:00+00:00",
-          "raw_observation": "AAXX 10091 48917 NIL=",
-          "raw_payload_hash": "f2d5d89721f4f625b7ca4d8260ceb860fe60611bb79244f6399ee98ded26604c",
-          "decoded_actual": {
-            "wind": null,
-            "air_temperature_c": null,
-            "dewpoint_c": null,
-            "station_pressure_hpa": null,
-            "sea_level_pressure_hpa": null,
-            "precipitation": [],
-            "marine": {
-              "sea_surface_temperature": null,
-              "wind_wave": null
-            }
-          },
-          "qc": "PASS_RAW_WITH_TESTED_SUBSET_DECODE"
         }
       ],
-      "recent_count": 11,
+      "recent_count": 10,
       "production_role": "ACTIVE_NEAR_REALTIME_GROUND_OBSERVATION",
       "runtime_eligible": true
     }
   },
   "rainfall": {
-    "status": "FRESH",
+    "status": "STALE",
     "source": "VRAIN_PUBLIC",
     "period_start": "2026-10-09T12:00:00+00:00",
-    "period_end": "2026-10-10T11:21:38+00:00",
-    "source_reported_at": "2026-10-10T11:21:38+00:00",
-    "fetched_at": "2026-10-10T11:21:36.380105+00:00",
+    "period_end": "2026-10-10T09:18:02+00:00",
+    "source_reported_at": "2026-10-10T09:18:02+00:00",
+    "fetched_at": "2026-10-10T09:18:01.825735+00:00",
     "stations": {
-      "an_thoi": {
-        "station_id": "VRAIN_AN_THOI",
-        "station_name": "An Thới",
-        "location_id": "rain_an_thoi",
-        "lat": 10.018482,
-        "lon": 104.0149,
-        "source": "VRAIN_PUBLIC",
-        "source_channel": "current/all.json",
-        "data_class": "ACTUAL",
-        "observed_at": "2026-10-10T11:21:38+00:00",
-        "source_reported_at": "2026-10-10T11:21:38+00:00",
-        "fetched_at": "2026-10-10T11:21:36.380105+00:00",
-        "last_checked_at": "2026-10-10T11:21:36.380105+00:00",
-        "last_value_changed_at": "2026-10-10T11:21:38+00:00",
-        "sample_state": "NEW_SOURCE_PAYLOAD",
-        "value_changed": true,
-        "age_minutes": 0.0,
-        "variable": "precipitation",
-        "accumulation_mm": 0.6,
-        "accumulation_label": "Mưa nhỏ",
-        "period_start": "2026-10-09T12:00:00+00:00",
-        "period_end": "2026-10-10T11:21:38+00:00",
-        "statistic": "ACCUMULATION",
-        "timestamp_semantics": "SOURCE_WINDOW_END_ONLY_WHEN_PAYLOAD_CHANGES",
-        "increment_mm": null,
-        "increment_window_minutes": null,
-        "rain_observed": null,
-        "rain_intensity_mm_h": null,
-        "recent_change_mm": 0.6,
-        "recent_change_window_minutes": 2753.1,
-        "rain_recently_observed": true,
-        "increment_qc": "WINDOW_TOO_OLD_FOR_CURRENT_RAIN",
-        "qc": "PASS",
-        "provenance_url": "https://data.vrain.vn/public/current/all.json",
-        "raw_payload_hash": "15134d7541afe9e8e80a275b48f18eb334f43b1708bb25da206e5639f51da14f"
-      },
       "cua_can": {
         "station_id": "VRAIN_CUA_CAN",
         "station_name": "Cửa Cạn",
@@ -660,13 +659,13 @@
         "source_channel": "current/all.json",
         "data_class": "ACTUAL",
         "observed_at": "2026-10-08T13:28:34+00:00",
-        "source_reported_at": "2026-10-10T11:21:38+00:00",
-        "fetched_at": "2026-10-10T11:21:36.380105+00:00",
-        "last_checked_at": "2026-10-10T11:21:36.380105+00:00",
+        "source_reported_at": "2026-10-10T09:18:02+00:00",
+        "fetched_at": "2026-10-10T09:18:01.825735+00:00",
+        "last_checked_at": "2026-10-10T09:18:01.825735+00:00",
         "last_value_changed_at": "2026-10-08T13:28:34+00:00",
         "sample_state": "UNCHANGED_PAYLOAD",
         "value_changed": false,
-        "age_minutes": 2753.0,
+        "age_minutes": 2629.5,
         "variable": "precipitation",
         "accumulation_mm": 0.0,
         "accumulation_label": "Không mưa",
@@ -696,13 +695,13 @@
         "source_channel": "current/all.json",
         "data_class": "ACTUAL",
         "observed_at": "2026-10-08T13:28:34+00:00",
-        "source_reported_at": "2026-10-10T11:21:38+00:00",
-        "fetched_at": "2026-10-10T11:21:36.380105+00:00",
-        "last_checked_at": "2026-10-10T11:21:36.380105+00:00",
+        "source_reported_at": "2026-10-10T09:18:02+00:00",
+        "fetched_at": "2026-10-10T09:18:01.825735+00:00",
+        "last_checked_at": "2026-10-10T09:18:01.825735+00:00",
         "last_value_changed_at": "2026-10-08T13:28:34+00:00",
         "sample_state": "UNCHANGED_PAYLOAD",
         "value_changed": false,
-        "age_minutes": 2753.0,
+        "age_minutes": 2629.5,
         "variable": "precipitation",
         "accumulation_mm": 0.0,
         "accumulation_label": "Không mưa",
@@ -721,6 +720,42 @@
         "qc": "PASS",
         "provenance_url": "https://data.vrain.vn/public/current/all.json",
         "raw_payload_hash": "2e6138f3400b2ba71657d5a4959c8a68b143cdfb40564903a9d212efa713fd5e"
+      },
+      "an_thoi": {
+        "station_id": "VRAIN_AN_THOI",
+        "station_name": "An Thới",
+        "location_id": "rain_an_thoi",
+        "lat": 10.018482,
+        "lon": 104.0149,
+        "source": "VRAIN_PUBLIC",
+        "source_channel": "current/all.json",
+        "data_class": "ACTUAL",
+        "observed_at": "2026-10-08T13:28:34+00:00",
+        "source_reported_at": "2026-10-10T09:18:02+00:00",
+        "fetched_at": "2026-10-10T09:18:01.825735+00:00",
+        "last_checked_at": "2026-10-10T09:18:01.825735+00:00",
+        "last_value_changed_at": "2026-10-08T13:28:34+00:00",
+        "sample_state": "UNCHANGED_PAYLOAD",
+        "value_changed": false,
+        "age_minutes": 2629.5,
+        "variable": "precipitation",
+        "accumulation_mm": 0.0,
+        "accumulation_label": "Không mưa",
+        "period_start": "2026-10-09T12:00:00+00:00",
+        "period_end": "2026-10-08T13:28:34+00:00",
+        "statistic": "ACCUMULATION",
+        "timestamp_semantics": "SOURCE_WINDOW_END_ONLY_WHEN_PAYLOAD_CHANGES",
+        "increment_mm": null,
+        "increment_window_minutes": null,
+        "rain_observed": null,
+        "rain_intensity_mm_h": null,
+        "recent_change_mm": null,
+        "recent_change_window_minutes": null,
+        "rain_recently_observed": null,
+        "increment_qc": "NO_NEW_SENSOR_SAMPLE",
+        "qc": "PASS",
+        "provenance_url": "https://data.vrain.vn/public/current/all.json",
+        "raw_payload_hash": "2260cc9e242cad0aacc580157c62abd03c428f446369ade7198a9546865f9cbd"
       }
     },
     "provenance_url": "https://data.vrain.vn/public/current/all.json"
@@ -758,7 +793,7 @@
   },
   "source_registry": {
     "schema_version": "groundtruth-operational-registry-v1",
-    "generated_at": "2026-10-10T11:21:39.330404+00:00",
+    "generated_at": "2026-10-10T09:18:02.965923+00:00",
     "source_count": 18,
     "tiers": [
       "ACTIVE_REALTIME",
@@ -793,11 +828,11 @@
         },
         "freshness": {
           "state": "FRESH",
-          "age_minutes": 21.6,
+          "age_minutes": 18.0,
           "budget_minutes": 90
         },
         "health": "HEALTHY",
-        "last_observation": "2026-10-10T11:00:00+00:00",
+        "last_observation": "2026-10-10T09:00:00+00:00",
         "status_reason": "Current METAR/SPECI observation is usable."
       },
       {
@@ -883,17 +918,17 @@
         ],
         "tier": "ACTIVE_NEAR_REALTIME",
         "provenance": {
-          "feed": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202610081121&end=202610101121&lang=eng&header=yes",
+          "feed": "https://www.ogimet.com/cgi-bin/getsynop?block=48917&begin=202610080918&end=202610100918&lang=eng&header=yes",
           "observation_channel": "WMO FM-12 SYNOP AAXX raw",
           "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5"
         },
         "freshness": {
           "state": "FRESH",
-          "age_minutes": 141.6,
+          "age_minutes": 198.0,
           "budget_minutes": 480
         },
         "health": "HEALTHY",
-        "last_observation": "2026-10-10T09:00:00+00:00",
+        "last_observation": "2026-10-10T06:00:00+00:00",
         "status_reason": "Raw current SYNOP is available within the synoptic freshness budget."
       },
       {
@@ -915,13 +950,13 @@
           "registry": "WEATHER_GROUNDTRUTH_FINAL_HANDOFF_20260930 + REGISTRY_V5"
         },
         "freshness": {
-          "state": "FRESH",
-          "age_minutes": 0.0,
+          "state": "STALE",
+          "age_minutes": 2629.5,
           "budget_minutes": 90
         },
-        "health": "HEALTHY",
-        "last_observation": "2026-10-10T11:21:38+00:00",
-        "status_reason": "At least one gauge has a recent sensor observation."
+        "health": "DEGRADED_STALE",
+        "last_observation": "2026-10-08T13:28:34+00:00",
+        "status_reason": "No sufficiently fresh gauge sample; absence is not evidence of no rain."
       },
       {
         "id": "official_rainfall_reports",
@@ -1335,5 +1370,5 @@
     }
   },
   "errors": [],
-  "payload_hash": "373bbd1de30549abb8ff9edd9a98ca707a00306d1a16bb476eda7870aba30608"
+  "payload_hash": "978f6532483ffe0f1eada37e02656fddae5740d02e6b7c0aedb384833e258736"
 }
