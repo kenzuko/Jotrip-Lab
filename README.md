@@ -1,25 +1,23 @@
-# LivingPQ Apollo - WebGL evidence (R17G, not an R18 3D scan)
+# LivingPQ Apollo – WebGL video chứng minh chuyển động
 
-**R18 is a source-research pass and has NO reconstructed multi-view 3D asset.** This branch contains the most recent actual 3D WebGL proof, **R17G**, recorded on PHUQUOCLUX for viewing on mobile.
+**Video mới: 12 giây – 144 khung hình WebGL thật**, 960×540, H.264 MP4, chuyển camera qua trái/phải và quay lại.
 
-## Six-second 3D camera-motion video
+▶️ [**XEM VIDEO 12 GIÂY (MP4)**](LIVINGPQ_APOLLO_R17G_WEBGL_MOTION_12_SECONDS.mp4)
 
-[**Watch the R17G WebGL motion video (MP4, H.264, 960×540)**](LIVINGPQ_R17G_REAL_WEBGL_3D_MOTION_NOT_R18.mp4)
+[**Mở video trực tiếp**](https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/livingpq-r17g-apollo-evidence-20261010/LIVINGPQ_APOLLO_R17G_WEBGL_MOTION_12_SECONDS.mp4)
 
-This is **an actual WebGL recording** with the camera moving from approximately -38 cm to +38 cm along X. It is not an AI illustration or a reconstructed multi-camera scan. The footage exposes current limitations of predicted hidden surfaces.
+### Video 6 giây trước đó
 
-## Still screenshots
-- [Front view](R17G_SMALL_FRONT.jpg)
-- [Camera left](R17G_SMALL_LEFT.jpg)
-- [Lateral 80 cm - failure/holes](R17G_SMALL_DETAIL.jpg)
+[Video 6 giây](LIVINGPQ_R17G_REAL_WEBGL_3D_MOTION_NOT_R18.mp4)
 
-## What this is / isn't
-- Actual Apollo Café source photograph: **Vivu Vietnam**, Wikimedia Commons, CC BY-SA 4.0. [Original and credit](https://commons.wikimedia.org/wiki/File:Apollo_Cafe_daytime_street_view_Sunset_Town_Phu_Quoc_Vietnam.jpg).
-- Derived single-image predicted inverse depth: Depth Anything V2 Small (Apache 2.0).
-- 221,184 gaussians generated and compressed to SOG, rendered by PlayCanvas (MIT) in Edge.
-- **NOT measured real-world geometry, NOT geolocated 100 m² freewalking, NOT full multiview reconstruction.** R18 photo matching did not pass the geometric acceptance gate.
-- Transformation made: source photo -> monocular estimated depth -> image-derived gaussians -> real 3D WebGL -> H.264 screen recording.
+### Ảnh tĩnh WebGL
 
-Only an isolated documentation branch, no .github/workflows, no merge, no production deployment and no paid AI API.
+- [Chính diện](R17G_SMALL_FRONT.jpg)
+- [Dịch trái](R17G_SMALL_LEFT.jpg)
+- [Lệch 80cm thấy lỗi vùng khuất](R17G_SMALL_DETAIL.jpg)
 
-License of derivative screenshots/video: original photo attribution and CC BY-SA 4.0 conditions apply.
+**Chính xác phiên bản:** Video được quay bằng Edge + PlayCanvas từ mô hình R17G, không phải một bản scan đa góc mới của R18. R17G dùng 221.184 Gaussian tạo từ **một ảnh Apollo Café thật** và chiều sâu dự đoán. Chuyển camera khoảng -39cm đến +39cm rồi trở về. Mô hình **chưa thể đi lại thật trong 100m²** và mặt khuất vẫn được suy đoán.
+
+Nguồn ảnh: **Vivu Vietnam**, Wikimedia Commons [Apollo Café daytime street view](https://commons.wikimedia.org/wiki/File:Apollo_Cafe_daytime_street_view_Sunset_Town_Phu_Quoc_Vietnam.jpg), giấy phép [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Biến đổi đã thực hiện: dự đoán độ sâu bằng Depth Anything V2 Small (Apache-2.0), sinh Gaussian Splat, nén SOG, render PlayCanvas và xuất MP4. Điều kiện CC BY-SA 4.0 áp dụng cho các hình phái sinh.
+
+Đây chỉ là tài liệu nghiên cứu và trình diễn công khai trên **nhánh ảnh riêng**, không có mã ứng dụng, không chạy workflows, không merge và không deploy OpenPQ production.
