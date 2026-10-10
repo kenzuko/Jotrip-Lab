@@ -1,14 +1,14 @@
 {
   "schema_version": "1.0",
   "product": "JOTRIP_WEATHER_ANALYTICS",
-  "generated_at": "2026-10-10T18:51:07.352593+00:00",
+  "generated_at": "2026-10-10T19:24:33.265194+00:00",
   "learning_status": "READY",
   "minimum_samples": 30,
   "ready_groups": 25,
   "total_groups": 25,
-  "matched_cases": 6796,
-  "forecast_archive_files": 78,
-  "groundtruth_archive_files": 1743,
+  "matched_cases": 6798,
+  "forecast_archive_files": 79,
+  "groundtruth_archive_files": 1745,
   "groups": [
     {
       "target": "vrain_an_thoi",
@@ -434,15 +434,15 @@
       "target": "vvpq",
       "variable": "temperature",
       "lead_bucket": "D0_24",
-      "sample_count": 295,
+      "sample_count": 296,
       "status": "READY",
-      "mae": 1.7083,
-      "rmse": 1.995,
-      "mean_error": -1.0236,
-      "median_error": -1.3661,
-      "applied_bias": -1.239958,
+      "mae": 1.7118,
+      "rmse": 1.9981,
+      "mean_error": -1.0295,
+      "median_error": -1.3674,
+      "applied_bias": -1.241523,
       "applied_factor": null,
-      "shrinkage": 0.9077,
+      "shrinkage": 0.908,
       "readiness_reason": null
     },
     {
@@ -509,15 +509,15 @@
       "target": "vvpq",
       "variable": "wind",
       "lead_bucket": "D0_24",
-      "sample_count": 295,
+      "sample_count": 296,
       "status": "READY",
-      "mae": 9.5473,
-      "rmse": 11.9398,
-      "mean_error": -8.27,
-      "median_error": -7.332,
-      "applied_bias": -6.655166,
+      "mae": 9.5561,
+      "rmse": 11.9406,
+      "mean_error": -8.2832,
+      "median_error": -7.3346,
+      "applied_bias": -6.659608,
       "applied_factor": null,
-      "shrinkage": 0.9077,
+      "shrinkage": 0.908,
       "readiness_reason": null
     },
     {
@@ -583,7 +583,7 @@
   ],
   "latest_actual": {
     "vvpq": {
-      "observed_at": "2026-10-10T18:30:00+00:00",
+      "observed_at": "2026-10-10T19:00:00+00:00",
       "temperature_c": 26.0,
       "wind_kmh": 1.85
     },
@@ -1603,6 +1603,32 @@
     {
       "target": "vvpq",
       "variable": "temperature",
+      "lead_bucket": "D0_24",
+      "lead_hours": 6.0,
+      "run_time": "2026-10-10T12:00:00+00:00",
+      "valid_time": "2026-10-10T18:00:00+00:00",
+      "forecast": 28.76543,
+      "observed": 26.0,
+      "observation_class": "ACTUAL",
+      "error": -2.7654299999999985,
+      "source_file": "data/weather-forecast-archive/2026/10/10/20261010T120000Z.json"
+    },
+    {
+      "target": "vvpq",
+      "variable": "wind",
+      "lead_bucket": "D0_24",
+      "lead_hours": 6.0,
+      "run_time": "2026-10-10T12:00:00+00:00",
+      "valid_time": "2026-10-10T18:00:00+00:00",
+      "forecast": 15.863596,
+      "observed": 3.7,
+      "observation_class": "ACTUAL",
+      "error": -12.163595999999998,
+      "source_file": "data/weather-forecast-archive/2026/10/10/20261010T120000Z.json"
+    },
+    {
+      "target": "vvpq",
+      "variable": "temperature",
       "lead_bucket": "D6_10",
       "lead_hours": 240.0,
       "run_time": "2026-09-30T12:00:00+00:00",
@@ -2145,32 +2171,6 @@
       "observation_class": "ACTUAL",
       "error": -6.0735920000000005,
       "source_file": "data/weather-forecast-archive/2026/10/05/20261005T120000Z.json"
-    },
-    {
-      "target": "vvpq",
-      "variable": "temperature",
-      "lead_bucket": "D3_5",
-      "lead_hours": 114.0,
-      "run_time": "2026-10-05T18:00:00+00:00",
-      "valid_time": "2026-10-10T12:00:00+00:00",
-      "forecast": 28.998804,
-      "observed": 28.0,
-      "observation_class": "ACTUAL",
-      "error": -0.9988039999999998,
-      "source_file": "data/weather-forecast-archive/2026/10/05/20261005T180000Z.json"
-    },
-    {
-      "target": "vvpq",
-      "variable": "wind",
-      "lead_bucket": "D3_5",
-      "lead_hours": 114.0,
-      "run_time": "2026-10-05T18:00:00+00:00",
-      "valid_time": "2026-10-10T12:00:00+00:00",
-      "forecast": 11.909332,
-      "observed": 5.56,
-      "observation_class": "ACTUAL",
-      "error": -6.3493319999999995,
-      "source_file": "data/weather-forecast-archive/2026/10/05/20261005T180000Z.json"
     }
   ],
   "policy": {
