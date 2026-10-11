@@ -1,0 +1,41 @@
+{
+  "method": "R21 same SIFT matches filtered by fixed image-space bounding regions around static Apollo components, excluding buses, people and road; heuristic gate only",
+  "results": [
+    {
+      "region": "all_feature_matches",
+      "reciprocalInRegion": 104,
+      "f_inliers": 70,
+      "h_inliers": 47,
+      "candidate45Reached": true,
+      "F_shape": "(3, 3)"
+    },
+    {
+      "region": "architectural_facade_wide",
+      "reciprocalInRegion": 12,
+      "f_inliers": 7,
+      "h_inliers": 5,
+      "candidate45Reached": false,
+      "F_shape": "(3, 3)"
+    },
+    {
+      "region": "tower_core_only",
+      "reciprocalInRegion": 9,
+      "f_inliers": 7,
+      "h_inliers": 4,
+      "candidate45Reached": false,
+      "F_shape": "(3, 3)"
+    },
+    {
+      "region": "exclude_low_road",
+      "reciprocalInRegion": 14,
+      "f_inliers": 8,
+      "h_inliers": 4,
+      "candidate45Reached": false,
+      "F_shape": "(3, 3)"
+    }
+  ],
+  "interpretation": "Aerial overlap is real but may be facade planar. Static facade feature gate alone cannot show road-level hidden geometry or metric camera baselines.",
+  "status": "PHOTO_RECON_SOURCE_INSUFFICIENT_FOR_GROUND_WALK",
+  "limitations": "ROI masks are human heuristic bounding boxes, not learned precise building segmentation; no ground truth; this QA is extra caution, not professional survey.",
+  "master": "NO_PROD_NO_DEPLOY_NO_MERGE"
+}
