@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<title>LivingPQ R20 · Apollo interactive input lab</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#eef8fa;color-scheme:dark}
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;background:#0c1f27;overflow:hidden;user-select:none;-webkit-user-select:none}
+#splat-stage{position:fixed;inset:0;display:block;width:100%;height:100%;touch-action:none}
+#head{position:fixed;top:max(10px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));max-width:min(520px,70vw);
+ background:linear-gradient(128deg,#102b35ed,#122936bc);border:1px solid #f4fff63a;box-shadow:0 8px 35px #0007;padding:12px 15px;border-radius:13px;pointer-events:none}
+#head h1{margin:0 0 6px;font-size:16px;font-weight:800;letter-spacing:.03em}
+#head p{margin:3px 0;font-size:11px;line-height:1.35;color:#d1e5e6}
+#status{font-weight:700;color:#c1f5df}#gate{display:inline-block;margin-top:5px;font-size:10px;font-weight:780;border-radius:7px;padding:6px 8px;background:#442914e8;color:#ffdb9b}
+#gate[data-state=fail]{background:#682d2c;color:#ffe0d7}#gate[data-state=warn]{background:#68501e}
+#reset{position:fixed;top:max(12px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));cursor:pointer;
+ background:#114154e8;color:white;border:1px solid #b5deda8a;border-radius:12px;font-weight:700;padding:12px 16px}
+#hint{position:fixed;left:50%;transform:translateX(-50%);bottom:max(15px,env(safe-area-inset-bottom));pointer-events:none;
+ background:#0f2734d9;border-radius:9px;padding:8px 12px;text-align:center;white-space:nowrap;font-size:12px}
+#trace-box{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:max(15px,env(safe-area-inset-bottom));
+ background:#081b26e0;border:1px solid #a8d9ce66;border-radius:12px;padding:7px;pointer-events:none}
+#trace{width:132px;height:132px;display:block}#trace-box span{display:block;font-size:9px;text-align:center;letter-spacing:.03em}
+#joystick{position:fixed;left:max(28px,env(safe-area-inset-left));bottom:max(28px,env(safe-area-inset-bottom));
+ width:125px;height:125px;border-radius:50%;background:#1b4259bd;border:2px solid #d3eced8c;touch-action:none;display:none}
+#knob{position:absolute;top:38px;left:38px;width:45px;height:45px;border-radius:50%;background:#8bd5cdbb;
+ box-shadow:0 0 14px #010f1588;pointer-events:none}
+#portrait{display:none}
+@media(pointer:coarse){#joystick{display:block}#hint{display:none}#trace-box{bottom:max(11px,env(safe-area-inset-bottom))}#head{max-width:57vw}#head h1{font-size:12px}#head p{font-size:9px}}
+@media(orientation:portrait) and (pointer:coarse){#portrait{display:grid;position:fixed;inset:0;place-items:center;background:#0f2f3dea;z-index:20;
+ text-align:center;padding:30px;font-weight:800;font-size:22px}}
+@media(max-height:410px){#head{padding:8px 11px}#head h1{font-size:11px;margin:0 0 2px}#head p{font-size:8px;margin:1px 0}
+ #head p.source{display:none}#gate{font-size:9px;padding:3px 5px}#joystick{width:98px;height:98px;left:20px;bottom:12px}
+ #knob{top:30px;left:30px;width:35px;height:35px}#trace{width:84px;height:84px}#trace-box span{font-size:8px}
+ #reset{padding:9px 12px;font-size:11px}#hint{font-size:10px}}
+</style></head>
+<body><canvas id="splat-stage"></canvas>
+<section id="head" aria-label="LivingPQ R20 research status">
+ <h1>LIVING PHÚ QUỐC · APOLLO R20</h1>
+ <p id="status">Loading original R17G Gaussian source…</p>
+ <p id="meters">x 0.00 m | z 0.00 m | yaw 0°</p>
+ <p id="state">STOPPED · 0.00 m walked</p><p id="fps">fps collecting</p>
+ <p id="gate" data-state="caution">SOURCE VIEW CONE ONLY · NOT A SCAN</p>
+ <p class="source">Apollo original: Vivu Vietnam, Wikimedia CC BY-SA 4.0 · Depth Anything V2 Small, Apache-2.0.</p>
+ <p class="source">Single-photo 2.5D with people baked into photograph. Ground bounds = navigation PROXY, not surveyed geometry. NO DEPLOY.</p>
+</section>
+<button id="reset" type="button">Về góc gốc ↺</button>
+<div id="joystick" aria-label="Touch joystick movement"><div id="knob"></div></div>
+<div id="hint">WASD / ↑↓←→ để đi · Giữ chuột kéo để xoay nhìn · Thả phím để dừng</div>
+<div id="trace-box"><canvas id="trace" width="160" height="160"></canvas><span>PROXY PATH · ±2 m</span></div>
+<div id="portrait">Xoay iPhone ngang để điều khiển LivingPQ</div>
+<script type="module" src="/app.js"></script></body></html>

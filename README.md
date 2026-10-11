@@ -1,23 +1,27 @@
-# LivingPQ Apollo – WebGL video chứng minh chuyển động
+# LivingPQ R20 - Apollo Real Input WebGL Evidence
 
-**Video mới: 12 giây – 144 khung hình WebGL thật**, 960×540, H.264 MP4, chuyển camera qua trái/phải và quay lại.
+**Status: INPUT TECHNICAL PASS / VISUAL FAIL / RESEARCH ONLY.** This branch is not deployed and not a free-walkable scanned Sunset Town.
 
-▶️ [**XEM VIDEO 12 GIÂY (MP4)**](LIVINGPQ_APOLLO_R17G_WEBGL_MOTION_12_SECONDS.mp4)
+## Open the proof
+- [Browser-recorded 24.5-second WebGL keyboard-and-mouse session](R20_REAL_INPUT_WEBGL_25S.webm). Real Playwright-driven player inputs and stops, **not** an autonomous orbit camera.
+- [Original viewpoint WebGL](R20_00_front.png)
+- [Lateral stress viewpoint (torn geometry)](R20_03_lateral_stop.png)
+- [Lookback viewpoint (unobserved sky)](R20_05_lookback_stop.png)
+- [Recorded input, view positions, technical checks](R20_REAL_INPUT_QA.json)
+- [Post-minified build smoke verification](README_R20.md)
 
-[**Mở video trực tiếp**](https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/livingpq-r17g-apollo-evidence-20261010/LIVINGPQ_APOLLO_R17G_WEBGL_MOTION_12_SECONDS.mp4)
+## What passed
+PlayCanvas WebGL loaded R17G SOG successfully. WASD, mouse-look, stopping, +/-2m bounded navigation proxy, recorded position trace and video worked. The 24.537-second WebM is browser-recorded from Edge headless with real keyboard/mouse events; nine technical QA checks passed. Post-build smoke after esbuild minification also passed movement and camera look. **Real iPhone landscape frame rate remains untested.**
 
-### Video 6 giây trước đó
+## Why this is not finished
+R17G's 221,184 Gaussian points come from ONE Apollo photograph with inferred monocular depth, **not a true multi-camera reconstruction**. The main view retains architectural recognition, but moving 1-2m exposes missing surfaces, gaps, floaters and stretched façades. Looking back reveals almost no real architecture. People are still baked into photo source. R19 removal attempts smeared the street and were deliberately not promoted.
 
-[Video 6 giây](LIVINGPQ_R17G_REAL_WEBGL_3D_MOTION_NOT_R18.mp4)
+Navigation bounds are a labeled flat **PROXY**, NOT surveyed road or collision. No true 10x10m architectural free-walk visual pass. Next step requires rights-cleared overlapping, translated camera capture or real multi-view scene scan.
 
-### Ảnh tĩnh WebGL
+## Source and reproducibility
+Original Apollo Café photograph: Vivu Vietnam, Wikimedia Commons, CC BY-SA 4.0; transformative depth and Gaussian work derived from that source. Depth Anything V2 Small Apache 2.0. PlayCanvas and SplatTransform MIT. Static image provenance is detailed in README_R20.md.
+The research viewer sources are main.js, minified app.js, index.html, scene.sog, server.cjs. Locally run `node server.cjs 4190` and open `http://127.0.0.1:4190/`. This is **not publicly deployed**.
 
-- [Chính diện](R17G_SMALL_FRONT.jpg)
-- [Dịch trái](R17G_SMALL_LEFT.jpg)
-- [Lệch 80cm thấy lỗi vùng khuất](R17G_SMALL_DETAIL.jpg)
+R17G evidence remains intact in [its original research branch](https://github.com/kenzuko/Jotrip-Lab/tree/livingpq-r17g-apollo-evidence-20261010).
 
-**Chính xác phiên bản:** Video được quay bằng Edge + PlayCanvas từ mô hình R17G, không phải một bản scan đa góc mới của R18. R17G dùng 221.184 Gaussian tạo từ **một ảnh Apollo Café thật** và chiều sâu dự đoán. Chuyển camera khoảng -39cm đến +39cm rồi trở về. Mô hình **chưa thể đi lại thật trong 100m²** và mặt khuất vẫn được suy đoán.
-
-Nguồn ảnh: **Vivu Vietnam**, Wikimedia Commons [Apollo Café daytime street view](https://commons.wikimedia.org/wiki/File:Apollo_Cafe_daytime_street_view_Sunset_Town_Phu_Quoc_Vietnam.jpg), giấy phép [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Biến đổi đã thực hiện: dự đoán độ sâu bằng Depth Anything V2 Small (Apache-2.0), sinh Gaussian Splat, nén SOG, render PlayCanvas và xuất MP4. Điều kiện CC BY-SA 4.0 áp dụng cho các hình phái sinh.
-
-Đây chỉ là tài liệu nghiên cứu và trình diễn công khai trên **nhánh ảnh riêng**, không có mã ứng dụng, không chạy workflows, không merge và không deploy OpenPQ production.
+**MASTER LOCK:** No merge, deploy, production change, Cloudflare, GitHub-hosted Actions, paid AI API, fake GPS or alterations to OpenPQ Core 1.2, UniKey or PhuQuocLux.

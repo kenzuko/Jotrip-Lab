@@ -1,0 +1,598 @@
+{
+  "status": "TECHNICAL_INPUT_PASS__VISUAL_FAIL_HOLD",
+  "video": {
+    "file": "R20_REAL_INPUT_WEBGL_25S.webm",
+    "bytes": 2490108,
+    "durationSec": 24.537,
+    "meaning": "browser-recorded real mouse/keyboard action; not a manually animated orbit; headless Windows Edge, NOT iPhone"
+  },
+  "checks": {
+    "actualWebGLAndSOG": true,
+    "hasMovementInput": true,
+    "hasPointerLook": true,
+    "stoppedFrames": true,
+    "stress1m": true,
+    "boundedProxy": true,
+    "noConsoleOrNetworkErrors": true,
+    "realWebM": true,
+    "threeDistinctViews": true
+  },
+  "stages": [
+    {
+      "stage": "00_front",
+      "atSec": 2.649,
+      "state": {
+        "x": 0,
+        "z": 0,
+        "yawDeg": 0,
+        "walkedDistance": 0,
+        "disocclusion": "SOURCE VIEW CONE ONLY: still NOT a real scan",
+        "moving": false,
+        "movingFrames": 0,
+        "stoppedFrames": 90,
+        "keys": 0,
+        "lookEvents": 0,
+        "fpsBrowser": 48
+      }
+    },
+    {
+      "stage": "01_walk_stop",
+      "atSec": 8.202,
+      "state": {
+        "x": 0,
+        "z": -2,
+        "yawDeg": 0,
+        "walkedDistance": 2,
+        "disocclusion": "SOURCE FAIL ZONE: unseen surfaces likely",
+        "moving": false,
+        "movingFrames": 171,
+        "stoppedFrames": 193,
+        "keys": 1,
+        "lookEvents": 0,
+        "fpsBrowser": 50
+      }
+    },
+    {
+      "stage": "02_turn",
+      "atSec": 10.664,
+      "state": {
+        "x": 0,
+        "z": -2,
+        "yawDeg": 51.15367194927988,
+        "walkedDistance": 2,
+        "disocclusion": "SOURCE FAIL ZONE: unseen surfaces likely",
+        "moving": false,
+        "movingFrames": 171,
+        "stoppedFrames": 333,
+        "keys": 1,
+        "lookEvents": 16,
+        "fpsBrowser": 54
+      }
+    },
+    {
+      "stage": "03_lateral_stop",
+      "atSec": 15.961,
+      "state": {
+        "x": 1.4046122312961227,
+        "z": -2,
+        "yawDeg": 51.15367194927988,
+        "walkedDistance": 3.404612231296122,
+        "disocclusion": "SOURCE FAIL ZONE: unseen surfaces likely",
+        "moving": false,
+        "movingFrames": 351,
+        "stoppedFrames": 441,
+        "keys": 2,
+        "lookEvents": 16,
+        "fpsBrowser": 54
+      }
+    },
+    {
+      "stage": "04_backstep",
+      "atSec": 20.349,
+      "state": {
+        "x": 2,
+        "z": -0.8476310802653526,
+        "yawDeg": 51.15367194927988,
+        "walkedDistance": 4.841099628834162,
+        "disocclusion": "SOURCE FAIL ZONE: unseen surfaces likely",
+        "moving": false,
+        "movingFrames": 496,
+        "stoppedFrames": 539,
+        "keys": 3,
+        "lookEvents": 16,
+        "fpsBrowser": 54
+      }
+    },
+    {
+      "stage": "05_lookback_stop",
+      "atSec": 24.519,
+      "state": {
+        "x": 2,
+        "z": -0.8476310802653526,
+        "yawDeg": 132.8574535349352,
+        "walkedDistance": 4.841099628834162,
+        "disocclusion": "SOURCE FAIL ZONE: unseen surfaces likely",
+        "moving": false,
+        "movingFrames": 496,
+        "stoppedFrames": 773,
+        "keys": 3,
+        "lookEvents": 36,
+        "fpsBrowser": 57
+      }
+    }
+  ],
+  "screens": [
+    {
+      "stage": "00_front",
+      "file": "R20_00_front.png",
+      "bytes": 382541,
+      "sha256": "62dde1885072093ead9e19d6f2d658d0a6d711148d92ee99e26979ef96d2e358"
+    },
+    {
+      "stage": "01_walk_stop",
+      "file": "R20_01_walk_stop.png",
+      "bytes": 456370,
+      "sha256": "fc95f4b88c7ca54eba66fff29741bdf023f989f936f21478360f639eb8ab2ffa"
+    },
+    {
+      "stage": "02_turn",
+      "file": "R20_02_turn.png",
+      "bytes": 265400,
+      "sha256": "7c4b6cad46ee57bdc1f927f0540bc6612ee56eb5ffa94caf5a81d427132c4f95"
+    },
+    {
+      "stage": "03_lateral_stop",
+      "file": "R20_03_lateral_stop.png",
+      "bytes": 301015,
+      "sha256": "83dacdfc49fe9ba026ac03eec583c9d10ef5f6afdb56524b975b4a5b4a870931"
+    },
+    {
+      "stage": "04_backstep",
+      "file": "R20_04_backstep.png",
+      "bytes": 298324,
+      "sha256": "42b697bea4049575378dd197c3f8ca6b86f03176ba425ca1e72358a6df78956c"
+    },
+    {
+      "stage": "05_lookback_stop",
+      "file": "R20_05_lookback_stop.png",
+      "bytes": 39138,
+      "sha256": "65b31bc76b70cc60b372e69ec122f43873d6114278d27b7566162a92ce915d18"
+    }
+  ],
+  "errors": [],
+  "final": {
+    "release": "R20_LOCAL_ONLY_NO_DEPLOY",
+    "ready": true,
+    "error": null,
+    "webgl": true,
+    "asset": true,
+    "frameCount": 1279,
+    "input": {
+      "keys": 3,
+      "lookEvents": 36,
+      "movingFrames": 496,
+      "stoppedFrames": 783,
+      "touchEvents": 0
+    },
+    "x": 2,
+    "y": 0,
+    "z": -0.8476310802653526,
+    "yawDeg": 132.8574535349352,
+    "pitchDeg": -1.9893089226504064,
+    "walkedDistance": 4.841099628834162,
+    "maxDisplacement": 2.5115545674950672,
+    "moving": false,
+    "samples": 79,
+    "path": [
+      {
+        "x": 0,
+        "z": 0,
+        "t": 0
+      },
+      {
+        "x": 0,
+        "z": -0.059,
+        "t": 5.04
+      },
+      {
+        "x": 0,
+        "z": -0.119,
+        "t": 5.12
+      },
+      {
+        "x": 0,
+        "z": -0.186,
+        "t": 5.22
+      },
+      {
+        "x": 0,
+        "z": -0.253,
+        "t": 5.32
+      },
+      {
+        "x": 0,
+        "z": -0.319,
+        "t": 5.42
+      },
+      {
+        "x": 0,
+        "z": -0.375,
+        "t": 5.5
+      },
+      {
+        "x": 0,
+        "z": -0.443,
+        "t": 5.6
+      },
+      {
+        "x": 0,
+        "z": -0.52,
+        "t": 5.72
+      },
+      {
+        "x": 0,
+        "z": -0.602,
+        "t": 5.85
+      },
+      {
+        "x": 0,
+        "z": -0.658,
+        "t": 5.93
+      },
+      {
+        "x": 0,
+        "z": -0.721,
+        "t": 6.02
+      },
+      {
+        "x": 0,
+        "z": -0.785,
+        "t": 6.12
+      },
+      {
+        "x": 0,
+        "z": -0.848,
+        "t": 6.21
+      },
+      {
+        "x": 0,
+        "z": -0.912,
+        "t": 6.31
+      },
+      {
+        "x": 0,
+        "z": -0.973,
+        "t": 6.4
+      },
+      {
+        "x": 0,
+        "z": -1.034,
+        "t": 6.49
+      },
+      {
+        "x": 0,
+        "z": -1.097,
+        "t": 6.58
+      },
+      {
+        "x": 0,
+        "z": -1.161,
+        "t": 6.67
+      },
+      {
+        "x": 0,
+        "z": -1.222,
+        "t": 6.76
+      },
+      {
+        "x": 0,
+        "z": -1.284,
+        "t": 6.85
+      },
+      {
+        "x": 0,
+        "z": -1.346,
+        "t": 6.95
+      },
+      {
+        "x": 0,
+        "z": -1.409,
+        "t": 7.04
+      },
+      {
+        "x": 0,
+        "z": -1.475,
+        "t": 7.13
+      },
+      {
+        "x": 0,
+        "z": -1.541,
+        "t": 7.23
+      },
+      {
+        "x": 0,
+        "z": -1.608,
+        "t": 7.33
+      },
+      {
+        "x": 0,
+        "z": -1.675,
+        "t": 7.43
+      },
+      {
+        "x": 0,
+        "z": -1.737,
+        "t": 7.52
+      },
+      {
+        "x": 0,
+        "z": -1.8,
+        "t": 7.61
+      },
+      {
+        "x": 0,
+        "z": -1.86,
+        "t": 7.7
+      },
+      {
+        "x": 0,
+        "z": -1.924,
+        "t": 7.79
+      },
+      {
+        "x": 0,
+        "z": -1.981,
+        "t": 7.88
+      },
+      {
+        "x": 0.055,
+        "z": -2,
+        "t": 13.08
+      },
+      {
+        "x": 0.118,
+        "z": -2,
+        "t": 13.23
+      },
+      {
+        "x": 0.181,
+        "z": -2,
+        "t": 13.38
+      },
+      {
+        "x": 0.242,
+        "z": -2,
+        "t": 13.52
+      },
+      {
+        "x": 0.305,
+        "z": -2,
+        "t": 13.67
+      },
+      {
+        "x": 0.368,
+        "z": -2,
+        "t": 13.81
+      },
+      {
+        "x": 0.429,
+        "z": -2,
+        "t": 13.96
+      },
+      {
+        "x": 0.485,
+        "z": -2,
+        "t": 14.09
+      },
+      {
+        "x": 0.547,
+        "z": -2,
+        "t": 14.23
+      },
+      {
+        "x": 0.603,
+        "z": -2,
+        "t": 14.37
+      },
+      {
+        "x": 0.658,
+        "z": -2,
+        "t": 14.49
+      },
+      {
+        "x": 0.713,
+        "z": -2,
+        "t": 14.62
+      },
+      {
+        "x": 0.769,
+        "z": -2,
+        "t": 14.75
+      },
+      {
+        "x": 0.824,
+        "z": -2,
+        "t": 14.88
+      },
+      {
+        "x": 0.879,
+        "z": -2,
+        "t": 15.01
+      },
+      {
+        "x": 0.944,
+        "z": -2,
+        "t": 15.17
+      },
+      {
+        "x": 1.004,
+        "z": -2,
+        "t": 15.3
+      },
+      {
+        "x": 1.059,
+        "z": -2,
+        "t": 15.43
+      },
+      {
+        "x": 1.116,
+        "z": -2,
+        "t": 15.57
+      },
+      {
+        "x": 1.177,
+        "z": -2,
+        "t": 15.71
+      },
+      {
+        "x": 1.241,
+        "z": -2,
+        "t": 15.86
+      },
+      {
+        "x": 1.302,
+        "z": -2,
+        "t": 16
+      },
+      {
+        "x": 1.358,
+        "z": -2,
+        "t": 16.14
+      },
+      {
+        "x": 1.415,
+        "z": -1.992,
+        "t": 18.27
+      },
+      {
+        "x": 1.464,
+        "z": -1.953,
+        "t": 18.36
+      },
+      {
+        "x": 1.511,
+        "z": -1.915,
+        "t": 18.45
+      },
+      {
+        "x": 1.56,
+        "z": -1.875,
+        "t": 18.54
+      },
+      {
+        "x": 1.608,
+        "z": -1.836,
+        "t": 18.63
+      },
+      {
+        "x": 1.656,
+        "z": -1.797,
+        "t": 18.72
+      },
+      {
+        "x": 1.705,
+        "z": -1.758,
+        "t": 18.82
+      },
+      {
+        "x": 1.755,
+        "z": -1.718,
+        "t": 18.91
+      },
+      {
+        "x": 1.804,
+        "z": -1.678,
+        "t": 19
+      },
+      {
+        "x": 1.851,
+        "z": -1.641,
+        "t": 19.09
+      },
+      {
+        "x": 1.901,
+        "z": -1.6,
+        "t": 19.18
+      },
+      {
+        "x": 1.949,
+        "z": -1.562,
+        "t": 19.27
+      },
+      {
+        "x": 1.997,
+        "z": -1.523,
+        "t": 19.37
+      },
+      {
+        "x": 2,
+        "z": -1.467,
+        "t": 19.5
+      },
+      {
+        "x": 2,
+        "z": -1.412,
+        "t": 19.63
+      },
+      {
+        "x": 2,
+        "z": -1.357,
+        "t": 19.76
+      },
+      {
+        "x": 2,
+        "z": -1.295,
+        "t": 19.9
+      },
+      {
+        "x": 2,
+        "z": -1.232,
+        "t": 20.05
+      },
+      {
+        "x": 2,
+        "z": -1.169,
+        "t": 20.2
+      },
+      {
+        "x": 2,
+        "z": -1.106,
+        "t": 20.34
+      },
+      {
+        "x": 2,
+        "z": -1.044,
+        "t": 20.49
+      },
+      {
+        "x": 2,
+        "z": -0.98,
+        "t": 20.64
+      },
+      {
+        "x": 2,
+        "z": -0.925,
+        "t": 20.77
+      },
+      {
+        "x": 2,
+        "z": -0.864,
+        "t": 20.91
+      }
+    ],
+    "fpsBrowser": 57,
+    "visualGate": "HOLD_SINGLE_IMAGE_DISOCCLUSION_AND_EMBEDDED_PEOPLE",
+    "disocclusion": "SOURCE FAIL ZONE: unseen surfaces likely",
+    "boundsMeters": 2,
+    "ground": "SEPARATE_FLAT_BOUNDED_NAVIGATION_PROXY_NOT_SURVEYED_COLLISION",
+    "source": "R17G_SINGLE_PHOTO_INFERRED_GAUSSIAN_SOG_221184_POINTS",
+    "noAnimatedPeople": true,
+    "staticPeopleAreInPhoto": true,
+    "realIPhoneFPS": "UNTESTED",
+    "issues": []
+  },
+  "visual": "FAIL/HOLD: single-source geometry tearing/holes at large displacements, people in source remain baked in; NOT 10x10m photogrammetry",
+  "mobile": "UNTESTED on actual iPhone landscape, FPS on Edge does not prove iPhone >=30fps",
+  "provenance": "Vivu Vietnam Apollo photo Wikimedia Commons CC BY-SA 4.0; Depth Anything V2 Small Apache-2.0; PlayCanvas MIT; inherited R17G SOG",
+  "master": "NO_DEPLOY_NO_MERGE_NO_CLOUDFLARE_NO_GITHUB_ACTIONS_NO_PROD"
+}
