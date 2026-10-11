@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F6F3EA">
+<meta name="description" content="Sóng - Trợ lý hiểu đảo Phú Quốc. Trò chuyện bằng giọng nói hoặc chữ, dựa trên những gì đã được xác minh.">
+<title>Sóng · by OpenPQ AI - The Island, Understood.</title>
+<link rel="stylesheet" href="/song-v1.css?v=1211">
+</head>
+<body data-view="welcome" data-theme="light" data-mode="text">
+<div class="song-app">
+<header class="song-header">
+  <a class="song-identity" href="/song-v1" aria-label="Sóng - by OpenPQ AI, về trang chào">
+    <span class="small-mark" aria-hidden="true"><img src="/song-approved.webp" alt=""></span>
+    <span class="identity-caption"><b>by OpenPQ AI</b><small>THE ISLAND, UNDERSTOOD.</small></span>
+  </a>
+  <div class="header-actions"><span class="lang-indicator" aria-label="Ngôn ngữ hiện tại: tiếng Việt">VI</span>
+    <button type="button" id="settings" class="icon-btn" aria-label="Cài đặt" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  </div>
+</header>
+
+<main id="app-main">
+  <section class="presence" id="presence" aria-label="Gặp Sóng">
+    <div class="orb-ambient" aria-hidden="true"></div>
+    <img class="song-lockup" src="/song-approved.webp" alt="Biểu tượng viên ngọc trong sóng biển cùng chữ Sóng nguyên bản - by OpenPQ AI" width="280" height="319">
+    <h1>Chào bạn, mình là Sóng.</h1>
+    <p class="welcome-subtitle">Bạn muốn khám phá điều gì về Phú Quốc hôm nay?</p>
+    <button id="voice-start" class="voice-start" type="button"><span class="cta-mic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span> Trò chuyện với Sóng <span aria-hidden="true">↗</span></button>
+    <p class="privacy-hint">Chạm để bắt đầu phiên giọng nói. Sóng sẽ thử nghe tiếp sau khi trả lời, và dừng khi rời trang.</p>
+    <div class="quick-chips" aria-label="Gợi ý khám phá">
+       <button type="button" data-prompt="Nên đi đâu ở Phú Quốc hôm nay?"><span aria-hidden="true">↗</span> Đi đâu?</button>
+       <button type="button" data-prompt="Thời tiết Phú Quốc hôm nay thế nào?"><span aria-hidden="true">◌</span> Thời tiết?</button>
+       <button type="button" data-nearme="true"><span aria-hidden="true">⌖</span> Gần tôi?</button>
+    </div>
+    <div class="welcome-footline">PHÚ QUỐC, HIỂU ĐẢO TRƯỚC KHI QUYẾT ĐỊNH</div>
+  </section>
+
+  <section class="conversation-view" id="conversation-view" aria-label="Trò chuyện với Sóng" hidden>
+    <div class="compact-presence">
+      <span class="compact-icon" aria-hidden="true"><img src="/song-approved.webp" alt=""></span>
+      <div class="compact-copy"><strong>Sóng</strong><span id="conversation-state">Sẵn sàng trò chuyện</span></div>
+      <button id="back-welcome" type="button" class="quiet-icon" aria-label="Quay về phần giới thiệu"><svg viewBox="0 0 24 24"><path d="M3 12h18M9 6l-6 6 6 6"/></svg></button>
+    </div>
+    <div class="conversation-layout">
+      <div class="conversation-pane">
+        <div id="thread" class="thread" role="log" aria-label="Nội dung hội thoại" aria-live="polite" aria-relevant="additions">
+          <div class="thread-intro"><span class="intro-wave" aria-hidden="true">〰</span><strong>Mình đang ở đây.</strong><p>Hãy hỏi điều bạn thực sự muốn biết về đảo. Mình sẽ nói rõ khi chưa có thông tin đã xác minh.</p></div>
+        </div>
+      </div>
+      <aside id="result-panel" class="result-panel" hidden aria-label="Thông tin trực quan">
+        <div class="result-top"><span id="result-kind">GÓC ĐẢO THẬT</span><button id="close-result" type="button" class="quiet-icon" aria-label="Đóng kết quả trực quan">×</button></div>
+        <div id="result-body"></div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<section id="transcript-panel" class="transcript-panel" hidden aria-label="Xác nhận lời đã nghe">
+  <div class="transcript-head"><span><span aria-hidden="true">◌</span> SÓNG NGHE ĐƯỢC</span><button type="button" id="transcript-close" class="icon-small" aria-label="Hủy bản nhận dạng">×</button></div>
+  <label for="transcript-edit">Có đúng ý bạn không? Bạn có thể sửa lại.</label>
+  <textarea id="transcript-edit" maxlength="450" rows="2"></textarea>
+  <div class="transcript-actions"><button type="button" id="transcript-repeat">Nói lại</button><button type="button" id="transcript-confirm" class="primary-small">Đúng rồi, trả lời ↗</button></div>
+</section>
+
+<footer class="composer-wrap">
+  <div id="status-row" class="status-row" role="status" aria-live="polite"><span class="status-dot" aria-hidden="true"></span><span id="status-label">Sóng đang sẵn sàng</span><button type="button" id="end-voice-session" hidden>Dừng phiên nghe</button><button type="button" id="stop-audio" hidden>Dừng tiếng</button></div>
+  <form id="composer" class="composer" autocomplete="off">
+    <button type="button" id="composer-mic" class="composer-mic" aria-label="Bắt đầu nói bằng micro"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></button>
+    <label for="question" class="sr-only">Hỏi Sóng bất cứ điều gì</label>
+    <textarea id="question" rows="1" maxlength="450" placeholder="Hỏi Sóng bất cứ điều gì..." enterkeyhint="send"></textarea>
+    <button type="submit" id="send" class="composer-send" aria-label="Gửi câu hỏi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+  </form>
+  <div class="composer-meta"><span>Thông tin được cung cấp theo dữ liệu sẵn có, không thay thế xác minh trực tiếp.</span><a href="/v12-audio">Kiểm tra giọng V12</a></div>
+</footer>
+
+<div id="settings-dialog" class="settings-overlay" hidden>
+  <div class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="settings-head"><h2 id="settings-title">Trải nghiệm với Sóng</h2><button type="button" id="close-settings" aria-label="Đóng cài đặt" class="quiet-icon">×</button></div>
+    <label class="settings-choice"><span>Giao diện tối</span><input id="dark-setting" type="checkbox"></label>
+    <label class="settings-choice"><span>Đọc tiếng khi hỏi bằng chữ</span><input id="autoplay-setting" type="checkbox"></label>
+    <label class="settings-choice"><span>Giảm chuyển động</span><input id="motion-setting" type="checkbox"></label>
+    <p class="settings-note">Giọng đọc thử nghiệm Adam có lọc âm sáng nhẹ. Chưa cam kết âm sắc hoàn toàn trong. Voice cần quyền micro; nội dung nhập chữ vẫn hoạt động khi micro bị từ chối.</p>
+    <p class="settings-note"><strong>Quyền riêng tư:</strong> không tự bật micro. Khi bạn ghi âm, tiếng được gửi đến Whisper qua Worker để nhận dạng. Không lưu bản ghi trong giao diện này.</p>
+    <button type="button" id="qa-copy" class="qa-copy">Sao chép số đo kỹ thuật iPhone</button>
+    <p id="qa-note" class="settings-note">Số đo chỉ có thời gian và mã trạng thái, không sao chép lời nói.</p>
+    <button type="button" id="settings-done" class="settings-done">Hoàn tất</button>
+  </div>
+</div>
+</div>
+<script type="module" src="/song-v1.js?v=1211"></script>
+</body>
+</html>
