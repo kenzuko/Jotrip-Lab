@@ -1,23 +1,21 @@
-# LivingPQ Apollo – WebGL video chứng minh chuyển động
+# LivingPQ R19 - Apollo Café · Walking Preview 24 giây
 
-**Video mới: 12 giây – 144 khung hình WebGL thật**, 960×540, H.264 MP4, chuyển camera qua trái/phải và quay lại.
+**[▶ XEM VIDEO 24 GIÂY (MP4, mở trên iPhone)](LIVINGPQ_R19_APOLLO_24S_WALKING_LIMITED_VISUAL_HOLD.mp4)**
 
-▶️ [**XEM VIDEO 12 GIÂY (MP4)**](LIVINGPQ_APOLLO_R17G_WEBGL_MOTION_12_SECONDS.mp4)
+[Link MP4 trực tiếp](https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/livingpq-r19-apollo-walk-24s-20261011/LIVINGPQ_R19_APOLLO_24S_WALKING_LIMITED_VISUAL_HOLD.mp4)
 
-[**Mở video trực tiếp**](https://raw.githubusercontent.com/kenzuko/Jotrip-Lab/livingpq-r17g-apollo-evidence-20261010/LIVINGPQ_APOLLO_R17G_WEBGL_MOTION_12_SECONDS.mp4)
+## Kết quả đã kiểm chứng
+- Quay từ **192 khung hình WebGL thật**, Microsoft Edge, PlayCanvas Gaussian Splat (.sog), 960×540, 8 FPS, video dài **24 giây**.
+- Có trình điều khiển WASD và phím chạm, nút tự chạy 24 giây. Kiểm thử trên Windows: camera dịch chuyển và tour kết thúc đúng; không lỗi trang.
+- Tổng quãng camera đi trong clip ≈ **1,99m**, giới hạn trong **vùng 1,04m ngang × 0,51m sâu**. Đây là mô phỏng điều khiển khuôn hình hẹp, **KHÔNG PHẢI 100m² đi bộ tự do**.
+- R19 thử che người tĩnh trong ảnh nguồn bằng OpenCV inpaint và cập nhật màu cho **221.184 Gaussian** R17G. Cảnh có các mảng vỉa hè bị nhòe sau khi xóa người: **visual chưa đạt nghiệm thu**.
+- Tất cả chi tiết bị khuất sau người là **dự đoán**, không phải ảnh/chụp thực địa. Splat này bắt nguồn từ **một ảnh**, không phải multiview reconstruction. Chưa có mesh va chạm thực.
+- Nền ảnh thật Apollo Café: **Vivu Vietnam / Wikimedia Commons**, CC BY-SA 4.0. [Ảnh gốc](https://commons.wikimedia.org/wiki/File:Apollo_Cafe_daytime_street_view_Sunset_Town_Phu_Quoc_Vietnam.jpg) · [Giấy phép](https://creativecommons.org/licenses/by-sa/4.0/). Các thay đổi: inpaint, dùng Depth Anything V2 Small (Apache-2.0) để suy chiều sâu, Gaussian hóa, nén SOG, chụp WebGL và xuất H.264. Điều kiện CC BY-SA áp dụng cho tác phẩm phái sinh.
 
-### Video 6 giây trước đó
+## So sánh với bản trước
+- [Video R17G 12 giây (giữ nguyên người trong ảnh)](LIVINGPQ_APOLLO_R17G_WEBGL_MOTION_12_SECONDS.mp4)
+- [Ảnh đối chiếu xử lý người R19](R19_PEOPLE_BEFORE_AFTER_REVIEW.jpg)
 
-[Video 6 giây](LIVINGPQ_R17G_REAL_WEBGL_3D_MOTION_NOT_R18.mp4)
+**Nhận xét:** R19 xác nhận luồng xóa người trước Gaussian và điều khiển camera, nhưng vết inpaint làm giảm chất lượng visual. Giữ R17G làm benchmark màu/chất ảnh; cần dữ liệu nhiều góc thật để đạt mục tiêu 100m².
 
-### Ảnh tĩnh WebGL
-
-- [Chính diện](R17G_SMALL_FRONT.jpg)
-- [Dịch trái](R17G_SMALL_LEFT.jpg)
-- [Lệch 80cm thấy lỗi vùng khuất](R17G_SMALL_DETAIL.jpg)
-
-**Chính xác phiên bản:** Video được quay bằng Edge + PlayCanvas từ mô hình R17G, không phải một bản scan đa góc mới của R18. R17G dùng 221.184 Gaussian tạo từ **một ảnh Apollo Café thật** và chiều sâu dự đoán. Chuyển camera khoảng -39cm đến +39cm rồi trở về. Mô hình **chưa thể đi lại thật trong 100m²** và mặt khuất vẫn được suy đoán.
-
-Nguồn ảnh: **Vivu Vietnam**, Wikimedia Commons [Apollo Café daytime street view](https://commons.wikimedia.org/wiki/File:Apollo_Cafe_daytime_street_view_Sunset_Town_Phu_Quoc_Vietnam.jpg), giấy phép [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Biến đổi đã thực hiện: dự đoán độ sâu bằng Depth Anything V2 Small (Apache-2.0), sinh Gaussian Splat, nén SOG, render PlayCanvas và xuất MP4. Điều kiện CC BY-SA 4.0 áp dụng cho các hình phái sinh.
-
-Đây chỉ là tài liệu nghiên cứu và trình diễn công khai trên **nhánh ảnh riêng**, không có mã ứng dụng, không chạy workflows, không merge và không deploy OpenPQ production.
+Đây là nhánh GitHub công khai **chỉ chứa tư liệu nghiên cứu**, không chứa workflows, không merge, không deploy, không sửa OpenPQ Core V1.2, không API AI trả phí.
