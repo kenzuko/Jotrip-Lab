@@ -1,0 +1,40 @@
+<!doctype html><html lang="vi"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer"><title>OpenPQ V12 - Audio Proof</title>
+<style>
+:root{font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f9f6;color:#194b40}
+*{box-sizing:border-box}body{margin:0;padding:max(18px,env(safe-area-inset-top)) 16px 40px}
+main{max-width:670px;margin:0 auto}h1{font:500 35px/1.18 Georgia,serif;margin:8px 0 13px}h1 em{color:#b88a47}
+.eyebrow{font-size:11px;font-weight:750;letter-spacing:.13em;color:#7a9b8b}
+.lead{font-size:14px;color:#527466}section{background:#fff;border:1px solid #d9e7de;border-radius:19px;margin:18px 0;padding:18px;box-shadow:0 4px 15px #1d51300a}
+button{background:#166d5e;color:#fff;font-size:15px;font-weight:700;padding:13px;border:0;border-radius:13px;min-height:47px}
+button.secondary{background:#e7f1eb;color:#185a4b}button:disabled{opacity:.5}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.actions button:first-child{grid-column:1/-1}
+#status{font-size:15px;font-weight:750;margin:12px 0}#result{font-size:13px;line-height:1.6;color:#537769;white-space:pre-wrap}
+.good{color:#087a56}.bad{color:#a14e3a}.question{margin-top:12px;border-top:1px solid #dbe8de;padding-top:13px}
+label{font-size:13px;display:block;margin-bottom:6px}
+textarea{width:100%;height:105px;border-radius:11px;border:1px solid #cce0d1;padding:10px;color:#1c4c3f;background:#f9fdfa}
+small{color:#6a8878}#recent{font-size:12px;max-height:175px;overflow:auto;padding-left:18px}
+</style></head><body><main>
+<div class="eyebrow">OPEN PHU QUOC · V12 ISOLATED AUDIO PROOF</div>
+<h1>Mười lượt.<br><em>Không mất tiếng.</em></h1>
+<p class="lead">Đây là phòng thử âm thanh, <strong>không gọi Whisper, Gemma hoặc TTS AI</strong>. Âm thanh mẫu có sẵn, không dùng micro và không tự ghi âm.</p>
+<section><strong>Kiểm tra Safari iPhone</strong>
+<p class="lead">Chạm một lần để chạy 10 lượt tự động, mỗi lượt ba đoạn. Nếu Safari không cho phát tiếp, màn hình sẽ báo BLOCKED, không giả vờ đã nghe xong.</p>
+<div class="actions">
+<button id="all" type="button">▶ Chạy 10 lượt tự động</button>
+<button id="single" class="secondary" type="button">Thử 1 lượt</button>
+<button id="stop" class="secondary" type="button">Dừng / Ngắt lời</button>
+</div><p id="status" role="status" aria-live="polite">Chưa chạy</p>
+<div id="result"></div></section>
+<section><strong>Đánh giá bằng tai người nghe</strong>
+<p class="lead">Máy báo đã phát không đồng nghĩa loa có tiếng. Sau mỗi thử nghiệm, cậu tự đánh giá.</p>
+<div class="actions"><button id="yes" class="secondary" type="button">✓ Tôi nghe đủ</button>
+<button id="no" class="secondary" type="button">✕ Tôi bị mất tiếng</button></div>
+<p id="human" class="lead">Chưa đánh giá</p></section>
+<section><strong>Nhật ký sự kiện ẩn danh</strong>
+<p class="lead">Không lưu lời nói, dữ liệu cá nhân, IP hay âm thanh. Có thể sao chép nhật ký trạng thái để báo lỗi.</p>
+<ol id="recent"></ol><button type="button" id="copy" class="secondary">Sao chép kết quả</button></section>
+<small>Proof V12-A1, chưa nghiệm thu iPhone. Không có autoplay bypass, không thay đổi OpenPQ Core hoặc AI Guide production.</small>
+<audio id="player" playsinline preload="auto" hidden></audio>
+</main><script type="module" src="./app.mjs"></script></body></html>
